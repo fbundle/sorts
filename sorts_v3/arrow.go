@@ -47,3 +47,20 @@ func (s Arrow) ModusPonens(a Sort) Sort {
 		s.B,
 	)
 }
+
+func (s Arrow) Intro(f func(Sort) Sort) Sort {
+	// take a func that maps (a: A) into (b: B)
+	// give (x: A -> B)
+
+	// verify
+	a := NewAtom(Level(s.A)-1, "a_dummy", s.A)
+	b := f(a)
+	mustTermOf(b, s.B)
+
+	// verify ok
+	return NewAtom(
+		Level(s)-1,
+		fmt.Sprintf("(implies_intro %s %p)", Name(s), f),
+		s,
+	)
+}
