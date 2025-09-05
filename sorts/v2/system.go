@@ -1,9 +1,5 @@
 package sorts
 
-import (
-	"github.com/fbundle/sorts/adt"
-)
-
 type SortSystemOption func(*sortSystem)
 
 func WithInitialName(name string) SortSystemOption {
@@ -66,22 +62,29 @@ func (ss *sortSystem) Default(level int) Sort {
 	}
 }
 
-func (ss *sortSystem) Atom(level int, name string, parent Sort) adt.Option[Sort] {
-	if parent != nil && parent.Level(ss) != level+1 {
-		return adt.None[Sort]()
+func (ss *sortSystem) Atom(level int, name string, parents ...Sort) Sort {
+	if len(parents) >= 2 {
+		panic("type_error")
 	}
-	return adt.Some[Sort](atom{
+	var parent Sort = nil
+	if len(parents) >= 1 {
+		parent = parents[0]
+	}
+	if parent != nil && parent.Level(ss) != level+1 {
+		panic("type_error")
+	}
+	return atom{
 		level:  level,
 		name:   name,
 		parent: parent,
-	})
+	}
 }
 
-func (ss *sortSystem) Arrow(param Sort, body Sort) adt.Option[Sort] {
-	return adt.Some[Sort](arrow{
+func (ss *sortSystem) Arrow(param Sort, body Sort) Sort {
+	return arrow{
 		param: param,
 		body:  body,
-	})
+	}
 }
 
 func (ss *sortSystem) AddRule(src string, dst string) SortSystem {

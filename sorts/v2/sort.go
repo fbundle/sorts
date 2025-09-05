@@ -1,7 +1,5 @@
 package sorts
 
-import "github.com/fbundle/sorts/adt"
-
 // every sort is identified with a name (string)
 
 type Sort interface {
@@ -16,6 +14,6 @@ type SortSystem interface {
 	AddRule(src string, dst string) SortSystem
 	LessEqual(src string, dst string) bool
 
-	Atom(level int, name string, parent Sort) adt.Option[Sort]
-	Arrow(param Sort, body Sort) adt.Option[Sort]
+	Atom(level int, name string, parents ...Sort) Sort
+	Arrow(param Sort, body Sort) Sort
 }
