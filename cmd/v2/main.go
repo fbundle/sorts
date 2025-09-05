@@ -15,18 +15,18 @@ const (
 	typeLevel = 1
 )
 
-func printCast(ss sorts.SortSystem, type1 sorts.Sort, type2 sorts.Sort) {
-	ok := type1.LessEqual(ss, type2)
+func printCast(type1 sorts.Sort, type2 sorts.Sort) {
+	ok := type1.LessEqual(type2)
 
 	if ok {
-		fmt.Printf("type [%s] CAN be cast into [%s]\n", type1.Name(ss), type2.Name(ss))
+		fmt.Printf("type [%s] CAN be cast into [%s]\n", type1.Name(), type2.Name())
 	} else {
-		fmt.Printf("type [%s] CANNOT be cast into [%s]\n", type1.Name(ss), type2.Name(ss))
+		fmt.Printf("type [%s] CANNOT be cast into [%s]\n", type1.Name(), type2.Name())
 	}
 }
-func printSorts(ss sorts.SortSystem, sortList ...sorts.Sort) {
+func printSorts(sortList ...sorts.Sort) {
 	for _, sort := range sortList {
-		fmt.Printf("[%s] is of type [%s]\n", sort.Name(ss), sort.Parent(ss).Name(ss))
+		fmt.Printf("[%s] is of type [%s]\n", sort.Name(), sort.Parent().Name())
 	}
 }
 func chain(ss sorts.SortSystem, sortList ...sorts.Sort) sorts.Sort {
@@ -35,8 +35,10 @@ func chain(ss sorts.SortSystem, sortList ...sorts.Sort) sorts.Sort {
 	}
 	final := sortList[len(sortList)-1]
 	for i := len(sortList) - 2; i >= 0; i-- {
-		param := sortList[i]
-		final = ss.Arrow(param, final)
+		arg := sortList[i]
+		if ok := ss.Arrow(arg, final).Unwrap(&final); !ok {
+			panic("type_error")
+		}
 	}
 	return final
 }

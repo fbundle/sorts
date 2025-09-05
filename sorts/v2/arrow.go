@@ -1,33 +1,46 @@
 package sorts
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/fbundle/sorts/adt"
+)
 
 const (
 	arrowToken = "->"
 )
 
+func newArrow(ss SortSystem, arg Sort, body Sort) adt.Option[Sort] {
+	return adt.Some[Sort](arrow{
+		arg:  arg,
+		body: body,
+		ss:   ss,
+	})
+}
+
 type arrow struct {
 	arg  Sort
 	body Sort
+	ss   SortSystem
 }
 
-func (s arrow) Level(ss SortSystem) int {
-	return max(s.arg.Level(ss), s.body.Level(ss))
+func (s arrow) Level() int {
+	return max(s.arg.Level(), s.body.Level())
 }
 
-func (s arrow) Name(ss SortSystem) string {
+func (s arrow) Name() string {
 	return strings.Join([]string{
-		s.arg.Name(ss),
+		s.arg.Name(),
 		arrowToken,
-		s.body.Name(ss),
+		s.body.Name(),
 	}, " ")
 }
 
-func (s arrow) Parent(ss SortSystem) Sort {
-	return ss.Default(s.Level(ss) + 1)
+func (s arrow) Parent() Sort {
+	return s.ss.Default(s.Level() + 1)
 }
 
-func (s arrow) LessEqual(ss SortSystem, dst Sort) bool {
+func (s arrow) LessEqual(dst Sort) bool {
 	switch d := dst.(type) {
 	case atom:
 		return false // cannot compare arrow to atom
@@ -35,11 +48,11 @@ func (s arrow) LessEqual(ss SortSystem, dst Sort) bool {
 		// reverse cast for arg
 		// {any -> unit} can be cast into {int -> unit}
 		// because {int} can be cast into {any}
-		if !d.arg.LessEqual(ss, s.arg) {
+		if !d.arg.LessEqual(s.arg) {
 			return false
 		}
 		// normal cast for body
-		return s.body.LessEqual(ss, d.body)
+		return s.body.LessEqual(d.body)
 	default:
 		panic("unreachable")
 	}

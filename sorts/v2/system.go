@@ -1,5 +1,7 @@
 package sorts
 
+import "github.com/fbundle/sorts/adt"
+
 type SortSystemOption func(*sortSystem)
 
 func WithInitialName(name string) SortSystemOption {
@@ -62,29 +64,19 @@ func (ss *sortSystem) Default(level int) Sort {
 	}
 }
 
-func (ss *sortSystem) Atom(level int, name string, parents ...Sort) Sort {
-	if len(parents) >= 2 {
-		panic("type_error")
+func (ss *sortSystem) Atom(level int, name string, parents ...Sort) adt.Option[Sort] {
+	if len(parents) == 0 {
+		return adt.None[Sort]()
 	}
-	var parent Sort = nil
-	if len(parents) >= 1 {
-		parent = parents[0]
-	}
-	if parent != nil && parent.Level(ss) != level+1 {
-		panic("type_error")
-	}
-	return atom{
-		level:  level,
-		name:   name,
-		parent: parent,
-	}
+	return newAtom(ss, level, name, parents[0])
 }
 
-func (ss *sortSystem) Arrow(arg Sort, body Sort) Sort {
-	return arrow{
-		arg:  arg,
-		body: body,
-	}
+func (ss *sortSystem) Arrow(arg Sort, body Sort) adt.Option[Sort] {
+	return newArrow(ss, arg, body)
+}
+
+func (ss *sortSystem) Inhabited(sort Sort, elem Sort) adt.Option[InhabitedSort] {
+	panic("not implemented")
 }
 
 func (ss *sortSystem) AddRule(src string, dst string) SortSystem {
