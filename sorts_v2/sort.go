@@ -13,13 +13,13 @@ type Sort interface {
 // InhabitedSort - represents a sort with at least one child
 // (true theorems have proofs)
 type InhabitedSort interface {
-	Sort
+	Sort() Sort
 	Child() Sort // (or Term)
 }
 
 // DependentSort - represent a type B(x) depends on sort x
 type DependentSort interface {
-	Sort
+	Sort() Sort
 	Apply(Sort) Sort // take x, return B(x)
 }
 type SortSystem interface {
@@ -28,9 +28,9 @@ type SortSystem interface {
 	AddRule(src string, dst string) SortSystem
 	LessEqual(src string, dst string) bool
 
-	Atom(level int, name string, parent InhabitedSort) adt.Option[Sort]
+	Atom(level int, name string, parent Sort) adt.Option[Sort]
 	Arrow(arg Sort, body Sort) adt.Option[Sort]
-	Inhabited(sort Sort, elem Sort) adt.Option[InhabitedSort]
+	Inhabited(sort Sort, child Sort) adt.Option[InhabitedSort]
 	Pi(arg InhabitedSort, body DependentSort) adt.Option[Sort]
 	Sigma(a InhabitedSort, b DependentSort) adt.Option[Sort]
 	Sum(a Sort, b Sort) adt.Option[Sort]

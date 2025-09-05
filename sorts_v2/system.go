@@ -71,7 +71,7 @@ func (ss *sortSystem) Default(level int) Sort {
 	return newAtom(ss, level, name, nil).MustUnwrap()
 }
 
-func (ss *sortSystem) Atom(level int, name string, parent InhabitedSort) adt.Option[Sort] {
+func (ss *sortSystem) Atom(level int, name string, parent Sort) adt.Option[Sort] {
 	return newAtom(ss, level, name, parent)
 }
 

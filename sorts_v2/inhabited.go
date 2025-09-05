@@ -7,16 +7,20 @@ func newInhabited(ss SortSystem, sort Sort, child Sort) adt.Option[InhabitedSort
 		return adt.None[InhabitedSort]()
 	}
 	return adt.Some[InhabitedSort](inhabited{
-		Sort:  sort,
+		sort:  sort,
 		child: child,
 		ss:    ss,
 	})
 }
 
 type inhabited struct {
-	Sort
+	sort  Sort
 	child Sort
 	ss    SortSystem
+}
+
+func (i inhabited) Sort() Sort {
+	return i.sort
 }
 
 func (i inhabited) Child() Sort {

@@ -7,7 +7,7 @@ import (
 )
 
 func newDependent(ss SortSystem, level int, name string, parent InhabitedSort, apply func(Sort) Sort) adt.Option[DependentSort] {
-	if parent != nil && parent.Level() < level {
+	if parent != nil && parent.Sort().Level() < level {
 		// TODO - chat GPT said parent of dependent can be the same level as level
 		return adt.None[DependentSort]()
 	}
@@ -26,6 +26,10 @@ type dependent struct {
 	parent InhabitedSort
 	apply  func(Sort) Sort
 	ss     SortSystem
+}
+
+func (s dependent) Sort() Sort {
+	return s
 }
 
 func (s dependent) Level() int {
