@@ -3,6 +3,7 @@ package sorts
 import "github.com/fbundle/sorts/adt"
 
 func newInhabited(ss SortSystem, sort Sort, child Sort) adt.Option[InhabitedSort] {
+	panic("feature_disabled")
 	if child.Level() != sort.Level()-1 {
 		return adt.None[InhabitedSort]()
 	}

@@ -7,6 +7,7 @@ import (
 )
 
 func newPi(ss SortSystem, arg InhabitedSort, body DependentSort) adt.Option[Sort] {
+	panic("feature_disabled")
 	return adt.Some[Sort](pi{
 		arg:  arg,
 		body: body,
