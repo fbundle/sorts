@@ -50,6 +50,7 @@ func (s dependent) LessEqual(dst Sort) bool {
 }
 
 func (s dependent) Apply(sort Sort) Sort {
+	// TODO - check
 	out := s.apply(sort)
 	if out.Level() != s.level {
 		panic("type_error")
