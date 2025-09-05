@@ -2,12 +2,15 @@ package sorts
 
 import "github.com/fbundle/sorts/adt"
 
-// Sort -
+type SortView struct {
+	Level     int                 // universe level
+	Name      string              // every sort is identified with a name (string)
+	Parent    Sort                // (or Type) every sort must have a parent
+	LessEqual func(dst Sort) bool // partial order on sorts
+}
+
 type Sort interface {
-	Level() int              // universe level
-	Name() string            // every sort is identified with a name (string)
-	Parent() InhabitedSort   // (or Type) every sort must have a parent
-	LessEqual(dst Sort) bool // for type casting
+	View() SortView
 }
 
 // InhabitedSort - represents a sort with at least one child
