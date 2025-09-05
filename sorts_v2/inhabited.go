@@ -1,6 +1,6 @@
 package sorts
 
-import "github.com/fbundle/sorts/adt"
+import "github.com/fbundle/lab_public/lab/go_util/pkg/adt"
 
 func newInhabited(ss SortSystem, sort Sort, child Sort) adt.Option[InhabitedSort] {
 	if child.Level() != sort.Level()-1 {

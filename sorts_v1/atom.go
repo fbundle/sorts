@@ -1,6 +1,6 @@
 package sorts
 
-import "github.com/fbundle/sorts/adt"
+import "github.com/fbundle/lab_public/lab/go_util/pkg/adt"
 
 func MustAtom(level int, name string, parent Sort) Sort {
 	var sort Sort

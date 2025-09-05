@@ -3,7 +3,7 @@ package sorts
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/adt"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/adt"
 )
 
 func newSum(ss SortSystem, a Sort, b Sort) adt.Option[Sort] {

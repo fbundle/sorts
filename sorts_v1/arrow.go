@@ -3,7 +3,7 @@ package sorts
 import (
 	"strings"
 
-	"github.com/fbundle/sorts/adt"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/adt"
 )
 
 func MustArrow(sorts ...Sort) Sort {

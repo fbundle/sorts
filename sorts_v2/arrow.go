@@ -3,7 +3,7 @@ package sorts
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/adt"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/adt"
 )
 
 func newArrow(ss SortSystem, arg Sort, body Sort) adt.Option[Sort] {

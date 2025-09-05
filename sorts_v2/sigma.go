@@ -3,7 +3,7 @@ package sorts
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/adt"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/adt"
 )
 
 func newSigma(ss SortSystem, a InhabitedSort, b DependentSort) adt.Option[Sort] {

@@ -3,7 +3,7 @@ package sorts
 import (
 	"strconv"
 
-	"github.com/fbundle/sorts/adt"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/adt"
 )
 
 type SortSystemOption func(*sortSystem)
