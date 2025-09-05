@@ -40,7 +40,7 @@ func (s Arrow) view() view {
 	}
 }
 
-func (s Arrow) Elim(a Sort) Sort {
+func (s Arrow) ModusPonens(a Sort) Sort {
 	// take (a: A) give (b: B)
 	mustType(a, s.A)
 	return NewAtom(
