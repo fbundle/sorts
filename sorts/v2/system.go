@@ -80,10 +80,10 @@ func (ss *sortSystem) Atom(level int, name string, parents ...Sort) Sort {
 	}
 }
 
-func (ss *sortSystem) Arrow(param Sort, body Sort) Sort {
+func (ss *sortSystem) Arrow(arg Sort, body Sort) Sort {
 	return arrow{
-		param: param,
-		body:  body,
+		arg:  arg,
+		body: body,
 	}
 }
 

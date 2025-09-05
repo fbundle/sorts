@@ -15,5 +15,5 @@ type SortSystem interface {
 	LessEqual(src string, dst string) bool
 
 	Atom(level int, name string, parents ...Sort) Sort
-	Arrow(param Sort, body Sort) Sort
+	Arrow(arg Sort, body Sort) Sort
 }
