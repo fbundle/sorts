@@ -7,7 +7,6 @@ import (
 )
 
 func newSigma(ss SortSystem, a InhabitedSort, b DependentSort) adt.Option[Sort] {
-	panic("feature_disabled")
 	return adt.Some[Sort](sigma{
 		a:  a,
 		b:  b,
