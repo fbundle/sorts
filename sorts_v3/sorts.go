@@ -5,7 +5,7 @@ import "github.com/fbundle/sorts/adt"
 type SortView struct {
 	Level     int                 // universe level
 	Name      string              // every sort is identified with a name (string)
-	Parent    Sort                // (or Type) every sort must have a parent
+	Parent    InhabitedSort       // (or Type) every sort must have a parent
 	LessEqual func(dst Sort) bool // partial order on sorts
 }
 

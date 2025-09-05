@@ -28,41 +28,48 @@ type Atom struct {
 }
 
 func (s Atom) View() SortView {
-	parent := s.parent
-	if parent == nil {
-		// default parent
-		parent = Atom{
-			level:  s.level,
-			name:   defaultName + "_" + strconv.Itoa(s.level),
-			parent: nil,
-		}
-	}
-
-	lessEqual := func(dst Sort) bool {
-		switch d := dst.(type) {
-		case Atom:
-			if s.level != d.level {
-				return false
-			}
-			if s.name == initialName || d.name == terminalName {
-				return true
-			}
-			if s.name == d.name {
-				return true
-			}
-			_, ok := lessEqualMap[rule{s.name, d.name}]
-			return ok
-
-		default:
-			panic("type_error - should catch all types")
-		}
-	}
-
 	return SortView{
-		Level:     s.level,
-		Name:      s.name,
-		Parent:    parent,
-		LessEqual: lessEqual,
+		Level: s.level,
+		Name:  s.name,
+		Parent: InhabitedSort{
+			Sort:  defaultSort(s.parent, s.level+1),
+			Child: s,
+		},
+		LessEqual: func(dst Sort) bool {
+			switch d := dst.(type) {
+
+			case Atom:
+				if s.level != d.level {
+					return false
+				}
+				if s.name == initialName || d.name == terminalName {
+					return true
+				}
+				if s.name == d.name {
+					return true
+				}
+				_, ok := lessEqualMap[rule{s.name, d.name}]
+				return ok
+			case Arrow:
+				return false
+			default:
+				panic("type_error - should catch all types")
+			}
+		},
+	}
+}
+
+func defaultSort(sort Sort, level int) Sort {
+	if sort != nil {
+		if sort.View().Level != level {
+			panic("type_error level")
+		}
+		return sort
+	}
+	return Atom{
+		level:  level,
+		name:   defaultName + "_" + strconv.Itoa(level),
+		parent: nil,
 	}
 }
 
