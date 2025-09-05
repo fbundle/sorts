@@ -6,7 +6,7 @@ import (
 	"github.com/fbundle/sorts/adt"
 )
 
-func newSigma(ss SortSystem, a InhabitedSort, b DependentSort) adt.Options[int] {
+func newSigma(ss SortSystem, a InhabitedSort, b DependentSort) adt.Option[Sort] {
 	return adt.Some[Sort](sigma{
 		a:  a,
 		b:  b,
