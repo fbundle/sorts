@@ -52,9 +52,9 @@ func (s Sum) IntroRight(b Sort) Sort {
 
 func (s Sum) ByCases(h1 Arrow, h2 Arrow) Sort {
 	// take (h1: A -> X) (h2: B -> X) give (x: X)
-	LessEqual(h1.A, s.A)
-	LessEqual(h2.A, s.B)
-	LessEqual(h1.B, h2.B)
+	mustLessEqual(h1.A, s.A)
+	mustLessEqual(h2.A, s.B)
+	mustLessEqual(h1.B, h2.B)
 	X := h1.B
 	return NewAtom(
 		Level(X)-1,
