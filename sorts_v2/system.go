@@ -1,6 +1,10 @@
 package sorts
 
-import "github.com/fbundle/sorts/adt"
+import (
+	"strconv"
+
+	"github.com/fbundle/sorts/adt"
+)
 
 type SortSystemOption func(*sortSystem)
 
@@ -56,12 +60,15 @@ func (ss *sortSystem) LessEqual(src string, dst string) bool {
 	return false
 }
 func (ss *sortSystem) DefaultInhabited(child Sort) InhabitedSort {
-	sort := atom{
-		level:  child.Level() + 1,
-		name:   ss.defaultName,
-		parent: nil,
-	}
+	level := child.Level() + 1
+	name := ss.defaultName + "_" + strconv.Itoa(level)
+	sort := newAtom(ss, level, name, nil).MustUnwrap()
 	return newInhabited(ss, sort, child).MustUnwrap()
+}
+
+func (ss *sortSystem) Default(level int) Sort {
+	name := ss.defaultName + "_" + strconv.Itoa(level)
+	return newAtom(ss, level, name, nil).MustUnwrap()
 }
 
 func (ss *sortSystem) Atom(level int, name string, parent InhabitedSort) adt.Option[Sort] {
