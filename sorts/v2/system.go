@@ -72,8 +72,8 @@ func (ss *sortSystem) Arrow(arg Sort, body Sort) adt.Option[Sort] {
 	return newArrow(ss, arg, body)
 }
 
-func (ss *sortSystem) Inhabited(sort Sort, elem Sort) adt.Option[InhabitedSort] {
-	panic("not implemented")
+func (ss *sortSystem) Inhabited(sort Sort, child Sort) adt.Option[InhabitedSort] {
+	return newInhabited(ss, child, sort)
 }
 
 func (ss *sortSystem) AddRule(src string, dst string) SortSystem {

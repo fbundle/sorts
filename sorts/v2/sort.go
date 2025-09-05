@@ -13,7 +13,7 @@ type Sort interface {
 
 type InhabitedSort interface {
 	Sort
-	Elem() Sort // give a sort of one level down
+	Child() Sort // give a sort of one level down
 }
 
 type SortSystem interface {

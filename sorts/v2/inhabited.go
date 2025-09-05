@@ -19,6 +19,6 @@ type inhabited struct {
 	ss    SortSystem
 }
 
-func (i inhabited) Elem() Sort {
+func (i inhabited) Child() Sort {
 	return i.child
 }
