@@ -1,13 +1,9 @@
 package sorts
 
 import (
-	"strings"
+	"fmt"
 
 	"github.com/fbundle/sorts/adt"
-)
-
-const (
-	arrowToken = "->"
 )
 
 func newArrow(ss SortSystem, arg Sort, body Sort) adt.Option[Sort] {
@@ -29,11 +25,7 @@ func (s arrow) Level() int {
 }
 
 func (s arrow) Name() string {
-	return strings.Join([]string{
-		s.arg.Name(),
-		arrowToken,
-		s.body.Name(),
-	}, " ")
+	return fmt.Sprintf("%s -> %s", s.arg.Name(), s.body.Name())
 }
 
 func (s arrow) Parent() InhabitedSort {

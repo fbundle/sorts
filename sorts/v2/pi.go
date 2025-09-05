@@ -1,8 +1,12 @@
 package sorts
 
-import "github.com/fbundle/sorts/adt"
+import (
+	"fmt"
 
-func newPi(ss SortSystem, arg InhabitedSort, body func(Sort) Sort) adt.Option[Sort] {
+	"github.com/fbundle/sorts/adt"
+)
+
+func newPi(ss SortSystem, arg InhabitedSort, body DependentSort) adt.Option[Sort] {
 	return adt.Some[Sort](pi{
 		arg:  arg,
 		body: body,
@@ -14,23 +18,21 @@ func newPi(ss SortSystem, arg InhabitedSort, body func(Sort) Sort) adt.Option[So
 // (x: Arg) -> Body(x)
 type pi struct {
 	arg  InhabitedSort
-	body func(Sort) Sort
+	body DependentSort
 	ss   SortSystem
 }
 
 func (s pi) Level() int {
-	child := s.arg.Child()
-	return max(s.arg.Level(), s.body(child).Level())
+	return max(s.arg.Level(), s.body.Level())
 }
 
 func (s pi) Name() string {
-	//TODO implement me
-	panic("implement me")
+	return fmt.Sprintf("(x: %s) -> %s(x)", s.arg.Name(), s.body.Name())
 }
 
 func (s pi) Parent() InhabitedSort {
-	//TODO implement me
-	panic("implement me")
+	// default parent
+	return s.ss.DefaultInhabited(s)
 }
 
 func (s pi) LessEqual(dst Sort) bool {

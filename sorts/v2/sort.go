@@ -2,20 +2,26 @@ package sorts
 
 import "github.com/fbundle/sorts/adt"
 
-// every sort is identified with a name (string)
-
+// Sort -
 type Sort interface {
-	Level() int // universe level
-	Name() string
+	Level() int              // universe level
+	Name() string            // every sort is identified with a name (string)
 	Parent() InhabitedSort   // every sort must have a parent
 	LessEqual(dst Sort) bool // for type casting
 }
 
+// InhabitedSort - represents a sort with at least one child
+// (true theorems have proofs)
 type InhabitedSort interface {
 	Sort
-	Child() Sort // a inhabited sort must have a child (true theorems have proofs)
+	Child() Sort
 }
 
+// DependentSort - represent a type B(x) depends on sort x
+type DependentSort interface {
+	Sort
+	Apply(Sort) Sort
+}
 type SortSystem interface {
 	DefaultInhabited(child Sort) InhabitedSort
 	AddRule(src string, dst string) SortSystem

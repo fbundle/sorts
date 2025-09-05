@@ -76,6 +76,10 @@ func (ss *sortSystem) Inhabited(sort Sort, child Sort) adt.Option[InhabitedSort]
 	return newInhabited(ss, sort, child)
 }
 
+func (ss *sortSystem) Pi(arg InhabitedSort, body DependentSort) adt.Option[Sort] {
+	return newPi(ss, arg, body)
+}
+
 func (ss *sortSystem) AddRule(src string, dst string) SortSystem {
 	ss.lessEqualMap[rule{src: src, dst: dst}] = struct{}{}
 	return ss
