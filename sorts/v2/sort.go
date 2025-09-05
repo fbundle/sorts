@@ -7,13 +7,13 @@ import "github.com/fbundle/sorts/adt"
 type Sort interface {
 	Level() int // universe level
 	Name() string
-	Parent() InhabitedSort
+	Parent() InhabitedSort   // every sort must have a parent
 	LessEqual(dst Sort) bool // for type casting
 }
 
 type InhabitedSort interface {
 	Sort
-	Child() Sort // give a sort of one level down
+	Child() Sort // a inhabited sort must have a child (true theorems have proofs)
 }
 
 type SortSystem interface {
