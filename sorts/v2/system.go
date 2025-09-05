@@ -80,6 +80,17 @@ func (ss *sortSystem) Pi(arg InhabitedSort, body DependentSort) adt.Option[Sort]
 	return newPi(ss, arg, body)
 }
 
+func (ss *sortSystem) Sigma(a InhabitedSort, b DependentSort) adt.Option[Sort] {
+	return newSigma(ss, a, b)
+}
+
+func (ss *sortSystem) Sum(a Sort, b Sort) adt.Option[Sort] {
+	return newSum(ss, a, b)
+}
+func (ss *sortSystem) Prod(a Sort, b Sort) adt.Option[Sort] {
+	return newProd(ss, a, b)
+}
+
 func (ss *sortSystem) AddRule(src string, dst string) SortSystem {
 	ss.lessEqualMap[rule{src: src, dst: dst}] = struct{}{}
 	return ss

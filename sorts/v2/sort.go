@@ -30,4 +30,8 @@ type SortSystem interface {
 	Atom(level int, name string, parent InhabitedSort) adt.Option[Sort]
 	Arrow(arg Sort, body Sort) adt.Option[Sort]
 	Inhabited(sort Sort, elem Sort) adt.Option[InhabitedSort]
+	Pi(arg InhabitedSort, body DependentSort) adt.Option[Sort]
+	Sigma(a InhabitedSort, b DependentSort) adt.Option[Sort]
+	Sum(a Sort, b Sort) adt.Option[Sort]
+	Prod(a Sort, b Sort) adt.Option[Sort]
 }
