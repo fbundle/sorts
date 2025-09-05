@@ -43,7 +43,7 @@ func (s Arrow) ModusPonens(a Sort) Sort {
 	mustTermOf(a, s.A)
 	return NewAtom(
 		Level(s.B)-1,
-		fmt.Sprintf("(elim %s %s)", Name(s), Name(a)),
+		fmt.Sprintf("(modus_ponens %s %s)", Name(s), Name(a)),
 		s.B,
 	)
 }
