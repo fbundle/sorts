@@ -20,7 +20,7 @@ type view struct {
 	view      int                 // universe Level
 	name      string              // every sort is identified with a Name (string)
 	parent    Inhabited           // (or Type) every sort must have a Parent
-	lessEqual func(dst Sort) bool // partial order on sorts
+	lessEqual func(dst Sort) bool // a partial order on sorts (subtype)
 }
 
 type Sort interface {
