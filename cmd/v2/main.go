@@ -15,6 +15,20 @@ const (
 	typeLevel = 1
 )
 
+func printCast(ss sorts.SortSystem, type1 sorts.Sort, type2 sorts.Sort) {
+	ok := type1.LessEqual(ss, type2)
+
+	if ok {
+		fmt.Printf("type [%s] CAN be cast into [%s]\n", type1.Name(ss), type2.Name(ss))
+	} else {
+		fmt.Printf("type [%s] CANNOT be cast into [%s]\n", type1.Name(ss), type2.Name(ss))
+	}
+}
+func printSorts(ss sorts.SortSystem, sortList ...sorts.Sort) {
+	for _, sort := range sortList {
+		fmt.Printf("[%s] is of type [%s]\n", sort.Name(ss), sort.Parent(ss).Name(ss))
+	}
+}
 func chain(ss sorts.SortSystem, sortList ...sorts.Sort) sorts.Sort {
 	if len(sortList) == 0 {
 		return nil
@@ -78,10 +92,10 @@ func main() {
 	ss = ss.AddRule("bool", "int") // cast bool -> int
 	fmt.Println("[bool] can be cast into [int]")
 
-	printSorts(stringType, intIntType, intIntIntType, weak1, strong1, weak3, strong3)
+	printSorts(ss, stringType, intBoolType, intIntIntType, weak1, strong1, weak3, strong3)
 
-	printCast(boolType, intType)
-	printCast(intType, boolType)
-	printCast(weak3, intIntType)
-	printCast(strong3, intIntType)
+	printCast(ss, boolType, intType)
+	printCast(ss, intType, boolType)
+	printCast(ss, weak3, intBoolType)
+	printCast(ss, strong3, intBoolType)
 }
