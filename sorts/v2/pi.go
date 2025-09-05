@@ -15,7 +15,7 @@ func newPi(ss SortSystem, arg InhabitedSort, body DependentSort) adt.Option[Sort
 }
 
 // pi - Pi-type (dependent function)
-// (x: Arg) -> Body(x)
+// (x: A) -> B(x)
 type pi struct {
 	arg  InhabitedSort
 	body DependentSort
