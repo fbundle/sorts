@@ -1,11 +1,7 @@
 package sorts
 
 func mustType(x Sort, X Sort) {
-	mustEqual(Parent(x), X)
-}
-
-func mustEqual(x Sort, y Sort) {
-	if x != y {
+	if ok := LessEqual(Parent(x), X); !ok {
 		panic("type_error")
 	}
 }
