@@ -8,6 +8,20 @@ const (
 	terminalName = "any"  // terminal object
 )
 
+func Unit(level int) Atom {
+	return NewAtom(
+		level,
+		initialName,
+		nil,
+	)
+}
+func Any(level int) Atom {
+	return NewAtom(
+		level,
+		terminalName,
+		nil,
+	)
+}
 func NewAtom(level int, name string, parent Sort) Atom {
 	if parent != nil && Level(parent) != level+1 {
 		panic("type_error make")
