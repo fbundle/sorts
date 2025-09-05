@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+path=$(realpath .)
+proj_name=$(basename $path)
+proj_path="github.com/fbundle/$proj_name"
+
+echo $proj_path
+
+rm -rf go.mod
+export GOPROXY=direct
+go mod init $proj_path
+go mod tidy
+go mod vendor
+
