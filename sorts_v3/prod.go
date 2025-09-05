@@ -2,8 +2,6 @@ package sorts
 
 import "fmt"
 
-var _ Sort = Prod{}
-
 type Prod struct {
 	A Sort
 	B Sort

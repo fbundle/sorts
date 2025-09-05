@@ -8,8 +8,6 @@ const (
 	terminalName = "any"  // terminal object
 )
 
-var _ Sort = Atom{}
-
 func NewAtom(level int, name string, parent Sort) Atom {
 	if parent != nil && Level(parent) != level+1 {
 		panic("type_error make")

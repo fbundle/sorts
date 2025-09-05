@@ -2,8 +2,6 @@ package sorts
 
 import "fmt"
 
-var _ Sort = Sum{}
-
 type Sum struct {
 	A Sort
 	B Sort

@@ -2,8 +2,6 @@ package sorts
 
 import "fmt"
 
-var _ Sort = Arrow{}
-
 // Arrow - (A -> B)
 type Arrow struct {
 	A Sort
