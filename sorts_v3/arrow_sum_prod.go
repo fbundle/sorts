@@ -59,7 +59,13 @@ func (s Sum) View() View {
 			Child: s,
 		},
 		LessEqual: func(dst Sort) bool {
-			panic("TODO")
+			switch d := dst.(type) {
+			case Sum:
+				return aView.LessEqual(d.A) && bView.LessEqual(d.B)
+			default:
+				panic("type_error - should catch all types")
+
+			}
 		},
 	}
 }
@@ -82,7 +88,13 @@ func (s Prod) View() View {
 			Child: s,
 		},
 		LessEqual: func(dst Sort) bool {
-			panic("TODO")
+			switch d := dst.(type) {
+			case Prod:
+				return aView.LessEqual(d.A) && bView.LessEqual(d.B)
+			default:
+				panic("type_error - should catch all types")
+
+			}
 		},
 	}
 }

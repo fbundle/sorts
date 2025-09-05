@@ -79,3 +79,7 @@ type rule struct {
 }
 
 var lessEqualMap = make(map[rule]struct{})
+
+func AddRule(src string, dst string) {
+	lessEqualMap[rule{src, dst}] = struct{}{}
+}
