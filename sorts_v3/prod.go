@@ -33,38 +33,30 @@ func (s Prod) View() View {
 
 func (s Prod) Intro(a Sort, b Sort) Sort {
 	// take (a: A) (b: B) give (a, b): A × B
-	aView, bView := a.View(), b.View()
-	if aView.Parent.Sort != s.A || bView.Parent.Sort != s.B {
-		panic("type_error")
-	}
+	mustType(a, s.A)
+	mustType(b, s.B)
 	return NewAtom(
 		s.View().Level-1,
-		fmt.Sprintf("(%s, %s)", aView.Name, bView.Name),
+		fmt.Sprintf("(%s, %s)", a.View().Name, b.View().Name),
 		s,
 	)
 }
 
 func (s Prod) Left(x Sort) Sort {
 	// take (x: A × B) give (a: A)
-	xView := x.View()
-	if xView.Parent.Sort != s {
-		panic("type_error")
-	}
+	mustType(x, s)
 	return NewAtom(
 		s.A.View().Level-1,
-		fmt.Sprintf("(left %s)", xView.Name),
+		fmt.Sprintf("(left %s)", x.View().Name),
 		s.A,
 	)
 }
 func (s Prod) Right(x Sort) Sort {
 	// take (x: A × B) give (b: B)
-	xView := x.View()
-	if xView.Parent.Sort != s {
-		panic("type_error")
-	}
+	mustType(x, s)
 	return NewAtom(
 		s.B.View().Level-1,
-		fmt.Sprintf("(right %s)", xView.Name),
+		fmt.Sprintf("(right %s)", x.View().Name),
 		s.B,
 	)
 }
