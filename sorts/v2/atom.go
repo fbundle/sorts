@@ -19,11 +19,7 @@ func (s atom) Parent(ss SortSystem) Sort {
 		return s.parent
 	}
 	// default parent
-	return atom{
-		level:  s.level + 1,
-		name:   ss.DefaultName(),
-		parent: nil,
-	}
+	return ss.Default(s.Level(ss) + 1)
 }
 
 func (s atom) LessEqual(ss SortSystem, dst Sort) bool {

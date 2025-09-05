@@ -58,8 +58,12 @@ func (ss *sortSystem) LessEqual(src string, dst string) bool {
 	return false
 }
 
-func (ss *sortSystem) DefaultName() string {
-	return ss.defaultName
+func (ss *sortSystem) Default(level int) Sort {
+	return atom{
+		level:  level,
+		name:   ss.defaultName,
+		parent: nil,
+	}
 }
 
 func (ss *sortSystem) Atom(level int, name string, parent Sort) adt.Option[Sort] {
@@ -76,11 +80,8 @@ func (ss *sortSystem) Atom(level int, name string, parent Sort) adt.Option[Sort]
 func (ss *sortSystem) Arrow(param Sort, body Sort) adt.Option[Sort] {
 	return adt.Some[Sort](arrow{
 		param: param,
-		pody:  body,
+		body:  body,
 	})
-
-	//TODO implement me
-	panic("implement me")
 }
 
 func (ss *sortSystem) AddRule(src string, dst string) SortSystem {

@@ -12,7 +12,7 @@ type Sort interface {
 }
 
 type SortSystem interface {
-	DefaultName() string
+	Default(level int) Sort
 	AddRule(src string, dst string) SortSystem
 	LessEqual(src string, dst string) bool
 
