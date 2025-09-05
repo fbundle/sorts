@@ -86,16 +86,16 @@ func main() {
 
 	weak1 := weakSort(ss, typeLevel, 1)
 	strong1 := strongSort(ss, typeLevel, 1)
-	weak3 := weakSort(ss, typeLevel, 3)
-	strong3 := strongSort(ss, typeLevel, 3)
+	weak2 := weakSort(ss, typeLevel, 2)
+	strong2 := strongSort(ss, typeLevel, 2)
 
 	ss = ss.AddRule("bool", "int") // cast bool -> int
 	fmt.Println("[bool] can be cast into [int]")
 
-	printSorts(ss, stringType, intBoolType, intIntIntType, weak1, strong1, weak3, strong3)
+	printSorts(ss, stringType, intBoolType, intIntIntType, weak1, strong1, weak2, strong2)
 
 	printCast(ss, boolType, intType)
 	printCast(ss, intType, boolType)
-	printCast(ss, weak3, intBoolType)
-	printCast(ss, strong3, intBoolType)
+	printCast(ss, weak2, intIntIntType)
+	printCast(ss, strong2, intIntIntType)
 }
