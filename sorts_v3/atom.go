@@ -31,7 +31,7 @@ func (s Atom) View() SortView {
 	return SortView{
 		Level: s.level,
 		Name:  s.name,
-		Parent: InhabitedSort{
+		Parent: Inhabited{
 			Sort:  defaultSort(s.parent, s.level+1),
 			Child: s,
 		},
