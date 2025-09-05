@@ -27,8 +27,8 @@ type Atom struct {
 	parent Sort
 }
 
-func (s Atom) View() SortView {
-	return SortView{
+func (s Atom) View() View {
+	return View{
 		Level: s.level,
 		Name:  s.name,
 		Parent: Inhabited{

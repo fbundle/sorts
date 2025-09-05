@@ -1,6 +1,6 @@
 package sorts
 
-type SortView struct {
+type View struct {
 	Level     int                 // universe level
 	Name      string              // every sort is identified with a name (string)
 	Parent    Inhabited           // (or Type) every sort must have a parent
@@ -8,7 +8,7 @@ type SortView struct {
 }
 
 type Sort interface {
-	View() SortView
+	View() View
 }
 
 // Inhabited - represents a sort with at least one child
@@ -18,7 +18,7 @@ type Inhabited struct {
 	Child Sort // (or Term)
 }
 
-func (s Inhabited) View() SortView {
+func (s Inhabited) View() View {
 	return s.Sort.View()
 }
 
@@ -28,6 +28,6 @@ type Dependent struct {
 	Apply func(Sort) Sort // take x, return B(x)
 }
 
-func (s Dependent) View() SortView {
+func (s Dependent) View() View {
 	return s.Sort.View()
 }

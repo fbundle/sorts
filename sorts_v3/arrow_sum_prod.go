@@ -10,10 +10,10 @@ type Arrow struct {
 	B Sort
 }
 
-func (s Arrow) View() SortView {
+func (s Arrow) View() View {
 	aView, bView := s.A.View(), s.B.View()
 	level := max(aView.Level, bView.Level)
-	return SortView{
+	return View{
 		Level: level,
 		Name:  fmt.Sprintf("%s -> %s", aView.Name, bView.Name),
 		Parent: Inhabited{
@@ -48,10 +48,10 @@ type Sum struct {
 	B Sort
 }
 
-func (s Sum) View() SortView {
+func (s Sum) View() View {
 	aView, bView := s.A.View(), s.B.View()
 	level := max(aView.Level, bView.Level)
-	return SortView{
+	return View{
 		Level: level,
 		Name:  fmt.Sprintf("%s + %s", aView.Name, bView.Name),
 		Parent: Inhabited{
@@ -71,10 +71,10 @@ type Prod struct {
 	B Sort
 }
 
-func (s Prod) View() SortView {
+func (s Prod) View() View {
 	aView, bView := s.A.View(), s.B.View()
 	level := max(aView.Level, bView.Level)
-	return SortView{
+	return View{
 		Level: level,
 		Name:  fmt.Sprintf("%s × %s", aView.Name, bView.Name),
 		Parent: Inhabited{
