@@ -10,11 +10,10 @@ type Prod struct {
 }
 
 func (s Prod) view() view {
-	A, B := s.A, s.B
-	level := max(Level(A), Level(B))
+	level := max(Level(s.A), Level(s.B))
 	return view{
 		view: level,
-		name: fmt.Sprintf("%s × %s", Name(A), Name(B)),
+		name: fmt.Sprintf("%s × %s", Name(s.A), Name(s.B)),
 		parent: Inhabited{
 			Sort:  defaultSort(nil, level+1),
 			Child: s,
@@ -22,7 +21,7 @@ func (s Prod) view() view {
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Prod:
-				return LessEqual(A, d.A) && LessEqual(B, d.B)
+				return LessEqual(s.A, d.A) && LessEqual(s.B, d.B)
 			default:
 				panic("type_error - should catch all types")
 
