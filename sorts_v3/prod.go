@@ -46,7 +46,7 @@ func (s Prod) Left(x Sort) Sort {
 	mustType(x, s)
 	return NewAtom(
 		Level(s.A)-1,
-		fmt.Sprintf("(left %s)", Name(x)),
+		fmt.Sprintf("(left %s %s)", Name(s), Name(x)),
 		s.A,
 	)
 }
@@ -55,7 +55,7 @@ func (s Prod) Right(x Sort) Sort {
 	mustType(x, s)
 	return NewAtom(
 		Level(s.B)-1,
-		fmt.Sprintf("(right %s)", Name(x)),
+		fmt.Sprintf("(right %s %s)", Name(s), Name(x)),
 		s.B,
 	)
 }

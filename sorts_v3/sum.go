@@ -35,7 +35,7 @@ func (s Sum) IntroLeft(a Sort) Sort {
 	mustType(a, s.A)
 	return NewAtom(
 		Level(s)-1,
-		fmt.Sprintf("(intro_left %s)", Name(a)),
+		fmt.Sprintf("(intro_left %s %s)", Name(s), Name(a)),
 		s,
 	)
 }
@@ -45,7 +45,7 @@ func (s Sum) IntroRight(b Sort) Sort {
 	mustType(b, s.B)
 	return NewAtom(
 		Level(s)-1,
-		fmt.Sprintf("(intro_right %s)", Name(b)),
+		fmt.Sprintf("(intro_right %s %s)", Name(s), Name(b)),
 		s,
 	)
 }
@@ -58,7 +58,7 @@ func (s Sum) ByCases(h1 Arrow, h2 Arrow) Sort {
 	X := h1.B
 	return NewAtom(
 		Level(X)-1,
-		fmt.Sprintf("(by_cases %s %s)", Name(h1), Name(h2)),
+		fmt.Sprintf("(by_cases %s %s %s)", Name(s), Name(h1), Name(h2)),
 		X,
 	)
 }
