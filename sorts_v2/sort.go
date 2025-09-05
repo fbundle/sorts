@@ -23,6 +23,7 @@ type DependentSort interface {
 	Apply(Sort) Sort // take x, return B(x)
 }
 type SortSystem interface {
+	Default(level int) Sort
 	DefaultInhabited(child Sort) InhabitedSort
 	AddRule(src string, dst string) SortSystem
 	LessEqual(src string, dst string) bool
