@@ -1,5 +1,7 @@
 package adt
 
+import "fmt"
+
 type Result[T any] struct {
 	Val T
 	Err error
@@ -22,6 +24,10 @@ func Err[T any](err error) Result[T] {
 	return Result[T]{
 		Err: err,
 	}
+}
+
+func ErrStrf[T any](format string, args ...interface{}) Result[T] {
+	return Err[T](fmt.Errorf(format, args...))
 }
 
 func Ok[T any](val T) Result[T] {
