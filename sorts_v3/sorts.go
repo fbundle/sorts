@@ -18,8 +18,8 @@ func LessEqual(x Sort, y Sort) bool {
 
 type sortAttr struct {
 	view      int                 // universe Level
-	name      string              // every sort is identified with a Name (string)
-	parent    Sort                // (or Type) every sort must have a Parent
+	name      string              // every Sort is identified with a Name (string)
+	parent    Sort                // (or Type) every Sort must have a Parent
 	lessEqual func(dst Sort) bool // a partial order on sorts (subtype)
 }
 
@@ -27,23 +27,23 @@ type Sort interface {
 	attr() sortAttr
 }
 
-// Inhabited - represents a sort with at least one child
+// Inhabited - represents a Sort with at least one child
 // (true theorems have proofs)
 type Inhabited struct {
-	Sort  Sort
-	Child Sort // (or Term)
+	Sort  Sort // underlying sort
+	Child Sort // child/term of Sort
 }
 
 func (s Inhabited) attr() sortAttr {
 	return s.Sort.attr()
 }
 
-// Dependent - represent a type B(x) depends on sort x
+// Dependent - represent a type B(x) depends on Sort x
 type Dependent struct {
+	Sort  Sort            // underlying sort
 	Apply func(Sort) Sort // take x, return B(x)
-	sort  Sort            // contains name, level, comparison, etc TODO - might change
 }
 
 func (s Dependent) attr() sortAttr {
-	return s.sort.attr()
+	return s.Sort.attr()
 }
