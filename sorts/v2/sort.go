@@ -34,4 +34,5 @@ type SortSystem interface {
 	Sigma(a InhabitedSort, b DependentSort) adt.Option[Sort]
 	Sum(a Sort, b Sort) adt.Option[Sort]
 	Prod(a Sort, b Sort) adt.Option[Sort]
+	NewDependent(level int, name string, parent InhabitedSort, apply func(Sort) Sort) adt.Option[DependentSort]
 }

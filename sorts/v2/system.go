@@ -90,6 +90,9 @@ func (ss *sortSystem) Sum(a Sort, b Sort) adt.Option[Sort] {
 func (ss *sortSystem) Prod(a Sort, b Sort) adt.Option[Sort] {
 	return newProd(ss, a, b)
 }
+func (ss *sortSystem) NewDependent(level int, name string, parent InhabitedSort, apply func(Sort) Sort) adt.Option[DependentSort] {
+	return newDependent(ss, level, name, parent, apply)
+}
 
 func (ss *sortSystem) AddRule(src string, dst string) SortSystem {
 	ss.lessEqualMap[rule{src: src, dst: dst}] = struct{}{}
