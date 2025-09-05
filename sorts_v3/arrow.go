@@ -39,3 +39,13 @@ func (s Arrow) view() view {
 		},
 	}
 }
+
+func (s Arrow) Elim(a Sort) Sort {
+	// take (a: A) give (b: B)
+	mustType(a, s.A)
+	return NewAtom(
+		Level(s.B)-1,
+		fmt.Sprintf("(elim %s %s)", Name(s), Name(a)),
+		s.B,
+	)
+}

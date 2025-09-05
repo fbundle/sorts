@@ -55,10 +55,10 @@ func (s Sum) ByCases(h1 Arrow, h2 Arrow) Sort {
 	mustEqual(h1.A, s.A)
 	mustEqual(h2.A, s.B)
 	mustEqual(h1.B, h2.B)
-	B := h1.B
+	X := h1.B
 	return NewAtom(
-		Level(B)-1,
+		Level(X)-1,
 		fmt.Sprintf("(by_cases %s %s)", Name(h1), Name(h2)),
-		B,
+		X,
 	)
 }
