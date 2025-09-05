@@ -1,7 +1,5 @@
 package sorts
 
-import "github.com/fbundle/sorts/adt"
-
 type SortView struct {
 	Level     int                 // universe level
 	Name      string              // every sort is identified with a name (string)
@@ -20,23 +18,16 @@ type InhabitedSort struct {
 	Child Sort // (or Term)
 }
 
+func (s InhabitedSort) View() SortView {
+	return s.Sort.View()
+}
+
 // DependentSort - represent a type B(x) depends on sort x
 type DependentSort struct {
 	Sort  Sort
 	Apply func(Sort) Sort // take x, return B(x)
 }
-type SortSystem interface {
-	Default(level int) Sort
-	DefaultInhabited(child Sort) InhabitedSort
-	AddRule(src string, dst string) SortSystem
-	LessEqual(src string, dst string) bool
 
-	Atom(level int, name string, parent Sort) adt.Option[Sort]
-	Arrow(arg Sort, body Sort) adt.Option[Sort]
-	Inhabited(sort Sort, child Sort) adt.Option[InhabitedSort]
-	Pi(arg InhabitedSort, body DependentSort) adt.Option[Sort]
-	Sigma(a InhabitedSort, b DependentSort) adt.Option[Sort]
-	Sum(a Sort, b Sort) adt.Option[Sort]
-	Prod(a Sort, b Sort) adt.Option[Sort]
-	NewDependent(level int, name string, parent InhabitedSort, apply func(Sort) Sort) adt.Option[DependentSort]
+func (d DependentSort) View() SortView {
+	return d.Sort.View()
 }
