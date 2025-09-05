@@ -5,4 +5,5 @@ package sorts
 type pi struct {
 	arg  InhabitedSort
 	body func(Sort) Sort
+	ss   SortSystem
 }
