@@ -28,7 +28,8 @@ func main() {
 			return PorQ.IntroRight(term_Q)
 		})
 
-		return QorP.ByCases(term_QorP, term_Q_implies_PorQ, term_P_implies_PorQ)
+		term_PorQ := QorP.ByCases(term_QorP, term_Q_implies_PorQ, term_P_implies_PorQ)
+		return term_PorQ
 	})
 
 	fmt.Println(sorts.Name(sorts.Parent(x)))
