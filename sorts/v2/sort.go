@@ -21,7 +21,7 @@ type SortSystem interface {
 	AddRule(src string, dst string) SortSystem
 	LessEqual(src string, dst string) bool
 
-	Atom(level int, name string, parents ...Sort) adt.Option[Sort]
+	Atom(level int, name string, parent Sort) adt.Option[Sort]
 	Arrow(arg Sort, body Sort) adt.Option[Sort]
 	Inhabited(sort Sort, elem Sort) adt.Option[InhabitedSort]
 }

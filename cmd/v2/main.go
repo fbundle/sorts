@@ -43,12 +43,20 @@ func chain(ss sorts.SortSystem, sortList ...sorts.Sort) sorts.Sort {
 	return final
 }
 
+func mustAtom(ss sorts.SortSystem, level int, name string, parent sorts.Sort) sorts.Sort {
+	var atom sorts.Sort
+	if ok := ss.Atom(level, name, parent).Unwrap(&atom); !ok {
+		panic("type_error")
+	}
+	return atom
+}
+
 func weakSort(ss sorts.SortSystem, level int, numParams int) sorts.Sort {
 	if numParams < 0 {
 		panic("type_error")
 	}
-	anyType := ss.Atom(level, anyTypeName)
-	unitType := ss.Atom(level, unitTypeName)
+	anyType := mustAtom(ss, level, anyTypeName, nil)
+	unitType := mustAtom(ss, level, unitTypeName, nil)
 
 	sortList := make([]sorts.Sort, 0, numParams+1)
 	for i := 0; i < numParams; i++ {
@@ -62,8 +70,8 @@ func strongSort(ss sorts.SortSystem, level int, numParams int) sorts.Sort {
 	if numParams < 0 {
 		panic("type_error")
 	}
-	anyType := ss.Atom(level, anyTypeName)
-	unitType := ss.Atom(level, unitTypeName)
+	anyType := mustAtom(ss, level, anyTypeName, nil)
+	unitType := mustAtom(ss, level, unitTypeName, nil)
 
 	sortList := make([]sorts.Sort, 0, numParams+1)
 	for i := 0; i < numParams; i++ {
@@ -79,9 +87,9 @@ func main() {
 
 	ss := sorts.NewSortSystem(defaultName, sorts.WithInitialName(unitTypeName), sorts.WithTerminalName(anyTypeName))
 
-	intType := ss.Atom(typeLevel, "int")
-	boolType := ss.Atom(typeLevel, "bool")
-	stringType := ss.Atom(typeLevel, "string")
+	intType := mustAtom(ss, typeLevel, "int", nil)
+	boolType := mustAtom(ss, typeLevel, "bool", nil)
+	stringType := mustAtom(ss, typeLevel, "string", nil)
 
 	intBoolType := chain(ss, intType, boolType)
 	intIntIntType := chain(ss, intType, intType, intType)
@@ -94,10 +102,10 @@ func main() {
 	ss = ss.AddRule("bool", "int") // cast bool -> int
 	fmt.Println("[bool] can be cast into [int]")
 
-	printSorts(ss, stringType, intBoolType, intIntIntType, weak1, strong1, weak2, strong2)
+	printSorts(stringType, intBoolType, intIntIntType, weak1, strong1, weak2, strong2)
 
-	printCast(ss, boolType, intType)
-	printCast(ss, intType, boolType)
-	printCast(ss, weak2, intIntIntType)
-	printCast(ss, strong2, intIntIntType)
+	printCast(boolType, intType)
+	printCast(intType, boolType)
+	printCast(weak2, intIntIntType)
+	printCast(strong2, intIntIntType)
 }

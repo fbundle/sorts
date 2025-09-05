@@ -64,11 +64,8 @@ func (ss *sortSystem) Default(level int) Sort {
 	}
 }
 
-func (ss *sortSystem) Atom(level int, name string, parents ...Sort) adt.Option[Sort] {
-	if len(parents) == 0 {
-		return adt.None[Sort]()
-	}
-	return newAtom(ss, level, name, parents[0])
+func (ss *sortSystem) Atom(level int, name string, parent Sort) adt.Option[Sort] {
+	return newAtom(ss, level, name, parent)
 }
 
 func (ss *sortSystem) Arrow(arg Sort, body Sort) adt.Option[Sort] {
