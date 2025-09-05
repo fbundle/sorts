@@ -32,8 +32,8 @@ func (s Prod) view() view {
 
 func (s Prod) Intro(a Sort, b Sort) Sort {
 	// take (a: A) (b: B) give (a, b): A × B
-	mustType(a, s.A)
-	mustType(b, s.B)
+	mustTermOf(a, s.A)
+	mustTermOf(b, s.B)
 	return NewAtom(
 		Level(s)-1,
 		fmt.Sprintf("(%s, %s)", Name(a), Name(b)),
@@ -43,7 +43,7 @@ func (s Prod) Intro(a Sort, b Sort) Sort {
 
 func (s Prod) Left(x Sort) Sort {
 	// take (x: A × B) give (a: A)
-	mustType(x, s)
+	mustTermOf(x, s)
 	return NewAtom(
 		Level(s.A)-1,
 		fmt.Sprintf("(left %s %s)", Name(s), Name(x)),
@@ -52,7 +52,7 @@ func (s Prod) Left(x Sort) Sort {
 }
 func (s Prod) Right(x Sort) Sort {
 	// take (x: A × B) give (b: B)
-	mustType(x, s)
+	mustTermOf(x, s)
 	return NewAtom(
 		Level(s.B)-1,
 		fmt.Sprintf("(right %s %s)", Name(s), Name(x)),
