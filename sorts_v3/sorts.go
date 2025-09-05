@@ -40,10 +40,10 @@ func (s Inhabited) attr() sortAttr {
 
 // Dependent - represent a type B(x) depends on sort x
 type Dependent struct {
-	Sort  Sort            // contains name, level, comparison, etc
 	Apply func(Sort) Sort // take x, return B(x)
+	sort  Sort            // contains name, level, comparison, etc TODO - might change
 }
 
 func (s Dependent) attr() sortAttr {
-	return s.Sort.attr()
+	return s.sort.attr()
 }
