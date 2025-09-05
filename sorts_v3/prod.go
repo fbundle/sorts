@@ -9,20 +9,20 @@ type Prod struct {
 	B Sort
 }
 
-func (s Prod) View() View {
-	aView, bView := s.A.View(), s.B.View()
-	level := max(aView.Level, bView.Level)
-	return View{
-		Level: level,
-		Name:  fmt.Sprintf("%s × %s", aView.Name, bView.Name),
-		Parent: Inhabited{
+func (s Prod) view() view {
+	A, B := s.A, s.B
+	level := max(Level(A), Level(B))
+	return view{
+		view: level,
+		name: fmt.Sprintf("%s × %s", Name(A), Name(B)),
+		parent: Inhabited{
 			Sort:  defaultSort(nil, level+1),
 			Child: s,
 		},
-		LessEqual: func(dst Sort) bool {
+		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Prod:
-				return aView.LessEqual(d.A) && bView.LessEqual(d.B)
+				return LessEqual(A, d.A) && LessEqual(B, d.B)
 			default:
 				panic("type_error - should catch all types")
 
@@ -36,8 +36,8 @@ func (s Prod) Intro(a Sort, b Sort) Sort {
 	mustType(a, s.A)
 	mustType(b, s.B)
 	return NewAtom(
-		s.View().Level-1,
-		fmt.Sprintf("(%s, %s)", a.View().Name, b.View().Name),
+		Level(s)-1,
+		fmt.Sprintf("(%s, %s)", Name(a), Name(b)),
 		s,
 	)
 }
@@ -46,8 +46,8 @@ func (s Prod) Left(x Sort) Sort {
 	// take (x: A × B) give (a: A)
 	mustType(x, s)
 	return NewAtom(
-		s.A.View().Level-1,
-		fmt.Sprintf("(left %s)", x.View().Name),
+		Level(s.A)-1,
+		fmt.Sprintf("(left %s)", Name(x)),
 		s.A,
 	)
 }
@@ -55,8 +55,8 @@ func (s Prod) Right(x Sort) Sort {
 	// take (x: A × B) give (b: B)
 	mustType(x, s)
 	return NewAtom(
-		s.B.View().Level-1,
-		fmt.Sprintf("(right %s)", x.View().Name),
+		Level(s.B)-1,
+		fmt.Sprintf("(right %s)", Name(x)),
 		s.B,
 	)
 }

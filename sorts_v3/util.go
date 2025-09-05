@@ -1,7 +1,11 @@
 package sorts
 
 func mustType(x Sort, X Sort) {
-	if x.View().Parent.Sort != X {
+	mustEqual(Parent(x), X)
+}
+
+func mustEqual(x Sort, y Sort) {
+	if x != y {
 		panic("type_error")
 	}
 }

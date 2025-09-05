@@ -10,17 +10,16 @@ type Arrow struct {
 	B Sort
 }
 
-func (s Arrow) View() View {
-	aView, bView := s.A.View(), s.B.View()
-	level := max(aView.Level, bView.Level)
-	return View{
-		Level: level,
-		Name:  fmt.Sprintf("%s -> %s", aView.Name, bView.Name),
-		Parent: Inhabited{
+func (s Arrow) view() view {
+	level := max(Level(s.A), Level(s.B))
+	return view{
+		view: level,
+		name: fmt.Sprintf("%s -> %s", Name(s.A), Name(s.B)),
+		parent: Inhabited{
 			Sort:  defaultSort(nil, level+1),
 			Child: s,
 		},
-		LessEqual: func(dst Sort) bool {
+		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Atom:
 				return false
@@ -28,11 +27,11 @@ func (s Arrow) View() View {
 				// reverse cast for arg
 				// {any -> unit} can be cast into {int -> unit}
 				// because {int} can be cast into {any}
-				if !d.A.View().LessEqual(s.A) {
+				if !LessEqual(d.A, s.A) {
 					return false
 				}
 				// normal cast for body
-				return s.B.View().LessEqual(d.B)
+				return LessEqual(s.B, d.B)
 			default:
 				panic("type_error - should catch all types")
 

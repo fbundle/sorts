@@ -11,7 +11,7 @@ const (
 var _ Sort = Atom{}
 
 func NewAtom(level int, name string, parent Sort) Atom {
-	if parent != nil && parent.View().Level != level+1 {
+	if parent != nil && Level(parent) != level+1 {
 		panic("type_error make")
 	}
 	return Atom{
@@ -27,15 +27,15 @@ type Atom struct {
 	parent Sort
 }
 
-func (s Atom) View() View {
-	return View{
-		Level: s.level,
-		Name:  s.name,
-		Parent: Inhabited{
+func (s Atom) view() view {
+	return view{
+		view: s.level,
+		name: s.name,
+		parent: Inhabited{
 			Sort:  defaultSort(s.parent, s.level+1),
 			Child: s,
 		},
-		LessEqual: func(dst Sort) bool {
+		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 
 			case Atom:
@@ -61,8 +61,8 @@ func (s Atom) View() View {
 
 func defaultSort(sort Sort, level int) Sort {
 	if sort != nil {
-		if sort.View().Level != level {
-			panic("type_error level")
+		if Level(sort) != level {
+			panic("type_error Level")
 		}
 		return sort
 	}
