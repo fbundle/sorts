@@ -1,22 +1,22 @@
 package sorts
 
 func Name(s Sort) string {
-	return s.view().name
+	return s.attr().name
 }
 
 func Level(s Sort) int {
-	return s.view().view
+	return s.attr().view
 }
 
 func Parent(s Sort) Sort {
-	return s.view().parent
+	return s.attr().parent
 }
 
 func LessEqual(x Sort, y Sort) bool {
-	return x.view().lessEqual(y)
+	return x.attr().lessEqual(y)
 }
 
-type view struct {
+type sortAttr struct {
 	view      int                 // universe Level
 	name      string              // every sort is identified with a Name (string)
 	parent    Sort                // (or Type) every sort must have a Parent
@@ -24,7 +24,7 @@ type view struct {
 }
 
 type Sort interface {
-	view() view
+	attr() sortAttr
 }
 
 // Inhabited - represents a sort with at least one child
@@ -34,8 +34,8 @@ type Inhabited struct {
 	Child Sort // (or Term)
 }
 
-func (s Inhabited) view() view {
-	return s.Sort.view()
+func (s Inhabited) attr() sortAttr {
+	return s.Sort.attr()
 }
 
 // Dependent - represent a type B(x) depends on sort x
@@ -44,6 +44,6 @@ type Dependent struct {
 	Apply func(Sort) Sort // take x, return B(x)
 }
 
-func (s Dependent) view() view {
-	return s.Sort.view()
+func (s Dependent) attr() sortAttr {
+	return s.Sort.attr()
 }

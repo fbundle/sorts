@@ -7,9 +7,9 @@ type Sum struct {
 	B Sort
 }
 
-func (s Sum) view() view {
+func (s Sum) attr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
-	return view{
+	return sortAttr{
 		view:   level,
 		name:   fmt.Sprintf("%s + %s", Name(s.A), Name(s.B)),
 		parent: defaultSort(nil, level+1),

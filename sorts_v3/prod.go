@@ -7,9 +7,9 @@ type Prod struct {
 	B Sort
 }
 
-func (s Prod) view() view {
+func (s Prod) attr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
-	return view{
+	return sortAttr{
 		view:   level,
 		name:   fmt.Sprintf("%s × %s", Name(s.A), Name(s.B)),
 		parent: defaultSort(nil, level+1),

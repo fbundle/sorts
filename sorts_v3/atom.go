@@ -39,8 +39,8 @@ type Atom struct {
 	parent Sort
 }
 
-func (s Atom) view() view {
-	return view{
+func (s Atom) attr() sortAttr {
+	return sortAttr{
 		view:   s.level,
 		name:   s.name,
 		parent: defaultSort(s.parent, s.level+1),
