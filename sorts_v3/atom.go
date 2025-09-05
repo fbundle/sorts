@@ -41,12 +41,9 @@ type Atom struct {
 
 func (s Atom) view() view {
 	return view{
-		view: s.level,
-		name: s.name,
-		parent: Inhabited{
-			Sort:  defaultSort(s.parent, s.level+1),
-			Child: s,
-		},
+		view:   s.level,
+		name:   s.name,
+		parent: defaultSort(s.parent, s.level+1),
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 

@@ -10,12 +10,9 @@ type Prod struct {
 func (s Prod) view() view {
 	level := max(Level(s.A), Level(s.B))
 	return view{
-		view: level,
-		name: fmt.Sprintf("%s × %s", Name(s.A), Name(s.B)),
-		parent: Inhabited{
-			Sort:  defaultSort(nil, level+1),
-			Child: s,
-		},
+		view:   level,
+		name:   fmt.Sprintf("%s × %s", Name(s.A), Name(s.B)),
+		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Prod:

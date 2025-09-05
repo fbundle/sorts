@@ -9,7 +9,7 @@ func Level(s Sort) int {
 }
 
 func Parent(s Sort) Sort {
-	return s.view().parent.Sort
+	return s.view().parent
 }
 
 func LessEqual(x Sort, y Sort) bool {
@@ -19,7 +19,7 @@ func LessEqual(x Sort, y Sort) bool {
 type view struct {
 	view      int                 // universe Level
 	name      string              // every sort is identified with a Name (string)
-	parent    Inhabited           // (or Type) every sort must have a Parent
+	parent    Sort                // (or Type) every sort must have a Parent
 	lessEqual func(dst Sort) bool // a partial order on sorts (subtype)
 }
 
