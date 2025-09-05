@@ -1,6 +1,10 @@
 package main
 
-import sorts "github.com/fbundle/sorts/sorts_v3"
+import (
+	"fmt"
+
+	sorts "github.com/fbundle/sorts/sorts_v3"
+)
 
 func main() {
 	prop := sorts.NewAtom(1, "Prop", nil)
@@ -15,16 +19,16 @@ func main() {
 	Q_implies_PorQ := sorts.Arrow{Q, PorQ}
 	QorP_implies_PoQ := sorts.Arrow{QorP, PorQ}
 
-	QorP_implies_PoQ.Intro(func(term_QorP sorts.Sort) sorts.Sort {
-		term_Q := QorP.IntroLeft(term_QorP)
-		term_P := QorP.IntroLeft(term_QorP)
-		term_Q_implies_PorQ := PorQ.IntroLeft(term_Q)
-		term_P_implies_PorQ := PorQ.IntroLeft(term_P)
+	x := QorP_implies_PoQ.Intro(func(term_QorP sorts.Sort) sorts.Sort {
+		term_P_implies_PorQ := P_implies_PorQ.Intro(func(term_P sorts.Sort) sorts.Sort {
+			return PorQ.IntroLeft(term_P)
+		})
+		term_Q_implies_PorQ := Q_implies_PorQ.Intro(func(term_Q sorts.Sort) sorts.Sort {
+			return PorQ.IntroRight(term_Q)
+		})
 
-		PorQ.ByCases()
+		return QorP.ByCases(term_QorP, term_Q_implies_PorQ, term_P_implies_PorQ)
 	})
 
-
-	myProp :=
-
+	fmt.Println(sorts.Name(sorts.Parent(x)))
 }

@@ -48,12 +48,15 @@ func (s Sum) IntroRight(b Sort) Sort {
 	)
 }
 
-// ByCases - take (h1: A -> X) (h2: B -> X) give (x: X)
-func (s Sum) ByCases(h1 Arrow, h2 Arrow) Sort {
-	mustSubType(h1.A, s.A)
-	mustSubType(h2.A, s.B)
-	mustSubType(h1.B, h2.B)
-	X := h1.B
+// ByCases - take (y: A + B) (h1: A -> X) (h2: B -> X) give (x: X)
+func (s Sum) ByCases(y Sort, h1 Sort, h2 Sort) Sort {
+	mustTermOf(y, s)
+	mustSubType(Parent(h1).(Arrow).A, s.A)
+	mustSubType(Parent(h2).(Arrow).A, s.B)
+
+	mustSubType(Parent(h1).(Arrow).B, Parent(h2).(Arrow).B)
+
+	X := Parent(h1).(Arrow).B
 	return NewAtom(
 		Level(X)-1,
 		fmt.Sprintf("(by_cases %s %s %s)", Name(s), Name(h1), Name(h2)),
