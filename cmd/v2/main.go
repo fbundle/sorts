@@ -43,7 +43,7 @@ func chain(ss sorts.SortSystem, sortList ...sorts.Sort) sorts.Sort {
 	return final
 }
 
-func mustAtom(ss sorts.SortSystem, level int, name string, parent sorts.Sort) sorts.Sort {
+func mustAtom(ss sorts.SortSystem, level int, name string, parent sorts.InhabitedSort) sorts.Sort {
 	var atom sorts.Sort
 	if ok := ss.Atom(level, name, parent).Unwrap(&atom); !ok {
 		panic("type_error")

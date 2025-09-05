@@ -12,6 +12,13 @@ func (o Option[T]) Unwrap(val *T) bool {
 	return o.Ok
 }
 
+func (o Option[T]) MustUnwrap() T {
+	if !o.Ok {
+		panic(o)
+	}
+	return o.Val
+}
+
 func None[T any]() Option[T] {
 	return Option[T]{
 		Ok: false,

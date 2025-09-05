@@ -55,16 +55,16 @@ func (ss *sortSystem) LessEqual(src string, dst string) bool {
 	}
 	return false
 }
-
-func (ss *sortSystem) Default(level int) Sort {
-	return atom{
-		level:  level,
+func (ss *sortSystem) DefaultInhabited(child Sort) InhabitedSort {
+	sort := atom{
+		level:  child.Level() + 1,
 		name:   ss.defaultName,
 		parent: nil,
 	}
+	return ss.Inhabited(sort, child).MustUnwrap()
 }
 
-func (ss *sortSystem) Atom(level int, name string, parent Sort) adt.Option[Sort] {
+func (ss *sortSystem) Atom(level int, name string, parent InhabitedSort) adt.Option[Sort] {
 	return newAtom(ss, level, name, parent)
 }
 
@@ -73,7 +73,7 @@ func (ss *sortSystem) Arrow(arg Sort, body Sort) adt.Option[Sort] {
 }
 
 func (ss *sortSystem) Inhabited(sort Sort, child Sort) adt.Option[InhabitedSort] {
-	return newInhabited(ss, child, sort)
+	return newInhabited(ss, sort, child)
 }
 
 func (ss *sortSystem) AddRule(src string, dst string) SortSystem {

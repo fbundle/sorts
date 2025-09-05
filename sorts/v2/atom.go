@@ -2,7 +2,7 @@ package sorts
 
 import "github.com/fbundle/sorts/adt"
 
-func newAtom(ss SortSystem, level int, name string, parent Sort) adt.Option[Sort] {
+func newAtom(ss SortSystem, level int, name string, parent InhabitedSort) adt.Option[Sort] {
 	if parent != nil && parent.Level() != level+1 {
 		return adt.None[Sort]()
 	}
@@ -17,7 +17,7 @@ func newAtom(ss SortSystem, level int, name string, parent Sort) adt.Option[Sort
 type atom struct {
 	level  int
 	name   string
-	parent Sort
+	parent InhabitedSort
 	ss     SortSystem
 }
 
@@ -29,12 +29,12 @@ func (s atom) Name() string {
 	return s.name
 }
 
-func (s atom) Parent() Sort {
+func (s atom) Parent() InhabitedSort {
 	if s.parent != nil {
 		return s.parent
 	}
 	// default parent
-	return s.ss.Default(s.level + 1)
+	return s.ss.DefaultInhabited(s)
 }
 
 func (s atom) LessEqual(dst Sort) bool {

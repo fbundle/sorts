@@ -7,7 +7,7 @@ import "github.com/fbundle/sorts/adt"
 type Sort interface {
 	Level() int // universe level
 	Name() string
-	Parent() Sort
+	Parent() InhabitedSort
 	LessEqual(dst Sort) bool // for type casting
 }
 
@@ -17,11 +17,11 @@ type InhabitedSort interface {
 }
 
 type SortSystem interface {
-	Default(level int) Sort
+	DefaultInhabited(child Sort) InhabitedSort
 	AddRule(src string, dst string) SortSystem
 	LessEqual(src string, dst string) bool
 
-	Atom(level int, name string, parent Sort) adt.Option[Sort]
+	Atom(level int, name string, parent InhabitedSort) adt.Option[Sort]
 	Arrow(arg Sort, body Sort) adt.Option[Sort]
 	Inhabited(sort Sort, elem Sort) adt.Option[InhabitedSort]
 }

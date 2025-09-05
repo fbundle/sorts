@@ -36,8 +36,9 @@ func (s arrow) Name() string {
 	}, " ")
 }
 
-func (s arrow) Parent() Sort {
-	return s.ss.Default(s.Level() + 1)
+func (s arrow) Parent() InhabitedSort {
+	// default parent
+	return s.ss.DefaultInhabited(s)
 }
 
 func (s arrow) LessEqual(dst Sort) bool {
