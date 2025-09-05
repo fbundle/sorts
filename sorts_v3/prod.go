@@ -55,5 +55,16 @@ func (s Prod) Left(x Sort) Sort {
 		fmt.Sprintf("(left %s)", xView.Name),
 		s.A,
 	)
-
+}
+func (s Prod) Right(x Sort) Sort {
+	// take (x: A × B) give (b: B)
+	xView := x.View()
+	if xView.Parent.Sort != s {
+		panic("type_error")
+	}
+	return NewAtom(
+		s.B.View().Level-1,
+		fmt.Sprintf("(right %s)", xView.Name),
+		s.B,
+	)
 }
