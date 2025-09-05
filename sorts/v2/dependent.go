@@ -7,7 +7,8 @@ import (
 )
 
 func newDependent(ss SortSystem, level int, name string, parent InhabitedSort, apply func(Sort) Sort) adt.Option[DependentSort] {
-	if parent != nil && parent.Level() != level+1 {
+	if parent != nil && parent.Level() < level {
+		// TODO - chat GPT said parent of dependent can be the same level as level
 		return adt.None[DependentSort]()
 	}
 	return adt.Some[DependentSort](dependent{
