@@ -15,6 +15,14 @@ func main() {
 	Q_implies_PorQ := sorts.Arrow{Q, PorQ}
 	QorP_implies_PoQ := sorts.Arrow{QorP, PorQ}
 
+	QorP_implies_PoQ.Intro(func(term_QorP sorts.Sort) sorts.Sort {
+		term_Q := QorP.IntroLeft(term_QorP)
+		term_P := QorP.IntroLeft(term_QorP)
+		term_Q_implies_PorQ := PorQ.IntroLeft(term_Q)
+		term_P_implies_PorQ := PorQ.IntroLeft(term_P)
+
+		PorQ.ByCases()
+	})
 
 
 	myProp :=

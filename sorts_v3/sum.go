@@ -28,8 +28,8 @@ func (s Sum) view() view {
 	}
 }
 
+// IntroLeft - take (a: A) give (x: A + B)
 func (s Sum) IntroLeft(a Sort) Sort {
-	// take (a: A) give (x: A + B)
 	mustTermOf(a, s.A)
 	return NewAtom(
 		Level(s)-1,
@@ -38,8 +38,8 @@ func (s Sum) IntroLeft(a Sort) Sort {
 	)
 }
 
+// IntroRight - take (b: B) give (x: A + B)
 func (s Sum) IntroRight(b Sort) Sort {
-	// take (b: B) give (x: A + B)
 	mustTermOf(b, s.B)
 	return NewAtom(
 		Level(s)-1,
@@ -48,8 +48,8 @@ func (s Sum) IntroRight(b Sort) Sort {
 	)
 }
 
+// ByCases - take (h1: A -> X) (h2: B -> X) give (x: X)
 func (s Sum) ByCases(h1 Arrow, h2 Arrow) Sort {
-	// take (h1: A -> X) (h2: B -> X) give (x: X)
 	mustSubType(h1.A, s.A)
 	mustSubType(h2.A, s.B)
 	mustSubType(h1.B, h2.B)

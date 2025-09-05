@@ -28,8 +28,8 @@ func (s Prod) view() view {
 	}
 }
 
+// Intro - take (a: A) (b: B) give (a, b): A × B
 func (s Prod) Intro(a Sort, b Sort) Sort {
-	// take (a: A) (b: B) give (a, b): A × B
 	mustTermOf(a, s.A)
 	mustTermOf(b, s.B)
 	return NewAtom(
@@ -39,8 +39,8 @@ func (s Prod) Intro(a Sort, b Sort) Sort {
 	)
 }
 
+// Left - take (x: A × B) give (a: A)
 func (s Prod) Left(x Sort) Sort {
-	// take (x: A × B) give (a: A)
 	mustTermOf(x, s)
 	return NewAtom(
 		Level(s.A)-1,
@@ -48,8 +48,9 @@ func (s Prod) Left(x Sort) Sort {
 		s.A,
 	)
 }
+
+// Right - take (x: A × B) give (b: B)
 func (s Prod) Right(x Sort) Sort {
-	// take (x: A × B) give (b: B)
 	mustTermOf(x, s)
 	return NewAtom(
 		Level(s.B)-1,

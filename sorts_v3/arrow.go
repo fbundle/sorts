@@ -38,8 +38,8 @@ func (s Arrow) view() view {
 	}
 }
 
+// ModusPonens - take (a: A) give (b: B)
 func (s Arrow) ModusPonens(a Sort) Sort {
-	// take (a: A) give (b: B)
 	mustTermOf(a, s.A)
 	return NewAtom(
 		Level(s.B)-1,
@@ -48,10 +48,8 @@ func (s Arrow) ModusPonens(a Sort) Sort {
 	)
 }
 
+// Intro - take a func that maps (a: A) into (b: B)  give (x: A -> B)
 func (s Arrow) Intro(f func(Sort) Sort) Sort {
-	// take a func that maps (a: A) into (b: B)
-	// give (x: A -> B)
-
 	// verify
 	a := NewAtom(Level(s.A)-1, "a_dummy", s.A)
 	b := f(a)
