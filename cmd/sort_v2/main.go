@@ -26,7 +26,7 @@ func printCast(type1 sorts.Sort, type2 sorts.Sort) {
 }
 func printSorts(sortList ...sorts.Sort) {
 	for _, sort := range sortList {
-		fmt.Printf("[%s] is of type [%s]\n", sort.Name(), sort.Parent().Name())
+		fmt.Printf("[%s] is of type [%s]\n", sort.Name(), sort.Parent().Sort().Name())
 	}
 }
 func chain(ss sorts.SortSystem, sortList ...sorts.Sort) sorts.Sort {
@@ -43,7 +43,7 @@ func chain(ss sorts.SortSystem, sortList ...sorts.Sort) sorts.Sort {
 	return final
 }
 
-func mustAtom(ss sorts.SortSystem, level int, name string, parent sorts.InhabitedSort) sorts.Sort {
+func mustAtom(ss sorts.SortSystem, level int, name string, parent sorts.Sort) sorts.Sort {
 	var atom sorts.Sort
 	if ok := ss.Atom(level, name, parent).Unwrap(&atom); !ok {
 		panic("type_error")

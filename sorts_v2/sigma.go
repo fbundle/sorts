@@ -23,11 +23,11 @@ type sigma struct {
 }
 
 func (s sigma) Level() int {
-	return max(s.a.Level(), s.b.Level())
+	return max(s.a.Sort().Level(), s.b.Sort().Level())
 }
 
 func (s sigma) Name() string {
-	return fmt.Sprintf("(x: %s, y: %s(x))", s.a.Name(), s.b.Name())
+	return fmt.Sprintf("(x: %s, y: %s(x))", s.a.Sort().Name(), s.b.Sort().Name())
 }
 
 func (s sigma) Parent() InhabitedSort {

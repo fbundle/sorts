@@ -5,8 +5,7 @@ func Test() {
 
 	induceLeft := func(x Sort) Sort {
 		// get type of parent (A \times B) -> return a term for A
-		parent := x.Parent().Sort()
-		p := parent.(prod)
+		p := x.Parent().Sort().(prod)
 		return ss.Atom(p.a.Level()-1, "dummy", p.a).MustUnwrap()
 	}
 	prop := ss.Atom(1, "Prop", nil).MustUnwrap()

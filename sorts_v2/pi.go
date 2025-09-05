@@ -23,11 +23,11 @@ type pi struct {
 }
 
 func (s pi) Level() int {
-	return max(s.arg.Level(), s.body.Level())
+	return max(s.arg.Sort().Level(), s.body.Sort().Level())
 }
 
 func (s pi) Name() string {
-	return fmt.Sprintf("(x: %s) -> %s(x)", s.arg.Name(), s.body.Name())
+	return fmt.Sprintf("(x: %s) -> %s(x)", s.arg.Sort().Name(), s.body.Sort().Name())
 }
 
 func (s pi) Parent() InhabitedSort {
