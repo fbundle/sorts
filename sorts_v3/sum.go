@@ -24,6 +24,15 @@ func (s Sum) attr() sortAttr {
 	}
 }
 
+// Intro -
+func (s Sum) Intro(a Sort, b Sort) Sort {
+	if a != nil {
+		return s.IntroLeft(a)
+	} else {
+		return s.IntroRight(b)
+	}
+}
+
 // IntroLeft - take (a: A) give (x: A + B)
 func (s Sum) IntroLeft(a Sort) Sort {
 	mustTermOf(a, s.A)
