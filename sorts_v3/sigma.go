@@ -9,13 +9,16 @@ type Sigma struct {
 	B Dependent
 }
 
+func (s Sigma) nameAttr() string {
+	return fmt.Sprintf("Σ(x:%s)%s(x)", Name(s.A), Name(s.B))
+}
+
 func (s Sigma) sortAttr() sortAttr {
 	x := dummyTerm(s.A, "x")
 	sBx := s.B.Apply(x)
 	level := max(Level(s.A), Level(sBx))
 	return sortAttr{
 		level:  level,
-		name:   fmt.Sprintf("Σ(x:%s)%s(x)", Name(s.A), Name(s.B)),
 		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst WithSort) bool {
 			switch d := dst.(type) {

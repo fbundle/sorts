@@ -23,13 +23,12 @@ func LessEqual(x WithSort, y WithSort) bool {
 }
 
 type WithSort interface {
-	WithName
+	WithName // every WithSort is identified with a Name (string)
 	sortAttr() sortAttr
 }
 
 type sortAttr struct {
 	level     int                     // universe Level
-	name      string                  // every WithSort is identified with a Name (string)
 	parent    WithSort                // (or Type) every WithSort must have a Parent
 	lessEqual func(dst WithSort) bool // a partial order on sorts (subtype)
 }

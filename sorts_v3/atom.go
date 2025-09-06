@@ -34,10 +34,13 @@ type Atom struct {
 	parent WithSort
 }
 
+func (s Atom) nameAttr() string {
+	return s.name
+}
+
 func (s Atom) sortAttr() sortAttr {
 	return sortAttr{
 		level:  s.level,
-		name:   s.name,
 		parent: defaultSort(s.parent, s.level+1),
 		lessEqual: func(dst WithSort) bool {
 			switch d := dst.(type) {
