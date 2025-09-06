@@ -37,24 +37,16 @@ func (s Arrow) attr() sortAttr {
 // ModusPonens - take (a: A) give (b: B)
 func (s Arrow) ModusPonens(a Sort) Sort {
 	mustTermOf(a, s.A)
-	return NewAtom(
-		Level(s.B)-1,
-		fmt.Sprintf("(modus_ponens %s %s)", Name(s), Name(a)),
-		s.B,
-	)
+	return dummyTerm(s.B, fmt.Sprintf("(modus_ponens %s %s)", Name(s), Name(a)))
 }
 
 // Intro - take a func that maps (a: A) into (b: B)  give (x: A -> B)
 func (s Arrow) Intro(f func(Sort) Sort) Sort {
 	// verify
-	a := NewAtom(Level(s.A)-1, "a_dummy", s.A)
+	a := dummyTerm(s.A, "a")
 	b := f(a)
 	mustTermOf(b, s.B)
 
 	// verify ok
-	return NewAtom(
-		Level(s)-1,
-		fmt.Sprintf("(implies_intro %s %p)", Name(s), f),
-		s,
-	)
+	return dummyTerm(s, fmt.Sprintf("(implies_intro %s %p)", Name(s), f))
 }

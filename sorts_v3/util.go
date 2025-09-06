@@ -8,3 +8,6 @@ func mustSubType(x Sort, y Sort) {
 		panic("type_error")
 	}
 }
+func dummyTerm(parent Sort, name string) Sort {
+	return NewAtom(Level(parent)-1, name, parent)
+}

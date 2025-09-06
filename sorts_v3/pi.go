@@ -2,14 +2,15 @@ package sorts
 
 import "fmt"
 
-// Pi - (x: A) -> (y: B(x)) or for all x in A, B(x)
+// Pi - (x: A) -> (y: B(x)) similar to Arrow
+// this is the universal quantifier
 type Pi struct {
-	A Inhabited
+	A Sort
 	B Dependent
 }
 
 func (s Pi) attr() sortAttr {
-	x := s.A.Child
+	x := dummyTerm(s.A, "x")
 	level := max(Level(s.A), Level(s.B(x)))
 	return sortAttr{
 		level:  level,
@@ -26,7 +27,7 @@ func (s Pi) attr() sortAttr {
 				if !LessEqual(d.A, s.A) {
 					return false
 				}
-				y := d.A.Child
+				y := dummyTerm(d.A, "y")
 				return LessEqual(s.B(x), d.B(y))
 			default:
 				panic("type_error - should catch all types")

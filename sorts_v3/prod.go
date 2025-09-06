@@ -29,29 +29,17 @@ func (s Prod) attr() sortAttr {
 func (s Prod) Intro(a Sort, b Sort) Sort {
 	mustTermOf(a, s.A)
 	mustTermOf(b, s.B)
-	return NewAtom(
-		Level(s)-1,
-		fmt.Sprintf("(%s, %s)", Name(a), Name(b)),
-		s,
-	)
+	return dummyTerm(s, fmt.Sprintf("(%s, %s)", Name(a), Name(b)))
 }
 
 // Left - take (x: A × B) give (a: A)
 func (s Prod) Left(x Sort) Sort {
 	mustTermOf(x, s)
-	return NewAtom(
-		Level(s.A)-1,
-		fmt.Sprintf("(left %s %s)", Name(s), Name(x)),
-		s.A,
-	)
+	return dummyTerm(s.A, fmt.Sprintf("(left %s %s)", Name(s), Name(x)))
 }
 
 // Right - take (x: A × B) give (b: B)
 func (s Prod) Right(x Sort) Sort {
 	mustTermOf(x, s)
-	return NewAtom(
-		Level(s.B)-1,
-		fmt.Sprintf("(right %s %s)", Name(s), Name(x)),
-		s.B,
-	)
+	return dummyTerm(s.B, fmt.Sprintf("(right %s %s)", Name(s), Name(x)))
 }

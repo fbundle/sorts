@@ -28,21 +28,13 @@ func (s Sum) attr() sortAttr {
 // IntroLeft - take (a: A) give (x: A + B)
 func (s Sum) IntroLeft(a Sort) Sort {
 	mustTermOf(a, s.A)
-	return NewAtom(
-		Level(s)-1,
-		fmt.Sprintf("(intro_left %s %s)", Name(s), Name(a)),
-		s,
-	)
+	return dummyTerm(s, fmt.Sprintf("(intro_left %s %s)", Name(s), Name(a)))
 }
 
 // IntroRight - take (b: B) give (x: A + B)
 func (s Sum) IntroRight(b Sort) Sort {
 	mustTermOf(b, s.B)
-	return NewAtom(
-		Level(s)-1,
-		fmt.Sprintf("(intro_right %s %s)", Name(s), Name(b)),
-		s,
-	)
+	return dummyTerm(s, fmt.Sprintf("(intro_right %s %s)", Name(s), Name(b)))
 }
 
 // ByCases - take (y: A + B) (h1: A -> X) (h2: B -> X) give (x: X)
@@ -54,9 +46,6 @@ func (s Sum) ByCases(y Sort, h1 Sort, h2 Sort) Sort {
 	mustSubType(Parent(h1).(Arrow).B, Parent(h2).(Arrow).B)
 
 	X := Parent(h1).(Arrow).B
-	return NewAtom(
-		Level(X)-1,
-		fmt.Sprintf("(by_cases %s %s %s)", Name(s), Name(h1), Name(h2)),
-		X,
-	)
+
+	return dummyTerm(X, fmt.Sprintf("(by_cases %s %s %s)", Name(s), Name(h1), Name(h2)))
 }
