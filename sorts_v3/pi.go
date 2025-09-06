@@ -2,7 +2,7 @@ package sorts
 
 import "fmt"
 
-// Pi - (x: A) -> (y: B(x))
+// Pi - (x: A) -> (y: B(x)) or for all x in A, B(x)
 type Pi struct {
 	A Inhabited
 	B Dependent
