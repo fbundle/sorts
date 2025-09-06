@@ -10,7 +10,7 @@ type Prod struct {
 func (s Prod) attr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
-		view:   level,
+		level:  level,
 		name:   fmt.Sprintf("%s × %s", Name(s.A), Name(s.B)),
 		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst Sort) bool {

@@ -35,7 +35,7 @@ type Atom struct {
 
 func (s Atom) attr() sortAttr {
 	return sortAttr{
-		view:   s.level,
+		level:  s.level,
 		name:   s.name,
 		parent: defaultSort(s.parent, s.level+1),
 		lessEqual: func(dst Sort) bool {

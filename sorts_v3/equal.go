@@ -5,3 +5,7 @@ type Equal struct {
 	A Sort
 	B Sort
 }
+
+func (s Equal) attr() sortAttr {
+	panic("implement me")
+}
