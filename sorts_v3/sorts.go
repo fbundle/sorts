@@ -6,8 +6,15 @@ const (
 	TerminalName = "any"  // terminal object
 )
 
-func Name(s WithName) string {
-	return s.nameAttr()
+func Name(s any) string {
+	switch s := s.(type) {
+	case WithSort:
+		return s.sortAttr().name
+	case Dependent:
+		return s.Name
+	default:
+		panic("type_error")
+	}
 }
 
 func Level(s WithSort) int {
@@ -23,16 +30,12 @@ func LessEqual(x WithSort, y WithSort) bool {
 }
 
 type WithSort interface {
-	WithName // every WithSort is identified with a Name (string)
 	sortAttr() sortAttr
 }
 
 type sortAttr struct {
+	name      string                  // every WithSort is identified with a Name (string)
 	level     int                     // universe Level
 	parent    WithSort                // (or Type) every WithSort must have a Parent
 	lessEqual func(dst WithSort) bool // a partial order on sorts (subtype)
-}
-
-type WithName interface {
-	nameAttr() string
 }

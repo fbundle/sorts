@@ -8,13 +8,10 @@ type Arrow struct {
 	B WithSort
 }
 
-func (s Arrow) nameAttr() string {
-	return fmt.Sprintf("%s -> %s", Name(s.A), Name(s.B))
-}
-
 func (s Arrow) sortAttr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
+		name:   fmt.Sprintf("%s -> %s", Name(s.A), Name(s.B)),
 		level:  level,
 		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst WithSort) bool {

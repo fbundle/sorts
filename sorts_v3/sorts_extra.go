@@ -7,10 +7,6 @@ type Inhabited struct {
 	Child WithSort // child/term of Sort
 }
 
-func (s Inhabited) nameAttr() string {
-	return Name(s.Sort)
-}
-
 func (s Inhabited) sortAttr() sortAttr {
 	return s.Sort.sortAttr()
 }
