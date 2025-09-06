@@ -31,14 +31,10 @@ func (s Prod) Intro(a Sort, b Sort) Sort {
 	return dummyTerm(s, fmt.Sprintf("(%s, %s)", Name(a), Name(b)))
 }
 
-// Left - take (t: A × B) give (a: A)
-func (s Prod) Left(t Sort) Sort {
+// Elim - take (t: A × B) give (a: A) and (b: B)
+func (s Prod) Elim(t Sort) (left Sort, right Sort) {
 	mustTermOf(t, s)
-	return dummyTerm(s.A, fmt.Sprintf("(left %s %s)", Name(s), Name(t)))
-}
-
-// Right - take (t: A × B) give (b: B)
-func (s Prod) Right(t Sort) Sort {
-	mustTermOf(t, s)
-	return dummyTerm(s.B, fmt.Sprintf("(right %s %s)", Name(s), Name(t)))
+	a := dummyTerm(s.A, fmt.Sprintf("(left %s %s)", Name(s), Name(t)))
+	b := dummyTerm(s.B, fmt.Sprintf("(right %s %s)", Name(s), Name(t)))
+	return a, b
 }
