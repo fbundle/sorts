@@ -18,7 +18,7 @@ type Dependent struct {
 }
 
 func (d Dependent) attr() sortAttr {
-	// not implement full sort since Dependent is not a sort
+	// Dependent is not a sort so it doesn't have all attributes
 	return sortAttr{
 		name: d.Name,
 	}
