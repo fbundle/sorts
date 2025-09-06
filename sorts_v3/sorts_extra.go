@@ -12,11 +12,4 @@ func (s Inhabited) attr() sortAttr {
 }
 
 // Dependent - represent a type B(x) depends on Sort x
-type Dependent struct {
-	Sort  Sort            // underlying sort
-	Apply func(Sort) Sort // take x, return B(x)
-}
-
-func (s Dependent) attr() sortAttr {
-	return s.Sort.attr()
-}
+type Dependent = func(Sort) Sort // take x, return B(x)

@@ -19,13 +19,12 @@ func (s Arrow) attr() sortAttr {
 			case Atom:
 				return false
 			case Arrow:
-				// reverse cast for arg
+				// tricky: subtyping for Arrow is contravariant in domain, covariant in codomain
 				// {any -> unit} can be cast into {int -> unit}
 				// because {int} can be cast into {any}
 				if !LessEqual(d.A, s.A) {
 					return false
 				}
-				// normal cast for body
 				return LessEqual(s.B, d.B)
 			default:
 				panic("type_error - should catch all types")
