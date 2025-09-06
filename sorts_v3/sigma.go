@@ -11,16 +11,18 @@ type Sigma struct {
 
 func (s Sigma) attr() sortAttr {
 	x := dummyTerm(s.A, "x")
-	level := max(Level(s.A), Level(s.B(x)))
+	sBx := s.B.Apply(x)
+	level := max(Level(s.A), Level(sBx))
 	return sortAttr{
 		level:  level,
-		name:   fmt.Sprintf("Σ%s:%s. %s", Name(x), Name(s.A), Name(s.B(x))),
+		name:   fmt.Sprintf("Σ%s:%s. %s", Name(x), Name(s.A), Name(sBx)),
 		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Sigma:
 				y := dummyTerm(d.A, "y")
-				return LessEqual(s.A, d.A) && LessEqual(s.B(x), d.B(y))
+				dBy := d.B.Apply(y)
+				return LessEqual(s.A, d.A) && LessEqual(sBx, dBy)
 			default:
 				return false
 			}
