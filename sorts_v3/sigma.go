@@ -15,7 +15,7 @@ func (s Sigma) attr() sortAttr {
 	level := max(Level(s.A), Level(sBx))
 	return sortAttr{
 		level:  level,
-		name:   fmt.Sprintf("Σ%s:%s. %s", Name(x), Name(s.A), Name(sBx)),
+		name:   fmt.Sprintf("Σ(x:%s)%s(x)", Name(s.A), Name(s.B)),
 		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
@@ -28,4 +28,9 @@ func (s Sigma) attr() sortAttr {
 			}
 		},
 	}
+}
+
+// Intro - take (a: A) (b: B(a)) give (t: )
+func (s Sigma) Intro(a Sort, b Sort) Sort {
+
 }
