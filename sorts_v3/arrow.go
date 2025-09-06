@@ -31,7 +31,7 @@ func (s Arrow) attr() sortAttr {
 	}
 }
 
-// Elim - take (a: A) give (b: B) - Modus Ponens
+// Elim - take (f: A -> B) (a: A) give (b: B) - Modus Ponens
 func (s Arrow) Elim(f Sort, a Sort) Sort {
 	mustTermOf(f, s)
 	mustTermOf(a, s.A)
