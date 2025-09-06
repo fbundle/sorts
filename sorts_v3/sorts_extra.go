@@ -17,9 +17,9 @@ type Dependent struct {
 	Apply func(WithSort) WithSort // take x, return B(x)
 }
 
-func (d Dependent) attr() sortAttr {
+func (d Dependent) attr() nameAttr {
 	// Dependent is not a sort so it doesn't have all attributes
-	return sortAttr{
+	return nameAttr{
 		name: d.Name,
 	}
 }
