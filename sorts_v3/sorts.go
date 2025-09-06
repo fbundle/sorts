@@ -1,5 +1,11 @@
 package sorts
 
+const (
+	defaultName  = "type"
+	InitialName  = "unit" // initial object
+	TerminalName = "any"  // terminal object
+)
+
 func Name(s Sort) string {
 	return s.attr().name
 }

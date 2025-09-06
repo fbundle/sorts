@@ -2,23 +2,17 @@ package sorts
 
 import "strconv"
 
-const (
-	defaultName  = "type"
-	initialName  = "unit" // initial object
-	terminalName = "any"  // terminal object
-)
-
 func Unit(level int) Atom {
 	return NewAtom(
 		level,
-		initialName,
+		InitialName,
 		nil,
 	)
 }
 func Any(level int) Atom {
 	return NewAtom(
 		level,
-		terminalName,
+		TerminalName,
 		nil,
 	)
 }
@@ -51,7 +45,7 @@ func (s Atom) attr() sortAttr {
 				if s.level != d.level {
 					return false
 				}
-				if s.name == initialName || d.name == terminalName {
+				if s.name == InitialName || d.name == TerminalName {
 					return true
 				}
 				if s.name == d.name {
