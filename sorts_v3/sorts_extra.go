@@ -16,7 +16,3 @@ type Dependent struct {
 	Name  string
 	Apply func(Sort) Sort // take x, return B(x)
 }
-
-func (d Dependent) nameAttr() string {
-	return d.Name
-}
