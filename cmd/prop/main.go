@@ -20,11 +20,11 @@ func main() {
 	QorP_implies_PoQ := sorts.Arrow{QorP, PorQ}
 
 	// I did it 😅 - x is a proof for (Q or P) -> (P or Q)
-	x := QorP_implies_PoQ.Intro(func(term_QorP sorts.Sort) sorts.Sort {
-		term_P_implies_PorQ := P_implies_PorQ.Intro(func(term_P sorts.Sort) sorts.Sort {
+	x := QorP_implies_PoQ.Intro(func(term_QorP sorts.WithSort) sorts.WithSort {
+		term_P_implies_PorQ := P_implies_PorQ.Intro(func(term_P sorts.WithSort) sorts.WithSort {
 			return PorQ.IntroLeft(term_P)
 		})
-		term_Q_implies_PorQ := Q_implies_PorQ.Intro(func(term_Q sorts.Sort) sorts.Sort {
+		term_Q_implies_PorQ := Q_implies_PorQ.Intro(func(term_Q sorts.WithSort) sorts.WithSort {
 			return PorQ.IntroRight(term_Q)
 		})
 

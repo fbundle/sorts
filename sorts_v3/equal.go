@@ -2,8 +2,8 @@ package sorts
 
 // Equal - A <-> B
 type Equal struct {
-	A Sort
-	B Sort
+	A WithSort
+	B WithSort
 }
 
 func (s Equal) attr() sortAttr {
