@@ -7,8 +7,8 @@ type Inhabited struct {
 	Child WithSort // child/term of Sort
 }
 
-func (s Inhabited) attr() sortAttr {
-	return s.Sort.attr()
+func (s Inhabited) sortAttr() sortAttr {
+	return s.Sort.sortAttr()
 }
 
 // Dependent - represent a type B(x) depends on WithSort x

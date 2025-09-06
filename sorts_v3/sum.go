@@ -7,7 +7,7 @@ type Sum struct {
 	B WithSort
 }
 
-func (s Sum) attr() sortAttr {
+func (s Sum) sortAttr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
 		level:  level,

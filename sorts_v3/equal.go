@@ -6,6 +6,6 @@ type Equal struct {
 	B WithSort
 }
 
-func (s Equal) attr() sortAttr {
+func (s Equal) sortAttr() sortAttr {
 	panic("implement me")
 }

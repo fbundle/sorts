@@ -34,7 +34,7 @@ type Atom struct {
 	parent WithSort
 }
 
-func (s Atom) attr() sortAttr {
+func (s Atom) sortAttr() sortAttr {
 	return sortAttr{
 		level:  s.level,
 		name:   s.name,

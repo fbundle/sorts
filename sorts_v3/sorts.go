@@ -9,7 +9,7 @@ const (
 func Name(s any) string {
 	switch s := s.(type) {
 	case WithSort:
-		return s.attr().name
+		return s.sortAttr().name
 	case WithName:
 		return s.attr().name
 	default:
@@ -18,19 +18,19 @@ func Name(s any) string {
 }
 
 func Level(s WithSort) int {
-	return s.attr().level
+	return s.sortAttr().level
 }
 
 func Parent(s WithSort) WithSort {
-	return s.attr().parent
+	return s.sortAttr().parent
 }
 
 func LessEqual(x WithSort, y WithSort) bool {
-	return x.attr().lessEqual(y)
+	return x.sortAttr().lessEqual(y)
 }
 
 type WithSort interface {
-	attr() sortAttr
+	sortAttr() sortAttr
 }
 
 type sortAttr struct {

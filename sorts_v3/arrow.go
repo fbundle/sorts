@@ -8,7 +8,7 @@ type Arrow struct {
 	B WithSort
 }
 
-func (s Arrow) attr() sortAttr {
+func (s Arrow) sortAttr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
 		level:  level,

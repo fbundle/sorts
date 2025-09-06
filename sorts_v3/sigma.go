@@ -9,7 +9,7 @@ type Sigma struct {
 	B Dependent
 }
 
-func (s Sigma) attr() sortAttr {
+func (s Sigma) sortAttr() sortAttr {
 	x := dummyTerm(s.A, "x")
 	sBx := s.B.Apply(x)
 	level := max(Level(s.A), Level(sBx))

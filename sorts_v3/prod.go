@@ -7,7 +7,7 @@ type Prod struct {
 	B WithSort
 }
 
-func (s Prod) attr() sortAttr {
+func (s Prod) sortAttr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
 		level:  level,

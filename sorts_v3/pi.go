@@ -9,7 +9,7 @@ type Pi struct {
 	B Dependent
 }
 
-func (s Pi) attr() sortAttr {
+func (s Pi) sortAttr() sortAttr {
 	x := dummyTerm(s.A, "x")
 	sBx := s.B.Apply(x)
 	level := max(Level(s.A), Level(sBx))
