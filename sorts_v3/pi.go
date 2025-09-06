@@ -11,10 +11,11 @@ type Pi struct {
 
 func (s Pi) attr() sortAttr {
 	x := dummyTerm(s.A, "x")
-	level := max(Level(s.A), Level(s.B(x)))
+	sBx := s.B.Apply(x)
+	level := max(Level(s.A), Level(sBx))
 	return sortAttr{
 		level:  level,
-		name:   fmt.Sprintf("Π%s:%s. %s", Name(x), Name(s.A), Name(s.B(x))),
+		name:   fmt.Sprintf("Π(x:%s)%s(x)", Name(s.A), Name(s.B)),
 		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
@@ -24,7 +25,8 @@ func (s Pi) attr() sortAttr {
 					return false
 				}
 				y := dummyTerm(d.A, "y")
-				return LessEqual(s.B(x), d.B(y))
+				dBy := d.B.Apply(y)
+				return LessEqual(sBx, dBy)
 			default:
 				return false
 			}
@@ -32,16 +34,20 @@ func (s Pi) attr() sortAttr {
 	}
 }
 
-// Intro - take a func that maps (a: A) into (b: B(a))  give (x: Πx:A. B(x))
+// Intro - take a func that maps (a: A) into (b: B(a))  give (f: Π(x:A)B(x))
 func (s Pi) Intro(f func(Sort) Sort) Sort {
 	// verify
 	a := dummyTerm(s.A, "a")
 	b := f(a)
-	mustTermOf(b, s.B(a)) // TODO - think, shouldn't it have to check for every a of type A?
+	sBa := s.B.Apply(a)
+	mustTermOf(b, sBa) // TODO - think, shouldn't it have to check for every a of type A?
 
 	return dummyTerm(s, fmt.Sprintf("(intro %s %p)", Name(s), f))
 }
 
-func (s Pi) Elim(a Sort) Sort {
-	
+// Elim - take (f: Π(x:A)B(x)) (a: A) give (b: B(a)) - Modus Ponens
+func (s Pi) Elim(f Sort, a Sort) Sort {
+	mustTermOf(f, s)
+	mustTermOf(a, s.A)
+	return dummyTerm(s, fmt.Sprintf("(elim %s %p)", Name(f), Name(a)))
 }
