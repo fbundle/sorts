@@ -30,7 +30,17 @@ func (s Sigma) attr() sortAttr {
 	}
 }
 
-// Intro - take (a: A) (b: B(a)) give (t: )
+// Intro - take (a: A) (b: B(a)) give (t: Σ(x:A)B(x))
 func (s Sigma) Intro(a Sort, b Sort) Sort {
+	mustTermOf(a, s.A)
+	mustTermOf(b, s.B.Apply(a))
+	return dummyTerm(s, fmt.Sprintf("(%s, %s)", Name(a), Name(b)))
+}
 
+// Elim - take (t: Σ(x:A)B(x)) give (a: A) (b: B(a))
+func (s Sigma) Elim(t Sort) (left Sort, right Sort) {
+	mustTermOf(t, s)
+	a := dummyTerm(s.A, "a")
+	b := dummyTerm(s.B.Apply(a), "b")
+	return a, b
 }
