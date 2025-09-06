@@ -18,8 +18,7 @@ func (s Sum) attr() sortAttr {
 			case Sum:
 				return LessEqual(s.A, d.A) && LessEqual(s.B, d.B)
 			default:
-				panic("type_error - should catch all types")
-
+				return false
 			}
 		},
 	}

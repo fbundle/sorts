@@ -41,7 +41,6 @@ func (s Atom) attr() sortAttr {
 		parent: defaultSort(s.parent, s.level+1),
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
-
 			case Atom:
 				if s.level != d.level {
 					return false
@@ -54,10 +53,8 @@ func (s Atom) attr() sortAttr {
 				}
 				_, ok := lessEqualMap[rule{s.name, d.name}]
 				return ok
-			case Arrow:
-				return false
 			default:
-				panic("type_error - should catch all types")
+				return false
 			}
 		},
 	}

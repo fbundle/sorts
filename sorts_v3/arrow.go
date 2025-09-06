@@ -16,8 +16,6 @@ func (s Arrow) attr() sortAttr {
 		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
-			case Atom:
-				return false
 			case Arrow:
 				// tricky: subtyping for Arrow is contravariant in domain, covariant in codomain
 				// {any -> unit} can be cast into {int -> unit}
@@ -27,8 +25,7 @@ func (s Arrow) attr() sortAttr {
 				}
 				return LessEqual(s.B, d.B)
 			default:
-				panic("type_error - should catch all types")
-
+				return false
 			}
 		},
 	}

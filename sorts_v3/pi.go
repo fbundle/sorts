@@ -18,10 +18,6 @@ func (s Pi) attr() sortAttr {
 		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
-			case Atom:
-				return false
-			case Arrow:
-				return false
 			case Pi:
 				// tricky: subtyping for Arrow is contravariant in domain, covariant in codomain
 				if !LessEqual(d.A, s.A) {
@@ -30,7 +26,7 @@ func (s Pi) attr() sortAttr {
 				y := dummyTerm(d.A, "y")
 				return LessEqual(s.B(x), d.B(y))
 			default:
-				panic("type_error - should catch all types")
+				return false
 			}
 		},
 	}

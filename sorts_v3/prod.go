@@ -18,8 +18,7 @@ func (s Prod) attr() sortAttr {
 			case Prod:
 				return LessEqual(s.A, d.A) && LessEqual(s.B, d.B)
 			default:
-				panic("type_error - should catch all types")
-
+				return false
 			}
 		},
 	}
