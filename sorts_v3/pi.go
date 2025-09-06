@@ -31,3 +31,17 @@ func (s Pi) attr() sortAttr {
 		},
 	}
 }
+
+// Intro - take a func that maps (a: A) into (b: B(a))  give (x: Πx:A. B(x))
+func (s Pi) Intro(f func(Sort) Sort) Sort {
+	// verify
+	a := dummyTerm(s.A, "a")
+	b := f(a)
+	mustTermOf(b, s.B(a)) // TODO - think, shouldn't it have to check for every a of type A?
+
+	return dummyTerm(s, fmt.Sprintf("(intro %s %p)", Name(s), f))
+}
+
+func (s Pi) Elim(a Sort) Sort {
+	
+}

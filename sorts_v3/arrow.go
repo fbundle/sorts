@@ -31,8 +31,8 @@ func (s Arrow) attr() sortAttr {
 	}
 }
 
-// ModusPonens - take (a: A) give (b: B)
-func (s Arrow) ModusPonens(a Sort) Sort {
+// Elim - take (a: A) give (b: B) - Modus Ponens
+func (s Arrow) Elim(a Sort) Sort {
 	mustTermOf(a, s.A)
 	return dummyTerm(s.B, fmt.Sprintf("(modus_ponens %s %s)", Name(s), Name(a)))
 }

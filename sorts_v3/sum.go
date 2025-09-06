@@ -36,9 +36,9 @@ func (s Sum) IntroRight(b Sort) Sort {
 	return dummyTerm(s, fmt.Sprintf("(intro_right %s %s)", Name(s), Name(b)))
 }
 
-// ByCases - take (y: A + B) (h1: A -> X) (h2: B -> X) give (x: X)
-func (s Sum) ByCases(y Sort, h1 Sort, h2 Sort) Sort {
-	mustTermOf(y, s)
+// ByCases - take (t: A + B) (h1: A -> X) (h2: B -> X) give (x: X)
+func (s Sum) ByCases(t Sort, h1 Sort, h2 Sort) Sort {
+	mustTermOf(t, s)
 	mustSubType(Parent(h1).(Arrow).A, s.A)
 	mustSubType(Parent(h2).(Arrow).A, s.B)
 
