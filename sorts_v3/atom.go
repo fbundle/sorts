@@ -17,7 +17,7 @@ func Any(level int) Atom {
 	)
 }
 
-func NewAtom(level int, name string, parent WithSort) Atom {
+func NewAtom(level int, name string, parent Sort) Atom {
 	if parent != nil && Level(parent) != level+1 {
 		panic("type_error make")
 	}
@@ -31,7 +31,7 @@ func NewAtom(level int, name string, parent WithSort) Atom {
 type Atom struct {
 	level  int
 	name   string
-	parent WithSort
+	parent Sort
 }
 
 func (s Atom) sortAttr() sortAttr {
@@ -39,7 +39,7 @@ func (s Atom) sortAttr() sortAttr {
 		name:   s.name,
 		level:  s.level,
 		parent: defaultSort(s.parent, s.level+1),
-		lessEqual: func(dst WithSort) bool {
+		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Atom:
 				if s.level != d.level {
@@ -60,7 +60,7 @@ func (s Atom) sortAttr() sortAttr {
 	}
 }
 
-func defaultSort(sort WithSort, level int) WithSort {
+func defaultSort(sort Sort, level int) Sort {
 	if sort != nil {
 		if Level(sort) != level {
 			panic("type_error Level")

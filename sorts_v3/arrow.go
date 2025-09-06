@@ -4,8 +4,8 @@ import "fmt"
 
 // Arrow - (A -> B)
 type Arrow struct {
-	A WithSort
-	B WithSort
+	A Sort
+	B Sort
 }
 
 func (s Arrow) sortAttr() sortAttr {
@@ -14,7 +14,7 @@ func (s Arrow) sortAttr() sortAttr {
 		name:   fmt.Sprintf("%s -> %s", Name(s.A), Name(s.B)),
 		level:  level,
 		parent: defaultSort(nil, level+1),
-		lessEqual: func(dst WithSort) bool {
+		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Arrow:
 				// tricky: subtyping for Arrow is contravariant in domain, covariant in codomain
@@ -32,14 +32,14 @@ func (s Arrow) sortAttr() sortAttr {
 }
 
 // Elim - take (f: A -> B) (a: A) give (b: B) - Modus Ponens
-func (s Arrow) Elim(f WithSort, a WithSort) WithSort {
+func (s Arrow) Elim(f Sort, a Sort) Sort {
 	mustTermOf(f, s)
 	mustTermOf(a, s.A)
 	return dummyTerm(s.B, fmt.Sprintf("(elim %s %s)", Name(s), Name(a)))
 }
 
 // Intro - take a func that maps (a: A) into (b: B)  give (x: A -> B)
-func (s Arrow) Intro(f func(WithSort) WithSort) WithSort {
+func (s Arrow) Intro(f func(Sort) Sort) Sort {
 	// verify
 	a := dummyTerm(s.A, "a")
 	b := f(a)

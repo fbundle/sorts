@@ -8,7 +8,7 @@ const (
 
 func Name(s any) string {
 	switch s := s.(type) {
-	case WithSort:
+	case Sort:
 		return s.sortAttr().name
 	case Dependent:
 		return s.Name
@@ -17,25 +17,25 @@ func Name(s any) string {
 	}
 }
 
-func Level(s WithSort) int {
+func Level(s Sort) int {
 	return s.sortAttr().level
 }
 
-func Parent(s WithSort) WithSort {
+func Parent(s Sort) Sort {
 	return s.sortAttr().parent
 }
 
-func LessEqual(x WithSort, y WithSort) bool {
+func LessEqual(x Sort, y Sort) bool {
 	return x.sortAttr().lessEqual(y)
 }
 
-type WithSort interface {
+type Sort interface {
 	sortAttr() sortAttr
 }
 
 type sortAttr struct {
-	name      string                  // every WithSort is identified with a Name (string)
-	level     int                     // universe Level
-	parent    WithSort                // (or Type) every WithSort must have a Parent
-	lessEqual func(dst WithSort) bool // a partial order on sorts (subtype)
+	name      string              // every Sort is identified with a Name (string)
+	level     int                 // universe Level
+	parent    Sort                // (or Type) every Sort must have a Parent
+	lessEqual func(dst Sort) bool // a partial order on sorts (subtype)
 }

@@ -1,13 +1,13 @@
 package sorts
 
-func mustTermOf(x WithSort, X WithSort) {
+func mustTermOf(x Sort, X Sort) {
 	mustSubType(Parent(x), X)
 }
-func mustSubType(x WithSort, y WithSort) {
+func mustSubType(x Sort, y Sort) {
 	if ok := LessEqual(x, y); !ok {
 		panic("type_error")
 	}
 }
-func dummyTerm(parent WithSort, name string) WithSort {
+func dummyTerm(parent Sort, name string) Sort {
 	return NewAtom(Level(parent)-1, name, parent)
 }
