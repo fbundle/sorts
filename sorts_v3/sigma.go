@@ -5,7 +5,7 @@ import "fmt"
 // Sigma - (x: A, y: B(x)) , similar to Prod
 // this is the existential quantifier
 type Sigma struct {
-	A Inhabited
+	A Sort
 	B Dependent
 }
 
