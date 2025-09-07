@@ -3,8 +3,7 @@ package sorts
 // Inhabited - represents a Sort with at least one child
 // (true theorems have proofs)
 type Inhabited struct {
-	Sort  Sort // underlying sort
-	Child Sort // child/term of Sort
+	Sort Sort // underlying sort
 }
 
 func (s Inhabited) sortAttr() sortAttr {
