@@ -3,14 +3,14 @@ package sorts
 import "strconv"
 
 func Unit(level int) Atom {
-	return newAtom(
+	return NewAtom(
 		level,
 		InitialName,
 		nil,
 	)
 }
 func Any(level int) Atom {
-	return newAtom(
+	return NewAtom(
 		level,
 		TerminalName,
 		nil,
