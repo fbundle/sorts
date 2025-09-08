@@ -2,21 +2,6 @@ package sorts
 
 import "strconv"
 
-func Unit(level int) Atom {
-	return NewAtom(
-		level,
-		InitialName,
-		nil,
-	)
-}
-func Any(level int) Atom {
-	return NewAtom(
-		level,
-		TerminalName,
-		nil,
-	)
-}
-
 func NewAtom(level int, name string, parent Sort) Atom {
 	if level < 0 {
 		panic("constructible level must be >= 0")
