@@ -1,6 +1,10 @@
 package nat
 
-import "github.com/fbundle/sorts/sorts_v3"
+import (
+	"strconv"
+
+	"github.com/fbundle/sorts/sorts_v3"
+)
 
 type Nat struct {
 	Zero sorts.Sort
@@ -8,8 +12,15 @@ type Nat struct {
 }
 
 func NewNat() Nat {
-	natType := sorts.NewAtom()
+	natType := sorts.NewAtom(2, "Nat", nil)
 	return Nat{
-		Zero: sorts.
+		Zero: sorts.NewAtom(1, "0", natType),
+		Succ: func(s sorts.Sort) sorts.Sort {
+			n, err := strconv.Atoi(sorts.Name(s))
+			if err != nil {
+				panic(err)
+			}
+			return sorts.NewAtom(1, strconv.Itoa(n+1), natType)
+		},
 	}
 }
