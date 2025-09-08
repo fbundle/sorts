@@ -32,5 +32,5 @@ func main() {
 		return term_PorQ
 	})
 
-	fmt.Println(sorts.Name(x), sorts.Name(sorts.Parent(x)))
+	fmt.Println(sorts.Name(x), sorts.Level(x), sorts.Name(sorts.Parent(x)))
 }
