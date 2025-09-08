@@ -7,15 +7,19 @@ func NewAtom(level int, name string, parent Sort) Atom {
 		// cannot make proof arbitrarily
 		panic("constructible level must be >= 0")
 	}
-	return newAtom(level, name, parent)
-}
-
-func newAtom(level int, name string, parent Sort) Atom {
 	if parent != nil && Level(parent) != level+1 {
 		panic("type_error make")
 	}
 	return Atom{
 		level:  level,
+		name:   name,
+		parent: parent,
+	}
+}
+
+func dummyTerm(parent Sort, name string) Sort {
+	return Atom{
+		level:  Level(parent) - 1,
 		name:   name,
 		parent: parent,
 	}

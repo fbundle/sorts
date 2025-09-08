@@ -6,7 +6,3 @@ func mustTermOf(x Sort, X Sort) {
 		panic("type_error")
 	}
 }
-
-func dummyTerm(parent Sort, name string) Sort {
-	return newAtom(Level(parent)-1, name, parent)
-}
