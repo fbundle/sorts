@@ -3,14 +3,14 @@ package sorts
 import "strconv"
 
 func Unit(level int) Atom {
-	return NewAtom(
+	return newAtom(
 		level,
 		InitialName,
 		nil,
 	)
 }
 func Any(level int) Atom {
-	return NewAtom(
+	return newAtom(
 		level,
 		TerminalName,
 		nil,
@@ -18,6 +18,13 @@ func Any(level int) Atom {
 }
 
 func NewAtom(level int, name string, parent Sort) Atom {
+	if level < 0 {
+		panic("constructible level must be >= 0")
+	}
+	return newAtom(level, name, parent)
+}
+
+func newAtom(level int, name string, parent Sort) Atom {
 	if parent != nil && Level(parent) != level+1 {
 		panic("type_error make")
 	}

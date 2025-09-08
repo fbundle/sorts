@@ -9,5 +9,5 @@ func mustSubType(x Sort, y Sort) {
 	}
 }
 func dummyTerm(parent Sort, name string) Sort {
-	return NewAtom(Level(parent)-1, name, parent)
+	return newAtom(Level(parent)-1, name, parent)
 }
