@@ -2,10 +2,14 @@ package sorts
 
 import "strconv"
 
+const (
+	ProofLevel = -1
+)
+
 func NewAtom(level int, name string, parent Sort) Atom {
-	if level < 0 {
+	if level <= ProofLevel {
 		// cannot make proof arbitrarily
-		panic("constructible level must be >= 0")
+		panic("proof must not be constructed arbitrarily")
 	}
 	if parent != nil && Level(parent) != level+1 {
 		panic("type_error make")
