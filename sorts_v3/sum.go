@@ -40,10 +40,10 @@ func (s Sum) Intro(a Sort, b Sort) Sort {
 // ByCases - take (t: A + B) (h1: A -> X) (h2: B -> X) give (x: X)
 func (s Sum) ByCases(t Sort, h1 Sort, h2 Sort) Sort {
 	mustTermOf(t, s)
-	mustSubType(Parent(h1).(Arrow).A, s.A)
-	mustSubType(Parent(h2).(Arrow).A, s.B)
+	mustSubType(Parent(h1).(Arrow).A, s.A) // A
+	mustSubType(Parent(h2).(Arrow).A, s.B) // B
 
-	mustSubType(Parent(h1).(Arrow).B, Parent(h2).(Arrow).B)
+	mustSubType(Parent(h1).(Arrow).B, Parent(h2).(Arrow).B) // X
 
 	X := Parent(h1).(Arrow).B
 
