@@ -17,6 +17,7 @@ func NewAtom(level int, name string, parent Sort) Atom {
 	}
 }
 
+// dummyTerm - make a dummy term of type parent
 func dummyTerm(parent Sort, name string) Sort {
 	return Atom{
 		level:  Level(parent) - 1,
