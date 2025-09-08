@@ -4,6 +4,7 @@ import "strconv"
 
 func NewAtom(level int, name string, parent Sort) Atom {
 	if level < 0 {
+		// cannot make proof arbitrarily
 		panic("constructible level must be >= 0")
 	}
 	return newAtom(level, name, parent)
