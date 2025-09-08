@@ -2,15 +2,7 @@ package sorts
 
 import "strconv"
 
-const (
-	ProofLevel = -1
-)
-
 func NewAtom(level int, name string, parent Sort) Atom {
-	if level <= ProofLevel {
-		// cannot make proof arbitrarily
-		panic("proof must not be constructed arbitrarily")
-	}
 	if parent != nil && Level(parent) != level+1 {
 		panic("type_error make")
 	}
@@ -23,11 +15,7 @@ func NewAtom(level int, name string, parent Sort) Atom {
 
 // dummyTerm - make a dummy term of type parent
 func dummyTerm(parent Sort, name string) Sort {
-	return Atom{
-		level:  Level(parent) - 1,
-		name:   name,
-		parent: parent,
-	}
+	return NewAtom(Level(parent)-1, name, parent)
 }
 
 type Atom struct {
