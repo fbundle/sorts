@@ -6,11 +6,11 @@ import (
 	"github.com/fbundle/sorts/sorts_v3"
 )
 
-var Nat = sorts.NewAtom(2, "Nat", nil)
+var Nat = sorts.NewAtom(0, "Nat", nil)
 
-var Zero = sorts.NewAtom(1, "0", Nat)
+var Zero = sorts.NewAtom(-1, "0", Nat)
 
-var succSort = sorts.NewAtom(1, "succ", sorts.Arrow{Nat, Nat})
+var succSort = sorts.NewAtom(-1, "succ", sorts.Arrow{Nat, Nat})
 
 var Succ = sorts.Inhabited{
 	Sort: succSort,
