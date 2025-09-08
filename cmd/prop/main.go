@@ -22,10 +22,10 @@ func main() {
 	// I did it 😅 - x is a proof for (Q or P) -> (P or Q)
 	x := QorP_implies_PoQ.Intro(func(term_QorP sorts.Sort) sorts.Sort {
 		term_P_implies_PorQ := P_implies_PorQ.Intro(func(term_P sorts.Sort) sorts.Sort {
-			return PorQ.IntroLeft(term_P)
+			return PorQ.Intro(term_P, nil)
 		})
 		term_Q_implies_PorQ := Q_implies_PorQ.Intro(func(term_Q sorts.Sort) sorts.Sort {
-			return PorQ.IntroRight(term_Q)
+			return PorQ.Intro(nil, term_Q)
 		})
 
 		term_PorQ := QorP.ByCases(term_QorP, term_Q_implies_PorQ, term_P_implies_PorQ)
