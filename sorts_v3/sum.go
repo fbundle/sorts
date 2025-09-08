@@ -24,14 +24,14 @@ func (s Sum) sortAttr() sortAttr {
 	}
 }
 
-// Intro -
+// Intro - IntroLeft or IntroRight
 func (s Sum) Intro(a Sort, b Sort) Sort {
 	if a != nil {
-		// intro left - take (a: A) give (x: A + B)
+		// IntroLeft - take (a: A) give (x: A + B)
 		mustTermOf(a, s.A)
 		return dummyTerm(s, fmt.Sprintf("(intro_left %s %s)", Name(s), Name(a)))
 	} else {
-		// intro right - take (b: B) give (x: A + B)
+		// IntroRight - take (b: B) give (x: A + B)
 		mustTermOf(b, s.B)
 		return dummyTerm(s, fmt.Sprintf("(intro_right %s %s)", Name(s), Name(b)))
 	}
