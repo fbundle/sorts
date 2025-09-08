@@ -26,14 +26,14 @@ func (s Prod) sortAttr() sortAttr {
 
 // Intro - take (a: A) (b: B) give (a, b): A × B
 func (s Prod) Intro(a Sort, b Sort) Sort {
-	mustTermOf(a, s.A)
-	mustTermOf(b, s.B)
+	MustTermOf(a, s.A)
+	MustTermOf(b, s.B)
 	return dummyTerm(s, fmt.Sprintf("(%s, %s)", Name(a), Name(b)))
 }
 
 // Elim - take (t: A × B) give (a: A) and (b: B)
 func (s Prod) Elim(t Sort) (left Sort, right Sort) {
-	mustTermOf(t, s)
+	MustTermOf(t, s)
 	a := dummyTerm(s.A, fmt.Sprintf("(left %s %s)", Name(s), Name(t)))
 	b := dummyTerm(s.B, fmt.Sprintf("(right %s %s)", Name(s), Name(t)))
 	return a, b

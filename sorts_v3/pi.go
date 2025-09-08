@@ -40,14 +40,14 @@ func (s Pi) Intro(f func(Sort) Sort) Sort {
 	a := dummyTerm(s.A, "a")
 	b := f(a)
 	sBa := s.B.Apply(a)
-	mustTermOf(b, sBa) // TODO - think, shouldn't it have to check for every a of type A?
+	MustTermOf(b, sBa) // TODO - think, shouldn't it have to check for every a of type A?
 
 	return dummyTerm(s, fmt.Sprintf("(intro %s %p)", Name(s), f))
 }
 
 // Elim - take (f: Π(x:A)B(x)) (a: A) give (b: B(a)) - Modus Ponens
 func (s Pi) Elim(f Sort, a Sort) Sort {
-	mustTermOf(f, s)
-	mustTermOf(a, s.A)
+	MustTermOf(f, s)
+	MustTermOf(a, s.A)
 	return dummyTerm(s, fmt.Sprintf("(elim %s %p)", Name(f), Name(a)))
 }

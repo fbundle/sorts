@@ -33,8 +33,8 @@ func (s Arrow) sortAttr() sortAttr {
 
 // Elim - take (f: A -> B) (a: A) give (b: B) - Modus Ponens
 func (s Arrow) Elim(f Sort, a Sort) Sort {
-	mustTermOf(f, s)
-	mustTermOf(a, s.A)
+	MustTermOf(f, s)
+	MustTermOf(a, s.A)
 	return dummyTerm(s.B, fmt.Sprintf("(elim %s %s)", Name(s), Name(a)))
 }
 
@@ -43,7 +43,7 @@ func (s Arrow) Intro(f func(Sort) Sort) Sort {
 	// verify
 	a := dummyTerm(s.A, "a")
 	b := f(a)
-	mustTermOf(b, s.B)
+	MustTermOf(b, s.B)
 
 	// verify ok
 	return dummyTerm(s, fmt.Sprintf("(implies_intro %s %p)", Name(s), f))

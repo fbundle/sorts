@@ -6,21 +6,20 @@ import (
 	"github.com/fbundle/sorts/sorts_v3"
 )
 
-type Nat struct {
-	Zero sorts.Sort
-	Succ func(sorts.Sort) sorts.Sort
-}
+var Nat = sorts.NewAtom(2, "Nat", nil)
 
-func NewNat() Nat {
-	natType := sorts.NewAtom(2, "Nat", nil)
-	return Nat{
-		Zero: sorts.NewAtom(1, "0", natType),
-		Succ: func(s sorts.Sort) sorts.Sort {
-			n, err := strconv.Atoi(sorts.Name(s))
-			if err != nil {
-				panic(err)
-			}
-			return sorts.NewAtom(1, strconv.Itoa(n+1), natType)
-		},
-	}
+var Zero = sorts.NewAtom(1, "0", Nat)
+
+var succSort = sorts.NewAtom(1, "succ", sorts.Arrow{Nat, Nat})
+
+var Succ = sorts.Inhabited{
+	Sort: succSort,
+	Child: sorts.Arrow{Nat, Nat}.Intro(func(s sorts.Sort) sorts.Sort {
+		sorts.MustTermOf(s, Nat)
+		n, err := strconv.Atoi(sorts.Name(s))
+		if err != nil {
+			panic(err)
+		}
+		return sorts.NewAtom(1, strconv.Itoa(n+1), Nat)
+	}),
 }

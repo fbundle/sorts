@@ -28,21 +28,21 @@ func (s Sum) sortAttr() sortAttr {
 func (s Sum) Intro(a Sort, b Sort) Sort {
 	if a != nil {
 		// IntroLeft - take (a: A) give (x: A + B)
-		mustTermOf(a, s.A)
+		MustTermOf(a, s.A)
 		return dummyTerm(s, fmt.Sprintf("(intro_left %s %s)", Name(s), Name(a)))
 	} else {
 		// IntroRight - take (b: B) give (x: A + B)
-		mustTermOf(b, s.B)
+		MustTermOf(b, s.B)
 		return dummyTerm(s, fmt.Sprintf("(intro_right %s %s)", Name(s), Name(b)))
 	}
 }
 
 // ByCases - take (t: A + B) (h1: A -> X) (h2: B -> X) give (x: X)
 func (s Sum) ByCases(t Sort, h1 Sort, h2 Sort) Sort {
-	mustTermOf(t, s)
+	MustTermOf(t, s)
 	X := Parent(h1).(Arrow).B
-	mustTermOf(h1, Arrow{s.A, X})
-	mustTermOf(h2, Arrow{s.B, X})
+	MustTermOf(h1, Arrow{s.A, X})
+	MustTermOf(h2, Arrow{s.B, X})
 
 	return dummyTerm(X, fmt.Sprintf("(by_cases %s %s %s)", Name(s), Name(h1), Name(h2)))
 }
