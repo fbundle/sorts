@@ -12,11 +12,12 @@ const (
 	TokenInfixEnd   Token = "}"
 	TokenUnwrap     Token = "$"
 
-	TokenSum      Token = "+"
-	TokenProd     Token = "×"
-	TokenLambda   Token = "=>"
-	TokenTypeCast Token = ":"
-	TokenList     Token = ","
+	TokenSum         Token = "+"
+	TokenProd        Token = "×"
+	TokenArrowDouble Token = "=>"
+	TokenArrow       Token = "->"
+	TokenTypeCast    Token = ":"
+	TokenList        Token = ","
 )
 
 func Tokenize(s string) []Token {
@@ -29,7 +30,8 @@ func Tokenize(s string) []Token {
 			TokenUnwrap,
 			TokenSum,
 			TokenProd,
-			TokenLambda,
+			TokenArrowDouble,
+			TokenArrow,
 			TokenTypeCast,
 			TokenList,
 		},
