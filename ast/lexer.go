@@ -111,7 +111,7 @@ func tokenize(str string, splitTokens []string, pList ...preprocessor) []Token {
 					flushBuffer()
 					appendBuffer(1)
 					state = STATE_STRING
-				} else if unicode.IsSpace([]rune(str[0:1])[0]) {
+				} else if unicode.IsSpace([]rune(str)[0]) {
 					flushBuffer()
 					discardInput(1)
 				} else {
