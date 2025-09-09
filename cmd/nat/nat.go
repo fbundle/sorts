@@ -12,6 +12,6 @@ func main() {
 	fmt.Println(sorts.Name(n))
 	for i := 0; i < 5; i++ {
 		n = nat.Succ(n)
-		fmt.Println(sorts.Name(n))
+		fmt.Println(i+1, sorts.Name(n))
 	}
 }
