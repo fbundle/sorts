@@ -7,9 +7,11 @@ import (
 )
 
 func testLexer() {
-	s := "(hello \"this is\" a house ) hehe haha 1231 ( this (is \"another \\\" house\"))"
+	s := "(hello \"this is\" a house ) hehe haha 1231 ( this( is \"another \\\" house\"))"
 	tokens := lisp_util.Tokenize(s)
-	fmt.Println(tokens)
+	for _, tok := range tokens {
+		fmt.Println(tok)
+	}
 }
 
 func main() {
