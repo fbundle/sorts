@@ -1,24 +1,22 @@
 package sorts
 
 import (
-	"fmt"
-
 	"github.com/fbundle/sorts/expr"
 )
 
 // Pi - (x: A) -> (y: B(x)) similar to Arrow
 // this is the universal quantifier
 type Pi struct {
-	A Sort
+	A Inhabited
 	B Dependent
 }
 
 func (s Pi) sortAttr() sortAttr {
-	x := dummyTerm(s.A, "x")
+	x := s.A.Child
 	sBx := s.B.Apply(x)
 	level := max(Level(s.A), Level(sBx))
 	return sortAttr{
-		repr:   expr.Node{expr.TermArrowSingle, expr.Node{expr.TermColon, Repr(x), Repr(s.A)}, expr.Node{s.B, Repr(x)}},
+		repr:   expr.Node{expr.TermArrowSingle, expr.Node{expr.TermColon, Repr(x), Repr(s.A)}, expr.Node{s.B.Repr(), Repr(x)}},
 		level:  level,
 		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst Sort) bool {
@@ -28,7 +26,7 @@ func (s Pi) sortAttr() sortAttr {
 				if !LessEqual(d.A, s.A) {
 					return false
 				}
-				y := dummyTerm(d.A, "y")
+				y := d.A.Child
 				dBy := d.B.Apply(y)
 				return LessEqual(sBx, dBy)
 			default:
