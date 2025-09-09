@@ -2,6 +2,7 @@ package ast
 
 import (
 	"strings"
+	"unicode"
 )
 
 const (
@@ -62,8 +63,9 @@ var removeComment = func(sep string) preprocessor {
 }
 
 const (
-	TokenStringBegin Token = "\""
-	TokenStringEnd   Token = "\""
+	CharStringBegin  Token = "\""
+	CharStringEnd    Token = "\""
+	CharStringEscape Token = "\\"
 )
 
 func tokenize(str string, splitTokens []string, pList ...preprocessor) []Token {
@@ -87,11 +89,46 @@ func tokenize(str string, splitTokens []string, pList ...preprocessor) []Token {
 			buffer = buffer[:0]
 		}
 	}
+	appendBuffer := func(n int) {
+		str, buffer = str[n:], append(buffer, []rune(str[:n])...)
+	}
+	discardInput := func(n int) {
+		str = str[n:]
+	}
 
 	for len(str) > 0 {
 		switch state {
 		case STATE_NORMAL:
+			func() {
+				for _, tok := range splitTokens {
+					if len(str) >= len(tok) && str[:len(tok)] == tok {
+						flushBuffer()
+						appendBuffer(len(tok))
+						flushBuffer()
+						return
+					}
+				}
+				if str[0:1] == CharStringBegin {
+					flushBuffer()
+					appendBuffer(1)
+					state = STATE_STRING
+				} else if unicode.IsSpace([]rune(str[0:1])[0]) {
+					flushBuffer()
+					discardInput(1)
+				} else {
+					appendBuffer(1)
+				}
+			}()
 		case STATE_STRING:
+			if len(str) >= 2 && str[0:1] == CharStringEscape {
+				appendBuffer(2)
+			} else if str[0:1] == CharStringEnd {
+				appendBuffer(1)
+				flushBuffer()
+				state = STATE_NORMAL
+			} else {
+				appendBuffer(1)
+			}
 		default:
 			panic("unreachable")
 		}
