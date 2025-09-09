@@ -62,5 +62,12 @@ func (s Equal) Trans(t1 equalTerm, t2 equalTerm) Sort {
 	// transitive
 	MustTermOf(t1, s)
 	MustTermOf(t2, s)
-	
+	if t1.B != t2.A {
+		panic("type_error")
+	}
+	return equalTerm{
+		A:      t1.A,
+		B:      t2.B,
+		Parent: s,
+	}
 }
