@@ -1,6 +1,6 @@
-package sorts
+package lisp_util
 
-type Token string
+type Token = string
 
 const (
 	TokenOpen  Token = "("
