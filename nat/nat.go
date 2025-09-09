@@ -42,3 +42,4 @@ var AddArrow = NatToNatToNat.Intro("add", func(a sorts.Sort) sorts.Sort {
 		return sorts.NewAtom(NatLevel, "add_a_b", Nat)
 	})
 })
+

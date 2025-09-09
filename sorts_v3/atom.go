@@ -10,9 +10,6 @@ const (
 )
 
 func NewAtom(level int, name string, parent Sort) Atom {
-	if level < 0 {
-		panic("proof cannot be created arbitrarily")
-	}
 	if parent != nil && Level(parent) != level+1 {
 		panic("type_error make")
 	}
