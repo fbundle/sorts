@@ -65,7 +65,18 @@ func (s Equal) sortAttr() sortAttr {
 }
 
 func (s Equal) Refl(x Sort) Sort {
+	// reflexive
 	MustTermOf(x, s.A)
 	MustTermOf(x, s.B)
 	return dummyTerm(s, fmt.Sprintf("%s = %s", Name(x), Name(x)))
+}
+
+func (s Equal) Symm(e Sort) Sort {
+	// symmetric
+	panic("not implemented")
+}
+
+func (s Equal) Trans(e1 Sort, e2 Sort) Sort {
+	// transitive
+	
 }
