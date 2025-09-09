@@ -29,11 +29,11 @@ func (s Sum) Intro(a Sort, b Sort) Sort {
 	if a != nil {
 		// IntroLeft - take (a: A) give (x: A + B)
 		MustTermOf(a, s.A)
-		return dummyTerm(s, fmt.Sprintf("(intro_left %s %s)", Name(s), Name(a)))
+		return dummyTerm(s, fmt.Sprintf("(<%s, _> : %s)", Name(a), Name(s)))
 	} else {
 		// IntroRight - take (b: B) give (x: A + B)
 		MustTermOf(b, s.B)
-		return dummyTerm(s, fmt.Sprintf("(intro_right %s %s)", Name(s), Name(b)))
+		return dummyTerm(s, fmt.Sprintf("(<_, %s> : %s)", Name(b), Name(s)))
 	}
 }
 
