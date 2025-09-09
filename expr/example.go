@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// Example demonstrates tokenization, parsing (prefix and infix), and marshaling.
+// Example demonstrates tokenization, parsing (prefix and infix), strings, nested calls, and marshaling.
 func Example() {
 	// Tokenize with comments and commas inside infix blocks
 	src1 := "{a, b, c} # a list"
@@ -35,11 +35,19 @@ func Example() {
 	}
 	fmt.Println(expr4.Marshal())
 
-	// Parse a right-associative form with lambda: {x => y => (add x y)}
-	src5 := "{x => y => (add x y)}"
+	// Parse strings and nested functions
+	src5 := "(print \"hello, world\" (upper (concat \"a\" \"b\")))"
 	expr5, rest5, err := Parse(Tokenize(src5))
 	if err != nil || len(rest5) != 0 {
 		panic("unexpected parse result for src5")
 	}
 	fmt.Println(expr5.Marshal())
+
+	// Parse a right-associative form with lambda: {x => y => (add x y)}
+	src6 := "{x => y => (add x y)}"
+	expr6, rest6, err := Parse(Tokenize(src6))
+	if err != nil || len(rest6) != 0 {
+		panic("unexpected parse result for src6")
+	}
+	fmt.Println(expr6.Marshal())
 }

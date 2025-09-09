@@ -1,6 +1,6 @@
-## ast
+## expr
 
-A tiny AST package for a LISP-like syntax with optional infix blocks. It provides:
+A tiny expression AST package for a LISP-like syntax with optional infix blocks. It provides:
 
 - Tokenizer: splits a source string into tokens with simple preprocessing
 - Parser: builds an AST `Expr` from tokens, supporting both prefix and infix forms
@@ -37,18 +37,18 @@ package main
 
 import (
     "fmt"
-    "github.com/khanh/sorts/ast"
+    "github.com/khanh/sorts/expr"
 )
 
 func main() {
     src := "(add 1 {2 + 3})"
-    toks := ast.Tokenize(src)
-    expr, rest, err := ast.Parse(toks)
+    toks := expr.Tokenize(src)
+    e, rest, err := expr.Parse(toks)
     if err != nil { panic(err) }
     if len(rest) != 0 { panic("unexpected trailing tokens") }
 
     // Marshal back to tokens
-    out := expr.Marshal()
+    out := e.Marshal()
     fmt.Println(out)
 }
 ```
@@ -57,32 +57,38 @@ func main() {
 
 - Tokenizing
 ```go
-ast.Tokenize("{a, b, c} # list")
+expr.Tokenize("{a, b, c} # list")
 // → ["{", "a", ",", "b", ",", "c", "}"]
 ```
 
 - Parsing prefix
 ```go
-expr, _, _ := ast.Parse(ast.Tokenize("(f x y)"))
-// expr = Node{Term("f"), Term("x"), Term("y")}
+ex, _, _ := expr.Parse(expr.Tokenize("(f x y)"))
+// ex = Node{Term("f"), Term("x"), Term("y")}
 ```
 
 - Parsing infix (left associative)
 ```go
-expr, _, _ := ast.Parse(ast.Tokenize("{1 + 2 + 3}"))
-// expr marshals to: ( + ( + 1 2 ) 3 )
+ex, _, _ := expr.Parse(expr.Tokenize("{1 + 2 + 3}"))
+// ex marshals to: ( + ( + 1 2 ) 3 )
 ```
 
 - Parsing infix (right associative: lambda)
 ```go
-expr, _, _ := ast.Parse(ast.Tokenize("{x => y => (add x y)}"))
-// expr marshals to: ( => x ( => y ( add x y ) ) )
+ex, _, _ := expr.Parse(expr.Tokenize("{x => y => (add x y)}"))
+// ex marshals to: ( => x ( => y ( add x y ) ) )
 ```
 
 - Parsing infix (right associative: list with comma)
 ```go
-expr, _, _ := ast.Parse(ast.Tokenize("{a, b, c}"))
-// expr marshals to: ( , a ( , b c ) )
+ex, _, _ := expr.Parse(expr.Tokenize("{a, b, c}"))
+// ex marshals to: ( , a ( , b c ) )
+```
+
+- Parsing strings and nested functions
+```go
+ex, _, _ := expr.Parse(expr.Tokenize("(print \"hello, world\" (upper (concat \"a\" \"b\")))"))
+// ex marshals to: ( print "hello, world" ( upper ( concat "a" "b" ) ) )
 ```
 
 ### Notes
