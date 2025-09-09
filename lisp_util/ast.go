@@ -17,16 +17,12 @@ func (e Term) Marshal() []Token {
 	return []Token{Token(e)}
 }
 
-type Node struct {
-	Cmd  Term
-	Args []Expr
-}
+type Node []Expr
 
 func (e Node) Marshal() []Token {
 	var output []Token
 	output = append(output, TokenOpen)
-	output = append(output, Token(e.Cmd))
-	for _, arg := range e.Args {
+	for _, arg := range e {
 		output = append(output, arg.Marshal()...)
 	}
 	output = append(output, TokenClose)
