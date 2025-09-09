@@ -40,3 +40,5 @@ var AddArrow = NatToNatToNat.Intro("add", func(a Sort) Sort {
 		return NewAtom(NatLevel, "add_a_b", Nat)
 	})
 })
+
+// TODO - implement ZeroAdd which is ∀(n: Nat)(add x 0 = x) where ∀ is Pi type and = is Equal
