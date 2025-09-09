@@ -6,14 +6,10 @@ import (
 )
 
 const (
-	TokenBlockBegin  Token = "("
-	TokenBlockEnd    Token = ")"
-	TokenInfixBegin  Token = "{"
-	TokenInfixEnd    Token = "}"
-	TokenUnwrap      Token = "$"
-	TokenTypeCast    Token = ":"
-	TokenArrowSingle Token = "->"
-	TokenArrowDouble Token = "=>"
+	TokenBlockBegin Token = "("
+	TokenBlockEnd   Token = ")"
+	TokenInfixBegin Token = "{"
+	TokenInfixEnd   Token = "}"
 )
 
 func pop(tokenList []Token) ([]Token, Token, error) {
