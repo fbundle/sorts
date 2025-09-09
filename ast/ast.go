@@ -1,4 +1,4 @@
-package lisp_util
+package ast
 
 type Token = string
 

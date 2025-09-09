@@ -1,4 +1,4 @@
-package lisp_util
+package ast
 
 import (
 	"fmt"
@@ -11,8 +11,8 @@ type Char = rune
 const (
 	CharBlockBegin   Char = '('
 	CharBlockEnd     Char = ')'
-	CharSugarBegin   Char = '{'
-	CharSugarEnd     Char = '}'
+	CharInfixBegin   Char = '{'
+	CharInfixEnd     Char = '}'
 	CharUnwrap       Char = '$'
 	CharTypeCast     Char = ':'
 	CharStringBegin  Char = '"'
@@ -25,8 +25,8 @@ func Tokenize(s string) []Token {
 		map[Char]struct{}{
 			CharBlockBegin: {},
 			CharBlockEnd:   {},
-			CharSugarBegin: {},
-			CharSugarEnd:   {},
+			CharInfixBegin: {},
+			CharInfixEnd:   {},
 			CharUnwrap:     {},
 			CharTypeCast:   {},
 		},
