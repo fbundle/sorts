@@ -22,7 +22,7 @@ func (s equalTerm) sortAttr() sortAttr {
 	return sortAttr{
 		name:   name,
 		level:  level,
-		parent: defaultSort(nil, level+1),
+		parent: s.Parent,
 		lessEqual: func(dst Sort) bool {
 			return false // I haven't find any useful thing for this
 		},
@@ -48,12 +48,19 @@ func (s Equal) Refl(x Sort) Sort {
 	return equalTerm{A: x, B: x, Parent: s}
 }
 
-func (s Equal) Symm(e Sort) Sort {
+func (s Equal) Symm(t equalTerm) equalTerm {
 	// symmetric
-	panic("not implemented")
+	MustTermOf(t, s)
+	return equalTerm{
+		A:      t.B,
+		B:      t.A,
+		Parent: s,
+	}
 }
 
-func (s Equal) Trans(e1 Sort, e2 Sort) Sort {
+func (s Equal) Trans(t1 equalTerm, t2 equalTerm) Sort {
 	// transitive
-	panic("not implemented")
+	MustTermOf(t1, s)
+	MustTermOf(t2, s)
+	
 }
