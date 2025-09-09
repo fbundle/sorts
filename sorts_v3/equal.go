@@ -14,9 +14,13 @@ type equalTerm struct {
 }
 
 func (s equalTerm) sortAttr() sortAttr {
+	name := fmt.Sprintf("%s = %s", Name(s.A), Name(s.B))
+	if nameWithType {
+		name = fmt.Sprintf("(%s : %s)", name, Name(s.Parent))
+	}
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
-		name:   fmt.Sprintf("%s = %s", Name(s.A), Name(s.B)),
+		name:   name,
 		level:  level,
 		parent: defaultSort(nil, level+1),
 		lessEqual: func(dst Sort) bool {
@@ -41,7 +45,7 @@ func (s Equal) Refl(x Sort) Sort {
 	// reflexive
 	MustTermOf(x, s.A)
 	MustTermOf(x, s.B)
-	return dummyTerm(s, fmt.Sprintf("%s = %s", Name(x), Name(x)))
+	return equalTerm{A: x, B: x, Parent: s}
 }
 
 func (s Equal) Symm(e Sort) Sort {
