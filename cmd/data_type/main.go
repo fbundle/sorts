@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/sorts_v2"
+	"github.com/fbundle/sorts/sorts/sorts_v2"
 )
 
 const (

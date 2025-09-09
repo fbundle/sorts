@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	sorts "github.com/fbundle/sorts/sorts_v3"
+	sorts "github.com/fbundle/sorts/sorts/sorts_v3"
 )
 
 func main() {
