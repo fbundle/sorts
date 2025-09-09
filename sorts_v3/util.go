@@ -6,3 +6,4 @@ func MustTermOf(x Sort, X Sort) {
 		panic("type_error")
 	}
 }
+

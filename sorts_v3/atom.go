@@ -3,6 +3,7 @@ package sorts
 import "strconv"
 
 func NewAtom(level int, name string, parent Sort) Atom {
+	// TODO - make this panic on negative levels eventually
 	if parent != nil && Level(parent) != level+1 {
 		panic("type_error make")
 	}
