@@ -50,5 +50,5 @@ func (s Pi) Elim(arrow Sort, a Sort) Sort {
 	MustTermOf(arrow, s)
 	MustTermOf(a, s.A)
 	Ba := s.B.Apply(a)
-	return dummyTerm(Ba, fmt.Sprintf("%s %s", Name(arrow), Name(a)))
+	return dummyTerm(Ba, fmt.Sprintf("(%s %s)", Name(arrow), Name(a)))
 }
