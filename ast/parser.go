@@ -5,13 +5,6 @@ import (
 	"fmt"
 )
 
-const (
-	TokenBlockBegin Token = "("
-	TokenBlockEnd   Token = ")"
-	TokenInfixBegin Token = "{"
-	TokenInfixEnd   Token = "}"
-)
-
 func pop(tokenList []Token) ([]Token, Token, error) {
 	if len(tokenList) == 0 {
 		return nil, "", errors.New("empty token list")

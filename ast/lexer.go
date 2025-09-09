@@ -1,34 +1,33 @@
 package ast
 
 import (
-	"fmt"
 	"strings"
-	"unicode"
 )
 
-type Char = rune
-
 const (
-	CharBlockBegin   Char = '('
-	CharBlockEnd     Char = ')'
-	CharInfixBegin   Char = '{'
-	CharInfixEnd     Char = '}'
-	CharUnwrap       Char = '$'
-	CharTypeCast     Char = ':'
-	CharStringBegin  Char = '"'
-	CharStringEnd    Char = '"'
-	CharStringEscape Char = '\\'
+	TokenBlockBegin Token = "("
+	TokenBlockEnd   Token = ")"
+	TokenInfixBegin Token = "{"
+	TokenInfixEnd   Token = "}"
+	TokenUnwrap     Token = "$"
+	TokenSum        Token = "+"
+	TokenProd       Token = "×"
+	TokenLambda     Token = "=>"
+	TokenTypeCast   Token = ":"
 )
 
 func Tokenize(s string) []Token {
 	return tokenize(s,
-		map[Char]struct{}{
-			CharBlockBegin: {},
-			CharBlockEnd:   {},
-			CharInfixBegin: {},
-			CharInfixEnd:   {},
-			CharUnwrap:     {},
-			CharTypeCast:   {},
+		[]string{
+			TokenBlockBegin,
+			TokenBlockEnd,
+			TokenInfixBegin,
+			TokenInfixEnd,
+			TokenUnwrap,
+			TokenSum,
+			TokenProd,
+			TokenLambda,
+			TokenTypeCast,
 		},
 		removeComment("#"),
 		replaceAll(map[string]string{
@@ -62,7 +61,12 @@ var removeComment = func(sep string) preprocessor {
 	}
 }
 
-func tokenize(str string, splitChars map[Char]struct{}, pList ...preprocessor) []Token {
+const (
+	TokenStringBegin Token = "\""
+	TokenStringEnd   Token = "\""
+)
+
+func tokenize(str string, splitTokens []string, pList ...preprocessor) []Token {
 	// preprocess
 	for _, p := range pList {
 		str = p(str)
@@ -72,60 +76,27 @@ func tokenize(str string, splitChars map[Char]struct{}, pList ...preprocessor) [
 	const (
 		STATE_NORMAL = iota
 		STATE_STRING
-		STATE_STRING_ESCAPE
 	)
 
 	var tokens []Token
 	state := STATE_NORMAL
-	var buffer []rune = nil
+	var buffer []rune
 	flushBuffer := func() {
 		if len(buffer) > 0 {
 			tokens = append(tokens, string(buffer))
+			buffer = buffer[:0]
 		}
-		buffer = nil
-	}
-	appendBuffer := func(ch Char) {
-		buffer = append(buffer, ch)
 	}
 
-	for _, ch := range str {
+	for len(str) > 0 {
 		switch state {
-		case STATE_NORMAL: // outside string
-			if _, ok := splitChars[ch]; ok {
-				// split special characters like ( ) [ ] * : into tokens
-				flushBuffer()
-				appendBuffer(ch)
-				flushBuffer()
-			} else if unicode.IsSpace(ch) {
-				// flush buffer if seeing whitespace
-				flushBuffer()
-			} else if ch == CharStringBegin {
-				// enter string mode
-				flushBuffer()
-				appendBuffer(ch)
-				state = STATE_STRING
-			} else {
-				appendBuffer(ch)
-			}
+		case STATE_NORMAL:
 		case STATE_STRING:
-			if ch == CharStringEscape {
-				appendBuffer(ch)
-				state = STATE_STRING_ESCAPE
-			} else if ch == CharStringEnd {
-				// exit string mode
-				appendBuffer(ch)
-				flushBuffer()
-				state = STATE_NORMAL
-			} else {
-				appendBuffer(ch)
-			}
-		case STATE_STRING_ESCAPE:
-			appendBuffer(ch)
-			state = STATE_STRING
 		default:
-			panic(fmt.Sprintf("unreachable state: %d", state))
+			panic("unreachable")
 		}
 	}
+
 	flushBuffer()
 	return tokens
 }
