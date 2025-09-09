@@ -86,12 +86,12 @@ func processInfix(argList []Expr) (Expr, error) {
 	}
 	op, ok := argList[1].(Term)
 	if !ok {
-		return nil, errors.New("infix operator must be a term (+, ×, =>, :)")
+		return nil, errors.New("infix operator must be a term")
 	}
 	for i := 3; i < len(argList); i += 2 {
 		op2, ok := argList[i].(Term)
 		if !ok {
-			return nil, errors.New("infix operator must be a term (+, ×, =>, :)")
+			return nil, errors.New("infix operator must be a term")
 		}
 		if op2 != op {
 			return nil, fmt.Errorf("infix operator must be the same %s", string(op))
@@ -116,7 +116,7 @@ func processInfix(argList []Expr) (Expr, error) {
 		}
 		return Node([]Expr{cmd, left, right}), nil
 	default:
-		return nil, errors.New("infix operator must be a term (+, ×, =>, :)")
+		return nil, fmt.Errorf("infix operator not supported %s", string(op))
 	}
 }
 
