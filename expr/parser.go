@@ -63,7 +63,7 @@ const (
 	TermProd        Term = "×"
 	TermArrowDouble Term = "=>"
 	TermArrowSingle Term = "->"
-	TermAnnot       Term = ":"
+	TermColon       Term = ":"
 	TermComma       Term = ","
 )
 
@@ -107,7 +107,7 @@ func processInfix(argList []Expr) (Expr, error) {
 			return nil, err
 		}
 		return Node([]Expr{cmd, left, right}), nil
-	case TermArrowDouble, TermArrowSingle, TermAnnot, TermComma:
+	case TermArrowDouble, TermArrowSingle, TermColon, TermComma:
 		// right to left
 		left, cmd, argList := argList[0], argList[1], argList[2:]
 		right, err := processInfix(argList)
