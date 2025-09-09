@@ -4,13 +4,14 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/fbundle/sorts/el/ast"
 	"github.com/fbundle/sorts/expr"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	sorts "github.com/fbundle/sorts/sorts/sorts_v3"
 )
 
-type Frame = ordered_map.OrderedMap[ast.Name, Object]
+type Name string
+
+type Frame = ordered_map.OrderedMap[Name, Object]
 
 type Object struct {
 	Sort sorts.Sort
