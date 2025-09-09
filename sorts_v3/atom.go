@@ -5,6 +5,10 @@ import (
 	"strconv"
 )
 
+const (
+	nameWithType = false
+)
+
 func NewAtom(level int, name string, parent Sort) Atom {
 	// TODO - make this panic on negative levels eventually
 	if parent != nil && Level(parent) != level+1 {
@@ -19,7 +23,11 @@ func NewAtom(level int, name string, parent Sort) Atom {
 
 // dummyTerm - make a dummy term of type parent
 func dummyTerm(parent Sort, name string) Sort {
-	return NewAtom(Level(parent)-1, fmt.Sprintf("(%s: %s)", name, Name(parent)), parent)
+	newName := name
+	if nameWithType {
+		newName = fmt.Sprintf("(%s: %s)", name, Name(parent))
+	}
+	return NewAtom(Level(parent)-1, newName, parent)
 }
 
 type Atom struct {
