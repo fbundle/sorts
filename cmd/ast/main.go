@@ -1,7 +1,7 @@
 package main
 
-import "github.com/fbundle/sorts/ast"
+import "github.com/fbundle/sorts/expr"
 
 func main() {
-	ast.Example()
+	expr.Example()
 }
