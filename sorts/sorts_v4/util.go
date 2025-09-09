@@ -10,7 +10,7 @@ type Dependent struct {
 	Body    expr.Expr
 }
 
-func (d Dependent) Apply(Arg Sort) Sort {
+func (d Dependent) Apply(arg Sort) Sort {
 	// TODO - use runtime
 	panic("not_implemented")
 }
