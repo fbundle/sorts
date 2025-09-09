@@ -11,10 +11,12 @@ const (
 	TokenInfixBegin Token = "{"
 	TokenInfixEnd   Token = "}"
 	TokenUnwrap     Token = "$"
-	TokenSum        Token = "+"
-	TokenProd       Token = "×"
-	TokenLambda     Token = "=>"
-	TokenTypeCast   Token = ":"
+
+	TokenSum      Token = "+"
+	TokenProd     Token = "×"
+	TokenLambda   Token = "=>"
+	TokenTypeCast Token = ":"
+	TokenList     Token = ","
 )
 
 func Tokenize(s string) []Token {
@@ -29,12 +31,9 @@ func Tokenize(s string) []Token {
 			TokenProd,
 			TokenLambda,
 			TokenTypeCast,
+			TokenList,
 		},
 		removeComment("#"),
-		replaceAll(map[string]string{
-			"[": " (list ",
-			"]": " ) ",
-		}),
 	)
 }
 

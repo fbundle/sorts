@@ -63,6 +63,7 @@ const (
 	TermProd     Term = "×"
 	TermLambda   Term = "=>"
 	TermTypeCast Term = ":"
+	TermList     Term = ","
 )
 
 // processInfix - handles both infix and
@@ -70,6 +71,7 @@ const (
 // {1 × 2 × 3}				(× (× 1 2) 3)				// left to right - prod
 // {x => y => (add x y)}	(=> x (=> y (add x y)))		// right to left - lambda
 // {x : type1}				(: type1 x)					// right to left - type_cast
+// {a, b, c}				(, a (, b c))				// right to left - list
 func processInfix(argList []Expr) (Expr, error) {
 	if len(argList) == 0 {
 		return Node(nil), nil
@@ -102,7 +104,7 @@ func processInfix(argList []Expr) (Expr, error) {
 			return nil, err
 		}
 		return Node([]Expr{cmd, left, right}), nil
-	} else if op == TermLambda || op == TermTypeCast {
+	} else if op == TermLambda || op == TermTypeCast || op == TermList {
 		// right to left
 		left, cmd, argList := argList[0], argList[1], argList[2:]
 		right, err := processInfix(argList)
