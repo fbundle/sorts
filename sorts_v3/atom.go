@@ -1,6 +1,9 @@
 package sorts
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 func NewAtom(level int, name string, parent Sort) Atom {
 	// TODO - make this panic on negative levels eventually
@@ -16,7 +19,7 @@ func NewAtom(level int, name string, parent Sort) Atom {
 
 // dummyTerm - make a dummy term of type parent
 func dummyTerm(parent Sort, name string) Sort {
-	return NewAtom(Level(parent)-1, name, parent)
+	return NewAtom(Level(parent)-1, fmt.Sprintf("(%s: %s)", name, Name(parent)), parent)
 }
 
 type Atom struct {

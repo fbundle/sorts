@@ -35,19 +35,20 @@ func (s Pi) sortAttr() sortAttr {
 }
 
 // Intro - take a func that maps (a: A) into (b: B(a))  give (f: Π(x:A)B(x))
-func (s Pi) Intro(f func(Sort) Sort) Sort {
+func (s Pi) Intro(name string, arrow func(Sort) Sort) Sort {
 	// verify
 	a := dummyTerm(s.A, "a")
-	b := f(a)
+	b := arrow(a)
 	sBa := s.B.Apply(a)
 	MustTermOf(b, sBa) // TODO - think, shouldn't it have to check for every a of type A?
 
-	return dummyTerm(s, fmt.Sprintf("(intro %s %p)", Name(s), f))
+	return dummyTerm(s, name)
 }
 
 // Elim - take (f: Π(x:A)B(x)) (a: A) give (b: B(a)) - Modus Ponens
-func (s Pi) Elim(f Sort, a Sort) Sort {
-	MustTermOf(f, s)
+func (s Pi) Elim(arrow Sort, a Sort) Sort {
+	MustTermOf(arrow, s)
 	MustTermOf(a, s.A)
-	return dummyTerm(s, fmt.Sprintf("(elim %s %p)", Name(f), Name(a)))
+	Ba := s.B.Apply(a)
+	return dummyTerm(Ba, Name(arrow)+" "+Name(a))
 }
