@@ -46,5 +46,5 @@ func (s Arrow) Intro(name string, arrow func(Sort) Sort) Sort {
 	MustTermOf(b, s.B)
 
 	// verify ok
-	return dummyTerm(s, name)
+	return dummyTerm(s, fmt.Sprintf("(%s : %s)", name, Name(s)))
 }
