@@ -15,7 +15,7 @@ const (
 	TokenSum         Token = "+"
 	TokenProd        Token = "×"
 	TokenArrowDouble Token = "=>"
-	TokenArrow       Token = "->"
+	TokenArrowSingle Token = "->"
 	TokenTypeCast    Token = ":"
 	TokenList        Token = ","
 )
@@ -31,7 +31,7 @@ func Tokenize(s string) []Token {
 			TokenSum,
 			TokenProd,
 			TokenArrowDouble,
-			TokenArrow,
+			TokenArrowSingle,
 			TokenTypeCast,
 			TokenList,
 		},

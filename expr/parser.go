@@ -62,9 +62,9 @@ const (
 	TermSum         Term = "+"
 	TermProd        Term = "×"
 	TermArrowDouble Term = "=>"
-	TermArrow       Term = "->"
+	TermArrowSingle Term = "->"
 	TermAnnot       Term = ":"
-	TermList        Term = ","
+	TermComma       Term = ","
 )
 
 // processInfix - handles both infix and
@@ -98,7 +98,8 @@ func processInfix(argList []Expr) (Expr, error) {
 		}
 	}
 
-	if op == TermSum || op == TermProd {
+	switch op {
+	case TermSum, TermProd:
 		// left to right
 		argList, cmd, right := argList[:len(argList)-2], argList[len(argList)-2], argList[len(argList)-1]
 		left, err := processInfix(argList)
@@ -106,7 +107,7 @@ func processInfix(argList []Expr) (Expr, error) {
 			return nil, err
 		}
 		return Node([]Expr{cmd, left, right}), nil
-	} else if op == TermArrowDouble || op == TermArrow || op == TermAnnot || op == TermList {
+	case TermArrowDouble, TermArrowSingle, TermAnnot, TermComma:
 		// right to left
 		left, cmd, argList := argList[0], argList[1], argList[2:]
 		right, err := processInfix(argList)
@@ -114,7 +115,7 @@ func processInfix(argList []Expr) (Expr, error) {
 			return nil, err
 		}
 		return Node([]Expr{cmd, left, right}), nil
-	} else {
+	default:
 		return nil, errors.New("infix operator must be a term (+, ×, =>, :)")
 	}
 }
