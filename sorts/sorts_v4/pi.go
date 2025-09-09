@@ -10,7 +10,7 @@ import (
 // this is the universal quantifier
 type Pi struct {
 	A Sort
-	B expr.Expr
+	B Dependent
 }
 
 func (s Pi) sortAttr() sortAttr {
