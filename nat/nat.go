@@ -11,11 +11,14 @@ var Nat = sorts.NewAtom(0, "Nat", nil)
 
 var Zero = sorts.NewAtom(-1, "0", Nat)
 
+var NatToNat = sorts.Arrow{Nat, Nat}
+var NatToNatToNat = sorts.Arrow{Nat, NatToNat}
+
 func Succ(n sorts.Sort) sorts.Sort {
-	return sorts.Arrow{Nat, Nat}.Elim(SuccArrow, n)
+	return NatToNat.Elim(SuccArrow, n)
 }
 
-var SuccArrow = sorts.Arrow{Nat, Nat}.Intro("succ", func(a sorts.Sort) sorts.Sort {
+var SuccArrow = NatToNat.Intro("succ", func(a sorts.Sort) sorts.Sort {
 	sorts.MustTermOf(a, Nat)
 	aVal, err := strconv.Atoi(sorts.Name(a))
 	if err != nil {
@@ -24,14 +27,19 @@ var SuccArrow = sorts.Arrow{Nat, Nat}.Intro("succ", func(a sorts.Sort) sorts.Sor
 	return sorts.NewAtom(-1, strconv.Itoa(aVal+1), Nat)
 })
 
-var AddArrow = sorts.Arrow{Nat, sorts.Arrow{Nat, Nat}}.Intro("add", func(a sorts.Sort) sorts.Sort {
+func Add(n1 sorts.Sort, n2 sorts.Sort) sorts.Sort {
+	addN1 := NatToNatToNat.Elim(AddArrow, n1)
+	return NatToNat.Elim(addN1, n2)
+}
+
+var AddArrow = NatToNatToNat.Intro("add", func(a sorts.Sort) sorts.Sort {
 	sorts.MustTermOf(a, Nat)
 	aVal, err := strconv.Atoi(sorts.Name(a))
 	if err != nil {
-		return sorts.NewAtom(-1, err.Error(), sorts.Arrow{Nat, Nat})
+		return sorts.NewAtom(-1, err.Error(), NatToNat)
 	}
 
-	return sorts.Arrow{Nat, Nat}.Intro(fmt.Sprintf("add_%d", a), func(b sorts.Sort) sorts.Sort {
+	return NatToNat.Intro(fmt.Sprintf("add_%d", aVal), func(b sorts.Sort) sorts.Sort {
 		sorts.MustTermOf(b, Nat)
 		bVal, err := strconv.Atoi(sorts.Name(b))
 		if err != nil {
