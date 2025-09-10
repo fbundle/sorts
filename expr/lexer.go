@@ -23,10 +23,10 @@ func Tokenize(s string) []Token {
 	}
 
 	for op := range leftToRightInfixOp {
-		splitTokens = append(splitTokens, op)
+		splitTokens = append(splitTokens, string(op))
 	}
 	for op := range rightToLeftInfixOp {
-		splitTokens = append(splitTokens, op)
+		splitTokens = append(splitTokens, string(op))
 	}
 
 	return tokenize(s,

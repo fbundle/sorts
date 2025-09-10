@@ -58,18 +58,29 @@ func Parse(tokenList []Token) (Expr, []Token, error) {
 	}
 }
 
-var leftToRightInfixOp = map[string]struct{}{
-	"+": {}, // sum
-	"×": {}, // prod
+const (
+	TermSum         Term = "+"
+	TermProd        Term = "×"
+	TermArrowDouble Term = "=>"
+	TermArrowSingle Term = "->"
+	TermColon       Term = ":"
+	TermComma       Term = ","
+	TermEqual       Term = "="
+	TermColonEqual  Term = ":="
+)
+
+var leftToRightInfixOp = map[Term]struct{}{
+	TermSum:  {}, // sum
+	TermProd: {}, // prod
 }
 
-var rightToLeftInfixOp = map[string]struct{}{
-	"=>": {}, // lambda expression
-	"->": {}, // arrow type
-	":":  {}, // type cast
-	",":  {}, // list
-	"=":  {}, // equality
-	":=": {}, // name binding
+var rightToLeftInfixOp = map[Term]struct{}{
+	TermArrowDouble: {}, // lambda expression
+	TermArrowSingle: {}, // arrow type
+	TermColon:       {}, // type cast
+	TermComma:       {}, // list
+	TermEqual:       {}, // equality
+	TermColonEqual:  {}, // name binding
 }
 
 // processInfix - handles both infix and
