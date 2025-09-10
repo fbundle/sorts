@@ -113,7 +113,7 @@ func processInfix(argList []Expr) (Expr, error) {
 		}
 	}
 
-	if _, ok := leftToRightInfixOp[string(op)]; ok {
+	if _, ok := leftToRightInfixOp[op]; ok {
 		// left to right
 		argList, cmd, right := argList[:len(argList)-2], argList[len(argList)-2], argList[len(argList)-1]
 		left, err := processInfix(argList)
@@ -122,7 +122,7 @@ func processInfix(argList []Expr) (Expr, error) {
 		}
 		return Node([]Expr{cmd, left, right}), nil
 	}
-	if _, ok := rightToLeftInfixOp[string(op)]; ok {
+	if _, ok := rightToLeftInfixOp[op]; ok {
 		// right to left
 		left, cmd, argList := argList[0], argList[1], argList[2:]
 		right, err := processInfix(argList)

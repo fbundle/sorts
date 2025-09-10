@@ -1,5 +1,6 @@
 package ast
 
+// AST - typed lambda calculus
 type AST interface {
 	astAttr()
 }
