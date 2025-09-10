@@ -77,10 +77,7 @@ var rightToLeftInfixOp = map[string]struct{}{
 // {1 × 2 × 3}				(× (× 1 2) 3)				// left to right - prod
 // {x => y => (add x y)}	(=> x (=> y (add x y)))		// right to left - lambda
 // {x -> y -> z}			(-> x (-> y z))				// right to left - arrow
-// {x : type1}				(: type1 x)					// right to left - type_cast
-// {a, b, c}				(, a (, b c))				// right to left - list
-// {a = b}					(= a b)						// equality
-// {a := b}					(:= a b)					// name binding
+// etc.
 func processInfix(argList []Expr) (Expr, error) {
 	if len(argList) == 0 {
 		return Node(nil), nil
