@@ -1,35 +1,78 @@
 package ast
 
+type astAttr struct {
+	Parent AST // type
+}
+
 // AST - typed lambda calculus
 type AST interface {
-	astAttr()
+	astAttr() astAttr
 }
 
+func Parent(a AST) AST {
+	return a.astAttr().Parent
+}
+
+// Term - variable or constant
 type Term struct {
-	Name string
-	Type AST
+	Parent AST    // eg. Nat
+	Name   string // eg. 0
 }
 
-func (t Term) astAttr() {}
-
-type Abstraction struct {
-	Type  AST
-	Param Term
-	Body  AST
+func (t Term) astAttr() astAttr {
+	panic("not implemented")
 }
 
-func (a Abstraction) astAttr() {}
+// LetBinding - let binding
+type LetBinding struct {
+	Name   string
+	Parent AST
+	Expr   AST
+}
+type Let struct {
+	Parent   AST // eg. Nat
+	Bindings []LetBinding
+	Expr     AST
+}
 
-type Application struct {
+func (a Let) astAttr() astAttr {
+	panic("not implemented")
+}
+
+type MatchCase struct {
+	Comp AST
+	Expr AST
+}
+
+// Match - match expression
+type Match struct {
+	Parent  AST
+	Cond    AST
+	Cases   []MatchCase
+	Default AST
+}
+
+func (a Match) astAttr() astAttr {
+	panic("not implemented")
+}
+
+// Lambda - lambda abstraction
+type Lambda struct {
+	Parent AST  // eg. (-> Nat Nat)
+	Param  Term // eg. x
+	Body   AST  // eg. (+ x 1)
+}
+
+func (a Lambda) astAttr() astAttr {
+	panic("not implemented")
+}
+
+// Beta - beta reduction
+type Beta struct {
 	Func AST
 	Arg  AST
 }
 
-func (a Application) astAttr() {}
-
-func AlphaConversion(ast AST, oldName Term, newName Term) AST {
-	panic("not implemented")
-}
-func BetaReduction(ast Application) AST {
+func (a Beta) astAttr() astAttr {
 	panic("not implemented")
 }
