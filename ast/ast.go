@@ -5,11 +5,15 @@ type AST interface {
 	astAttr()
 }
 
-type Term string
+type Term struct {
+	Name string
+	Type AST
+}
 
 func (t Term) astAttr() {}
 
 type Abstraction struct {
+	Type  AST
 	Param Term
 	Body  AST
 }
