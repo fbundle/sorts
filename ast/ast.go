@@ -1,7 +1,7 @@
 package ast
 
 type astAttr struct {
-	Parent AST // type
+	parent AST // type
 }
 
 // AST - typed lambda calculus
@@ -10,7 +10,7 @@ type AST interface {
 }
 
 func Parent(a AST) AST {
-	return a.astAttr().Parent
+	return a.astAttr().parent
 }
 
 // Term - variable or constant
