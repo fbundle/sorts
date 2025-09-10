@@ -69,7 +69,7 @@ func (a Lambda) astAttr() astAttr {
 
 // Beta - beta reduction
 type Beta struct {
-	Func AST
+	Func AST // must be Lambda or Term after evaluated
 	Arg  AST
 }
 

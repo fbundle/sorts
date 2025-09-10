@@ -30,8 +30,8 @@ func main() {
 	evalExample(interpreter, "(Sum Nat Nat)")
 	evalExample(interpreter, "(Prod Nat Nat)")
 
-	// Example 4: Lambda expressions
-	fmt.Println("\n=== Example 4: Lambda Expressions ===")
+	// Example 4: Func expressions
+	fmt.Println("\n=== Example 4: Func Expressions ===")
 	evalExample(interpreter, "(x => (+ x 1))")
 
 	// Example 5: Match expressions
