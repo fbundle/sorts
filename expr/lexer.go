@@ -11,30 +11,26 @@ const (
 	TokenInfixBegin Token = "{"
 	TokenInfixEnd   Token = "}"
 	TokenUnwrap     Token = "$"
-
-	TokenSum         Token = "+"
-	TokenProd        Token = "×"
-	TokenArrowDouble Token = "=>"
-	TokenArrowSingle Token = "->"
-	TokenTypeCast    Token = ":"
-	TokenList        Token = ","
 )
 
 func Tokenize(s string) []Token {
+	splitTokens := []string{
+		TokenBlockBegin,
+		TokenBlockEnd,
+		TokenInfixBegin,
+		TokenInfixEnd,
+		TokenUnwrap,
+	}
+
+	for op := range leftToRightInfixOp {
+		splitTokens = append(splitTokens, op)
+	}
+	for op := range rightToLeftInfixOp {
+		splitTokens = append(splitTokens, op)
+	}
+
 	return tokenize(s,
-		[]string{
-			TokenBlockBegin,
-			TokenBlockEnd,
-			TokenInfixBegin,
-			TokenInfixEnd,
-			TokenUnwrap,
-			TokenSum,
-			TokenProd,
-			TokenArrowDouble,
-			TokenArrowSingle,
-			TokenTypeCast,
-			TokenList,
-		},
+		splitTokens,
 		removeComment("#"),
 	)
 }

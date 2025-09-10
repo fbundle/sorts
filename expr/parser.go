@@ -58,14 +58,19 @@ func Parse(tokenList []Token) (Expr, []Token, error) {
 	}
 }
 
-const (
-	TermSum         Term = "+"
-	TermProd        Term = "×"
-	TermArrowDouble Term = "=>"
-	TermArrowSingle Term = "->"
-	TermColon       Term = ":"
-	TermComma       Term = ","
-)
+var leftToRightInfixOp = map[string]struct{}{
+	"+": {}, // sum
+	"×": {}, // prod
+}
+
+var rightToLeftInfixOp = map[string]struct{}{
+	"=>": {}, // lambda expression
+	"->": {}, // arrow type
+	":":  {}, // type cast
+	",":  {}, // list
+	"=":  {}, // equality
+	":=": {}, // name binding
+}
 
 // processInfix - handles both infix and
 // {1 + 2 + 3} 				(+ (+ 1 2) 3)				// left to right - sum
@@ -74,6 +79,8 @@ const (
 // {x -> y -> z}			(-> x (-> y z))				// right to left - arrow
 // {x : type1}				(: type1 x)					// right to left - type_cast
 // {a, b, c}				(, a (, b c))				// right to left - list
+// {a = b}					(= a b)						// equality
+// {a := b}					(:= a b)					// name binding
 func processInfix(argList []Expr) (Expr, error) {
 	if len(argList) == 0 {
 		return Node(nil), nil
@@ -98,8 +105,7 @@ func processInfix(argList []Expr) (Expr, error) {
 		}
 	}
 
-	switch op {
-	case TermSum, TermProd:
+	if _, ok := leftToRightInfixOp[string(op)]; ok {
 		// left to right
 		argList, cmd, right := argList[:len(argList)-2], argList[len(argList)-2], argList[len(argList)-1]
 		left, err := processInfix(argList)
@@ -107,7 +113,8 @@ func processInfix(argList []Expr) (Expr, error) {
 			return nil, err
 		}
 		return Node([]Expr{cmd, left, right}), nil
-	case TermArrowDouble, TermArrowSingle, TermColon, TermComma:
+	}
+	if _, ok := rightToLeftInfixOp[string(op)]; ok {
 		// right to left
 		left, cmd, argList := argList[0], argList[1], argList[2:]
 		right, err := processInfix(argList)
@@ -115,9 +122,9 @@ func processInfix(argList []Expr) (Expr, error) {
 			return nil, err
 		}
 		return Node([]Expr{cmd, left, right}), nil
-	default:
-		return nil, fmt.Errorf("infix operator not supported %s", string(op))
 	}
+
+	return nil, fmt.Errorf("infix operator not supported %s", string(op))
 }
 
 func matchName(cond Term) func(Expr) bool {
