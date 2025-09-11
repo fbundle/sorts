@@ -7,6 +7,9 @@ const (
 )
 
 func Name(s any) string {
+	if s == nil {
+		return "nil"
+	}
 	switch s := s.(type) {
 	case Sort:
 		return s.sortAttr().name
