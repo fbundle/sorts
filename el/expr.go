@@ -47,7 +47,6 @@ func ParseForm(e form.Form) (Expr, error) {
 }
 func RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) {
 	defaultParser = defaultParser.RegisterListParser(cmd, listParser)
-	fmt.Printf("defaultParser %v\n", defaultParser)
 }
 
 type Parser struct {
