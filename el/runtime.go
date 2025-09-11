@@ -11,7 +11,7 @@ import (
 
 // TODO - remove all Expr
 
-// TODO check example.el for new syntax
+// TODO check example.el for new syntax - no longer using define and assign
 
 // TODO - support multi argument function call
 
