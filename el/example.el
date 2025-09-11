@@ -1,35 +1,24 @@
 [
-    {Bool : U_0}
-    {True : Bool}
-    {False : Bool}
+    Bool U_0                undefined
+    True Bool               undefined
+    False Bool              undefined
 
-    {Nat : U_0}
-    {0 : Nat}
-    {succ : {Nat -> Nat}}
+    Nat U_0                 undefined
+    0 Nat                   undefined
+    succ {Nat -> Nat}       undefined
 
-    {1 : Nat}
-    {2 : Nat}
-    {3 : Nat}
-    {1 := (succ 0)}
-    {2 := (succ 1)}
-    {3 := (succ 2)}
+    1 Nat (succ 0)
+    2 Nat (succ 1)
+    3 Nat (succ 2)
 
-    {x : Any}
-    {x := "example string with \"quotes\" and spaces"}  # string
-    {x := {1 + 2 + 3}}                                  # left assoc infix operator
-    {x := {1 ⊕ 2 ⊕ 3}}                                  # right assoc infix operator
+    x Any "example string with \"quotes\" and spaces"
+    x Any {1 + 2 + 3}
+    x Any {1 ⊕ 2 ⊕ 3}
 
-    {is_two : {Nat -> Bool}}
-    {is_two := {x => (match x
+    is_two {Nat -> Bool} {x => (match x
         (succ 1) True
         False
-    )}}
-
-    {add: {Nat -> Nat -> Nat}}
-    {add := {x => y => (match x
-        (succ z) (add z (succ y))   # if x is succ z then add z (succ y)
-        y                           # else y
-    )}}
+    )}
 
     (is_two 3)
 ]

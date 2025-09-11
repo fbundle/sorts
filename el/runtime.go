@@ -9,6 +9,10 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
+// TODO - remove all Expr
+
+// check example.el for new syntax
+
 type Value struct {
 	Sort sorts.Sort
 	Expr Expr
