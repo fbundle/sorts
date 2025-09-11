@@ -1,4 +1,5 @@
-#infix_left
+#infix_left ⊕ ⊗
+#infix_right => -> : , = :=
 
 (let Bool
     {Bool: U_0}
