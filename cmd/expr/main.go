@@ -24,7 +24,8 @@ func main() {
 	for {
 		e, tokens, err = expr.Parse(tokens)
 		if err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "Error parsing input: %v\n", err)
+			fmt.Printf("Error parsing input: %v\n", err)
+			fmt.Println(tokens)
 			os.Exit(1)
 		}
 		fmt.Println(strings.Join(e.Marshal(), " "))
