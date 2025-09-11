@@ -1,6 +1,3 @@
-#infix_left ⊕ ⊗
-#infix_right => -> : , = :=
-
 [
     {Bool : U_0}
     {True : Bool}
