@@ -1,29 +1,41 @@
 package sorts
 
-type PartialOrder interface {
-	LessEqual(dst PartialOrder) bool
+const (
+	defaultName  = "type"
+	InitialName  = "unit" // initial object
+	TerminalName = "any"  // terminal object
+)
+
+func Name(s any) string {
+	switch s := s.(type) {
+	case Sort:
+		return s.sortAttr().name
+	case Dependent:
+		return s.Name
+	default:
+		panic("type_error")
+	}
 }
 
-type Sort[T PartialOrder] interface {
-	sortAttr() sortAttr[T]
-}
-
-type sortAttr[T PartialOrder] struct {
-	data      T
-	level     int
-	parent    Sort[T]
-	lessEqual func(dst Sort[T]) bool
-}
-
-func Data[T PartialOrder](s Sort[T]) T {
-	return s.sortAttr().data
-}
-func Level[T PartialOrder](s Sort[T]) int {
+func Level(s Sort) int {
 	return s.sortAttr().level
 }
-func Parent[T PartialOrder](s Sort[T]) Sort[T] {
+
+func Parent(s Sort) Sort {
 	return s.sortAttr().parent
 }
-func LessEqual[T PartialOrder](x Sort[T], y Sort[T]) bool {
+
+func LessEqual(x Sort, y Sort) bool {
 	return x.sortAttr().lessEqual(y)
+}
+
+type Sort interface {
+	sortAttr() sortAttr
+}
+
+type sortAttr struct {
+	name      string              // every Sort is identified with a Name (string)
+	level     int                 // universe Level
+	parent    Sort                // (or Type) every Sort must have a Parent
+	lessEqual func(dst Sort) bool // a partial order on sorts (subtype)
 }
