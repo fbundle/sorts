@@ -17,6 +17,8 @@
     {2 := (succ 1)}
     {3 := (succ 2)}
 
+    {x := "example string with \"quotes\" and spaces"}
+
     {is_two : {Nat -> Bool}}
     {is_two := {x => (match x
         (succ 1) True

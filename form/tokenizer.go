@@ -7,12 +7,12 @@ import (
 )
 
 // getSplitTokens returns the sorted list of split tokens
-func getSplitTokens(config Config) []Token {
+func (parser Parser) getSplitTokens() []Token {
 	splitTokenSet := make(map[Token]struct{})
-	for _, tok := range config.Split {
+	for _, tok := range parser.Split {
 		splitTokenSet[tok] = struct{}{}
 	}
-	for beg, block := range config.Blocks {
+	for beg, block := range parser.Blocks {
 		splitTokenSet[beg] = struct{}{}
 		splitTokenSet[block.End] = struct{}{}
 	}
@@ -106,9 +106,9 @@ func tokenize(str string, splitTokens []string, pList ...preprocessor) []Token {
 						return
 					}
 				}
-				if str[0:1] == CharStringBegin {
+				if strings.HasPrefix(str, CharStringBegin) {
 					flushBuffer()
-					appendBuffer(1)
+					appendBuffer(len(CharStringBegin))
 					state = STATE_STRING
 				} else if unicode.IsSpace([]rune(str)[0]) {
 					flushBuffer()
@@ -118,9 +118,9 @@ func tokenize(str string, splitTokens []string, pList ...preprocessor) []Token {
 				}
 			}()
 		case STATE_STRING:
-			if len(str) >= 2 && str[0:1] == CharStringEscape {
-				appendBuffer(2)
-			} else if str[0:1] == CharStringEnd {
+			if len(str) > len(CharStringEscape) && strings.HasPrefix(str, CharStringEscape) {
+				appendBuffer(len(CharStringEscape) + 1)
+			} else if strings.HasPrefix(str, CharStringEnd) {
 				appendBuffer(1)
 				flushBuffer()
 				state = STATE_NORMAL

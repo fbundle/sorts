@@ -5,19 +5,19 @@ import (
 	"fmt"
 )
 
-type Block struct {
+type BlockConfig struct {
 	End     Token
 	Process func([]Form) (Form, error)
 }
 
-type Config struct {
-	Blocks map[Token]Block
+type Parser struct {
+	Blocks map[Token]BlockConfig
 	Split  []Token
 }
 
-var defaultConfig = Config{
+var defaultParser = Parser{
 	Split: []Token{"$", "⊕", "⊗", "=>", "->", ":", ",", "=", ":="},
-	Blocks: map[Token]Block{
+	Blocks: map[Token]BlockConfig{
 		"(": {
 			End:     ")",
 			Process: nil,
@@ -29,23 +29,23 @@ var defaultConfig = Config{
 	},
 }
 
-func (config Config) Tokenize(s string) []Token {
+func (parser Parser) Tokenize(s string) []Token {
 	return tokenize(
-		s, getSplitTokens(config),
+		s, parser.getSplitTokens(),
 		removeComment("#"),
 	)
 }
 
-func (config Config) Parse(tokenList []Token) (Form, []Token, error) {
+func (parser Parser) Parse(tokenList []Token) (Form, []Token, error) {
 	tokenList, head, err := pop(tokenList)
 	if err != nil {
 		return nil, tokenList, err
 	}
-	if block, ok := config.Blocks[head]; ok {
+	if block, ok := parser.Blocks[head]; ok {
 		var form Form
 		var formList []Form
 		for {
-			form, tokenList, err = config.Parse(tokenList)
+			form, tokenList, err = parser.Parse(tokenList)
 			if err != nil {
 				return List(formList), tokenList, err
 			}
@@ -65,11 +65,11 @@ func (config Config) Parse(tokenList []Token) (Form, []Token, error) {
 }
 
 func Tokenize(s string) []Token {
-	return defaultConfig.Tokenize(s)
+	return defaultParser.Tokenize(s)
 }
 
 func Parse(tokenList []Token) (Form, []Token, error) {
-	return defaultConfig.Parse(tokenList)
+	return defaultParser.Parse(tokenList)
 }
 
 func pop(tokenList []Token) ([]Token, Token, error) {
