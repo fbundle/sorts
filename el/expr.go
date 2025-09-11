@@ -21,19 +21,17 @@ func (t Term) Marshal() form.Form {
 
 // FunctionCall - (cmd arg1 arg2 ...)
 type FunctionCall struct {
-	Cmd  Expr
-	Args []Expr
+	Cmd Expr
+	Arg Expr
 }
 
 func (f FunctionCall) mustExpr() {}
 
 func (f FunctionCall) Marshal() form.Form {
-	forms := make([]form.Form, 0, 1+len(f.Args))
-	forms = append(forms, f.Cmd.Marshal())
-	for _, arg := range f.Args {
-		forms = append(forms, arg.Marshal())
+	return form.List{
+		f.Cmd.Marshal(),
+		f.Arg.Marshal(),
 	}
-	return form.List(forms)
 }
 
 type ParseFunc = func(form.Form) (Expr, error)
@@ -78,18 +76,18 @@ func (parser Parser) ParseForm(e form.Form) (Expr, error) {
 		}
 
 		// It's a regular function call
+		if len(list) != 1 {
+			return nil, errors.New("regular function call must have exactly 1 argument")
+		}
 		cmd, err := parser.ParseForm(head)
 		if err != nil {
 			return nil, err
 		}
-		args := make([]Expr, len(list))
-		for i, arg := range list {
-			args[i], err = ParseForm(arg)
-			if err != nil {
-				return nil, err
-			}
+		arg, err := parser.ParseForm(list[0])
+		if err != nil {
+			return nil, err
 		}
-		return FunctionCall{Cmd: cmd, Args: args}, nil
+		return FunctionCall{Cmd: cmd, Arg: arg}, nil
 	default:
 		return nil, errors.New("unknown form")
 	}

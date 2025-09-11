@@ -50,9 +50,14 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 		}
 		return frame, value, nil
 	case FunctionCall:
+		frame, avalue, err := Eval(frame, e.Arg)
+		if err != nil {
+			return frame, Value{}, err
+		}
+
 		switch cmd := e.Cmd.(type) {
 		case Lambda:
-			frame, arg, err := Eval(frame, e.Args[0])
+			frame, arg, err := Eval(frame, avalue.Expr)
 			if err != nil {
 				return frame, Value{}, err
 			}
@@ -68,18 +73,20 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 				// term is not assigned hence cannot be simplified using Eval
 				// like (succ (succ 0))
 				// return expr form
-				arrow, ok := c.Sort.(sorts.Arrow)
+				parentArrow, ok := sorts.Parent(c.Sort).(sorts.Arrow)
 				if !ok {
-					return frame, Value{}, fmt.Errorf("expected arrow: %T", c.Sort)
+					return frame, Value{}, fmt.Errorf("expected arrow: %T", sorts.Parent(c.Sort))
 				}
+				argToks := avalue.Expr.Marshal().Marshal()
+				argStr := strings.Join(argToks, " ")
 				return frame, Value{
-					Sort: arrow.B,
-					Expr: FunctionCall{cmd, e.Args},
+					Sort: sorts.NewAtom(sorts.Level(parentArrow.B)-1, fmt.Sprintf("(%s %s)", string(cmd), argStr), parentArrow.B),
+					Expr: FunctionCall{cmd, avalue.Expr},
 				}, nil
 			} else {
 				return Eval(frame, FunctionCall{
-					Cmd:  c.Expr,
-					Args: e.Args,
+					Cmd: c.Expr,
+					Arg: avalue.Expr,
 				})
 			}
 		default:
