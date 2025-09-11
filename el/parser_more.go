@@ -11,8 +11,8 @@ var defaultParser = Parser{
 		"=>":    parseLambda,
 		":":     parseDefine,
 		":=":    parseAssign,
-		"chain": parseMatch,
-		"match": parseChain,
+		"chain": parseChain,
+		"match": parseMatch,
 	},
 }
 
@@ -25,9 +25,9 @@ func parseDefine(list form.List) (Expr, error) {
 func parseAssign(list form.List) (Expr, error) {
 	panic("implement me")
 }
-func parseMatch(list form.List) (Expr, error) {
+func parseChain(list form.List) (Expr, error) {
 	panic("implement me")
 }
-func parseChain(list form.List) (Expr, error) {
+func parseMatch(list form.List) (Expr, error) {
 	panic("implement me")
 }
