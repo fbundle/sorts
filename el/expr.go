@@ -39,13 +39,23 @@ func (f FunctionCall) Marshal() form.Form {
 type ParseFunc = func(form.Form) (Expr, error)
 type ListParseFunc = func(ParseFunc, form.List) (Expr, error)
 
-var globalListParsers = make(map[form.Term]ListParseFunc)
-
-func RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) {
-	globalListParsers[cmd] = listParser
-}
+var defaultParser Parser
 
 func ParseForm(e form.Form) (Expr, error) {
+	return defaultParser.ParseForm(e)
+}
+func RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) {
+	if defaultParser.listParsers == nil {
+		defaultParser.listParsers = make(map[form.Term]ListParseFunc)
+	}
+	defaultParser.listParsers[cmd] = listParser
+}
+
+type Parser struct {
+	listParsers map[form.Term]ListParseFunc
+}
+
+func (parser Parser) ParseForm(e form.Form) (Expr, error) {
 	switch e := e.(type) {
 	case form.Term:
 		return Term(e), nil
@@ -57,13 +67,13 @@ func ParseForm(e form.Form) (Expr, error) {
 
 		// Is it a special form?
 		if cmdTerm, ok := head.(form.Term); ok {
-			if parser, ok := globalListParsers[cmdTerm]; ok {
-				return parser(ParseForm, list)
+			if listParser, ok := parser.listParsers[cmdTerm]; ok {
+				return listParser(parser.ParseForm, list)
 			}
 		}
 
 		// It's a regular function call
-		cmd, err := ParseForm(head)
+		cmd, err := parser.ParseForm(head)
 		if err != nil {
 			return nil, err
 		}
