@@ -21,5 +21,10 @@
         False
     )}
 
+    add {Nat -> Nat -> Nat} {x => {y => (match x
+        (succ z) (succ ((add z) y))
+        y
+    )}}
+
     (is_two 3)
 )
