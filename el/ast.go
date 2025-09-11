@@ -41,4 +41,7 @@ type FunctionCall struct {
 func (f FunctionCall) mustElExpr() {}
 
 type Let struct {
+	Defines []Define
+	Assigns []Assign
+	Body    Expr
 }
