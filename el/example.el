@@ -1,7 +1,7 @@
 #infix_left ⊕ ⊗
 #infix_right => -> : , = :=
 
-(chain
+[
     {Bool : U_0}
     {True : Bool}
     {False : Bool}
@@ -34,4 +34,4 @@
     )}}
 
     (is_two 3)
-)
+]
