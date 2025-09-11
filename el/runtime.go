@@ -130,6 +130,7 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 		}
 		return Eval(frame, e.Tail)
 	case Match:
+		// match should not be hard, just compare Expr
 		panic("not implemented")
 	case Arrow:
 		frame, avalue, err := Eval(frame, e.A)
