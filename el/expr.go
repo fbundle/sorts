@@ -2,7 +2,6 @@ package el
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/fbundle/sorts/form"
 )
