@@ -1,13 +1,13 @@
 package el
 
 import (
-	sorts "github.com/fbundle/sorts/obsolete/sorts_v3"
 	"github.com/fbundle/sorts/persistent/ordered_map"
+	"github.com/fbundle/sorts/sorts"
 )
 
 type Value struct {
 	Sort sorts.Sort
-	AST  AST
+	Data AST
 }
 
 type Frame = ordered_map.OrderedMap[Term, Value]

@@ -1,71 +1,39 @@
 package el
 
-type astAttr struct {
-	parentAST AST // type
+type Expr interface {
+	mustElExpr()
 }
 
-// AST - typed lambda calculus
-type AST interface {
-	astAttr() astAttr
-}
-
-// Term - variable or constant
 type Term string
 
-func (t Term) astAttr() astAttr {
-	return astAttr{}
+func (t Term) mustElExpr() {}
+
+// Define - (or :) define a new variable
+type Define struct {
+	Name Term
+	Type Expr
 }
 
-// LetBinding - let binding
-type LetBinding struct {
-	Name   string
-	Parent AST
-	Expr   AST
-}
-type Let struct {
-	Parent   AST // eg. Nat
-	Bindings []LetBinding
-	Expr     AST
+func (d Define) mustElExpr() {}
+
+// Assign - (or :=) assign a value to a variable
+type Assign struct {
+	Name  Term
+	Value Expr
 }
 
-func (a Let) astAttr() astAttr {
-	return astAttr{parentAST: a.Parent}
-}
+func (a Assign) mustElExpr() {}
 
-type MatchCase struct {
-	Comp AST
-	Expr AST
-}
-
-// Match - match expression
-type Match struct {
-	Parent  AST
-	Cond    AST
-	Cases   []MatchCase
-	Default AST
-}
-
-func (a Match) astAttr() astAttr {
-	return astAttr{parentAST: a.Parent}
-}
-
-// Lambda - lambda abstraction
+// Lambda - (or =>) lambda abstraction
 type Lambda struct {
-	Parent AST  // eg. (-> Nat Nat)
-	Param  Term // eg. x
-	Body   AST  // eg. (+ x 1)
+	Param Term
+	Body  Expr
 }
 
-func (a Lambda) astAttr() astAttr {
-	return astAttr{parentAST: a.Parent}
-}
+func (l Lambda) mustElExpr() {}
 
-// Beta - beta reduction
-type Beta struct {
-	Func AST // must be Lambda or Term after evaluated
-	Arg  AST
-}
-
-func (a Beta) astAttr() astAttr {
-	return astAttr{}
+// FunctionCall - (cmd arg1 arg2 ...) function call
+type FunctionCall struct {
+	Cmd  Expr
+	Args []Expr
 }
