@@ -1,25 +1,12 @@
 package ast
 
-import (
-	"github.com/fbundle/sorts/persistent/ordered_map"
-	sorts "github.com/fbundle/sorts/sorts/sorts_v3"
-)
-
-type Runtime struct {
-	Frame ordered_map.OrderedMap[Term, sorts.Sort] // term -> parent
-}
-
-func (r Runtime) Parent(a AST) AST {
-	return a.astAttr(r).parent
-}
-
 type astAttr struct {
-	parent AST // type
+	parentAST AST // type
 }
 
 // AST - typed lambda calculus
 type AST interface {
-	astAttr(r Runtime) astAttr
+	astAttr() astAttr
 }
 
 // Term - variable or constant
