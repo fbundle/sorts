@@ -43,7 +43,7 @@ func (a Assign) mustExpr() {}
 type Let struct {
 	Defines []Define
 	Assigns []Assign
-	Body    Expr
+	Final   Expr
 }
 
 func (l Let) mustExpr() {}
@@ -54,7 +54,7 @@ type Case struct {
 }
 type Match struct {
 	Cases []Case
-	Else  Expr
+	Final Expr
 }
 
 func (m Match) mustExpr() {}
