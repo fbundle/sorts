@@ -54,7 +54,16 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 	case Lambda:
 		panic("not implemented")
 	case Define:
-		panic("not implemented")
+		frame, parent, err := Eval(frame, e.Type)
+		if err != nil {
+			return frame, Value{}, err
+		}
+		value := Value{
+			Sort: sorts.NewAtom(sorts.Level(parent.Sort)-1, string(e.Name), parent.Sort),
+			Expr: e.Name,
+		}
+		frame = Frame{frame.Set(e.Name, value)}
+		return frame, value, nil
 	case Assign:
 		panic("not implemented")
 	case Chain:
