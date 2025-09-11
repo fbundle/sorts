@@ -9,21 +9,23 @@ import (
 type ParseFunc = func(form.Form) (Expr, error)
 type ListParseFunc = func(ParseFunc, form.List) (Expr, error)
 
-type Parser struct {
-	ListParsers map[form.Term]ListParseFunc
+var globalListParsers = make(map[form.Term]ListParseFunc)
+
+func RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) {
+	globalListParsers[cmd] = listParser
 }
 
-func parseFunctionCall(parse ParseFunc, list form.List) (Expr, error) {
+func parseFunctionCall(parseFunc ParseFunc, list form.List) (Expr, error) {
 	if len(list) == 0 {
 		return nil, errors.New("empty list")
 	}
-	cmd, err := parse(list[0])
+	cmd, err := parseFunc(list[0])
 	if err != nil {
 		return nil, err
 	}
 	args := make([]Expr, 0, len(list)-1)
 	for i := 1; i < len(list); i++ {
-		arg, err := parse(list[i])
+		arg, err := parseFunc(list[i])
 		if err != nil {
 			return nil, err
 		}
@@ -35,7 +37,7 @@ func parseFunctionCall(parse ParseFunc, list form.List) (Expr, error) {
 	}, nil
 }
 
-func (parser Parser) Parse(e form.Form) (Expr, error) {
+func ParseForm(e form.Form) (Expr, error) {
 	switch e := e.(type) {
 	case form.Term:
 		return Term(e), nil
@@ -46,13 +48,13 @@ func (parser Parser) Parse(e form.Form) (Expr, error) {
 			if !ok {
 				return parseFunctionCall
 			}
-			listParseFunc, ok := parser.ListParsers[cmd]
+			listParseFunc, ok := globalListParsers[cmd]
 			if !ok {
 				return parseFunctionCall
 			}
 			return listParseFunc
 		}()
-		return listParseFunc(parser.Parse, args)
+		return listParseFunc(ParseForm, args)
 	default:
 		return nil, errors.New("unknown form")
 	}
