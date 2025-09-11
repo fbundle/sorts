@@ -108,9 +108,11 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 		}
 		value := Value{
 			Sort: sorts.NewAtom(sorts.Level(parent.Sort)-1, string(e.Name), parent.Sort),
-			Expr: e.Name,
+			Expr: e.Name, // Expr == Term means not defined yet
 		}
+
 		frame = Frame{frame.Set(e.Name, value)}
+
 		return frame, value, nil
 	case Assign:
 		value, ok := frame.Get(e.Name)
