@@ -14,6 +14,7 @@
     {2 := (succ 1)}
     {3 := (succ 2)}
 
+    {x : Any}
     {x := "example string with \"quotes\" and spaces"}  # string
     {x := {1 + 2 + 3}}                                  # left assoc infix operator
     {x := {1 ⊕ 2 ⊕ 3}}                                  # right assoc infix operator
