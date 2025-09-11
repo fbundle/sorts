@@ -8,26 +8,26 @@ func Parse(e form.Form) (Expr, error) {
 
 var defaultParser = Parser{
 	ListParsers: map[form.Term]ListParseFunc{
-		"=>":    nil,
-		":":     nil,
-		":=":    nil,
-		"chain": nil,
-		"match": nil,
+		"=>":    parseLambda,
+		":":     parseDefine,
+		":=":    parseAssign,
+		"chain": parseMatch,
+		"match": parseChain,
 	},
 }
 
-func parseLambda(list []form.Form) (Expr, error) {
+func parseLambda(list form.List) (Expr, error) {
 	panic("implement me")
 }
-func parseDefine(list []form.Form) (Expr, error) {
+func parseDefine(list form.List) (Expr, error) {
 	panic("implement me")
 }
-func parseAssign(list []form.Form) (Expr, error) {
+func parseAssign(list form.List) (Expr, error) {
 	panic("implement me")
 }
-func parseMatch(list []form.Form) (Expr, error) {
+func parseMatch(list form.List) (Expr, error) {
 	panic("implement me")
 }
-func parseChain(list []form.Form) (Expr, error) {
+func parseChain(list form.List) (Expr, error) {
 	panic("implement me")
 }
