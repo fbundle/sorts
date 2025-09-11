@@ -19,8 +19,10 @@ var defaultParser = Parser{
 	Split: []Token{"$", "⊕", "⊗", "=>", "->", ":", ",", "=", ":="},
 	Blocks: map[Token]BlockConfig{
 		"(": {
-			End:     ")",
-			Process: nil,
+			End: ")",
+			Process: func(forms []Form) (Form, error) {
+				return List(forms), nil
+			},
 		},
 		"{": {
 			End:     "}",
@@ -53,9 +55,6 @@ func (parser Parser) Parse(tokenList []Token) (Form, []Token, error) {
 				break
 			}
 			formList = append(formList, form)
-		}
-		if block.Process == nil {
-			return List(formList), tokenList, nil
 		}
 		form, err = block.Process(formList)
 		return form, tokenList, err
