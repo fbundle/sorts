@@ -45,14 +45,18 @@ func ParseForm(e form.Form) (Expr, error) {
 	return defaultParser.ParseForm(e)
 }
 func RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) {
-	if defaultParser.listParsers == nil {
-		defaultParser.listParsers = make(map[form.Term]ListParseFunc)
-	}
-	defaultParser.listParsers[cmd] = listParser
+	defaultParser.RegisterListParser(cmd, listParser)
 }
 
 type Parser struct {
 	listParsers map[form.Term]ListParseFunc
+}
+
+func (parser Parser) RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) {
+	if parser.listParsers == nil {
+		parser.listParsers = make(map[form.Term]ListParseFunc)
+	}
+	parser.listParsers[cmd] = listParser
 }
 
 func (parser Parser) ParseForm(e form.Form) (Expr, error) {
