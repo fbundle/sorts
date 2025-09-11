@@ -52,7 +52,10 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 	case FunctionCall:
 		panic("not implemented")
 	case Lambda:
-		panic("not implemented")
+		return frame, Value{
+			Sort: nil,
+			Expr: e,
+		}, nil
 	case Define:
 		frame, parent, err := Eval(frame, e.Type)
 		if err != nil {
@@ -69,7 +72,11 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 		if !ok {
 			return frame, Value{}, fmt.Errorf("undefined variable: %s", e.Name)
 		}
-		value.Expr = e.Value
+		frame, rvalue, err := Eval(frame, e.Value)
+		if err != nil {
+			return frame, Value{}, err
+		}
+		value.Expr = rvalue.Expr
 		frame = Frame{frame.Set(e.Name, value)}
 		return frame, value, nil
 	case Chain:
