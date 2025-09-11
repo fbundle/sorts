@@ -1,6 +1,7 @@
 package el
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -43,6 +44,22 @@ func (frame Frame) Get(key Term) (Value, bool) {
 func Eval(frame Frame, expr Expr) (Value, error) {
 	switch e := expr.(type) {
 	case Term:
-		frame.Get(e)
+		value, ok := frame.Get(e)
+		if !ok {
+			return Value{}, fmt.Errorf("undefined variable: %s", e)
+		}
+		return value, nil
+	case FunctionCall:
+		panic("not implemented")
+	case Lambda:
+		panic("not implemented")
+	case Define:
+		panic("not implemented")
+	case Assign:
+		panic("not implemented")
+	case Chain:
+		panic("not implemented")
+	case Match:
+		panic("not implemented")
 	}
 }
