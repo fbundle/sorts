@@ -59,8 +59,8 @@ func Parse(tokenList []Token) (Expr, []Token, error) {
 }
 
 const (
-	TermSum         Term = "+"
-	TermProd        Term = "×"
+	TermSum         Term = "⊕"
+	TermProd        Term = "⊗"
 	TermArrowDouble Term = "=>"
 	TermArrowSingle Term = "->"
 	TermColon       Term = ":"

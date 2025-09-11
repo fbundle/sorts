@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	"github.com/fbundle/sorts/el/ast"
+	sorts2 "github.com/fbundle/sorts/obsolete/sorts_v3"
 	"github.com/fbundle/sorts/persistent/ordered_map"
-	sorts "github.com/fbundle/sorts/sorts/sorts_v3"
 )
 
 // Value represents a value in our interpreter, which is essentially a sort
-type Value = sorts.Sort
+type Value = sorts2.Sort
 
 // FrameEntry represents an entry in the frame (environment)
 type FrameEntry struct {
@@ -30,60 +30,60 @@ func NewInterpreter() *Interpreter {
 	frame := ordered_map.EmptyOrderedMap[string, FrameEntry]()
 
 	// Add built-in natural numbers
-	frame = frame.Set("0", FrameEntry{Value: sorts.Zero, Type: sorts.Nat})
-	frame = frame.Set("1", FrameEntry{Value: sorts.NewAtom(0, "1", sorts.Nat), Type: sorts.Nat})
-	frame = frame.Set("2", FrameEntry{Value: sorts.NewAtom(0, "2", sorts.Nat), Type: sorts.Nat})
-	frame = frame.Set("3", FrameEntry{Value: sorts.NewAtom(0, "3", sorts.Nat), Type: sorts.Nat})
-	frame = frame.Set("4", FrameEntry{Value: sorts.NewAtom(0, "4", sorts.Nat), Type: sorts.Nat})
-	frame = frame.Set("5", FrameEntry{Value: sorts.NewAtom(0, "5", sorts.Nat), Type: sorts.Nat})
+	frame = frame.Set("0", FrameEntry{Value: sorts2.Zero, Type: sorts2.Nat})
+	frame = frame.Set("1", FrameEntry{Value: sorts2.NewAtom(0, "1", sorts2.Nat), Type: sorts2.Nat})
+	frame = frame.Set("2", FrameEntry{Value: sorts2.NewAtom(0, "2", sorts2.Nat), Type: sorts2.Nat})
+	frame = frame.Set("3", FrameEntry{Value: sorts2.NewAtom(0, "3", sorts2.Nat), Type: sorts2.Nat})
+	frame = frame.Set("4", FrameEntry{Value: sorts2.NewAtom(0, "4", sorts2.Nat), Type: sorts2.Nat})
+	frame = frame.Set("5", FrameEntry{Value: sorts2.NewAtom(0, "5", sorts2.Nat), Type: sorts2.Nat})
 
 	// Add built-in types
-	frame = frame.Set("Nat", FrameEntry{Value: sorts.Nat, Type: sorts.NewAtom(1, "Type", nil)})
-	frame = frame.Set("Type", FrameEntry{Value: sorts.NewAtom(1, "Type", nil), Type: sorts.NewAtom(2, "Type1", nil)})
+	frame = frame.Set("Nat", FrameEntry{Value: sorts2.Nat, Type: sorts2.NewAtom(1, "Type", nil)})
+	frame = frame.Set("Type", FrameEntry{Value: sorts2.NewAtom(1, "Type", nil), Type: sorts2.NewAtom(2, "Type1", nil)})
 
 	// Add built-in arithmetic operations
 	frame = frame.Set("+", FrameEntry{
-		Value: sorts.NatToNatToNat.Intro("add", func(a sorts.Sort) sorts.Sort {
-			sorts.MustTermOf(a, sorts.Nat)
-			return sorts.NatToNat.Intro("add_a", func(b sorts.Sort) sorts.Sort {
-				sorts.MustTermOf(b, sorts.Nat)
+		Value: sorts2.NatToNatToNat.Intro("add", func(a sorts2.Sort) sorts2.Sort {
+			sorts2.MustTermOf(a, sorts2.Nat)
+			return sorts2.NatToNat.Intro("add_a", func(b sorts2.Sort) sorts2.Sort {
+				sorts2.MustTermOf(b, sorts2.Nat)
 				return addNats(a, b)
 			})
 		}),
-		Type: sorts.NatToNatToNat,
+		Type: sorts2.NatToNatToNat,
 	})
 
 	frame = frame.Set("×", FrameEntry{
-		Value: sorts.NatToNatToNat.Intro("mul", func(a sorts.Sort) sorts.Sort {
-			sorts.MustTermOf(a, sorts.Nat)
-			return sorts.NatToNat.Intro("mul_a", func(b sorts.Sort) sorts.Sort {
-				sorts.MustTermOf(b, sorts.Nat)
+		Value: sorts2.NatToNatToNat.Intro("mul", func(a sorts2.Sort) sorts2.Sort {
+			sorts2.MustTermOf(a, sorts2.Nat)
+			return sorts2.NatToNat.Intro("mul_a", func(b sorts2.Sort) sorts2.Sort {
+				sorts2.MustTermOf(b, sorts2.Nat)
 				return mulNats(a, b)
 			})
 		}),
-		Type: sorts.NatToNatToNat,
+		Type: sorts2.NatToNatToNat,
 	})
 
 	// Add Sum and Prod type constructors for any universe level
 	frame = frame.Set("Sum", FrameEntry{
-		Value: sorts.NewAtom(0, "Sum", sorts.NewAtom(1, "TypeConstructor", nil)),
-		Type:  sorts.NewAtom(1, "TypeConstructor", nil),
+		Value: sorts2.NewAtom(0, "Sum", sorts2.NewAtom(1, "TypeConstructor", nil)),
+		Type:  sorts2.NewAtom(1, "TypeConstructor", nil),
 	})
 
 	frame = frame.Set("Prod", FrameEntry{
-		Value: sorts.NewAtom(0, "Prod", sorts.NewAtom(1, "TypeConstructor", nil)),
-		Type:  sorts.NewAtom(1, "TypeConstructor", nil),
+		Value: sorts2.NewAtom(0, "Prod", sorts2.NewAtom(1, "TypeConstructor", nil)),
+		Type:  sorts2.NewAtom(1, "TypeConstructor", nil),
 	})
 
 	// Add Pi and Sigma type constructors
 	frame = frame.Set("Pi", FrameEntry{
-		Value: sorts.NewAtom(0, "Pi", sorts.NewAtom(1, "TypeConstructor", nil)),
-		Type:  sorts.NewAtom(1, "TypeConstructor", nil),
+		Value: sorts2.NewAtom(0, "Pi", sorts2.NewAtom(1, "TypeConstructor", nil)),
+		Type:  sorts2.NewAtom(1, "TypeConstructor", nil),
 	})
 
 	frame = frame.Set("Sigma", FrameEntry{
-		Value: sorts.NewAtom(0, "Sigma", sorts.NewAtom(1, "TypeConstructor", nil)),
-		Type:  sorts.NewAtom(1, "TypeConstructor", nil),
+		Value: sorts2.NewAtom(0, "Sigma", sorts2.NewAtom(1, "TypeConstructor", nil)),
+		Type:  sorts2.NewAtom(1, "TypeConstructor", nil),
 	})
 
 	return &Interpreter{frame: frame}
@@ -173,9 +173,9 @@ func (i *Interpreter) evalMatch(match ast.Match) (Value, error) {
 func (i *Interpreter) evalLambda(lambda ast.Lambda) (Value, error) {
 	// For now, create a simple arrow type
 	// In a full implementation, we'd need proper type inference
-	return sorts.Arrow{
-		A: sorts.NewAtom(0, "param", sorts.Nat),  // Assume parameter is Nat for now
-		B: sorts.NewAtom(0, "result", sorts.Nat), // Assume result is Nat for now
+	return sorts2.Arrow{
+		A: sorts2.NewAtom(0, "param", sorts2.Nat),  // Assume parameter is Nat for now
+		B: sorts2.NewAtom(0, "result", sorts2.Nat), // Assume result is Nat for now
 	}, nil
 }
 
@@ -221,12 +221,12 @@ func (i *Interpreter) applyFunction(fn Value, args []Value) (Value, error) {
 
 	// For now, handle simple cases
 	switch f := fn.(type) {
-	case sorts.Arrow:
+	case sorts2.Arrow:
 		if len(args) != 1 {
 			return nil, fmt.Errorf("arrow function expects 1 argument, got %d", len(args))
 		}
 		return f.Elim(fn, args[0]), nil
-	case sorts.Pi:
+	case sorts2.Pi:
 		if len(args) != 1 {
 			return nil, fmt.Errorf("pi function expects 1 argument, got %d", len(args))
 		}
@@ -247,13 +247,13 @@ func (i *Interpreter) applyIntroFunction(fn Value, args []Value) (Value, error) 
 
 // isArithmeticOperation checks if a function is an arithmetic operation
 func (i *Interpreter) isArithmeticOperation(fn Value) bool {
-	name := sorts.Name(fn)
+	name := sorts2.Name(fn)
 	return name == "add" || name == "mul" || name == "+" || name == "×"
 }
 
 // applyArithmeticOperation applies an arithmetic operation
 func (i *Interpreter) applyArithmeticOperation(fn Value, a, b Value) (Value, error) {
-	name := sorts.Name(fn)
+	name := sorts2.Name(fn)
 
 	// Ensure both arguments are natural numbers
 	if !i.isNaturalNumber(a) || !i.isNaturalNumber(b) {
@@ -272,13 +272,13 @@ func (i *Interpreter) applyArithmeticOperation(fn Value, a, b Value) (Value, err
 
 // isTypeConstructor checks if a function is a type constructor
 func (i *Interpreter) isTypeConstructor(fn Value) bool {
-	name := sorts.Name(fn)
+	name := sorts2.Name(fn)
 	return name == "Sum" || name == "Prod" || name == "Pi" || name == "Sigma"
 }
 
 // applyTypeConstructor applies a type constructor
 func (i *Interpreter) applyTypeConstructor(fn Value, args []Value) (Value, error) {
-	name := sorts.Name(fn)
+	name := sorts2.Name(fn)
 
 	if len(args) != 2 {
 		return nil, fmt.Errorf("type constructor %s expects 2 arguments, got %d", name, len(args))
@@ -288,27 +288,27 @@ func (i *Interpreter) applyTypeConstructor(fn Value, args []Value) (Value, error
 
 	switch name {
 	case "Sum":
-		return sorts.Sum{A: a, B: b}, nil
+		return sorts2.Sum{A: a, B: b}, nil
 	case "Prod":
-		return sorts.Prod{A: a, B: b}, nil
+		return sorts2.Prod{A: a, B: b}, nil
 	case "Pi":
 		// For Pi types, we need to create a dependent type
-		return sorts.Pi{
+		return sorts2.Pi{
 			A: a,
-			B: sorts.Dependent{
+			B: sorts2.Dependent{
 				Name: "B",
-				Apply: func(x sorts.Sort) sorts.Sort {
+				Apply: func(x sorts2.Sort) sorts2.Sort {
 					return b // In a full implementation, we'd substitute x in b
 				},
 			},
 		}, nil
 	case "Sigma":
 		// For Sigma types, we need to create a dependent type
-		return sorts.Sigma{
+		return sorts2.Sigma{
 			A: a,
-			B: sorts.Dependent{
+			B: sorts2.Dependent{
 				Name: "B",
-				Apply: func(x sorts.Sort) sorts.Sort {
+				Apply: func(x sorts2.Sort) sorts2.Sort {
 					return b // In a full implementation, we'd substitute x in b
 				},
 			},
@@ -321,36 +321,36 @@ func (i *Interpreter) applyTypeConstructor(fn Value, args []Value) (Value, error
 // isNaturalNumber checks if a value is a natural number
 func (i *Interpreter) isNaturalNumber(value Value) bool {
 	// Check if the value is of type Nat
-	parent := sorts.Parent(value)
-	return sorts.Name(parent) == "Nat"
+	parent := sorts2.Parent(value)
+	return sorts2.Name(parent) == "Nat"
 }
 
 // valuesEqual checks if two values are equal using sorts equality
 func (i *Interpreter) valuesEqual(v1, v2 Value) bool {
 	// For now, use a simple name-based comparison
 	// In a full implementation, we'd use the sorts equality system
-	return sorts.Name(v1) == sorts.Name(v2)
+	return sorts2.Name(v1) == sorts2.Name(v2)
 }
 
 // inferType infers the type of a value
 func (i *Interpreter) inferType(value Value) Value {
 	// This is a simplified type inference
 	// In practice, we'd need more sophisticated type inference
-	return sorts.Parent(value)
+	return sorts2.Parent(value)
 }
 
 // Helper functions for arithmetic operations
 
 // addNats adds two natural numbers
-func addNats(a, b sorts.Sort) sorts.Sort {
+func addNats(a, b sorts2.Sort) sorts2.Sort {
 	// For now, create a symbolic addition
 	// In a full implementation, we'd need proper natural number arithmetic
-	return sorts.NewAtom(0, fmt.Sprintf("(%s + %s)", sorts.Name(a), sorts.Name(b)), sorts.Nat)
+	return sorts2.NewAtom(0, fmt.Sprintf("(%s + %s)", sorts2.Name(a), sorts2.Name(b)), sorts2.Nat)
 }
 
 // mulNats multiplies two natural numbers
-func mulNats(a, b sorts.Sort) sorts.Sort {
+func mulNats(a, b sorts2.Sort) sorts2.Sort {
 	// For now, create a symbolic multiplication
 	// In a full implementation, we'd need proper natural number arithmetic
-	return sorts.NewAtom(0, fmt.Sprintf("(%s × %s)", sorts.Name(a), sorts.Name(b)), sorts.Nat)
+	return sorts2.NewAtom(0, fmt.Sprintf("(%s × %s)", sorts2.Name(a), sorts2.Name(b)), sorts2.Nat)
 }

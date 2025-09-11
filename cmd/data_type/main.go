@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/sorts/sorts_v2"
+	"github.com/fbundle/sorts/obsolete/sorts_v2"
 )
 
 const (
@@ -15,7 +15,7 @@ const (
 	typeLevel = 1
 )
 
-func printCast(type1 sorts.Sort, type2 sorts.Sort) {
+func printCast(type1 sorts.sorts, type2 sorts.Sort) {
 	ok := type1.LessEqual(type2)
 
 	if ok {

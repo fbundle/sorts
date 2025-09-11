@@ -5,7 +5,7 @@ import (
 
 	"github.com/fbundle/sorts/el/ast"
 	"github.com/fbundle/sorts/expr"
-	sorts "github.com/fbundle/sorts/sorts/sorts_v3"
+	sorts2 "github.com/fbundle/sorts/obsolete/sorts_v3"
 )
 
 func TestInterpreter(t *testing.T) {
@@ -80,7 +80,7 @@ func TestInterpreter(t *testing.T) {
 			}
 
 			// Check result
-			resultName := sorts.Name(result)
+			resultName := sorts2.Name(result)
 			if resultName != tt.expected {
 				t.Errorf("Expected %s, got %s", tt.expected, resultName)
 			}
@@ -96,8 +96,8 @@ func TestArithmeticOperations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to evaluate 0: %v", err)
 	}
-	if sorts.Name(result) != "0" {
-		t.Errorf("Expected 0, got %s", sorts.Name(result))
+	if sorts2.Name(result) != "0" {
+		t.Errorf("Expected 0, got %s", sorts2.Name(result))
 	}
 
 	// Test addition function call
@@ -109,8 +109,8 @@ func TestArithmeticOperations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to evaluate addition: %v", err)
 	}
-	if sorts.Name(result) != "(1 + 2)" {
-		t.Errorf("Expected (1 + 2), got %s", sorts.Name(result))
+	if sorts2.Name(result) != "(1 + 2)" {
+		t.Errorf("Expected (1 + 2), got %s", sorts2.Name(result))
 	}
 }
 
@@ -128,7 +128,7 @@ func TestTypeConstructors(t *testing.T) {
 	}
 
 	// Check that it's a Sum type
-	if _, ok := result.(sorts.Sum); !ok {
+	if _, ok := result.(sorts2.Sum); !ok {
 		t.Errorf("Expected Sum type, got %T", result)
 	}
 
@@ -143,7 +143,7 @@ func TestTypeConstructors(t *testing.T) {
 	}
 
 	// Check that it's a Prod type
-	if _, ok := result.(sorts.Prod); !ok {
+	if _, ok := result.(sorts2.Prod); !ok {
 		t.Errorf("Expected Prod type, got %T", result)
 	}
 }
@@ -167,8 +167,8 @@ func TestLetBinding(t *testing.T) {
 		t.Fatalf("Failed to evaluate let expression: %v", err)
 	}
 
-	if sorts.Name(result) != "(5 + 3)" {
-		t.Errorf("Expected (5 + 3), got %s", sorts.Name(result))
+	if sorts2.Name(result) != "(5 + 3)" {
+		t.Errorf("Expected (5 + 3), got %s", sorts2.Name(result))
 	}
 }
 
@@ -190,7 +190,7 @@ func TestLambda(t *testing.T) {
 	}
 
 	// Check that it's an Arrow type
-	if _, ok := result.(sorts.Arrow); !ok {
+	if _, ok := result.(sorts2.Arrow); !ok {
 		t.Errorf("Expected Arrow type, got %T", result)
 	}
 }
@@ -215,8 +215,8 @@ func TestMatch(t *testing.T) {
 		t.Fatalf("Failed to evaluate match: %v", err)
 	}
 
-	if sorts.Name(result) != "2" {
-		t.Errorf("Expected 2, got %s", sorts.Name(result))
+	if sorts2.Name(result) != "2" {
+		t.Errorf("Expected 2, got %s", sorts2.Name(result))
 	}
 }
 

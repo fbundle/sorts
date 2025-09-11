@@ -1,3 +1,5 @@
+#infix_left
+
 (let Bool
     {Bool: U_0}
     {True: Bool}
