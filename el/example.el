@@ -12,7 +12,6 @@
     3 Nat (succ 2)
 
     x Any "example string with \"quotes\" and spaces"
-    x Any {1 + 2 + 3}
     x Any {1 ⊕ 2 ⊕ 3}
 
     is_two {Nat -> Bool} {x => (match x
