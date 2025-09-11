@@ -37,3 +37,8 @@ type FunctionCall struct {
 	Cmd  Expr
 	Args []Expr
 }
+
+func (f FunctionCall) mustElExpr() {}
+
+type Let struct {
+}
