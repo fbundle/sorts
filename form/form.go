@@ -1,5 +1,7 @@
 package form
 
+import "strings"
+
 type Token = string
 
 type Form interface {
@@ -33,3 +35,10 @@ func (n List) Marshal() []Token {
 }
 
 func (n List) formAttr() {}
+
+func String(form Form) string {
+	s := strings.Join(form.Marshal(), " ")
+	s = strings.ReplaceAll(s, "( ", "(")
+	s = strings.ReplaceAll(s, " )", ")")
+	return s
+}

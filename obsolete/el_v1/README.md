@@ -108,7 +108,7 @@ Arithmetic operations are implemented symbolically:
 Run the tests with:
 
 ```bash
-go test ./el/... -v
+go test ./el_v2/... -v
 ```
 
 ## Examples

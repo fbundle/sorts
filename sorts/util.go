@@ -7,3 +7,7 @@ func MustTermOf(x Sort, X Sort) {
 	}
 }
 
+func TermOf(x Sort, X Sort) bool {
+	X1 := Parent(x)
+	return LessEqual(X1, X)
+}

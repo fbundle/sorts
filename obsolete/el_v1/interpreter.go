@@ -3,7 +3,7 @@ package el
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/el/ast"
+	"github.com/fbundle/sorts/el_v2/ast"
 	sorts2 "github.com/fbundle/sorts/obsolete/sorts_v3"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 )

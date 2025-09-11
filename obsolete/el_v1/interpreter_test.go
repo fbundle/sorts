@@ -3,7 +3,7 @@ package el
 import (
 	"testing"
 
-	"github.com/fbundle/sorts/el/ast"
+	"github.com/fbundle/sorts/el_v2/ast"
 	"github.com/fbundle/sorts/form"
 	sorts2 "github.com/fbundle/sorts/obsolete/sorts_v3"
 )

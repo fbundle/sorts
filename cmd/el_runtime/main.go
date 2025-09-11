@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fbundle/sorts/el"
 	"github.com/fbundle/sorts/form"
+	"github.com/fbundle/sorts/obsolete/el_v2"
 )
 
 func main() {
@@ -32,10 +32,10 @@ func main() {
 			os.Exit(1)
 		}
 
-		elExpr, err := el.ParseForm(formExpr)
+		elExpr, err := el.el.ParseForm(formExpr)
 		if err != nil {
-			fmt.Printf("Error parsing el expression: %v\n", err)
-			fmt.Printf("Form: %s\n", strings.Join(formExpr.Marshal(), " "))
+			fmt.Printf("Error parsing el_v2 expression: %v\n", err)
+			fmt.Printf("Value: %s\n", strings.Join(formExpr.Marshal(), " "))
 			os.Exit(1)
 		}
 
