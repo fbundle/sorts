@@ -61,5 +61,7 @@ func Eval(frame Frame, expr Expr) (Value, error) {
 		panic("not implemented")
 	case Match:
 		panic("not implemented")
+	default:
+		return Value{}, fmt.Errorf("unknown expression: %T", e)
 	}
 }
