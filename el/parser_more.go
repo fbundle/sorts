@@ -16,18 +16,18 @@ var defaultParser = Parser{
 	},
 }
 
-func parseLambda(list form.List) (Expr, error) {
+func parseLambda(parse ParseFunc, list form.List) (Expr, error) {
 	panic("implement me")
 }
-func parseDefine(list form.List) (Expr, error) {
+func parseDefine(parse ParseFunc, list form.List) (Expr, error) {
 	panic("implement me")
 }
-func parseAssign(list form.List) (Expr, error) {
+func parseAssign(parse ParseFunc, list form.List) (Expr, error) {
 	panic("implement me")
 }
-func parseChain(list form.List) (Expr, error) {
+func parseChain(parse ParseFunc, list form.List) (Expr, error) {
 	panic("implement me")
 }
-func parseMatch(list form.List) (Expr, error) {
+func parseMatch(parse ParseFunc, list form.List) (Expr, error) {
 	panic("implement me")
 }
