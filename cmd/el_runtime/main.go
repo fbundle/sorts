@@ -44,7 +44,7 @@ func main() {
 		fmt.Printf("%T: %s\n", elExpr, strings.Join(marshaledForm.Marshal(), " "))
 
 		var value el.Expr
-		frame, _, value, err = el.Eval(frame, elExpr)
+		frame, _, value, err = frame.Resolve(elExpr)
 		if err != nil {
 			fmt.Printf("Error evaluating expression: %v\n", err)
 			os.Exit(1)

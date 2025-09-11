@@ -48,33 +48,35 @@ func (frame Frame) Get(key Term) (sort sorts.Sort, next Expr, ok bool) {
 	}
 }
 
-func Eval(frame Frame, expr Expr) (updatedFrame Frame, sort sorts.Sort, value Expr, err error) {
+func (frame Frame) resolveTerm(term Term) (newFrame Frame, sort sorts.Sort, value Expr, err error) {
+	sort, next, ok := frame.Get(term)
+	if !ok {
+		return frame, nil, nil, fmt.Errorf("variable not found: %s", term)
+	}
+	if term == next {
+		// term is not assigned hence cannot be simplified using Resolve
+		return frame, sort, next, nil
+	}
+	// recursive
+	return frame.Resolve(next)
+}
+
+func (frame Frame) Resolve(expr Expr) (updatedFrame Frame, sort sorts.Sort, value Expr, err error) {
 	switch e := expr.(type) {
 	case Term:
-		sort, next, ok := frame.Get(e)
-		if !ok {
-			return frame, nil, nil, fmt.Errorf("variable not found: %s", e)
-		}
-		if e == next {
-			// term is not assigned hence cannot be simplified using Eval
-			return frame, sort, next, nil
-		}
-		// recursive
-		return Eval(frame, next)
-
+		return frame.resolveTerm(e)
 	case FunctionCall:
-		frame, argSort, argValue, err := Eval(frame, e.Arg)
+		frame, argSort, argValue, err := frame.Resolve(e.Arg)
 		if err != nil {
 			return frame, nil, nil, err
 		}
-		frame, cmdSort, cmdValue, err := Eval(frame, e.Cmd)
+		frame, cmdSort, cmdValue, err := frame.Resolve(e.Cmd)
 		if err != nil {
 			return frame, nil, nil, err
 		}
 		switch cmd := cmdValue.(type) {
 		case Lambda:
-			callFrame := frame.Set(cmd.Param, argSort, argValue)
-			return Eval(callFrame, cmd.Body)
+			return frame.Set(cmd.Param, argSort, argValue).Resolve(cmd.Body)
 		case Term:
 			parentArrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
 			if !ok {
@@ -93,7 +95,7 @@ func Eval(frame Frame, expr Expr) (updatedFrame Frame, sort sorts.Sort, value Ex
 		var err error
 		var parentSort sorts.Sort
 		for _, binding := range e.Bindings {
-			frame, parentSort, _, err = Eval(frame, binding.Type)
+			frame, parentSort, _, err = frame.Resolve(binding.Type)
 			if err != nil {
 				return frame, nil, nil, err
 			}
@@ -105,16 +107,16 @@ func Eval(frame Frame, expr Expr) (updatedFrame Frame, sort sorts.Sort, value Ex
 			}
 			frame = frame.Set(binding.Name, sorts.NewAtomTerm(parentSort, string(binding.Name)), expr)
 		}
-		return Eval(frame, e.Final)
+		return frame.Resolve(e.Final)
 	case Match:
 		// match should not be hard, just compare Next
 		panic("not implemented")
 	case Arrow:
-		frame, aSort, _, err := Eval(frame, e.A)
+		frame, aSort, _, err := frame.Resolve(e.A)
 		if err != nil {
 			return frame, nil, nil, err
 		}
-		frame, bSort, _, err := Eval(frame, e.B)
+		frame, bSort, _, err := frame.Resolve(e.B)
 		if err != nil {
 			return frame, nil, nil, err
 		}
