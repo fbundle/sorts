@@ -1,7 +1,7 @@
 #infix_left ⊕ ⊗
 #infix_right => -> : , = :=
 
-(let
+(block
     (let Bool U_0)
     (let True Bool)
     (let False Bool)
