@@ -35,8 +35,6 @@ var defaultParser = Parser{
 func (parser Parser) Tokenize(s string, pList ...Preprocessor) []Token {
 	newPList := append([]Preprocessor{
 		removeComment("#"),
-		replaceAll("[", "(chain"),
-		replaceAll("]", ")"),
 	}, pList...)
 
 	return tokenize(
@@ -137,6 +135,4 @@ func processInfix(argList []Form) (Form, error) {
 		}
 		return List([]Form{cmd, left, right}), nil
 	}
-
-	return nil, fmt.Errorf("infix operator not supported %s", string(op))
 }

@@ -1,18 +1,15 @@
-[
-    {Bool : U_0}
-    {True : Bool}
-    {False : Bool}
+(let
+    Bool U_0                undef
+    True Bool               undef
+    False Bool              undef
 
-    {Nat : U_0}
-    {0 : Nat}
-    {succ : {Nat -> Nat}}
+    Nat U_0                 undef
+    0 Nat                   undef
+    succ {Nat -> Nat}       undef
 
-    {1 : Nat}
-    {2 : Nat}
-    {3 : Nat}
-    {1 := (succ 0)}
-    {2 := (succ 1)}
-    {3 := (succ 2)}
+    1 Nat (succ 0)
+    2 Nat (succ 1)
+    3 Nat (succ 2)
 
     3
-]
+)

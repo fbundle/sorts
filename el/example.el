@@ -1,4 +1,4 @@
-[
+(let
     Bool U_0                undef
     True Bool               undef
     False Bool              undef
@@ -21,4 +21,4 @@
     )}
 
     (is_two 3)
-]
+)
