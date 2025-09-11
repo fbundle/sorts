@@ -17,9 +17,9 @@
     {2 := (succ 1)}
     {3 := (succ 2)}
 
-    {x := "example string with \"quotes\" and spaces"}
-    {x := {1 + 2 + 3}}
-    {x := {1 ⊕ 2 ⊕ 3}}
+    {x := "example string with \"quotes\" and spaces"}  # string
+    {x := {1 + 2 + 3}}                                  # left assoc infix operator
+    {x := {1 ⊕ 2 ⊕ 3}}                                  # right assoc infix operator
 
     {is_two : {Nat -> Bool}}
     {is_two := {x => (match x
