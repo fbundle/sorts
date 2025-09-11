@@ -108,7 +108,24 @@ func (frame Frame) resolveLet(expr Let) (Frame, sorts.Sort, Expr, error) {
 }
 
 func (frame Frame) resolveMatch(expr Match) (Frame, sorts.Sort, Expr, error) {
-	panic("not implemented")
+	frame, condSort, condValue, err := frame.Resolve(expr.Cond)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+
+	var compSort sorts.Sort
+	var compValue Expr
+	for _, c := range expr.Cases {
+		frame, compSort, compValue, err = frame.Resolve(c.Comp)
+		if err != nil {
+			return frame, nil, nil, err
+		}
+		if String(compValue) == String(condValue) && sorts.SubTypeOf(compSort, condSort) {
+			// simple match
+			return frame.Resolve(c.Value)
+		}
+	}
+	return frame.Resolve(expr.Final)
 }
 func (frame Frame) resolveArrow(expr Arrow) (Frame, sorts.Sort, Expr, error) {
 	frame, aSort, _, err := frame.Resolve(expr.A)

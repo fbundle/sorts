@@ -16,7 +16,7 @@ func (s Prod) sortAttr() sortAttr {
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Prod:
-				return LessEqual(s.A, d.A) && LessEqual(s.B, d.B)
+				return SubTypeOf(s.A, d.A) && SubTypeOf(s.B, d.B)
 			default:
 				return false
 			}

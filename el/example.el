@@ -21,5 +21,5 @@
         False
     )}
 
-    is_two
+    (is_two 3)
 )

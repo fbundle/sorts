@@ -21,12 +21,12 @@ func (s Pi) sortAttr() sortAttr {
 			switch d := dst.(type) {
 			case Pi:
 				// tricky: subtyping for Arrow is contravariant in domain, covariant in codomain
-				if !LessEqual(d.A, s.A) {
+				if !SubTypeOf(d.A, s.A) {
 					return false
 				}
 				y := NewTerm(d.A, "y")
 				dBy := d.B.Apply(y)
-				return LessEqual(sBx, dBy)
+				return SubTypeOf(sBx, dBy)
 			default:
 				return false
 			}

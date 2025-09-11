@@ -28,7 +28,7 @@ func Parent(s Sort) Sort {
 	return s.sortAttr().parent
 }
 
-func LessEqual(x Sort, y Sort) bool {
+func SubTypeOf(x Sort, y Sort) bool {
 	return x.sortAttr().lessEqual(y)
 }
 

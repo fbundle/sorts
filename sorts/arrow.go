@@ -20,10 +20,10 @@ func (s Arrow) sortAttr() sortAttr {
 				// tricky: subtyping for Arrow is contravariant in domain, covariant in codomain
 				// {any -> unit} can be cast into {int -> unit}
 				// because {int} can be cast into {any}
-				if !LessEqual(d.A, s.A) {
+				if !SubTypeOf(d.A, s.A) {
 					return false
 				}
-				return LessEqual(s.B, d.B)
+				return SubTypeOf(s.B, d.B)
 			default:
 				return false
 			}

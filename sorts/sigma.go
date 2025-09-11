@@ -22,7 +22,7 @@ func (s Sigma) sortAttr() sortAttr {
 			case Sigma:
 				y := NewTerm(d.A, "y")
 				dBy := d.B.Apply(y)
-				return LessEqual(s.A, d.A) && LessEqual(sBx, dBy)
+				return SubTypeOf(s.A, d.A) && SubTypeOf(sBx, dBy)
 			default:
 				return false
 			}
