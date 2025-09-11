@@ -35,7 +35,7 @@ func main() {
 		elExpr, err := el.ParseForm(formExpr)
 		if err != nil {
 			fmt.Printf("Error parsing el_v2 expression: %v\n", err)
-			fmt.Printf("Value: %s\n", strings.Join(formExpr.Marshal(), " "))
+			fmt.Printf("Next: %s\n", strings.Join(formExpr.Marshal(), " "))
 			os.Exit(1)
 		}
 
@@ -43,15 +43,15 @@ func main() {
 		marshaledForm := elExpr.Marshal()
 		fmt.Printf("%T: %s\n", elExpr, strings.Join(marshaledForm.Marshal(), " "))
 
-		var value el.Value
-		frame, value, err = el.Eval(frame, elExpr)
+		var value el.Expr
+		frame, _, value, err = el.Eval(frame, elExpr)
 		if err != nil {
 			fmt.Printf("Error evaluating expression: %v\n", err)
 			os.Exit(1)
 		}
 
 		// Use Marshal() to convert back to form and print
-		marshaledForm = value.Expr.Marshal()
+		marshaledForm = value.Marshal()
 		fmt.Printf("%T: %s\n", elExpr, strings.Join(marshaledForm.Marshal(), " "))
 	}
 }

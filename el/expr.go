@@ -7,6 +7,10 @@ import (
 	"github.com/fbundle/sorts/form"
 )
 
+func String(e Expr) string {
+	return form.String(e.Marshal())
+}
+
 type Expr interface {
 	Marshal() form.Form
 	mustExpr()
