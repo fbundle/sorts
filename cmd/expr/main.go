@@ -21,7 +21,7 @@ func main() {
 	tokens := expr.Tokenize(input)
 
 	var e expr.Expr
-	for {
+	for len(tokens) > 0 {
 		e, tokens, err = expr.Parse(tokens)
 		if err != nil {
 			fmt.Printf("Error parsing input: %v\n", err)

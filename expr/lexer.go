@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"sort"
 	"strings"
 	"unicode"
 )
@@ -27,6 +28,26 @@ func Tokenize(s string) []Token {
 	}
 	for op := range rightToLeftInfixOp {
 		splitTokens = append(splitTokens, string(op))
+	}
+
+	sort.Slice(splitTokens, func(i, j int) bool {
+		a, b := splitTokens[i], splitTokens[j]
+
+		// If a is a prefix of b, then a should come first
+		if strings.HasPrefix(b, a) && len(a) < len(b) {
+			return true
+		}
+		// If b is a prefix of a, then b should come first
+		if strings.HasPrefix(a, b) && len(b) < len(a) {
+			return false
+		}
+		// Otherwise, fall back to normal lexicographic order
+		return a < b
+	})
+
+	// reverse the order
+	for i, j := 0, len(splitTokens)-1; i < j; i, j = i+1, j-1 {
+		splitTokens[i], splitTokens[j] = splitTokens[j], splitTokens[i]
 	}
 
 	return tokenize(s,
