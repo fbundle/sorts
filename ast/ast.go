@@ -14,10 +14,7 @@ func Parent(a AST) AST {
 }
 
 // Term - variable or constant
-type Term struct {
-	Parent AST    // eg. Nat
-	Name   string // eg. 0
-}
+type Term string
 
 func (t Term) astAttr() astAttr {
 	panic("not implemented")
