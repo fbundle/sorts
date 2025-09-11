@@ -41,14 +41,14 @@ func (frame Frame) Get(key Term) (Value, bool) {
 
 }
 
-func Eval(frame Frame, expr Expr) (Value, error) {
+func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 	switch e := expr.(type) {
 	case Term:
 		value, ok := frame.Get(e)
 		if !ok {
-			return Value{}, fmt.Errorf("undefined variable: %s", e)
+			return frame, Value{}, fmt.Errorf("undefined variable: %s", e)
 		}
-		return value, nil
+		return frame, value, nil
 	case FunctionCall:
 		panic("not implemented")
 	case Lambda:
@@ -62,6 +62,6 @@ func Eval(frame Frame, expr Expr) (Value, error) {
 	case Match:
 		panic("not implemented")
 	default:
-		return Value{}, fmt.Errorf("unknown expression: %T", e)
+		return frame, Value{}, fmt.Errorf("unknown expression: %T", e)
 	}
 }
