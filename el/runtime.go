@@ -65,9 +65,22 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 		frame = Frame{frame.Set(e.Name, value)}
 		return frame, value, nil
 	case Assign:
-		panic("not implemented")
+		value, ok := frame.Get(e.Name)
+		if !ok {
+			return frame, Value{}, fmt.Errorf("undefined variable: %s", e.Name)
+		}
+		value.Expr = e.Value
+		frame = Frame{frame.Set(e.Name, value)}
+		return frame, value, nil
 	case Chain:
-		panic("not implemented")
+		var err error
+		for _, expr := range e.Init {
+			frame, _, err = Eval(frame, expr)
+			if err != nil {
+				return frame, Value{}, err
+			}
+		}
+		return Eval(frame, e.Tail)
 	case Match:
 		panic("not implemented")
 	default:
