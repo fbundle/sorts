@@ -4,7 +4,7 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort) (sorts.Sort, bool) {
+func (frame Frame) typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort) (sorts.Sort, bool) {
 	arrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
 	if !ok {
 		return nil, false
@@ -15,7 +15,7 @@ func typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort) (sorts.Sort, 
 	return arrow.B, true
 }
 
-func typeCheckBinding(parentSort sorts.Sort, valueSort sorts.Sort) bool {
+func (frame Frame) typeCheckBinding(parentSort sorts.Sort, value Expr) bool {
 	// TODO - type check
 	return true
 }

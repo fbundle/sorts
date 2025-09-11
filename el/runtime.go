@@ -74,7 +74,7 @@ func (frame Frame) resolveFunctionCall(expr FunctionCall) (Frame, sorts.Sort, Ex
 	case Lambda:
 		return frame.Set(cmd.Param, argSort, argValue).Resolve(cmd.Body)
 	case Term:
-		if B, ok := typeCheckFunctionCall(cmdSort, argSort); ok {
+		if B, ok := frame.typeCheckFunctionCall(cmdSort, argSort); ok {
 			return frame, sorts.NewTerm(B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
 		}
 		return frame, nil, nil, fmt.Errorf("type_error: cmd %s, arg %s", sorts.Name(cmdSort), sorts.Name(argSort))
@@ -98,11 +98,7 @@ func (frame Frame) resolveLet(expr Let) (Frame, sorts.Sort, Expr, error) {
 			value = binding.Name
 		} else {
 			value = binding.Value
-			frame, valueSort, _, err = frame.Resolve(value)
-			if err != nil {
-				return frame, nil, nil, err
-			}
-			if !typeCheckBinding(parentSort, valueSort) {
+			if !frame.typeCheckBinding(parentSort, value) {
 				return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), sorts.Name(valueSort))
 			}
 		}
