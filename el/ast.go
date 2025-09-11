@@ -56,3 +56,5 @@ type Match struct {
 	Cases []Case
 	Else  Expr
 }
+
+func (m Match) mustElExpr() {}

@@ -1,23 +1,22 @@
 #infix_left ⊕ ⊗
 #infix_right => -> : , = :=
 
-(block
-    (let Bool U_0)
-    (let True Bool)
-    (let False Bool)
+(let
+    {Bool : U_0}
+    {True : Bool}
+    {False : Bool}
+    {Nat : U_0}
+    {0 : Nat}
+    {succ : Nat -> Nat}
+    {is_two : Nat -> Bool}
 
-    (let Nat U_0)
-    (let 0 Nat)
-    (let succ {Nat -> Nat})
-
-    (let 1 Nat (succ 0))
-    (let 2 Nat (succ 1))
-    (let 3 Nat (succ 2))
-
-    (let is_two {Nat -> Bool} {x => (match x
+    {1 := (succ 0)}
+    {2 := (succ 1)}
+    {3 := (succ 2)}
+    {is_two := {x => (match x
         (succ 1) True
         False
-    )})
+    )}}
 
     (is_two 3)
 )
