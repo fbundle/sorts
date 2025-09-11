@@ -128,7 +128,7 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 		value.Expr = rvalue.Expr
 		frame = Frame{frame.Set(e.Name, value)}
 		return frame, value, nil
-	case Chain:
+	case Let:
 		var err error
 		for _, expr := range e.Init {
 			frame, _, err = Eval(frame, expr)
@@ -136,7 +136,7 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 				return frame, Value{}, err
 			}
 		}
-		return Eval(frame, e.Tail)
+		return Eval(frame, e.Final)
 	case Match:
 		// match should not be hard, just compare Value
 		panic("not implemented")

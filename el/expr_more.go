@@ -42,119 +42,41 @@ func init() {
 	})
 }
 
-// Define - (: name type)
-type Define struct {
-	Name Term
-	Type Expr
+// Let - (chain name1 type1 value1 ... namen typen valuen tail)
+type Let struct {
+	Bindings []Binding
+	Final    Expr
 }
 
-func (d Define) mustExpr() {}
-
-func (d Define) Marshal() form.Form {
-	return form.List{
-		form.Term(":"),
-		d.Name.Marshal(),
-		d.Type.Marshal(),
-	}
-}
-
-func init() {
-	RegisterListParser(":", func(parseFunc ParseFunc, list form.List) (Expr, error) {
-		if len(list) != 2 {
-			return nil, errors.New("define must have exactly 2 arguments: name and type")
-		}
-		name, ok := list[0].(form.Term)
-		if !ok {
-			return nil, errors.New("define name must be a term")
-		}
-		typeExpr, err := parseFunc(list[1])
-		if err != nil {
-			return nil, err
-		}
-		return Define{
-			Name: Term(name),
-			Type: typeExpr,
-		}, nil
-	})
-}
-
-// Assign - (:= name value)
-type Assign struct {
+type Binding struct {
 	Name  Term
+	Type  Expr
 	Value Expr
 }
 
-func (a Assign) mustExpr() {}
+func (l Let) mustExpr() {}
 
-func (a Assign) Marshal() form.Form {
-	return form.List{
-		form.Term(":="),
-		a.Name.Marshal(),
-		a.Value.Marshal(),
-	}
-}
-
-func init() {
-	RegisterListParser(":=", func(parseFunc ParseFunc, list form.List) (Expr, error) {
-		if len(list) != 2 {
-			return nil, errors.New("assign must have exactly 2 arguments: name and value")
-		}
-		name, ok := list[0].(form.Term)
-		if !ok {
-			return nil, errors.New("assign name must be a term")
-		}
-		value, err := parseFunc(list[1])
-		if err != nil {
-			return nil, err
-		}
-		return Assign{
-			Name:  Term(name),
-			Value: value,
-		}, nil
-	})
-}
-
-// Chain - (chain expr1 expr2 ... exprn tail)
-type Chain struct {
-	Init []Expr
-	Tail Expr
-}
-
-func (c Chain) mustExpr() {}
-
-func (c Chain) Marshal() form.Form {
-	forms := make([]form.Form, 0, 2+len(c.Init))
+func (l Let) Marshal() form.Form {
+	forms := make([]form.Form, 0, 2+3*len(l.Bindings))
 	forms = append(forms, form.Term("chain"))
-	for _, expr := range c.Init {
-		forms = append(forms, expr.Marshal())
+	for _, binding := range l.Bindings {
+		forms = append(forms, binding.Name.Marshal())
+		forms = append(forms, binding.Type.Marshal())
+		forms = append(forms, binding.Value.Marshal())
 	}
-	forms = append(forms, c.Tail.Marshal())
+	forms = append(forms, l.Final.Marshal())
 	return form.List(forms)
 }
 
 func init() {
-	RegisterListParser("chain", func(parseFunc ParseFunc, list form.List) (Expr, error) {
-		if len(list) < 2 {
-			return nil, errors.New("chain must have at least 2 arguments: init expressions and tail")
+	RegisterListParser("let", func(parseFunc ParseFunc, list form.List) (Expr, error) {
+		if len(list) < 1 {
+			return nil, errors.New("let must have at least 1: final")
 		}
-		// All arguments except the last are init expressions
-		init := make([]Expr, len(list)-1)
-		for i, arg := range list[:len(list)-1] {
-			initExpr, err := parseFunc(arg)
-			if err != nil {
-				return nil, err
-			}
-			init[i] = initExpr
+		for i := 2; i < len(list); i += 3 {
+
 		}
-		// Last argument is the tail
-		tail, err := parseFunc(list[len(list)-1])
-		if err != nil {
-			return nil, err
-		}
-		return Chain{
-			Init: init,
-			Tail: tail,
-		}, nil
+
 	})
 }
 
