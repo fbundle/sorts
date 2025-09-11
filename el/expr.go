@@ -8,7 +8,7 @@ type Term string
 
 func (t Term) mustExpr() {}
 
-// Lambda - (or =>) lambda abstraction
+// Lambda - (=> param body)
 type Lambda struct {
 	Param Term
 	Body  Expr
@@ -16,7 +16,7 @@ type Lambda struct {
 
 func (l Lambda) mustExpr() {}
 
-// FunctionCall - (cmd arg1 arg2 ...) function call
+// FunctionCall - (cmd arg1 arg2 ...)
 type FunctionCall struct {
 	Cmd  Expr
 	Args []Expr
@@ -24,7 +24,7 @@ type FunctionCall struct {
 
 func (f FunctionCall) mustExpr() {}
 
-// Define - (or :) define a new variable
+// Define - (: name type)
 type Define struct {
 	Name Term
 	Type Expr
@@ -32,7 +32,7 @@ type Define struct {
 
 func (d Define) mustExpr() {}
 
-// Assign - (or :=) assign a value to a variable
+// Assign - (:= name value)
 type Assign struct {
 	Name  Term
 	Value Expr
@@ -40,7 +40,7 @@ type Assign struct {
 
 func (a Assign) mustExpr() {}
 
-// Chain - chain expressions
+// Chain - (chain expr1 expr2 ... exprn tail)
 type Chain struct {
 	Init []Expr
 	Tail Expr
@@ -48,7 +48,7 @@ type Chain struct {
 
 func (c Chain) mustExpr() {}
 
-// Match - match expression
+// Match - (match cond comp1 value1 comp2 value2 ... compn valuen final)
 type Match struct {
 	Cond  Expr
 	Cases []Case
