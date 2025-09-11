@@ -57,12 +57,14 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 			if err != nil {
 				return frame, Value{}, err
 			}
-			if cmd == c.Expr { // term is not assigned
+			if cmd == c.Expr {
+				// term is not assigned hence cannot be simplified using Eval
+				// like (succ (succ 0))
+				// return expr form
 				arrow, ok := c.Sort.(sorts.Arrow)
 				if !ok {
 					return frame, Value{}, fmt.Errorf("expected arrow: %T", c.Sort)
 				}
-				// like (succ (succ 0))
 				return frame, Value{
 					Sort: arrow.B,
 					Expr: FunctionCall{cmd, e.Args},
@@ -76,8 +78,6 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 		default:
 			return frame, Value{}, fmt.Errorf("unknown function: %T", e.Cmd)
 		}
-
-		panic("not implemented")
 	case Lambda:
 		return frame, Value{
 			Sort: nil,
