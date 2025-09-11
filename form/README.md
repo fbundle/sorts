@@ -24,6 +24,7 @@ package main
 
 import (
     "fmt"
+    "strings"
     "github.com/fbundle/sorts/form"
 )
 
@@ -31,7 +32,7 @@ func main() {
     src := `
         (add 1 2)
         {x => y => (add x y)}
-        {1 ⊕ 2 ⊕ 3}
+        {1 + 2 + 3}
     `
 
     tokens := form.Tokenize(src)
@@ -43,17 +44,17 @@ func main() {
         tokens = rest
 
         // Round-trip back to tokens
-        fmt.Println(node.Marshal())
+        fmt.Println(strings.Join(node.Marshal(), " "))
     }
 }
 ```
 
-Output (pretty-printed for clarity):
+Output:
 
 ```text
-(add 1 2)
-(=> x (=> y (add x y)))
-(⊕ (⊕ 1 2) 3)
+( add 1 2 )
+( => x ( => y ( add x y ) ) )
+( + ( + 1 2 ) 3 )
 ```
 
 ---
@@ -101,7 +102,7 @@ Examples:
 ```text
 (greet "hello, world")     # comment after a form
 {x -> y -> z}               # right-associative arrows
-{1 ⊕ 2 ⊕ 3}                 # left-associative sum
+{1 + 2 + 3}                 # left-associative sum
 "a \"quoted\" word"        # strings keep escapes
 ```
 
@@ -114,9 +115,11 @@ Note: the tokenizer recognizes the special token `$` for future features; it is 
 Inside `{ … }` the parser normalizes a flat, odd-length sequence of alternating operands and a repeated operator into a prefix `List` with explicit associativity. All operators within a single infix block must be the same; mixing operators yields an error.
 
 - **Left-to-right associative operators**:
+  - `+` (sum)
+  - `*` (product)
+- **Right-to-left associative operators**:
   - `⊕` (sum)
   - `⊗` (product)
-- **Right-to-left associative operators**:
   - `=>` (lambda-like)
   - `->` (arrow type)
   - `:` (type ascription)
@@ -127,9 +130,9 @@ Inside `{ … }` the parser normalizes a flat, odd-length sequence of alternatin
 Normalization examples:
 
 ```text
-{1 ⊕ 2 ⊕ 3}           =>  (⊕ (⊕ 1 2) 3)
-{x => y => f x y}      =>  (=> x (=> y (f x y)))
-{a , b , c}            =>  (, a (, b c))
+{1 + 2 + 3}            =>  ( + ( + 1 2 ) 3 )
+{x => y => f x y}      =>  ( => x ( => y ( f x y ) ) )
+{a , b , c}            =>  ( , a ( , b c ) )
 ```
 
 Errors raised by infix parsing:
@@ -139,7 +142,7 @@ Errors raised by infix parsing:
 - Even-length sequence: error "infix syntax must have an odd number of arguments"
 - Operator position not a `Term`: error "infix operator must be a term"
 - Mixed operators: error "infix operator must be the same <op>"
-- Unsupported operator: error "infix operator not supported <op>"
+
 
 ---
 
@@ -162,17 +165,17 @@ func render(f form.Form) string {
 Example:
 
 ```go
-f, rest, _ := form.Parse(form.Tokenize("{1 ⊗ 2 ⊗ 3}"))
+f, rest, _ := form.Parse(form.Tokenize("{1 * 2 * 3}"))
 _ = rest // empty
 fmt.Println(strings.Join(f.Marshal(), " "))
-// ( ⊗ ( ⊗ 1 2 ) 3 )
+// ( * ( * 1 2 ) 3 )
 ```
 
 ---
 
 ### Limits and non-goals
 
-- Only a fixed set of infix operators is recognized. Extend by editing `leftToRightInfixOp`/`rightToLeftInfixOp` in `parser.go` and reusing `Tokenize`'s dynamic split token list.
+- Only a fixed set of infix operators is recognized. Extend by editing `defaultParser.Split` and the associativity in `processInfix` in `parser.go`.
 - This package does not perform evaluation or type checking—only tokenization and shape normalization.
 - No reader macros beyond `{ … }` infix blocks.
 
