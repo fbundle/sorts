@@ -11,7 +11,11 @@ import (
 
 // TODO - remove all Expr
 
-// check example.el for new syntax
+// TODO check example.el for new syntax
+
+// TODO - support multi argument function call
+
+// TODO - support type inference
 
 type Value struct {
 	Sort sorts.Sort
