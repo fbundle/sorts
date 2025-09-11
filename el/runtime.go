@@ -46,9 +46,6 @@ func (frame Frame) GetValue(key form.Term) (sorts.Sort, form.Form, bool) {
 
 	keyStr := string(key)
 
-	if keyStr == "Any" {
-		return sorts.NewAtom(1, keyStr, nil), key, true
-	}
 	// universes
 	if strings.HasPrefix(keyStr, "U_") {
 		levelStr := strings.TrimPrefix(keyStr, "U_")
