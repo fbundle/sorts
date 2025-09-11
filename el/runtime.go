@@ -11,7 +11,7 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-type Exec func(frame Frame, expr form.Form) (Frame, sorts.Sort, form.Form, error)
+type Exec func(frame Frame, argList form.List) (Frame, sorts.Sort, form.Form, error)
 
 type _value struct {
 	Sort  sorts.Sort
@@ -79,7 +79,7 @@ func (frame Frame) Eval(expr form.Form) (Frame, sorts.Sort, form.Form, error) {
 		if cmd, ok := expr[0].(form.Term); ok {
 			if exec, ok := frame.GetExec(cmd); ok {
 				// built-in function
-				return exec(frame, expr)
+				return exec(frame, expr[1:])
 			}
 		}
 		// normal function call
