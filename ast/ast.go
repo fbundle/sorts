@@ -6,7 +6,7 @@ import (
 )
 
 type Runtime struct {
-	Frame ordered_map.OrderedMap[Term, sorts.Sort]
+	Frame ordered_map.OrderedMap[Term, sorts.Sort] // term -> parent
 }
 
 func (r Runtime) Parent(a AST) AST {
