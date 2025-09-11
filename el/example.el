@@ -18,5 +18,10 @@
         False
     )}}
 
+    {add := {x => y => (match x
+        (succ z) (add z (succ y))   # if x is succ z then add z (succ y)
+        y                           # else y
+    )}
+
     (is_two 3)
 )

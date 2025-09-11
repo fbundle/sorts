@@ -28,6 +28,7 @@ func main() {
 			fmt.Println(tokens)
 			os.Exit(1)
 		}
+
 		fmt.Println(strings.Join(e.Marshal(), " "))
 	}
 

@@ -31,24 +31,18 @@ func Tokenize(s string) []Token {
 	}
 
 	sort.Slice(splitTokens, func(i, j int) bool {
-		a, b := splitTokens[i], splitTokens[j]
-
-		// If a is a prefix of b, then a should come first
-		if strings.HasPrefix(b, a) && len(a) < len(b) {
+		s1, s2 := splitTokens[i], splitTokens[j]
+		if strings.HasPrefix(s1, s2) && s1 != s2 {
+			// s2 is a prefix of s1 → s1 should come first
 			return true
 		}
-		// If b is a prefix of a, then b should come first
-		if strings.HasPrefix(a, b) && len(b) < len(a) {
+		if strings.HasPrefix(s2, s1) && s1 != s2 {
+			// s1 is a prefix of s2 → s2 should come first
 			return false
 		}
-		// Otherwise, fall back to normal lexicographic order
-		return a < b
+		// Otherwise, normal lexicographic order
+		return s1 < s2
 	})
-
-	// reverse the order
-	for i, j := 0, len(splitTokens)-1; i < j; i, j = i+1, j-1 {
-		splitTokens[i], splitTokens[j] = splitTokens[j], splitTokens[i]
-	}
 
 	return tokenize(s,
 		splitTokens,
