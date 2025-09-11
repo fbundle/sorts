@@ -1,12 +1,12 @@
 package el
 
 type Expr interface {
-	mustElExpr()
+	mustExpr()
 }
 
 type Term string
 
-func (t Term) mustElExpr() {}
+func (t Term) mustExpr() {}
 
 // Lambda - (or =>) lambda abstraction
 type Lambda struct {
@@ -14,7 +14,7 @@ type Lambda struct {
 	Body  Expr
 }
 
-func (l Lambda) mustElExpr() {}
+func (l Lambda) mustExpr() {}
 
 // FunctionCall - (cmd arg1 arg2 ...) function call
 type FunctionCall struct {
@@ -22,7 +22,7 @@ type FunctionCall struct {
 	Args []Expr
 }
 
-func (f FunctionCall) mustElExpr() {}
+func (f FunctionCall) mustExpr() {}
 
 // Define - (or :) define a new variable
 type Define struct {
@@ -30,7 +30,7 @@ type Define struct {
 	Type Expr
 }
 
-func (d Define) mustElExpr() {}
+func (d Define) mustExpr() {}
 
 // Assign - (or :=) assign a value to a variable
 type Assign struct {
@@ -38,7 +38,7 @@ type Assign struct {
 	Value Expr
 }
 
-func (a Assign) mustElExpr() {}
+func (a Assign) mustExpr() {}
 
 type Let struct {
 	Defines []Define
@@ -46,7 +46,7 @@ type Let struct {
 	Body    Expr
 }
 
-func (l Let) mustElExpr() {}
+func (l Let) mustExpr() {}
 
 type Case struct {
 	Comp  Expr
@@ -57,4 +57,4 @@ type Match struct {
 	Else  Expr
 }
 
-func (m Match) mustElExpr() {}
+func (m Match) mustExpr() {}
