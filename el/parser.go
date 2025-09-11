@@ -131,6 +131,29 @@ func parseList(l form.List) (Expr, error) {
 			Final: final,
 		}, nil
 
+	case "chain":
+		if len(args) < 2 {
+			return nil, errors.New("chain must have at least 2 arguments: init expressions and tail")
+		}
+		// All arguments except the last are init expressions
+		init := make([]Expr, len(args)-1)
+		for i, arg := range args[:len(args)-1] {
+			initExpr, err := ParseForm(arg)
+			if err != nil {
+				return nil, fmt.Errorf("parsing chain init expression %d: %w", i, err)
+			}
+			init[i] = initExpr
+		}
+		// Last argument is the tail
+		tail, err := ParseForm(args[len(args)-1])
+		if err != nil {
+			return nil, fmt.Errorf("parsing chain tail: %w", err)
+		}
+		return Chain{
+			Init: init,
+			Tail: tail,
+		}, nil
+
 	default:
 		// Default to function call
 		cmdExpr, err := ParseForm(cmd)
