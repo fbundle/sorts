@@ -3,16 +3,16 @@ package ast
 import (
 	"errors"
 
-	"github.com/fbundle/sorts/expr"
+	"github.com/fbundle/sorts/form"
 )
 
-func Parse(e expr.Form) (Expr, error) {
+func Parse(e form.Form) (Expr, error) {
 	switch e := e.(type) {
-	case expr.Term:
+	case form.Term:
 		return Name(e), nil
-	case expr.List:
+	case form.List:
 		head, args := e[0], e[1:]
-		cmd, ok := head.(expr.Term)
+		cmd, ok := head.(form.Term)
 		if !ok {
 			return nil, errors.New("expected term expression")
 		}
@@ -23,7 +23,7 @@ func Parse(e expr.Form) (Expr, error) {
 			}
 			var bindings []LetBinding
 			for i := 0; i <= len(args)-3; i += 2 {
-				name, ok := args[i].(expr.Term)
+				name, ok := args[i].(form.Term)
 				if !ok {
 					return nil, errors.New("expected term expression")
 				}
@@ -76,11 +76,11 @@ func Parse(e expr.Form) (Expr, error) {
 				Cases:   cases,
 				Default: final,
 			}, nil
-		case expr.TermArrowDouble: // lambda
+		case form.TermArrowDouble: // lambda
 			if len(args) != 2 {
 				return nil, errors.New("expected 2 args")
 			}
-			param, ok := args[0].(expr.Term)
+			param, ok := args[0].(form.Term)
 			if !ok {
 				return nil, errors.New("expected term expression")
 			}

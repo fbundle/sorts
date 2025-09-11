@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fbundle/sorts/expr"
+	"github.com/fbundle/sorts/form"
 )
 
 func main() {
@@ -18,11 +18,11 @@ func main() {
 
 	input := string(data)
 
-	tokens := expr.Tokenize(input)
+	tokens := form.Tokenize(input)
 
-	var e expr.Form
+	var e form.Form
 	for len(tokens) > 0 {
-		e, tokens, err = expr.Parse(tokens)
+		e, tokens, err = form.Parse(tokens)
 		if err != nil {
 			fmt.Printf("Error parsing input: %v\n", err)
 			fmt.Println(tokens)

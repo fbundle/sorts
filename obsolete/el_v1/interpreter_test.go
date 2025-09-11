@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/fbundle/sorts/el/ast"
-	"github.com/fbundle/sorts/expr"
+	"github.com/fbundle/sorts/form"
 	sorts2 "github.com/fbundle/sorts/obsolete/sorts_v3"
 )
 
@@ -61,8 +61,8 @@ func TestInterpreter(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Parse the input
-			tokens := expr.Tokenize(tt.input)
-			expr, _, err := expr.Parse(tokens)
+			tokens := form.Tokenize(tt.input)
+			expr, _, err := form.Parse(tokens)
 			if err != nil {
 				t.Fatalf("Failed to parse input: %v", err)
 			}
