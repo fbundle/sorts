@@ -229,3 +229,37 @@ func init() {
 		}, nil
 	})
 }
+
+type Arrow struct {
+	A Expr
+	B Expr
+}
+
+func (a Arrow) mustExpr() {}
+func (a Arrow) Marshal() form.Form {
+	return form.List{
+		form.Term("->"),
+		a.A.Marshal(),
+		a.B.Marshal(),
+	}
+}
+
+func init() {
+	RegisterListParser("->", func(parseFunc ParseFunc, list form.List) (Expr, error) {
+		if len(list) != 2 {
+			return nil, errors.New("arrow must have exactly 2 arguments: a and b")
+		}
+		a, err := parseFunc(list[0])
+		if err != nil {
+			return nil, err
+		}
+		b, err := parseFunc(list[1])
+		if err != nil {
+			return nil, err
+		}
+		return Arrow{
+			A: a,
+			B: b,
+		}, nil
+	})
+}

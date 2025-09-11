@@ -124,6 +124,22 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 		return Eval(frame, e.Tail)
 	case Match:
 		panic("not implemented")
+	case Arrow:
+		frame, avalue, err := Eval(frame, e.A)
+		if err != nil {
+			return frame, Value{}, err
+		}
+		frame, bvalue, err := Eval(frame, e.B)
+		if err != nil {
+			return frame, Value{}, err
+		}
+		return frame, Value{
+			Sort: sorts.Arrow{
+				A: avalue.Sort,
+				B: bvalue.Sort,
+			},
+			Expr: e,
+		}, nil
 	default:
 		return frame, Value{}, fmt.Errorf("unknown expression: %T", e)
 	}
