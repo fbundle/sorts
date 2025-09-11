@@ -2,9 +2,9 @@ package expr
 
 type Token = string
 
-type Expr interface {
+type Form interface {
 	Marshal() []Token
-	exprAttr()
+	formAttr()
 }
 
 type Term string
@@ -13,11 +13,11 @@ func (t Term) Marshal() []Token {
 	return []Token{Token(t)}
 }
 
-func (t Term) exprAttr() {}
+func (t Term) formAttr() {}
 
-type Node []Expr
+type List []Form
 
-func (n Node) Marshal() []Token {
+func (n List) Marshal() []Token {
 	var output []Token
 	output = append(output, TokenBlockBegin)
 	for _, arg := range n {
@@ -27,4 +27,4 @@ func (n Node) Marshal() []Token {
 	return output
 }
 
-func (n Node) exprAttr() {}
+func (n List) formAttr() {}

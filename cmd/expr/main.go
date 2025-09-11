@@ -20,7 +20,7 @@ func main() {
 
 	tokens := expr.Tokenize(input)
 
-	var e expr.Expr
+	var e expr.Form
 	for len(tokens) > 0 {
 		e, tokens, err = expr.Parse(tokens)
 		if err != nil {

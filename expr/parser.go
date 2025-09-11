@@ -12,12 +12,12 @@ func pop(tokenList []Token) ([]Token, Token, error) {
 	return tokenList[1:], tokenList[0], nil
 }
 
-type Parser = func(tokenList []Token) (Expr, []Token, error)
+type Parser = func(tokenList []Token) (Form, []Token, error)
 
-func parseUntilPred(parser Parser, stopPred func(Expr) bool, tokenList []Token) ([]Expr, []Token, error) {
-	var arg Expr
+func parseUntilPred(parser Parser, stopPred func(Form) bool, tokenList []Token) ([]Form, []Token, error) {
+	var arg Form
 	var err error
-	var argList []Expr
+	var argList []Form
 	for {
 		arg, tokenList, err = parser(tokenList)
 		if err != nil {
@@ -31,7 +31,7 @@ func parseUntilPred(parser Parser, stopPred func(Expr) bool, tokenList []Token) 
 	return argList, tokenList, nil
 }
 
-func Parse(tokenList []Token) (Expr, []Token, error) {
+func Parse(tokenList []Token) (Form, []Token, error) {
 	tokenList, head, err := pop(tokenList)
 	if err != nil {
 		return nil, tokenList, err
@@ -44,7 +44,7 @@ func Parse(tokenList []Token) (Expr, []Token, error) {
 		if err != nil {
 			return nil, tokenList, err
 		}
-		return Node(argList), tokenList, nil
+		return List(argList), tokenList, nil
 	case TokenInfixBegin:
 		// parse until seeing `}`
 		argList, tokenList, err := parseUntilPred(Parse, matchName(Term(TokenInfixEnd)), tokenList)
@@ -89,9 +89,9 @@ var rightToLeftInfixOp = map[Term]struct{}{
 // {x => y => (add x y)}	(=> x (=> y (add x y)))		// right to left - lambda
 // {x -> y -> z}			(-> x (-> y z))				// right to left - arrow
 // etc.
-func processInfix(argList []Expr) (Expr, error) {
+func processInfix(argList []Form) (Form, error) {
 	if len(argList) == 0 {
-		return Node(nil), nil
+		return List(nil), nil
 	}
 	if len(argList) == 1 {
 		return argList[0], nil
@@ -120,7 +120,7 @@ func processInfix(argList []Expr) (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		return Node([]Expr{cmd, left, right}), nil
+		return List([]Form{cmd, left, right}), nil
 	}
 	if _, ok := rightToLeftInfixOp[op]; ok {
 		// right to left
@@ -129,14 +129,14 @@ func processInfix(argList []Expr) (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		return Node([]Expr{cmd, left, right}), nil
+		return List([]Form{cmd, left, right}), nil
 	}
 
 	return nil, fmt.Errorf("infix operator not supported %s", string(op))
 }
 
-func matchName(cond Term) func(Expr) bool {
-	return func(arg Expr) bool {
+func matchName(cond Term) func(Form) bool {
+	return func(arg Form) bool {
 		if name, ok := arg.(Term); ok {
 			return string(cond) == string(name)
 		}

@@ -6,11 +6,11 @@ import (
 	"github.com/fbundle/sorts/expr"
 )
 
-func Parse(e expr.Expr) (Expr, error) {
+func Parse(e expr.Form) (Expr, error) {
 	switch e := e.(type) {
 	case expr.Term:
 		return Name(e), nil
-	case expr.Node:
+	case expr.List:
 		head, args := e[0], e[1:]
 		cmd, ok := head.(expr.Term)
 		if !ok {
