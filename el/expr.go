@@ -48,13 +48,14 @@ type Chain struct {
 
 func (c Chain) mustExpr() {}
 
-type Case struct {
-	Comp  Expr
-	Value Expr
-}
+// Match - match expression
 type Match struct {
 	Cases []Case
 	Final Expr
+}
+type Case struct {
+	Comp  Expr
+	Value Expr
 }
 
 func (m Match) mustExpr() {}
