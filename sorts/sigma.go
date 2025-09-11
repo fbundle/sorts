@@ -10,7 +10,7 @@ type Sigma struct {
 }
 
 func (s Sigma) sortAttr() sortAttr {
-	x := dummyTerm(s.A, "x")
+	x := NewTerm(s.A, "x")
 	sBx := s.B.Apply(x)
 	level := max(Level(s.A), Level(sBx))
 	return sortAttr{
@@ -20,7 +20,7 @@ func (s Sigma) sortAttr() sortAttr {
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Sigma:
-				y := dummyTerm(d.A, "y")
+				y := NewTerm(d.A, "y")
 				dBy := d.B.Apply(y)
 				return LessEqual(s.A, d.A) && LessEqual(sBx, dBy)
 			default:
@@ -34,13 +34,13 @@ func (s Sigma) sortAttr() sortAttr {
 func (s Sigma) Intro(a Sort, b Sort) Sort {
 	MustTermOf(a, s.A)
 	MustTermOf(b, s.B.Apply(a))
-	return dummyTerm(s, fmt.Sprintf("(%s, %s)", Name(a), Name(b)))
+	return NewTerm(s, fmt.Sprintf("(%s, %s)", Name(a), Name(b)))
 }
 
 // Elim - take (t: Σ(x:A)B(x)) give (a: A) (b: B(a))
 func (s Sigma) Elim(t Sort) (left Sort, right Sort) {
 	MustTermOf(t, s)
-	a := dummyTerm(s.A, "a")
-	b := dummyTerm(s.B.Apply(a), "b")
+	a := NewTerm(s.A, "a")
+	b := NewTerm(s.B.Apply(a), "b")
 	return a, b
 }

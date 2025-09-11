@@ -29,11 +29,11 @@ func (s Sum) Intro(a Sort, b Sort) Sort {
 	if a != nil {
 		// IntroLeft - take (a: A) give (x: A + B)
 		MustTermOf(a, s.A)
-		return dummyTerm(s, fmt.Sprintf("<%s, _>", Name(a)))
+		return NewTerm(s, fmt.Sprintf("<%s, _>", Name(a)))
 	} else {
 		// IntroRight - take (b: B) give (x: A + B)
 		MustTermOf(b, s.B)
-		return dummyTerm(s, fmt.Sprintf("<_, %s>", Name(b)))
+		return NewTerm(s, fmt.Sprintf("<_, %s>", Name(b)))
 	}
 }
 
@@ -44,5 +44,5 @@ func (s Sum) ByCases(t Sort, h1 Sort, h2 Sort) Sort {
 	MustTermOf(h1, Arrow{s.A, X})
 	MustTermOf(h2, Arrow{s.B, X})
 
-	return dummyTerm(X, fmt.Sprintf("(by_cases %s %s %s)", Name(t), Name(h1), Name(h2)))
+	return NewTerm(X, fmt.Sprintf("(by_cases %s %s %s)", Name(t), Name(h1), Name(h2)))
 }

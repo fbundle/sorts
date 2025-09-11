@@ -75,16 +75,16 @@ func (frame Frame) resolveFunctionCall(expr FunctionCall) (Frame, sorts.Sort, Ex
 		return frame.Set(cmd.Param, argSort, argValue).Resolve(cmd.Body)
 	case Term:
 		// type check
-		parentArrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
+		arrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
 		if !ok {
 			return frame, nil, nil, fmt.Errorf("cmd is not a function %s", cmd)
 		}
-		if !sorts.TermOf(argSort, parentArrow.A) {
-			return frame, nil, nil, fmt.Errorf("expected argument of type %s, got %s", sorts.Name(parentArrow.A), sorts.Name(argSort))
+		if !sorts.TermOf(argSort, arrow.A) {
+			return frame, nil, nil, fmt.Errorf("expected argument of type %s, got %s", sorts.Name(arrow.A), sorts.Name(argSort))
 		}
-		return frame, sorts.NewAtomTerm(parentArrow.B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
+		return frame, sorts.NewTerm(arrow.B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
 	default:
-		return frame, nil, nil, fmt.Errorf("unknown function: %T", expr.Cmd)
+		return frame, nil, nil, fmt.Errorf("unknown function: %T", cmd)
 	}
 
 }
@@ -111,7 +111,7 @@ func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
 			} else {
 				value = binding.Value
 			}
-			frame = frame.Set(binding.Name, sorts.NewAtomTerm(parentSort, string(binding.Name)), value)
+			frame = frame.Set(binding.Name, sorts.NewTerm(parentSort, string(binding.Name)), value)
 		}
 		return frame.Resolve(expr.Final)
 	case Match:

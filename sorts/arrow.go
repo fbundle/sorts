@@ -35,16 +35,16 @@ func (s Arrow) sortAttr() sortAttr {
 func (s Arrow) Elim(arrow Sort, a Sort) Sort {
 	MustTermOf(arrow, s)
 	MustTermOf(a, s.A)
-	return dummyTerm(s.B, fmt.Sprintf("(%s %s)", Name(arrow), Name(a)))
+	return NewTerm(s.B, fmt.Sprintf("(%s %s)", Name(arrow), Name(a)))
 }
 
 // Intro - take a func that maps (a: A) into (b: B)  give (x: A -> B)
 func (s Arrow) Intro(name string, arrow func(Sort) Sort) Sort {
 	// verify
-	a := dummyTerm(s.A, "a")
+	a := NewTerm(s.A, "a")
 	b := arrow(a)
 	MustTermOf(b, s.B)
 
 	// verify ok
-	return dummyTerm(s, name)
+	return NewTerm(s, name)
 }
