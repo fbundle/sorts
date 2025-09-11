@@ -40,13 +40,13 @@ type Assign struct {
 
 func (a Assign) mustExpr() {}
 
-type Let struct {
-	Defines []Define
-	Assigns []Assign
-	Final   Expr
+// Chain - chain expressions
+type Chain struct {
+	Init []Expr
+	Tail Expr
 }
 
-func (l Let) mustExpr() {}
+func (c Chain) mustExpr() {}
 
 type Case struct {
 	Comp  Expr

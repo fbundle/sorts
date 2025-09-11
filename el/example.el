@@ -1,7 +1,7 @@
 #infix_left ⊕ ⊗
 #infix_right => -> : , = :=
 
-(let
+(chain
     {Bool : U_0}
     {True : Bool}
     {False : Bool}
