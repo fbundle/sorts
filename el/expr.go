@@ -15,22 +15,6 @@ func (t Term) Marshal() form.Form {
 	return form.Term(t)
 }
 
-// Lambda - (=> param body)
-type Lambda struct {
-	Param Term
-	Body  Expr
-}
-
-func (l Lambda) mustExpr() {}
-
-func (l Lambda) Marshal() form.Form {
-	return form.List{
-		form.Term("=>"),
-		l.Param.Marshal(),
-		l.Body.Marshal(),
-	}
-}
-
 // FunctionCall - (cmd arg1 arg2 ...)
 type FunctionCall struct {
 	Cmd  Expr
@@ -46,6 +30,22 @@ func (f FunctionCall) Marshal() form.Form {
 		forms = append(forms, arg.Marshal())
 	}
 	return form.List(forms)
+}
+
+// Lambda - (=> param body)
+type Lambda struct {
+	Param Term
+	Body  Expr
+}
+
+func (l Lambda) mustExpr() {}
+
+func (l Lambda) Marshal() form.Form {
+	return form.List{
+		form.Term("=>"),
+		l.Param.Marshal(),
+		l.Body.Marshal(),
+	}
 }
 
 // Define - (: name type)
