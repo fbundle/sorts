@@ -74,7 +74,6 @@ func (frame Frame) resolveFunctionCall(expr FunctionCall) (Frame, sorts.Sort, Ex
 	case Lambda:
 		return frame.Set(cmd.Param, argSort, argValue).Resolve(cmd.Body)
 	case Term:
-		// type check
 		arrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
 		if !ok {
 			return frame, nil, nil, fmt.Errorf("cmd is not a function %s", cmd)
@@ -102,6 +101,7 @@ func (frame Frame) resolveLet(expr Let) (Frame, sorts.Sort, Expr, error) {
 		} else {
 			value = binding.Value
 		}
+		// TODO - type check
 		frame = frame.Set(binding.Name, sorts.NewTerm(parentSort, string(binding.Name)), value)
 	}
 	return frame.Resolve(expr.Final)
