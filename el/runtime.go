@@ -15,8 +15,6 @@ import (
 
 // TODO - support multi argument function call
 
-// TODO - support type inference
-
 type Value struct {
 	Sort sorts.Sort
 	Expr Expr
