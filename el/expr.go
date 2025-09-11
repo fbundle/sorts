@@ -50,6 +50,7 @@ func (c Chain) mustExpr() {}
 
 // Match - match expression
 type Match struct {
+	Cond  Expr
 	Cases []Case
 	Final Expr
 }
