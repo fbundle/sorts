@@ -1,121 +1,162 @@
 package el
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
 )
 
-type Exec func(frame Frame, argList form.List) (Frame, sorts.Sort, form.Form, error)
+// TODO - remove all Value
 
-type _value struct {
-	Sort  sorts.Sort
-	Value form.Form
+// TODO check example.el_v2 for new syntax - no longer using define and assign
+
+// TODO - support multi argument function call
+
+type Value struct {
+	Sort sorts.Sort
+	Expr Expr
 }
 
 type Frame struct {
-	Dict ordered_map.OrderedMap[form.Term, any] // Term -> Union[_value, Exec]
+	ordered_map.OrderedMap[Term, Value]
 }
 
-func (frame Frame) GetExec(key form.Term) (Exec, bool) {
-	if o, ok := frame.Dict.Get(key); ok {
-		if exec, ok := o.(Exec); ok {
-			return exec, true
-		}
+func (frame Frame) Get(key Term) (Value, bool) {
+	if value, ok := frame.OrderedMap.Get(key); ok {
+		return value, true
 	}
-	return nil, false
-}
-
-func (frame Frame) SetExec(key form.Term, exec Exec) Frame {
-	return Frame{
-		Dict: frame.Dict.Set(key, exec),
-	}
-}
-
-func (frame Frame) GetValue(key form.Term) (sorts.Sort, form.Form, bool) {
-	if o, ok1 := frame.Dict.Get(key); ok1 {
-		if val, ok2 := o.(_value); ok2 {
-			return val.Sort, val.Value, true
-		}
-	}
-
 	keyStr := string(key)
-
-	// universes
 	if strings.HasPrefix(keyStr, "U_") {
 		levelStr := strings.TrimPrefix(keyStr, "U_")
 		level, err := strconv.Atoi(levelStr)
 		if err != nil {
-			return nil, nil, false
+			return Value{}, false
 		}
-		return sorts.NewAtom(level+1, keyStr, nil), key, true
+		// U_0 is at universe level 1
+		// U_1 is at universe level 2
+		return Value{
+			Sort: sorts.NewAtom(level+1, string(key), nil),
+			Expr: key,
+		}, true
+	} else {
+		return Value{}, false
 	}
-	return nil, nil, false
+
 }
 
-func (frame Frame) SetValue(key form.Term, sort sorts.Sort, form form.Form) Frame {
-	return Frame{
-		Dict: frame.Dict.Set(key, _value{Sort: sort, Value: form}),
-	}
-}
-
-func (frame Frame) Eval(expr form.Form) (Frame, sorts.Sort, form.Form, error) {
-	switch expr := expr.(type) {
-	case form.Term:
-		sort, value, ok := frame.GetValue(expr)
+func Eval(frame Frame, expr Expr) (Frame, Value, error) {
+	switch e := expr.(type) {
+	case Term:
+		value, ok := frame.Get(e)
 		if !ok {
-			return frame, nil, nil, errors.New("variable not found: " + string(expr))
+			return frame, Value{}, fmt.Errorf("undefined variable: %s", e)
 		}
-		return frame, sort, value, nil
-	case form.List:
-		if len(expr) == 0 {
-			return frame, nil, nil, errors.New("empty list")
+		return frame, value, nil
+	case FunctionCall:
+		frame, avalue, err := Eval(frame, e.Arg)
+		if err != nil {
+			return frame, Value{}, err
 		}
-		if cmd, ok := expr[0].(form.Term); ok {
-			if exec, ok := frame.GetExec(cmd); ok {
-				// built-in function
-				return exec(frame, expr[1:])
+
+		switch cmd := e.Cmd.(type) {
+		case Lambda:
+			frame, arg, err := Eval(frame, avalue.Expr)
+			if err != nil {
+				return frame, Value{}, err
+			}
+			callFrame := Frame{frame.Set(cmd.Param, arg)}
+			return Eval(callFrame, cmd.Body)
+
+		case Term:
+			frame, c, err := Eval(frame, cmd)
+			if err != nil {
+				return frame, Value{}, err
+			}
+			if cmd == c.Expr {
+				// term is not assigned hence cannot be simplified using Eval
+				// like (succ (succ 0))
+				// return expr form
+				parentArrow, ok := sorts.Parent(c.Sort).(sorts.Arrow)
+				if !ok {
+					return frame, Value{}, fmt.Errorf("expected arrow: %T", sorts.Parent(c.Sort))
+				}
+				argToks := avalue.Expr.Marshal().Marshal()
+				argStr := strings.Join(argToks, " ")
+				return frame, Value{
+					Sort: sorts.NewAtom(sorts.Level(parentArrow.B)-1, fmt.Sprintf("(%s %s)", string(cmd), argStr), parentArrow.B),
+					Expr: FunctionCall{cmd, avalue.Expr},
+				}, nil
+			} else {
+				return Eval(frame, FunctionCall{
+					Cmd: c.Expr,
+					Arg: avalue.Expr,
+				})
+			}
+		default:
+			return frame, Value{}, fmt.Errorf("unknown function: %T", e.Cmd)
+		}
+	case Lambda:
+		return frame, Value{
+			Sort: nil,
+			Expr: e,
+		}, nil
+	case Define:
+		frame, parent, err := Eval(frame, e.Type)
+		if err != nil {
+			return frame, Value{}, err
+		}
+		value := Value{
+			Sort: sorts.NewAtom(sorts.Level(parent.Sort)-1, string(e.Name), parent.Sort),
+			Expr: e.Name, // Value == Term means not defined yet
+		}
+
+		frame = Frame{frame.Set(e.Name, value)}
+
+		return frame, value, nil
+	case Assign:
+		value, ok := frame.Get(e.Name)
+		if !ok {
+			return frame, Value{}, fmt.Errorf("undefined variable: %s", e.Name)
+		}
+		frame, rvalue, err := Eval(frame, e.Value)
+		if err != nil {
+			return frame, Value{}, err
+		}
+		value.Expr = rvalue.Expr
+		frame = Frame{frame.Set(e.Name, value)}
+		return frame, value, nil
+	case Chain:
+		var err error
+		for _, expr := range e.Init {
+			frame, _, err = Eval(frame, expr)
+			if err != nil {
+				return frame, Value{}, err
 			}
 		}
-		// normal function call
-		if len(expr) != 2 {
-			return frame, nil, nil, errors.New("regular function call must have exactly 1 argument")
-		}
-		cmdExpr, argExpr := expr[0], expr[1]
-
-		frame, argSort, argValue, err := frame.Eval(argExpr)
+		return Eval(frame, e.Tail)
+	case Match:
+		// match should not be hard, just compare Value
+		panic("not implemented")
+	case Arrow:
+		frame, avalue, err := Eval(frame, e.A)
 		if err != nil {
-			return frame, nil, nil, err
+			return frame, Value{}, err
 		}
-
-		frame, cmdSort, cmdValue, err := frame.Eval(cmdExpr)
+		frame, bvalue, err := Eval(frame, e.B)
 		if err != nil {
-			return frame, nil, nil, err
+			return frame, Value{}, err
 		}
-
-		if cmdValue != cmdExpr {
-			return frame.Eval(form.List{cmdValue, argValue})
-		}
-
-		// cmd is undef - symbolically evaluate
-		// type-check
-		cmdSortParent := sorts.Parent(cmdSort)
-		parentArrow, ok := cmdSortParent.(sorts.Arrow)
-		if !ok {
-			return frame, nil, nil, fmt.Errorf("expected arrow: %T", cmdSortParent)
-		}
-		if !sorts.TermOf(argSort, parentArrow.A) {
-			return frame, nil, nil, fmt.Errorf("expected arg of type %v, got %v", parentArrow.A, argSort)
-		}
-		output := form.List{cmdValue, argValue}
-		outputType := parentArrow.B
-		return frame, sorts.NewAtom(sorts.Level(outputType)-1, form.String(output), outputType), output, nil
+		return frame, Value{
+			Sort: sorts.Arrow{
+				A: avalue.Sort,
+				B: bvalue.Sort,
+			},
+			Expr: e,
+		}, nil
 	default:
-		return frame, nil, nil, errors.New("unknown expression: " + fmt.Sprintf("%T", expr))
+		return frame, Value{}, fmt.Errorf("unknown expression: %T", e)
 	}
 }
