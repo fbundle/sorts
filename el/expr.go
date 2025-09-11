@@ -2,6 +2,7 @@ package el
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/fbundle/sorts/form"
 )
@@ -57,6 +58,7 @@ func (parser Parser) RegisterListParser(cmd form.Term, listParser func(ParseFunc
 		parser.listParsers = make(map[form.Term]ListParseFunc)
 	}
 	parser.listParsers[cmd] = listParser
+	fmt.Printf("Registered list parser for %s\n", cmd)
 }
 
 func (parser Parser) ParseForm(e form.Form) (Expr, error) {
