@@ -48,7 +48,7 @@ func (frame Frame) Get(key Term) (sort sorts.Sort, next Expr, ok bool) {
 	}
 }
 
-func (frame Frame) resolveTerm(term Term) (newFrame Frame, sort sorts.Sort, value Expr, err error) {
+func (frame Frame) resolveTerm(term Term) (Frame, sorts.Sort, Expr, error) {
 	sort, next, ok := frame.Get(term)
 	if !ok {
 		return frame, nil, nil, fmt.Errorf("variable not found: %s", term)
@@ -61,70 +61,76 @@ func (frame Frame) resolveTerm(term Term) (newFrame Frame, sort sorts.Sort, valu
 	return frame.Resolve(next)
 }
 
-func (frame Frame) Resolve(expr Expr) (updatedFrame Frame, sort sorts.Sort, value Expr, err error) {
-	switch e := expr.(type) {
-	case Term:
-		return frame.resolveTerm(e)
-	case FunctionCall:
-		frame, argSort, argValue, err := frame.Resolve(e.Arg)
-		if err != nil {
-			return frame, nil, nil, err
-		}
-		frame, cmdSort, cmdValue, err := frame.Resolve(e.Cmd)
-		if err != nil {
-			return frame, nil, nil, err
-		}
-		switch cmd := cmdValue.(type) {
-		case Lambda:
-			return frame.Set(cmd.Param, argSort, argValue).Resolve(cmd.Body)
-		case Term:
-			parentArrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
-			if !ok {
-				return frame, nil, nil, fmt.Errorf("expected arrow: %T", sorts.Parent(cmdSort))
-			}
-			if !sorts.TermOf(argSort, parentArrow.A) {
-				return frame, nil, nil, fmt.Errorf("expected argument of type %s, got %s", sorts.Name(parentArrow.A), sorts.Name(argSort))
-			}
-			return frame, sorts.NewAtomTerm(parentArrow.B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
-		default:
-			return frame, nil, nil, fmt.Errorf("unknown function: %T", e.Cmd)
-		}
+func (frame Frame) resolveFunctionCall(expr FunctionCall) (Frame, sorts.Sort, Expr, error) {
+	frame, argSort, argValue, err := frame.Resolve(expr.Arg)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	frame, cmdSort, cmdValue, err := frame.Resolve(expr.Cmd)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	switch cmd := cmdValue.(type) {
 	case Lambda:
-		return frame, nil, e, nil
+		return frame.Set(cmd.Param, argSort, argValue).Resolve(cmd.Body)
+	case Term:
+		// type check
+		parentArrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
+		if !ok {
+			return frame, nil, nil, fmt.Errorf("cmd is not a function %s", cmd)
+		}
+		if !sorts.TermOf(argSort, parentArrow.A) {
+			return frame, nil, nil, fmt.Errorf("expected argument of type %s, got %s", sorts.Name(parentArrow.A), sorts.Name(argSort))
+		}
+		return frame, sorts.NewAtomTerm(parentArrow.B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
+	default:
+		return frame, nil, nil, fmt.Errorf("unknown function: %T", expr.Cmd)
+	}
+
+}
+
+func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
+	switch expr := expr.(type) {
+	case Term:
+		return frame.resolveTerm(expr)
+	case FunctionCall:
+		return frame.resolveFunctionCall(expr)
+	case Lambda:
+		return frame, nil, expr, nil
 	case Let:
 		var err error
 		var parentSort sorts.Sort
-		for _, binding := range e.Bindings {
+		for _, binding := range expr.Bindings {
 			frame, parentSort, _, err = frame.Resolve(binding.Type)
 			if err != nil {
 				return frame, nil, nil, err
 			}
-			var expr Expr
+			var value Expr
 			if valTerm, ok := binding.Value.(Term); ok && valTerm == "undef" {
-				expr = binding.Name
+				value = binding.Name
 			} else {
-				expr = binding.Value
+				value = binding.Value
 			}
-			frame = frame.Set(binding.Name, sorts.NewAtomTerm(parentSort, string(binding.Name)), expr)
+			frame = frame.Set(binding.Name, sorts.NewAtomTerm(parentSort, string(binding.Name)), value)
 		}
-		return frame.Resolve(e.Final)
+		return frame.Resolve(expr.Final)
 	case Match:
 		// match should not be hard, just compare Next
 		panic("not implemented")
 	case Arrow:
-		frame, aSort, _, err := frame.Resolve(e.A)
+		frame, aSort, _, err := frame.Resolve(expr.A)
 		if err != nil {
 			return frame, nil, nil, err
 		}
-		frame, bSort, _, err := frame.Resolve(e.B)
+		frame, bSort, _, err := frame.Resolve(expr.B)
 		if err != nil {
 			return frame, nil, nil, err
 		}
 		return frame, sorts.Arrow{
 			A: aSort,
 			B: bSort,
-		}, e, nil
+		}, expr, nil
 	default:
-		return frame, nil, nil, fmt.Errorf("unknown expression: %T", e)
+		return frame, nil, nil, fmt.Errorf("unknown expression: %T", expr)
 	}
 }
