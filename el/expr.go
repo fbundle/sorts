@@ -45,46 +45,36 @@ func RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Ex
 	globalListParsers[cmd] = listParser
 }
 
-func parseFunctionCall(parseFunc ParseFunc, list form.List) (Expr, error) {
-	if len(list) == 0 {
-		return nil, errors.New("empty list")
-	}
-	cmd, err := parseFunc(list[0])
-	if err != nil {
-		return nil, err
-	}
-	args := make([]Expr, 0, len(list)-1)
-	for i := 1; i < len(list); i++ {
-		arg, err := parseFunc(list[i])
-		if err != nil {
-			return nil, err
-		}
-		args = append(args, arg)
-	}
-	return FunctionCall{
-		Cmd:  cmd,
-		Args: args,
-	}, nil
-}
-
 func ParseForm(e form.Form) (Expr, error) {
 	switch e := e.(type) {
 	case form.Term:
 		return Term(e), nil
 	case form.List:
-		head, args := e[0], e[1:]
-		listParseFunc := func() ListParseFunc {
-			cmd, ok := head.(form.Term)
-			if !ok {
-				return parseFunctionCall
+		if len(e) == 0 {
+			return nil, errors.New("empty list")
+		}
+		head, list := e[0], e[1:]
+
+		// Is it a special form?
+		if cmdTerm, ok := head.(form.Term); ok {
+			if parser, ok := globalListParsers[cmdTerm]; ok {
+				return parser(ParseForm, list)
 			}
-			listParseFunc, ok := globalListParsers[cmd]
-			if !ok {
-				return parseFunctionCall
+		}
+
+		// It's a regular function call
+		cmd, err := ParseForm(head)
+		if err != nil {
+			return nil, err
+		}
+		args := make([]Expr, len(list))
+		for i, arg := range list {
+			args[i], err = ParseForm(arg)
+			if err != nil {
+				return nil, err
 			}
-			return listParseFunc
-		}()
-		return listParseFunc(ParseForm, args)
+		}
+		return FunctionCall{Cmd: cmd, Args: args}, nil
 	default:
 		return nil, errors.New("unknown form")
 	}
