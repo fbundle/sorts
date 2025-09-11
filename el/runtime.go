@@ -107,6 +107,9 @@ func (frame Frame) resolveLet(expr Let) (Frame, sorts.Sort, Expr, error) {
 	return frame.Resolve(expr.Final)
 }
 
+func (frame Frame) resolveMatch(expr Match) (Frame, sorts.Sort, Expr, error) {
+	panic("not implemented")
+}
 func (frame Frame) resolveArrow(expr Arrow) (Frame, sorts.Sort, Expr, error) {
 	frame, aSort, _, err := frame.Resolve(expr.A)
 	if err != nil {
@@ -122,10 +125,20 @@ func (frame Frame) resolveArrow(expr Arrow) (Frame, sorts.Sort, Expr, error) {
 	}, expr, nil
 }
 
-func (frame Frame) resolveMatch(expr Match) (Frame, sorts.Sort, Expr, error) {
-	panic("not implemented")
+func (frame Frame) resolveSum(expr Sum) (Frame, sorts.Sort, Expr, error) {
+	frame, aSort, _, err := frame.Resolve(expr.A)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	frame, bSort, _, err := frame.Resolve(expr.B)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	return frame, sorts.Sum{
+		A: aSort,
+		B: bSort,
+	}, expr, nil
 }
-
 func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
 	switch expr := expr.(type) {
 	case Term:
@@ -140,6 +153,8 @@ func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
 		return frame.resolveMatch(expr)
 	case Arrow:
 		return frame.resolveArrow(expr)
+	case Sum:
+		return frame.resolveSum(expr)
 
 	default:
 		return frame, nil, nil, fmt.Errorf("unknown expression: %T", expr)
