@@ -35,6 +35,8 @@ var defaultParser = Parser{
 func (parser Parser) Tokenize(s string, pList ...Preprocessor) []Token {
 	newPList := append([]Preprocessor{
 		removeComment("#"),
+		replaceAll("[", "(chain"),
+		replaceAll("]", ")"),
 	}, pList...)
 
 	return tokenize(

@@ -36,6 +36,12 @@ func (parser Parser) getSplitTokens() []Token {
 	return splitTokens
 }
 
+var replaceAll = func(old string, new string) Preprocessor {
+	return func(str string) string {
+		return strings.ReplaceAll(str, old, new)
+	}
+}
+
 var removeComment = func(sep string) Preprocessor {
 	// drop content after sep in every line
 	return func(str string) string {
