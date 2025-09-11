@@ -8,6 +8,7 @@ import (
 
 	"github.com/fbundle/sorts/el"
 	"github.com/fbundle/sorts/form"
+	"github.com/fbundle/sorts/sorts"
 )
 
 func main() {
@@ -39,19 +40,16 @@ func main() {
 			os.Exit(1)
 		}
 
-		// Use Marshal() to convert back to form and print
-		marshaledForm := elExpr.Marshal()
-		fmt.Printf("%T: %s\n", elExpr, strings.Join(marshaledForm.Marshal(), " "))
+		fmt.Println("expr", el.String(elExpr))
 
+		var sort sorts.Sort
 		var value el.Expr
-		frame, _, value, err = frame.Resolve(elExpr)
+		frame, sort, value, err = frame.Resolve(elExpr)
 		if err != nil {
 			fmt.Printf("Error evaluating expression: %v\n", err)
 			os.Exit(1)
 		}
-
-		// Use Marshal() to convert back to form and print
-		marshaledForm = value.Marshal()
-		fmt.Printf("%T: %s\n", elExpr, strings.Join(marshaledForm.Marshal(), " "))
+		fmt.Println("sort", sorts.Name(sort))
+		fmt.Println("value", el.String(value))
 	}
 }
