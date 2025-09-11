@@ -60,9 +60,9 @@ func TestInterpreter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Parse the input
+			// parse the input
 			tokens := form.Tokenize(tt.input)
-			expr, _, err := form.Parse(tokens)
+			expr, _, err := form.parse(tokens)
 			if err != nil {
 				t.Fatalf("Failed to parse input: %v", err)
 			}

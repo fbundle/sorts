@@ -6,48 +6,34 @@ import (
 	"unicode"
 )
 
-const (
-	TokenBlockBegin Token = "("
-	TokenBlockEnd   Token = ")"
-	TokenInfixBegin Token = "{"
-	TokenInfixEnd   Token = "}"
-	TokenUnwrap     Token = "$"
-)
-
-func Tokenize(s string) []Token {
-	splitTokens := []string{
-		TokenBlockBegin,
-		TokenBlockEnd,
-		TokenInfixBegin,
-		TokenInfixEnd,
-		TokenUnwrap,
+// getSplitTokens returns the sorted list of split tokens
+func getSplitTokens(config Config) []Token {
+	splitTokenSet := make(map[Token]struct{})
+	for _, tok := range config.Split {
+		splitTokenSet[tok] = struct{}{}
 	}
-
-	for op := range leftToRightInfixOp {
-		splitTokens = append(splitTokens, string(op))
+	for beg, block := range config.Blocks {
+		splitTokenSet[beg] = struct{}{}
+		splitTokenSet[block.End] = struct{}{}
 	}
-	for op := range rightToLeftInfixOp {
-		splitTokens = append(splitTokens, string(op))
+	splitTokens := make([]Token, 0, len(splitTokenSet))
+	for tok := range splitTokenSet {
+		splitTokens = append(splitTokens, tok)
 	}
-
 	sort.Slice(splitTokens, func(i, j int) bool {
 		s1, s2 := splitTokens[i], splitTokens[j]
-		if strings.HasPrefix(s1, s2) && s1 != s2 {
-			// s2 is a prefix of s1 → s1 should come first
+		if len(s1) > len(s2) && strings.HasPrefix(s1, s2) {
+			// s2 is a prefix of s1, s1 should come first
 			return true
 		}
-		if strings.HasPrefix(s2, s1) && s1 != s2 {
-			// s1 is a prefix of s2 → s2 should come first
+		if len(s2) > len(s1) && strings.HasPrefix(s2, s1) {
+			// s1 is a prefix of s2, s2 should come first
 			return false
 		}
 		// Otherwise, normal lexicographic order
 		return s1 < s2
 	})
-
-	return tokenize(s,
-		splitTokens,
-		removeComment("#"),
-	)
+	return splitTokens
 }
 
 type preprocessor func(string) string

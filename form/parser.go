@@ -5,57 +5,78 @@ import (
 	"fmt"
 )
 
+type Block struct {
+	End     Token
+	Process func([]Form) (Form, error)
+}
+
+type Config struct {
+	Blocks map[Token]Block
+	Split  []Token
+}
+
+var defaultConfig = Config{
+	Split: []Token{"$", "⊕", "⊗", "=>", "->", ":", ",", "=", ":="},
+	Blocks: map[Token]Block{
+		"(": {
+			End:     ")",
+			Process: nil,
+		},
+		"{": {
+			End:     "}",
+			Process: processInfix,
+		},
+	},
+}
+
+func (config Config) Tokenize(s string) []Token {
+	return tokenize(
+		s, getSplitTokens(config),
+		removeComment("#"),
+	)
+}
+
+func (config Config) Parse(tokenList []Token) (Form, []Token, error) {
+	tokenList, head, err := pop(tokenList)
+	if err != nil {
+		return nil, tokenList, err
+	}
+	if block, ok := config.Blocks[head]; ok {
+		var form Form
+		var formList []Form
+		for {
+			form, tokenList, err = config.Parse(tokenList)
+			if err != nil {
+				return List(formList), tokenList, err
+			}
+			if term, ok := form.(Term); ok && Token(term) == block.End {
+				break
+			}
+			formList = append(formList, form)
+		}
+		if block.Process == nil {
+			return List(formList), tokenList, nil
+		}
+		form, err = block.Process(formList)
+		return form, tokenList, err
+	} else {
+		return Term(head), tokenList, nil
+	}
+}
+
+func Tokenize(s string) []Token {
+	return defaultConfig.Tokenize(s)
+}
+
+func Parse(tokenList []Token) (Form, []Token, error) {
+	return defaultConfig.Parse(tokenList)
+}
+
 func pop(tokenList []Token) ([]Token, Token, error) {
 	if len(tokenList) == 0 {
 		return nil, "", errors.New("empty token list")
 	}
 	return tokenList[1:], tokenList[0], nil
-}
-
-type Parser = func(tokenList []Token) (Form, []Token, error)
-
-func parseUntilPred(parser Parser, stopPred func(Form) bool, tokenList []Token) ([]Form, []Token, error) {
-	var arg Form
-	var err error
-	var argList []Form
-	for {
-		arg, tokenList, err = parser(tokenList)
-		if err != nil {
-			return nil, tokenList, err
-		}
-		if stopPred(arg) {
-			break
-		}
-		argList = append(argList, arg)
-	}
-	return argList, tokenList, nil
-}
-
-func Parse(tokenList []Token) (Form, []Token, error) {
-	tokenList, head, err := pop(tokenList)
-	if err != nil {
-		return nil, tokenList, err
-	}
-
-	switch head {
-	case TokenBlockBegin:
-		// parse until seeing `)`
-		argList, tokenList, err := parseUntilPred(Parse, matchName(Term(TokenBlockEnd)), tokenList)
-		if err != nil {
-			return nil, tokenList, err
-		}
-		return List(argList), tokenList, nil
-	case TokenInfixBegin:
-		// parse until seeing `}`
-		argList, tokenList, err := parseUntilPred(Parse, matchName(Term(TokenInfixEnd)), tokenList)
-		if err != nil {
-			return nil, tokenList, err
-		}
-		expr, err := processInfix(argList)
-		return expr, tokenList, err
-	default:
-		return Term(head), tokenList, nil
-	}
 }
 
 const (
@@ -133,13 +154,4 @@ func processInfix(argList []Form) (Form, error) {
 	}
 
 	return nil, fmt.Errorf("infix operator not supported %s", string(op))
-}
-
-func matchName(cond Term) func(Form) bool {
-	return func(arg Form) bool {
-		if name, ok := arg.(Term); ok {
-			return string(cond) == string(name)
-		}
-		return false
-	}
 }

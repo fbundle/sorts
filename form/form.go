@@ -17,13 +17,18 @@ func (t Term) formAttr() {}
 
 type List []Form
 
+const (
+	BlockBeg Token = "("
+	BlockEnd Token = ")"
+)
+
 func (n List) Marshal() []Token {
 	var output []Token
-	output = append(output, TokenBlockBegin)
+	output = append(output, BlockBeg)
 	for _, arg := range n {
 		output = append(output, arg.Marshal()...)
 	}
-	output = append(output, TokenBlockEnd)
+	output = append(output, BlockEnd)
 	return output
 }
 
