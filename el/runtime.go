@@ -50,11 +50,18 @@ func (frame Frame) Get(key Term) (Value, bool) {
 func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 	switch e := expr.(type) {
 	case Term:
-		value, ok := frame.Get(e)
-		if !ok {
-			return frame, Value{}, fmt.Errorf("undefined variable: %s", e)
+		for {
+			value, ok := frame.Get(e)
+			if !ok {
+				return frame, Value{}, fmt.Errorf("undefined variable: %s", e)
+			}
+			if e == value.Expr {
+				return frame, value, nil
+			}
+			return Eval(frame, value.Expr)
+			// return frame, value, nil
 		}
-		return frame, value, nil
+
 	case FunctionCall:
 		frame, avalue, err := Eval(frame, e.Arg)
 		if err != nil {
@@ -103,38 +110,53 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 			Sort: nil,
 			Expr: e,
 		}, nil
-	case Define:
-		frame, parent, err := Eval(frame, e.Type)
-		if err != nil {
-			return frame, Value{}, err
-		}
-		value := Value{
-			Sort: sorts.NewAtom(sorts.Level(parent.Sort)-1, string(e.Name), parent.Sort),
-			Expr: e.Name, // Value == Term means not defined yet
-		}
+		/*
+			case Define:
+				frame, parent, err := Eval(frame, e.Type)
+				if err != nil {
+					return frame, Value{}, err
+				}
+				value := Value{
+					Sort: sorts.NewAtom(sorts.Level(parent.Sort)-1, string(e.Name), parent.Sort),
+					Expr: e.Name, // Value == Term means not defined yet
+				}
 
-		frame = Frame{frame.Set(e.Name, value)}
+				frame = Frame{frame.Set(e.Name, value)}
 
-		return frame, value, nil
-	case Assign:
-		value, ok := frame.Get(e.Name)
-		if !ok {
-			return frame, Value{}, fmt.Errorf("undefined variable: %s", e.Name)
-		}
-		frame, rvalue, err := Eval(frame, e.Value)
-		if err != nil {
-			return frame, Value{}, err
-		}
-		value.Expr = rvalue.Expr
-		frame = Frame{frame.Set(e.Name, value)}
-		return frame, value, nil
+				return frame, value, nil
+			case Assign:
+				value, ok := frame.Get(e.Name)
+				if !ok {
+					return frame, Value{}, fmt.Errorf("undefined variable: %s", e.Name)
+				}
+				frame, rvalue, err := Eval(frame, e.Value)
+				if err != nil {
+					return frame, Value{}, err
+				}
+				value.Expr = rvalue.Expr
+				frame = Frame{frame.Set(e.Name, value)}
+				return frame, value, nil
+
+		*/
 	case Let:
 		var err error
-		for _, expr := range e.Init {
-			frame, _, err = Eval(frame, expr)
+		var parent Value
+		for _, binding := range e.Bindings {
+			frame, parent, err = Eval(frame, binding.Type)
 			if err != nil {
 				return frame, Value{}, err
 			}
+			var expr Expr
+			if valTerm, ok := binding.Value.(Term); ok && valTerm == "undef" {
+				expr = binding.Name
+			} else {
+				expr = binding.Value
+			}
+			value := Value{
+				Sort: sorts.NewAtom(sorts.Level(parent.Sort)-1, string(binding.Name), parent.Sort),
+				Expr: expr, // Value == Term means not defined yet
+			}
+			frame = Frame{frame.Set(binding.Name, value)}
 		}
 		return Eval(frame, e.Final)
 	case Match:

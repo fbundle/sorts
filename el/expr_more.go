@@ -73,10 +73,37 @@ func init() {
 		if len(list) < 1 {
 			return nil, errors.New("let must have at least 1: final")
 		}
-		for i := 2; i < len(list); i += 3 {
-
+		if (len(list)-1)%3 != 0 {
+			return nil, errors.New("let bindings must be in triplets: name, type, value")
 		}
-
+		bindings := make([]Binding, 0, (len(list)-1)/3)
+		for i := 0; i < len(list)-1; i += 3 {
+			name, ok := list[i].(form.Term)
+			if !ok {
+				return nil, errors.New("let binding name must be a term")
+			}
+			typ, err := parseFunc(list[i+1])
+			if err != nil {
+				return nil, err
+			}
+			val, err := parseFunc(list[i+2])
+			if err != nil {
+				return nil, err
+			}
+			bindings = append(bindings, Binding{
+				Name:  Term(name),
+				Type:  typ,
+				Value: val,
+			})
+		}
+		final, err := parseFunc(list[len(list)-1])
+		if err != nil {
+			return nil, err
+		}
+		return Let{
+			Bindings: bindings,
+			Final:    final,
+		}, nil
 	})
 }
 
