@@ -86,7 +86,44 @@ func (frame Frame) resolveFunctionCall(expr FunctionCall) (Frame, sorts.Sort, Ex
 	default:
 		return frame, nil, nil, fmt.Errorf("unknown function: %T", cmd)
 	}
+}
 
+func (frame Frame) resolveLet(expr Let) (Frame, sorts.Sort, Expr, error) {
+	var err error
+	var parentSort sorts.Sort
+	for _, binding := range expr.Bindings {
+		frame, parentSort, _, err = frame.Resolve(binding.Type)
+		if err != nil {
+			return frame, nil, nil, err
+		}
+		var value Expr
+		if valTerm, ok := binding.Value.(Term); ok && valTerm == "undef" {
+			value = binding.Name
+		} else {
+			value = binding.Value
+		}
+		frame = frame.Set(binding.Name, sorts.NewTerm(parentSort, string(binding.Name)), value)
+	}
+	return frame.Resolve(expr.Final)
+}
+
+func (frame Frame) resolveArrow(expr Arrow) (Frame, sorts.Sort, Expr, error) {
+	frame, aSort, _, err := frame.Resolve(expr.A)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	frame, bSort, _, err := frame.Resolve(expr.B)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	return frame, sorts.Arrow{
+		A: aSort,
+		B: bSort,
+	}, expr, nil
+}
+
+func (frame Frame) resolveMatch(expr Match) (Frame, sorts.Sort, Expr, error) {
+	panic("not implemented")
 }
 
 func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
@@ -98,38 +135,12 @@ func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
 	case Lambda:
 		return frame, nil, expr, nil
 	case Let:
-		var err error
-		var parentSort sorts.Sort
-		for _, binding := range expr.Bindings {
-			frame, parentSort, _, err = frame.Resolve(binding.Type)
-			if err != nil {
-				return frame, nil, nil, err
-			}
-			var value Expr
-			if valTerm, ok := binding.Value.(Term); ok && valTerm == "undef" {
-				value = binding.Name
-			} else {
-				value = binding.Value
-			}
-			frame = frame.Set(binding.Name, sorts.NewTerm(parentSort, string(binding.Name)), value)
-		}
-		return frame.Resolve(expr.Final)
+		return frame.resolveLet(expr)
 	case Match:
-		// match should not be hard, just compare Next
-		panic("not implemented")
+		return frame.resolveMatch(expr)
 	case Arrow:
-		frame, aSort, _, err := frame.Resolve(expr.A)
-		if err != nil {
-			return frame, nil, nil, err
-		}
-		frame, bSort, _, err := frame.Resolve(expr.B)
-		if err != nil {
-			return frame, nil, nil, err
-		}
-		return frame, sorts.Arrow{
-			A: aSort,
-			B: bSort,
-		}, expr, nil
+		return frame.resolveArrow(expr)
+
 	default:
 		return frame, nil, nil, fmt.Errorf("unknown expression: %T", expr)
 	}
