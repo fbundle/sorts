@@ -4,13 +4,18 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort) sorts.Sort {
+func typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort) (sorts.Sort, bool) {
 	arrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
 	if !ok {
-		return nil
+		return nil, false
 	}
 	if !sorts.TermOf(argSort, arrow.A) {
-		return nil
+		return nil, false
 	}
-	return arrow.B
+	return arrow.B, true
+}
+
+func typeCheckBinding(parentSort sorts.Sort, valueSort sorts.Sort) bool {
+	// TODO - type check
+	return true
 }

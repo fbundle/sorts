@@ -74,12 +74,10 @@ func (frame Frame) resolveFunctionCall(expr FunctionCall) (Frame, sorts.Sort, Ex
 	case Lambda:
 		return frame.Set(cmd.Param, argSort, argValue).Resolve(cmd.Body)
 	case Term:
-
-		B := typeCheckFunctionCall(cmdSort, argSort)
-		if B == nil {
-			return frame, nil, nil, fmt.Errorf("type_error: cmd %s, arg %s", sorts.Name(cmdSort), sorts.Name(argSort))
+		if B, ok := typeCheckFunctionCall(cmdSort, argSort); ok {
+			return frame, sorts.NewTerm(B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
 		}
-		return frame, sorts.NewTerm(B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
+		return frame, nil, nil, fmt.Errorf("type_error: cmd %s, arg %s", sorts.Name(cmdSort), sorts.Name(argSort))
 	default:
 		return frame, nil, nil, fmt.Errorf("unknown function: %T", cmd)
 	}
@@ -88,18 +86,26 @@ func (frame Frame) resolveFunctionCall(expr FunctionCall) (Frame, sorts.Sort, Ex
 func (frame Frame) resolveLet(expr Let) (Frame, sorts.Sort, Expr, error) {
 	var err error
 	var parentSort sorts.Sort
+	var valueSort sorts.Sort
+	var value Expr
 	for _, binding := range expr.Bindings {
 		frame, parentSort, _, err = frame.Resolve(binding.Type)
 		if err != nil {
 			return frame, nil, nil, err
 		}
-		var value Expr
+
 		if valTerm, ok := binding.Value.(Term); ok && valTerm == "undef" {
 			value = binding.Name
 		} else {
 			value = binding.Value
+			frame, valueSort, _, err = frame.Resolve(value)
+			if err != nil {
+				return frame, nil, nil, err
+			}
+			if !typeCheckBinding(parentSort, valueSort) {
+				return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), sorts.Name(valueSort))
+			}
 		}
-		// TODO - type check
 		frame = frame.Set(binding.Name, sorts.NewTerm(parentSort, string(binding.Name)), value)
 	}
 	return frame.Resolve(expr.Final)
@@ -119,7 +125,7 @@ func (frame Frame) resolveMatch(expr Match) (Frame, sorts.Sort, Expr, error) {
 			return frame, nil, nil, err
 		}
 		if String(compValue) == String(condValue) && sorts.SubTypeOf(compSort, condSort) {
-			// simple match
+			// TODO - improve match
 			return frame.Resolve(c.Value)
 		}
 	}
