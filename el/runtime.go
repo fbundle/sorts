@@ -74,14 +74,12 @@ func (frame Frame) resolveFunctionCall(expr FunctionCall) (Frame, sorts.Sort, Ex
 	case Lambda:
 		return frame.Set(cmd.Param, argSort, argValue).Resolve(cmd.Body)
 	case Term:
-		arrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
-		if !ok {
-			return frame, nil, nil, fmt.Errorf("cmd is not a function %s", cmd)
+
+		B := typeCheckFunctionCall(cmdSort, argSort)
+		if B == nil {
+			return frame, nil, nil, fmt.Errorf("type_error: cmd %s, arg %s", sorts.Name(cmdSort), sorts.Name(argSort))
 		}
-		if !sorts.TermOf(argSort, arrow.A) {
-			return frame, nil, nil, fmt.Errorf("expected argument of type %s, got %s", sorts.Name(arrow.A), sorts.Name(argSort))
-		}
-		return frame, sorts.NewTerm(arrow.B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
+		return frame, sorts.NewTerm(B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
 	default:
 		return frame, nil, nil, fmt.Errorf("unknown function: %T", cmd)
 	}
