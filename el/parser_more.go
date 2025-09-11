@@ -2,7 +2,7 @@ package el
 
 import "github.com/fbundle/sorts/form"
 
-func Parse(e form.Form) (Expr, error) {
+func ParseForm(e form.Form) (Expr, error) {
 	return defaultParser.Parse(e)
 }
 
