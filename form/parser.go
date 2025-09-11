@@ -16,7 +16,7 @@ type Parser struct {
 }
 
 var defaultParser = Parser{
-	Split: []Token{"$", "⊕", "⊗", "=>", "->", ":", ",", "=", ":="},
+	Split: []Token{"+", "*", "$", "⊕", "⊗", "=>", "->", ":", ",", "=", ":="},
 	Blocks: map[Token]BlockConfig{
 		"(": {
 			End: ")",
@@ -78,36 +78,11 @@ func pop(tokenList []Token) ([]Token, Token, error) {
 	return tokenList[1:], tokenList[0], nil
 }
 
-const (
-	TermSum         Term = "⊕"
-	TermProd        Term = "⊗"
-	TermArrowDouble Term = "=>"
-	TermArrowSingle Term = "->"
-	TermColon       Term = ":"
-	TermComma       Term = ","
-	TermEqual       Term = "="
-	TermColonEqual  Term = ":="
-)
-
-var leftToRightInfixOp = map[Term]struct{}{
-	TermSum:  {}, // sum
-	TermProd: {}, // prod
-}
-
-var rightToLeftInfixOp = map[Term]struct{}{
-	TermArrowDouble: {}, // lambda expression
-	TermArrowSingle: {}, // arrow type
-	TermColon:       {}, // type cast
-	TermComma:       {}, // list
-	TermEqual:       {}, // equality
-	TermColonEqual:  {}, // name binding
-}
-
 // processInfix - handles both infix and
-// {1 + 2 + 3} 				(+ (+ 1 2) 3)				// left to right - sum
-// {1 × 2 × 3}				(× (× 1 2) 3)				// left to right - prod
-// {x => y => (add x y)}	(=> x (=> y (add x y)))		// right to left - lambda
-// {x -> y -> z}			(-> x (-> y z))				// right to left - arrow
+// {1 + 2 + 3} 				(+ (+ 1 2) 3)				// left assoc
+// {1 × 2 × 3}				(× (× 1 2) 3)				// left assoc
+// {x => y => (add x y)}	(=> x (=> y (add x y)))		// right assoc
+// {x -> y -> z}			(-> x (-> y z))				// right assoc
 // etc.
 func processInfix(argList []Form) (Form, error) {
 	if len(argList) == 0 {
@@ -133,17 +108,21 @@ func processInfix(argList []Form) (Form, error) {
 		}
 	}
 
-	if _, ok := leftToRightInfixOp[op]; ok {
-		// left to right
+	leftAssocOperator := map[Term]struct{}{
+		"+": {},
+		"*": {},
+	}
+
+	if _, ok := leftAssocOperator[op]; ok {
+		// left assoc
 		argList, cmd, right := argList[:len(argList)-2], argList[len(argList)-2], argList[len(argList)-1]
 		left, err := processInfix(argList)
 		if err != nil {
 			return nil, err
 		}
 		return List([]Form{cmd, left, right}), nil
-	}
-	if _, ok := rightToLeftInfixOp[op]; ok {
-		// right to left
+	} else {
+		// by default, right assoc
 		left, cmd, argList := argList[0], argList[1], argList[2:]
 		right, err := processInfix(argList)
 		if err != nil {

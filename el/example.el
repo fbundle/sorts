@@ -18,6 +18,8 @@
     {3 := (succ 2)}
 
     {x := "example string with \"quotes\" and spaces"}
+    {x := {1 + 2 + 3}}
+    {x := {1 ⊕ 2 ⊕ 3}}
 
     {is_two : {Nat -> Bool}}
     {is_two := {x => (match x
