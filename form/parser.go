@@ -5,19 +5,20 @@ import (
 	"fmt"
 )
 
-type BlockConfig struct {
+type Preprocessor func(string) string
+type Block struct {
 	End     Token
 	Process func([]Form) (Form, error)
 }
 
 type Parser struct {
-	Blocks map[Token]BlockConfig
+	Blocks map[Token]Block
 	Split  []Token
 }
 
 var defaultParser = Parser{
 	Split: []Token{"+", "*", "$", "⊕", "⊗", "=>", "->", ":", ",", "=", ":="},
-	Blocks: map[Token]BlockConfig{
+	Blocks: map[Token]Block{
 		"(": {
 			End: ")",
 			Process: func(forms []Form) (Form, error) {
@@ -31,10 +32,14 @@ var defaultParser = Parser{
 	},
 }
 
-func (parser Parser) Tokenize(s string) []Token {
+func (parser Parser) Tokenize(s string, pList ...Preprocessor) []Token {
+	newPList := append([]Preprocessor{
+		removeComment("#"),
+	}, pList...)
+
 	return tokenize(
 		s, parser.getSplitTokens(),
-		removeComment("#"),
+		newPList...,
 	)
 }
 

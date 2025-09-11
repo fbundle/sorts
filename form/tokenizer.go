@@ -36,19 +36,7 @@ func (parser Parser) getSplitTokens() []Token {
 	return splitTokens
 }
 
-type preprocessor func(string) string
-
-var replaceAll = func(stringMap map[string]string) preprocessor {
-	// replace all keys by the corresponding values
-	return func(str string) string {
-		for k, v := range stringMap {
-			str = strings.ReplaceAll(str, k, v)
-		}
-		return str
-	}
-}
-
-var removeComment = func(sep string) preprocessor {
+var removeComment = func(sep string) Preprocessor {
 	// drop content after sep in every line
 	return func(str string) string {
 		lines := strings.Split(str, "\n")
@@ -66,7 +54,7 @@ const (
 	CharStringEscape Token = "\\"
 )
 
-func tokenize(str string, splitTokens []string, pList ...preprocessor) []Token {
+func tokenize(str string, splitTokens []string, pList ...Preprocessor) []Token {
 	// preprocess
 	for _, p := range pList {
 		str = p(str)
