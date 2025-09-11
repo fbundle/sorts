@@ -52,6 +52,13 @@ func Eval(frame Frame, expr Expr) (Frame, Value, error) {
 	case FunctionCall:
 		switch cmd := e.Cmd.(type) {
 		case Lambda:
+			frame, arg, err := Eval(frame, e.Args[0])
+			if err != nil {
+				return frame, Value{}, err
+			}
+			callFrame := Frame{frame.Set(cmd.Param, arg)}
+			return Eval(callFrame, cmd.Body)
+
 		case Term:
 			frame, c, err := Eval(frame, cmd)
 			if err != nil {
