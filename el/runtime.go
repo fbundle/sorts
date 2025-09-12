@@ -30,35 +30,43 @@ func (frame Frame) Get(key Term) (sort sorts.Sort, next Expr, err error) {
 	if value, ok := frame.dict.Get(key); ok {
 		return value.Sort, value.Next, nil
 	}
+	sort, next, ok := builtinValue(key)
+	if ok {
+		return sort, next, nil
+	}
+	return nil, nil, notFoundErr
+}
+
+func builtinValue(key Term) (sort sorts.Sort, next Expr, ok bool) {
 	keyStr := string(key)
 	if strings.HasPrefix(keyStr, "U_") {
 		levelStr := strings.TrimPrefix(keyStr, "U_")
 		level, err := strconv.Atoi(levelStr)
 		if err != nil {
-			return nil, nil, notFoundErr
+			return nil, nil, false
 		}
 		// U_0 is at universe level 1
 		// U_1 is at universe level 2
-		return sorts.NewAtom(level+1, string(key), nil), key, nil
+		return sorts.NewAtom(level+1, string(key), nil), key, true
 	} else if strings.HasPrefix(keyStr, "Any_") {
 		levelStr := strings.TrimPrefix(keyStr, "Any_")
 		level, err := strconv.Atoi(levelStr)
 		if err != nil {
-			return nil, nil, notFoundErr
+			return nil, nil, false
 		}
 		// Any_0 is at universe level 1
 		// Any_1 is at universe level 2
-		return sorts.NewAtom(level+1, sorts.TerminalName, nil), key, nil
+		return sorts.NewAtom(level+1, sorts.TerminalName, nil), key, true
 	} else if strings.HasPrefix(keyStr, "Unit_") {
 		levelStr := strings.TrimPrefix(keyStr, "Unit_")
 		level, err := strconv.Atoi(levelStr)
 		if err != nil {
-			return nil, nil, notFoundErr
+			return nil, nil, false
 		}
 		// Unit_0 is at universe level 1
 		// Unit_1 is at universe level 2
-		return sorts.NewAtom(level+1, sorts.InitialName, nil), key, nil
+		return sorts.NewAtom(level+1, sorts.InitialName, nil), key, true
 	} else {
-		return nil, nil, notFoundErr
+		return nil, nil, false
 	}
 }
