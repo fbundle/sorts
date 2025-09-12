@@ -25,8 +25,8 @@
         x
     )}} # TODO - improve matching algorithm
 
-    (is_two 2)
-    # ((add 2) 2)
+    # (is_two 2)
+    ((add 2) 2)
 )
 
 
