@@ -120,9 +120,11 @@ func (frame Frame) resolveMatch(expr Match) (Frame, sorts.Sort, Expr, error) {
 		if err != nil {
 			return frame, nil, nil, err
 		}
-		if String(compValue) == String(condValue) && sorts.SubTypeOf(compSort, condSort) {
-			// TODO - improve match
-			return frame.Resolve(c.Value)
+		if compSort == condSort {
+			if String(compValue) == String(condValue) {
+				// TODO - improve match - currenty we just have exact match
+				return frame.Resolve(c.Value)
+			}
 		}
 	}
 	return frame.Resolve(expr.Final)

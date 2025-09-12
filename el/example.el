@@ -24,7 +24,7 @@
     add {Nat -> Nat -> Nat} {x => {y => (match x
         (succ z) (succ ((add z) y))
         y
-    )}}
+    )}} # TODO - improve matching algorithm
 
-    (is_two 3)
+    (is_two 2)
 )
