@@ -4,6 +4,7 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
+// typeCheckFunctionCall - check if the function call is valid - (cmdSort argSort)
 func (frame Frame) typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort) (sorts.Sort, bool) {
 	arrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
 	if !ok {
@@ -15,9 +16,46 @@ func (frame Frame) typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort)
 	return arrow.B, true
 }
 
-func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, value Expr) bool {
+// typeCheckBinding - check if the binding is valid - (name: parentSort = expr)
+func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, expr Expr) bool {
+	if expr == Undef {
+		return true
+	}
+
+	if lambda, ok := expr.(Lambda); ok {
+		callFrame := frame
+		// add function into frame
+		callFrame, err := callFrame.Set(name, parentSort, name)
+		if err != nil {
+			return false
+		}
+		// add param into frame
+		parentArrow, ok := parentSort.(sorts.Arrow)
+		if !ok {
+			return false
+		}
+		argValue := lambda.Param
+		argSort := sorts.NewTerm(parentArrow.A, string(lambda.Param))
+		callFrame, err = callFrame.Set(lambda.Param, argSort, argValue)
+		if err != nil {
+			return false
+		}
+		// call
+		return callFrame.typeCheckBinding(parentArrow.B, "", lambda.Body)
+	}
+	if match, ok := expr.(Match); ok {
+		_ = match
+	}
+
+	_, sort, _, err := expr.Resolve(frame)
+	if err != nil {
+		return false
+	}
+	if !sorts.TermOf(sort, parentSort) {
+		return false
+	}
 
 	// TODO - for functionCall - add dummy param into frame then check the body
-	// TODO - for match - match all cases then check the value
+	// TODO - for match - match all cases then check the expr
 	return true
 }

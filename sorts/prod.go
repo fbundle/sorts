@@ -38,7 +38,7 @@ func (s Prod) Elim(t Sort) (left Sort, right Sort) {
 		return t.A, t.B
 	}
 
-	a := NewAtomTerm(s.A, fmt.Sprintf("(left %s)", Name(t)))
-	b := NewAtomTerm(s.B, fmt.Sprintf("(right %s)", Name(t)))
+	a := NewTerm(s.A, fmt.Sprintf("(left %s)", Name(t)))
+	b := NewTerm(s.B, fmt.Sprintf("(right %s)", Name(t)))
 	return a, b
 }

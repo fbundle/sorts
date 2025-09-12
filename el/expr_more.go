@@ -90,13 +90,13 @@ func (l Let) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 			return frame, nil, nil, err
 		}
 		if !frame.typeCheckBinding(parentSort, name, value) {
-			return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), sorts.Name(value))
+			return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), String(value))
 		}
 		if value == Undef {
 			value = name // set cycle
 		}
 
-		frame, err = frame.Set(name, sorts.NewAtomTerm(parentSort, string(name)), value)
+		frame, err = frame.Set(name, sorts.NewTerm(parentSort, string(name)), value)
 		if err != nil {
 			return frame, nil, nil, err
 		}
@@ -452,7 +452,7 @@ func (i IntAdd) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 
 	cTerm := Term(strconv.Itoa(c))
 
-	sort := sorts.NewAtomTerm(intType, string(cTerm))
+	sort := sorts.NewTerm(intType, string(cTerm))
 	return frame, sort, cTerm, nil
 }
 

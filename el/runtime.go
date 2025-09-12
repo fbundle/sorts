@@ -42,7 +42,7 @@ var intType = sorts.NewAtom(1, "int", nil)
 func builtinValue(key Term) (sort sorts.Sort, next Expr, ok bool) {
 	keyStr := string(key)
 	if _, err := strconv.Atoi(keyStr); err == nil {
-		sort := sorts.NewAtomTerm(intType, keyStr)
+		sort := sorts.NewTerm(intType, keyStr)
 		return sort, key, true
 	}
 
