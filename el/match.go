@@ -4,33 +4,6 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-type matchFunc func(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error)
-
-func chainMatchFunc(matchFuncs ...matchFunc) matchFunc {
-	return func(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
-		for _, matchFunc := range matchFuncs {
-			newFrame, matched, err := matchFunc(frame, condSort, condValue, comp)
-			if err != nil {
-				return newFrame, false, err
-			}
-			if matched {
-				return newFrame, true, nil
-			}
-		}
-		return frame, false, nil
-	}
-}
-
-var match = chainMatchFunc(matchPattern, matchExact)
-
-func matchExact(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
-	frame, _, compValue, err := comp.Resolve(frame)
-	if err != nil {
-		return frame, false, err
-	}
-	return frame, String(compValue) == String(condValue), nil
-}
-
 func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, bool, error) {
 	switch pattern := pattern.(type) {
 	case Term:
@@ -62,4 +35,8 @@ func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr
 	default:
 		return frame, false, nil // not comparable
 	}
+}
+
+func alwaysMatchExact(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
+	return frame, true, nil
 }
