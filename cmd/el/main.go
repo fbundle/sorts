@@ -49,7 +49,7 @@ func main() {
 			fmt.Printf("Error evaluating expression: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Println("sort", sorts.Name(sort))
-		fmt.Println("value", el.String(value))
+		fmt.Println("sort\t", sorts.Name(sort))
+		fmt.Println("value\t", el.String(value))
 	}
 }
