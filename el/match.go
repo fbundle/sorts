@@ -37,8 +37,7 @@ func (frame Frame) matchPattern(condSort sorts.Sort, condValue Expr, pattern Exp
 }
 
 func (frame Frame) matchTerm(condSort sorts.Sort, condValue Expr, pattern Term) (Frame, bool, error) {
-	var err error
-	frame, err = frame.Set(pattern, condSort, condValue)
+	frame, err := frame.Set(pattern, condSort, condValue)
 	if err != nil {
 		return frame, false, err
 	}

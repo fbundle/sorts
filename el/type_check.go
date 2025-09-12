@@ -16,30 +16,7 @@ func (frame Frame) typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort)
 }
 
 func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, value Expr) bool {
-	if lambda, ok := value.(Lambda); ok {
-		// suppose name is already of the correct type - for recursive function
-		frame, err := frame.Set(name, sorts.NewTerm(parentSort, string(name)), name)
-		if err != nil {
-			return false
-		}
-		// parentSort must be arrow
-		arrow, ok := parentSort.(sorts.Arrow)
-		if !ok {
-			return false
-		}
-		paramName := lambda.Param
-		paramSort := sorts.NewTerm(arrow.A, string(paramName)) // dummy param
-		frame, err = frame.Set(paramName, paramSort, paramName)
-
-		return frame.typeCheckBinding(arrow.B, "", lambda.Body)
-	} else {
-		_, sort, _, err := frame.Resolve(value)
-		if err != nil {
-			return false
-		}
-		if !sorts.TermOf(sort, parentSort) {
-			return false
-		}
-		return true
-	}
+	// TODO - for functionCall - add dummy param into frame then check the body
+	// TODO - for match - match all cases then check the value
+	return true
 }
