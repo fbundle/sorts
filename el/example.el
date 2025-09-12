@@ -23,10 +23,16 @@
     add {Nat -> Nat -> Nat} {x => {y => (match y
         (succ z) (succ ((add x) z))
         x
-    )}} # TODO - improve matching algorithm
+    )}}
+
+    is_pos {Nat -> Bool} {x => (match x
+        (succ z) True
+        False
+    )}
 
     # (is_two 2)
     ((add 2) 2)
+    # (is_pos 4)
 )
 
 
