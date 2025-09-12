@@ -13,7 +13,7 @@ func (s Arrow) sortAttr() sortAttr {
 	return sortAttr{
 		name:   fmt.Sprintf("%s -> %s", Name(s.A), Name(s.B)),
 		level:  level,
-		parent: defaultSort(nil, level+1),
+		parent: Arrow{A: Parent(s.A), B: Parent(s.B)},
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Arrow:
