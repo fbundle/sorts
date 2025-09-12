@@ -27,21 +27,22 @@ func (o _partialObject) typeCheck(frame Frame, parent _totalObject) _totalObject
 }
 
 type _totalObject struct {
-	_partialObject
+	_sort sorts.Sort
+	next  totalExpr
 }
 
-func newTotalObject(sort sorts.Sort, next Expr) _totalObject {
+func newTotalObject(sort sorts.Sort, next totalExpr) _totalObject {
 	if sort == nil || next == nil {
 		panic(typeErr)
 	}
-	return _totalObject{_partialObject{_sort: sort, next: next}}
+	return _totalObject{_sort: sort, next: next}
 }
 
 func (o _totalObject) parent() _totalObject {
 	panic("not implemented")
 }
 func (o _totalObject) partial() _partialObject {
-	return o._partialObject
+	panic("not implemented")
 }
 
 type Frame struct {

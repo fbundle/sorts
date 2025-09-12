@@ -26,7 +26,7 @@ func (t Term) resolveTotal(frame Frame) (Frame, _totalObject) {
 	if o.next == t { // term undef - loopback
 		return frame, o
 	}
-	return resolveTotal(frame, o.parent(), o.next)
+	return o.next.resolveTotal(frame)
 }
 
 // FunctionCall - (cmd arg1 arg2 ...)

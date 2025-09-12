@@ -9,20 +9,20 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-type Value struct {
+type Object struct {
 	Sort sorts.Sort
 	Next Expr
 }
 
 type Frame struct {
-	dict ordered_map.OrderedMap[Term, Value]
+	dict ordered_map.OrderedMap[Term, Object]
 }
 
 func (frame Frame) Set(key Term, sort sorts.Sort, next Expr) (Frame, error) {
 	if sort == nil || next == nil {
 		return frame, fmt.Errorf("cannot set nil sort or next: %v, %v, %v", key, sort, next)
 	}
-	return Frame{dict: frame.dict.Set(key, Value{Sort: sort, Next: next})}, nil
+	return Frame{dict: frame.dict.Set(key, Object{Sort: sort, Next: next})}, nil
 }
 
 func (frame Frame) Get(key Term) (sort sorts.Sort, next Expr, err error) {
