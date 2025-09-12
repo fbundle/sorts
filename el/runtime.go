@@ -10,7 +10,7 @@ import (
 )
 
 type Object struct {
-	Sort sorts.Sort
+	Sort sorts.Sort // can be nil for partial objects
 	Next Expr
 }
 
