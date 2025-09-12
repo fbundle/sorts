@@ -1,13 +1,16 @@
 package sorts
 
 func MustTermOf(x Sort, X Sort) {
-	X1 := Parent(x)
-	if ok := SubTypeOf(X1, X); !ok {
-		panic("type_error")
-	}
+	Must(TermOf(x, X))
 }
 
 func TermOf(x Sort, X Sort) bool {
 	X1 := Parent(x)
 	return SubTypeOf(X1, X)
+}
+
+func Must(ok bool) {
+	if !ok {
+		panic("type_error")
+	}
 }
