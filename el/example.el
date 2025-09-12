@@ -26,7 +26,7 @@
     )}}
 
     # (is_two 2)
-    ((add 2) 2)
+    ((add 2) 3)             # output (succ (succ (succ (succ (succ 0)))))
 )
 
 
