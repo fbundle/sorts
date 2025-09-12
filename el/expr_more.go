@@ -3,6 +3,7 @@ package el
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
@@ -407,5 +408,72 @@ func init() {
 			return nil, err
 		}
 		return Exact{Expr: expr}, nil
+	})
+}
+
+type IntAdd struct {
+	A Expr
+	B Expr
+}
+
+func (i IntAdd) mustExpr() {}
+func (i IntAdd) Marshal() form.Form {
+	return form.List{
+		form.Term("+"),
+		i.A.Marshal(),
+		i.B.Marshal(),
+	}
+}
+
+func (i IntAdd) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+	frame, _, aExpr, err := i.A.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	aTerm, ok := aExpr.(Term)
+	if !ok {
+		return frame, nil, nil, errors.New("expected term")
+	}
+	frame, _, bExpr, err := i.B.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	bTerm, ok := bExpr.(Term)
+	if !ok {
+		return frame, nil, nil, errors.New("expected term")
+	}
+	a, err := strconv.Atoi(string(aTerm))
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	b, err := strconv.Atoi(string(bTerm))
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	c := a + b
+
+	cTerm := Term(strconv.Itoa(c))
+
+	sort := sorts.NewAtomTerm(intType, string(cTerm))
+	return frame, sort, cTerm, nil
+}
+
+func init() {
+	RegisterListParser("+", func(parseFunc ParseFunc, list form.List) (Expr, error) {
+		if len(list) != 2 {
+			return nil, errors.New("exact must have exactly 2 arguments: a and b")
+		}
+		a, err := parseFunc(list[0])
+		if err != nil {
+			return nil, err
+		}
+		b, err := parseFunc(list[1])
+		if err != nil {
+			return nil, err
+		}
+		return IntAdd{
+			A: a,
+			B: b,
+		}, nil
 	})
 }
