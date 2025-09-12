@@ -29,6 +29,10 @@ func Parent(s Sort) Sort {
 }
 
 func SubTypeOf(x Sort, y Sort) bool {
+	if Level(x) == Level(y) && (Name(x) == InitialName || Name(y) == TerminalName) {
+		return true
+	}
+
 	return x.sortAttr().lessEqual(y)
 }
 func TermOf(x Sort, X Sort) bool {
