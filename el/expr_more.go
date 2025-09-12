@@ -232,6 +232,7 @@ func init() {
 	})
 }
 
+// Arrow - (-> a b)
 type Arrow struct {
 	A Expr
 	B Expr
@@ -281,6 +282,7 @@ func init() {
 	})
 }
 
+// Sum - (⊕ a b)
 type Sum struct {
 	A Expr
 	B Expr
@@ -329,6 +331,7 @@ func init() {
 	})
 }
 
+// Prod - (⊗ a b)
 type Prod struct {
 	A Expr
 	B Expr
@@ -337,7 +340,7 @@ type Prod struct {
 func (p Prod) mustExpr() {}
 func (p Prod) Marshal() form.Form {
 	return form.List{
-		form.Term("⊕"),
+		form.Term("⊗"),
 		p.A.Marshal(),
 		p.B.Marshal(),
 	}
@@ -375,4 +378,7 @@ func init() {
 			B: b,
 		}, nil
 	})
+}
+
+type Exact struct {
 }
