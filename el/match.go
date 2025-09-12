@@ -6,64 +6,51 @@ import (
 
 func (frame Frame) match(condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
 	// Try pattern matching first - don't Resolve the pattern
-	if frame, matched, err := frame.matchPattern(condSort, condValue, comp); err != nil {
-		return frame, false, err
-	} else if matched {
-		return frame, true, nil
+	newFrame, matched, err := frame.matchPattern(condSort, condValue, comp)
+	if err != nil {
+		return newFrame, false, err
+	}
+	if matched {
+		return newFrame, true, nil
 	}
 
-	// Fall back to exact matching - Resolve the comparison for exact match
-	frame, compSort, compValue, err := comp.Resolve(frame) // frame.Resolve(comp)
+	// fall back to exact-match
+	frame, _, compValue, err := comp.Resolve(frame) // frame.Resolve(comp)
 	if err != nil {
 		return frame, false, err
 	}
-	if compSort == condSort {
-		if String(compValue) == String(condValue) {
-			return frame, true, nil
-		}
-	}
-	return frame, false, nil
+	return frame, String(compValue) == String(condValue), nil
 }
 
 func (frame Frame) matchPattern(condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, bool, error) {
 	switch pattern := pattern.(type) {
 	case Term:
-		return frame.matchTerm(condSort, condValue, pattern)
+		frame, err := frame.Set(pattern, condSort, condValue)
+		if err != nil {
+			return frame, false, err
+		}
+		return frame, true, nil
 	case FunctionCall:
-		return frame.matchFunctionCall(condSort, condValue, pattern)
+		if cond, ok := condValue.(FunctionCall); ok {
+			frame, cmdSort, cmdValue, err := cond.Cmd.Resolve(frame)
+			if err != nil {
+				return frame, false, err
+			}
+			frame, matched1, err := frame.matchPattern(cmdSort, cmdValue, pattern.Cmd)
+			if err != nil {
+				return frame, false, err
+			}
+			frame, argSort, argValue, err := cond.Arg.Resolve(frame)
+			if err != nil {
+				return frame, false, err
+			}
+			frame, matched2, err := frame.matchPattern(argSort, argValue, pattern.Arg)
+			return frame, matched1 && matched2, err
+		} else {
+			return frame, false, nil
+		}
+
 	default:
 		return frame, false, nil // not comparable
 	}
-}
-
-func (frame Frame) matchTerm(condSort sorts.Sort, condValue Expr, pattern Term) (Frame, bool, error) {
-	frame, err := frame.Set(pattern, condSort, condValue)
-	if err != nil {
-		return frame, false, err
-	}
-	return frame, true, nil
-}
-
-func (frame Frame) matchFunctionCall(condSort sorts.Sort, condValue Expr, pattern FunctionCall) (Frame, bool, error) {
-	if condValue, ok := condValue.(FunctionCall); ok {
-		frame, cmdSort, cmdValue, err := condValue.Cmd.Resolve(frame) // frame.Resolve(condValue.Cmd)
-		if err != nil {
-			return frame, false, err
-		}
-		frame, argSort, argValue, err := condValue.Arg.Resolve(frame) // frame.Resolve(condValue.Arg)
-		if err != nil {
-			return frame, false, err
-		}
-
-		frame, matched, err := frame.matchPattern(cmdSort, cmdValue, pattern.Cmd)
-		if err != nil {
-			return frame, false, err
-		}
-		if !matched {
-			return frame, false, nil
-		}
-		frame, matched, err = frame.matchPattern(argSort, argValue, pattern.Arg)
-		return frame, matched, err
-	}
-	return frame, false, nil
 }
