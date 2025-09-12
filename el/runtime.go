@@ -14,6 +14,10 @@ type Object struct {
 	Next Expr
 }
 
+func (o Object) Parent() Object {
+	panic("not implemented")
+}
+
 type Frame struct {
 	dict ordered_map.OrderedMap[Term, Object]
 }
