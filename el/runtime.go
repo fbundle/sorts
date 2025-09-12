@@ -10,12 +10,18 @@ import (
 )
 
 type Object struct {
-	Sort sorts.Sort // can be nil for partial objects
-	Next Expr
+	Sort   sorts.Sort // can be nil for partial objects
+	Next   Expr
+	parent *Object
 }
 
 func (o Object) Parent() Object {
-	panic("not implemented")
+	if o.parent != nil {
+		return *o.parent
+	} else {
+		//  default parent
+		panic("not implemented")
+	}
 }
 
 type Frame struct {
