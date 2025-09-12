@@ -2,6 +2,7 @@ package el
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/fbundle/sorts/form"
 )
@@ -81,7 +82,7 @@ func (parser Parser) ParseForm(e form.Form) (Expr, error) {
 
 		// It's a regular function call
 		if len(list) != 1 {
-			return nil, errors.New("regular function call must have exactly 1 argument")
+			return nil, fmt.Errorf("regular function call must have exactly 1 argument: %v\n", e)
 		}
 		cmd, err := parser.ParseForm(head)
 		if err != nil {
