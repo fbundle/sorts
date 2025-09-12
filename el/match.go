@@ -43,16 +43,18 @@ func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr
 			if err != nil {
 				return frame, false, err
 			}
-			frame, matched1, err := matchPattern(frame, cmdSort, cmdValue, pattern.Cmd)
+			frame, matched, err := matchPattern(frame, cmdSort, cmdValue, pattern.Cmd)
 			if err != nil {
 				return frame, false, err
+			}
+			if !matched {
+				return frame, false, nil
 			}
 			frame, argSort, argValue, err := cond.Arg.Resolve(frame)
 			if err != nil {
 				return frame, false, err
 			}
-			frame, matched2, err := matchPattern(frame, argSort, argValue, pattern.Arg)
-			return frame, matched1 && matched2, err
+			return matchPattern(frame, argSort, argValue, pattern.Arg)
 		} else {
 			return frame, false, nil
 		}
@@ -62,6 +64,34 @@ func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr
 	}
 }
 
-func alwaysMatchExact(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
-	return frame, true, nil
+// alwaysMatchPattern - similar to matchPattern, but always matches to get the updated frame
+func alwaysMatchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, error) {
+	switch pattern := pattern.(type) {
+	case Exact:
+		frame, _, _, err := pattern.Expr.Resolve(frame)
+		return frame, err
+	case Term:
+		return frame.Set(pattern, condSort, condValue)
+	case FunctionCall:
+		if cond, ok := condValue.(FunctionCall); ok {
+			frame, cmdSort, cmdValue, err := cond.Cmd.Resolve(frame)
+			if err != nil {
+				return frame, err
+			}
+			frame, err = alwaysMatchPattern(frame, cmdSort, cmdValue, pattern.Cmd)
+			if err != nil {
+				return frame, err
+			}
+			frame, argSort, argValue, err := cond.Arg.Resolve(frame)
+			if err != nil {
+				return frame, err
+			}
+			return alwaysMatchPattern(frame, argSort, argValue, pattern.Arg)
+		} else {
+			return frame, nil
+		}
+
+	default:
+		return frame, nil // not comparable
+	}
 }
