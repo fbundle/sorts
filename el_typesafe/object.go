@@ -5,47 +5,42 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-type _object struct {
+type _partialObject struct {
 	_sort sorts.Sort
 	_next Expr
-}
-
-func (o _object) next() Expr {
-	return o._next
-}
-
-type _totalObject struct {
-	_object
-}
-
-func newTotalObject(sort sorts.Sort, next Expr) _totalObject {
-	if sort == nil || next == nil {
-		panic("type_error")
-	}
-	return _totalObject{_object{_sort: sort, _next: next}}
-}
-
-func (o _totalObject) parent() _totalObject {
-	panic("not implemented")
-}
-func (o _totalObject) partial() _partialObject {
-	return _partialObject{_object: o._object}
-}
-
-type _partialObject struct {
-	_object
 }
 
 func newPartialObject(next Expr) _partialObject {
 	if next == nil {
 		panic("type_error")
 	}
-	return _partialObject{_object{_sort: nil, _next: next}}
+	return _partialObject{_sort: nil, _next: next}
+}
+func (o _partialObject) next() Expr {
+	return o._next
 }
 
 func (o _partialObject) typeCheck(frame Frame, parent _partialObject) _totalObject {
-	// convert a partial _object to a total _object using type-check
+	// convert a partial _partialObject to a total _partialObject using type-check
 	panic("not implemented")
+}
+
+type _totalObject struct {
+	_partialObject
+}
+
+func newTotalObject(sort sorts.Sort, next Expr) _totalObject {
+	if sort == nil || next == nil {
+		panic("type_error")
+	}
+	return _totalObject{_partialObject{_sort: sort, _next: next}}
+}
+
+func (o _totalObject) parent() _totalObject {
+	panic("not implemented")
+}
+func (o _totalObject) partial() _partialObject {
+	return o._partialObject
 }
 
 type Frame struct {
