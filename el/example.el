@@ -25,14 +25,8 @@
         x
     )}}
 
-    is_pos {Nat -> Bool} {x => (match x
-        (succ z) True
-        False
-    )}
-
     # (is_two 2)
     ((add 2) 2)
-    # (is_pos 4)
 )
 
 
