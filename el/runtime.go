@@ -15,6 +15,10 @@ type Object struct {
 	parent *Object
 }
 
+func (o Object) MustTotal(parent Object) Object {
+	// TODO - this is the new type check binding
+	panic("not implemented")
+}
 func (o Object) Total() bool {
 	return o.Sort != nil
 }
