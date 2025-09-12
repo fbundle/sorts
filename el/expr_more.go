@@ -380,5 +380,32 @@ func init() {
 	})
 }
 
+// Exact - (exact expr)
 type Exact struct {
+	Expr Expr
+}
+
+func (e Exact) mustExpr() {}
+func (e Exact) Marshal() form.Form {
+	return form.List{
+		form.Term("exact"),
+		e.Expr.Marshal(),
+	}
+}
+
+func (e Exact) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+	return frame, nil, e, nil
+}
+
+func init() {
+	RegisterListParser("exact", func(parseFunc ParseFunc, list form.List) (Expr, error) {
+		if len(list) != 1 {
+			return nil, errors.New("exact must have exactly 1 argument: expr")
+		}
+		expr, err := parseFunc(list[0])
+		if err != nil {
+			return nil, err
+		}
+		return Exact{Expr: expr}, nil
+	})
 }

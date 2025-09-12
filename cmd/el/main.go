@@ -33,18 +33,18 @@ func main() {
 			os.Exit(1)
 		}
 
-		elExpr, err := el.ParseForm(formExpr)
+		expr, err := el.ParseForm(formExpr)
 		if err != nil {
 			fmt.Printf("Error parsing  expression: %v\n", err)
 			fmt.Printf("Next: %s\n", strings.Join(formExpr.Marshal(), " "))
 			os.Exit(1)
 		}
 
-		fmt.Println("expr\t", el.String(elExpr))
+		fmt.Println("expr\t", el.String(expr))
 
 		var sort sorts.Sort
 		var value el.Expr
-		frame, sort, value, err = elExpr.Resolve(frame)
+		frame, sort, value, err = expr.Resolve(frame)
 		if err != nil {
 			fmt.Printf("Error evaluating expression: %v\n", err)
 			os.Exit(1)

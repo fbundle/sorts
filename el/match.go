@@ -1,6 +1,8 @@
 package el
 
 import (
+	"fmt"
+
 	"github.com/fbundle/sorts/sorts"
 )
 
@@ -32,7 +34,11 @@ func matchExact(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Fr
 }
 
 func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, bool, error) {
+	fmt.Println("match", condValue, "pattern", pattern)
 	switch pattern := pattern.(type) {
+	case Exact:
+		fmt.Println("match exact")
+		return matchExact(frame, condSort, condValue, pattern.Expr)
 	case Term:
 		frame, err := frame.Set(pattern, condSort, condValue)
 		if err != nil {

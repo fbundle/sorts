@@ -16,17 +16,17 @@
     x Any_0 {1 ⊗ 2 ⊗ 3 ⊗ 4}
 
     is_two {Nat -> Bool} {x => (match x
-        (succ 1) True
+        (exact (succ 1)) True
         False
     )}
 
     add {Nat -> Nat -> Nat} {x => {y => (match y
-        (succ @z) (succ ((add x) @z))
+        (succ z) (succ ((add x) z))
         x
     )}}
 
-    # (is_two 2)
-    ((add 2) 3)             # output (succ (succ (succ (succ (succ 0)))))
+    (is_two 3)
+    # ((add 2) 3)             # output (succ (succ (succ (succ (succ 0)))))
 )
 
 
