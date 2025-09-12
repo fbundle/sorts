@@ -44,7 +44,7 @@ func main() {
 
 		var sort sorts.Sort
 		var value el.Expr
-		frame, sort, value, err = frame.Resolve(elExpr)
+		frame, sort, value, err = elExpr.Resolve(frame)
 		if err != nil {
 			fmt.Printf("Error evaluating expression: %v\n", err)
 			os.Exit(1)

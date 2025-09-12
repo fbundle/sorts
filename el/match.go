@@ -5,15 +5,15 @@ import (
 )
 
 func (frame Frame) match(condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
-	// Try pattern matching first - don't resolve the pattern
+	// Try pattern matching first - don't Resolve the pattern
 	if frame, matched, err := frame.matchPattern(condSort, condValue, comp); err != nil {
 		return frame, false, err
 	} else if matched {
 		return frame, true, nil
 	}
 
-	// Fall back to exact matching - resolve the comparison for exact match
-	frame, compSort, compValue, err := frame.Resolve(comp)
+	// Fall back to exact matching - Resolve the comparison for exact match
+	frame, compSort, compValue, err := comp.Resolve(frame) // frame.Resolve(comp)
 	if err != nil {
 		return frame, false, err
 	}
@@ -46,11 +46,11 @@ func (frame Frame) matchTerm(condSort sorts.Sort, condValue Expr, pattern Term) 
 
 func (frame Frame) matchFunctionCall(condSort sorts.Sort, condValue Expr, pattern FunctionCall) (Frame, bool, error) {
 	if condValue, ok := condValue.(FunctionCall); ok {
-		frame, cmdSort, cmdValue, err := frame.Resolve(condValue.Cmd)
+		frame, cmdSort, cmdValue, err := condValue.Cmd.Resolve(frame) // frame.Resolve(condValue.Cmd)
 		if err != nil {
 			return frame, false, err
 		}
-		frame, argSort, argValue, err := frame.Resolve(condValue.Arg)
+		frame, argSort, argValue, err := condValue.Arg.Resolve(frame) // frame.Resolve(condValue.Arg)
 		if err != nil {
 			return frame, false, err
 		}

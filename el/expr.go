@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/fbundle/sorts/form"
+	"github.com/fbundle/sorts/sorts"
 )
 
 func String(e Expr) string {
@@ -13,6 +14,7 @@ func String(e Expr) string {
 
 type Expr interface {
 	Marshal() form.Form
+	Resolve(frame Frame) (Frame, sorts.Sort, Expr, error)
 	mustExpr()
 }
 
@@ -22,6 +24,17 @@ func (t Term) mustExpr() {}
 
 func (t Term) Marshal() form.Form {
 	return form.Term(t)
+}
+
+func (t Term) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+	sort, next, err := frame.Get(t)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	if next == t { // term not assigned, return itself
+		return frame, sort, t, nil
+	}
+	return next.Resolve(frame)
 }
 
 // FunctionCall - (cmd arg1 arg2 ...)
@@ -36,6 +49,31 @@ func (f FunctionCall) Marshal() form.Form {
 	return form.List{
 		f.Cmd.Marshal(),
 		f.Arg.Marshal(),
+	}
+}
+func (f FunctionCall) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+	frame, argSort, argValue, err := f.Arg.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	frame, cmdSort, cmdValue, err := f.Cmd.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	switch cmd := cmdValue.(type) {
+	case Lambda:
+		frame, err := frame.Set(cmd.Param, argSort, argValue)
+		if err != nil {
+			return frame, nil, nil, err
+		}
+		return cmd.Body.Resolve(frame)
+	case Term:
+		if B, ok := frame.typeCheckFunctionCall(cmdSort, argSort); ok {
+			return frame, sorts.NewTerm(B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
+		}
+		return frame, nil, nil, fmt.Errorf("type_error: cmd %s, arg %s", sorts.Name(cmdSort), sorts.Name(argSort))
+	default:
+		return frame, nil, nil, fmt.Errorf("unknown function: %T", cmd)
 	}
 }
 

@@ -2,8 +2,10 @@ package el
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/fbundle/sorts/form"
+	"github.com/fbundle/sorts/sorts"
 )
 
 // Lambda - (=> param body)
@@ -20,6 +22,10 @@ func (l Lambda) Marshal() form.Form {
 		l.Param.Marshal(),
 		l.Body.Marshal(),
 	}
+}
+
+func (l Lambda) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+	return frame, nil, l, nil
 }
 
 func init() {
@@ -66,6 +72,32 @@ func (l Let) Marshal() form.Form {
 	}
 	forms = append(forms, l.Final.Marshal())
 	return form.List(forms)
+}
+
+func (l Let) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+	for _, binding := range l.Bindings {
+		var err error
+		var parentSort sorts.Sort
+		frame, parentSort, _, err = binding.Type.Resolve(frame)
+		if err != nil {
+			return frame, nil, nil, err
+		}
+
+		var value Expr
+		if valTerm, ok := binding.Value.(Term); ok && valTerm == "undef" {
+			value = binding.Name
+		} else {
+			value = binding.Value
+			if !frame.typeCheckBinding(parentSort, binding.Name, value) {
+				return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), sorts.Name(value))
+			}
+		}
+		frame, err = frame.Set(binding.Name, sorts.NewTerm(parentSort, string(binding.Name)), value)
+		if err != nil {
+			return frame, nil, nil, err
+		}
+	}
+	return l.Final.Resolve(frame)
 }
 
 func init() {
@@ -132,6 +164,22 @@ func (m Match) Marshal() form.Form {
 	return form.List(forms)
 }
 
+func (m Match) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+	frame, condSort, condValue, err := m.Cond.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+
+	var matched bool
+	for _, c := range m.Cases {
+		frame, matched, err = frame.match(condSort, condValue, c.Comp)
+		if matched {
+			return c.Value.Resolve(frame)
+		}
+	}
+	return m.Final.Resolve(frame)
+}
+
 func init() {
 	RegisterListParser("match", func(parseFunc ParseFunc, list form.List) (Expr, error) {
 		if len(list) < 3 {
@@ -193,6 +241,21 @@ func (a Arrow) Marshal() form.Form {
 	}
 }
 
+func (a Arrow) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+	frame, aSort, _, err := a.A.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	frame, bSort, _, err := a.B.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	return frame, sorts.Arrow{
+		A: aSort,
+		B: bSort,
+	}, a, nil
+}
+
 func init() {
 	RegisterListParser("->", func(parseFunc ParseFunc, list form.List) (Expr, error) {
 		if len(list) != 2 {
@@ -226,6 +289,21 @@ func (s Sum) Marshal() form.Form {
 		s.B.Marshal(),
 	}
 }
+func (s Sum) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+	frame, aSort, _, err := s.A.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	frame, bSort, _, err := s.B.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	return frame, sorts.Sum{
+		A: aSort,
+		B: bSort,
+	}, s, nil
+}
+
 func init() {
 	RegisterListParser("⊕", func(parseFunc ParseFunc, list form.List) (Expr, error) {
 		if len(list) != 2 {
@@ -258,6 +336,21 @@ func (p Prod) Marshal() form.Form {
 		p.A.Marshal(),
 		p.B.Marshal(),
 	}
+}
+
+func (p Prod) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+	frame, aSort, _, err := p.A.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	frame, bSort, _, err := p.B.Resolve(frame)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	return frame, sorts.Prod{
+		A: aSort,
+		B: bSort,
+	}, p, nil
 }
 func init() {
 	RegisterListParser("⊗", func(parseFunc ParseFunc, list form.List) (Expr, error) {
