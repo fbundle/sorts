@@ -40,7 +40,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		fmt.Println("expr", el.String(elExpr))
+		fmt.Println("expr\t", el.String(elExpr))
 
 		var sort sorts.Sort
 		var value el.Expr
