@@ -4,17 +4,26 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func (frame Frame) match(condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
-	// Try pattern matching first - don't Resolve the pattern
-	newFrame, matched, err := frame.matchPattern(condSort, condValue, comp)
-	if err != nil {
-		return newFrame, false, err
-	}
-	if matched {
-		return newFrame, true, nil
-	}
+type matchFunc func(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error)
 
-	// fall back to exact-match
+func chainMatchFunc(matchFuncs ...matchFunc) matchFunc {
+	return func(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
+		for _, matchFunc := range matchFuncs {
+			newFrame, matched, err := matchFunc(frame, condSort, condValue, comp)
+			if err != nil {
+				return newFrame, false, err
+			}
+			if matched {
+				return newFrame, true, nil
+			}
+		}
+		return frame, false, nil
+	}
+}
+
+var match = chainMatchFunc(matchPattern, matchExact)
+
+func matchExact(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
 	frame, _, compValue, err := comp.Resolve(frame)
 	if err != nil {
 		return frame, false, err
@@ -22,7 +31,7 @@ func (frame Frame) match(condSort sorts.Sort, condValue Expr, comp Expr) (Frame,
 	return frame, String(compValue) == String(condValue), nil
 }
 
-func (frame Frame) matchPattern(condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, bool, error) {
+func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, bool, error) {
 	switch pattern := pattern.(type) {
 	case Term:
 		frame, err := frame.Set(pattern, condSort, condValue)
@@ -36,7 +45,7 @@ func (frame Frame) matchPattern(condSort sorts.Sort, condValue Expr, pattern Exp
 			if err != nil {
 				return frame, false, err
 			}
-			frame, matched1, err := frame.matchPattern(cmdSort, cmdValue, pattern.Cmd)
+			frame, matched1, err := matchPattern(frame, cmdSort, cmdValue, pattern.Cmd)
 			if err != nil {
 				return frame, false, err
 			}
@@ -44,7 +53,7 @@ func (frame Frame) matchPattern(condSort sorts.Sort, condValue Expr, pattern Exp
 			if err != nil {
 				return frame, false, err
 			}
-			frame, matched2, err := frame.matchPattern(argSort, argValue, pattern.Arg)
+			frame, matched2, err := matchPattern(frame, argSort, argValue, pattern.Arg)
 			return frame, matched1 && matched2, err
 		} else {
 			return frame, false, nil
