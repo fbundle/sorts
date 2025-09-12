@@ -1,26 +1,27 @@
 package el_typesafe
 
 import (
+	"errors"
+
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
 )
 
+var typeErr = errors.New("type_error")
+
 type _partialObject struct {
 	_sort sorts.Sort
-	_next Expr
+	next  Expr
 }
 
 func newPartialObject(next Expr) _partialObject {
 	if next == nil {
-		panic("type_error")
+		panic(typeErr)
 	}
-	return _partialObject{_sort: nil, _next: next}
-}
-func (o _partialObject) next() Expr {
-	return o._next
+	return _partialObject{_sort: nil, next: next}
 }
 
-func (o _partialObject) typeCheck(frame Frame, parent _partialObject) _totalObject {
+func (o _partialObject) typeCheck(frame Frame, parent _totalObject) _totalObject {
 	// convert a partial _partialObject to a total _partialObject using type-check
 	panic("not implemented")
 }
@@ -31,9 +32,9 @@ type _totalObject struct {
 
 func newTotalObject(sort sorts.Sort, next Expr) _totalObject {
 	if sort == nil || next == nil {
-		panic("type_error")
+		panic(typeErr)
 	}
-	return _totalObject{_partialObject{_sort: sort, _next: next}}
+	return _totalObject{_partialObject{_sort: sort, next: next}}
 }
 
 func (o _totalObject) parent() _totalObject {
@@ -53,7 +54,7 @@ func (frame Frame) set(key Term, o _totalObject) Frame {
 func (frame Frame) get(key Term) _totalObject {
 	o, ok := frame.dict.Get(key)
 	if !ok {
-		panic("type_error")
+		panic(typeErr)
 	}
 	return o
 }

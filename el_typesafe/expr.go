@@ -22,7 +22,11 @@ type Term string
 
 func (t Term) mustExpr() {}
 func (t Term) resolveTotal(frame Frame) (Frame, _totalObject) {
-	panic("not implemented")
+	o := frame.get(t)
+	if o.next == t { // term undef - loopback
+		return frame, o
+	}
+	return resolveTotal(frame, o.parent(), o.next)
 }
 
 // FunctionCall - (cmd arg1 arg2 ...)

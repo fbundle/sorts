@@ -12,7 +12,7 @@ func resolvePartial(frame Frame, expr Expr) (Frame, _partialObject) {
 	}
 }
 
-func resolveTotal(frame Frame, parent _partialObject, expr Expr) (Frame, _totalObject) {
+func resolveTotal(frame Frame, parent _totalObject, expr Expr) (Frame, _totalObject) {
 	switch expr := expr.(type) {
 	case partialExpr:
 		frame, o := expr.resolvePartial(frame)
