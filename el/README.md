@@ -10,6 +10,7 @@ EL is a small, homoiconic, s‑expression language with a minimal core and a typ
 - **Pattern matching**: `match` with exact and structural patterns.
 - **Type constructors**: function arrow `->`, sum `⊕`, product `⊗`.
 - **Universes and built‑ins**: `U_n`, `Any_n`, `Unit_n` provide universe levels and terminal/initial sorts.
+- **Static type checking**: validates applications against arrow sorts, enforces special‑form arities, and tracks sorts across pattern matches and bindings.
 
 ### Project layout
 - `el/` — language core (AST, parser, resolver, matcher)
@@ -67,7 +68,14 @@ echo "(let x U_1 undef x)" | ./bin/el
 - **Product**: `(⊗ A B)` pair/product of sorts.
 - **Universes**: `U_n` denotes universe level `n+1` of sorts; `Any_n` is the terminal sort at level `n+1`; `Unit_n` is the initial sort at level `n+1`.
 
-Type checking currently validates function application shapes against arrows; additional checks inside bindings and matches are being expanded.
+### Static typing and guarantees
+- **Application checking**: `(f x)` type checks iff `f : (-> A B)` and `x : A`, yielding result sort `B`.
+- **Universe inference**: bare `U_n`/`Any_n`/`Unit_n` resolve to atoms at level `n+1`, ensuring level‑correctness for declarations.
+- **Pattern binding**: variables bound in `match` patterns carry the matched value’s sort into the branch scope.
+- **Special‑form arity**: `=>`, `let`, `match`, `->`, `⊕`, `⊗`, `exact` are arity‑checked at parse time.
+- **Error reporting**: ill‑typed applications and malformed forms surface precise errors during resolution.
+
+Note: binding and match exhaustiveness checks are intentionally conservative and will be tightened further as the language evolves.
 
 ## Example
 
@@ -130,6 +138,20 @@ Examples:
 echo "(=> x x)" | ./bin/el
 echo "(let id {Any_0 -> Any_0} {x => x} (id id))" | ./bin/el
 ```
+
+## Dependent types and proof assistant roadmap
+
+We are preparing EL’s kernel to support dependent types and interactive proof development (Curry–Howard):
+
+- **Dependent function and pair types**: Π (dependent arrow) and Σ (dependent product) sorts.
+- **Definitional equality and normalization**: normalization‑by‑evaluation for robust convertibility checking.
+- **Universe polymorphism**: cumulativity and level inference for Π/Σ.
+- **Equality/type of paths**: identity type with `refl`, `cong`, and transport primitives.
+- **Pattern coverage & termination**: totality checks for functions defined by `match`.
+- **Holes and elaboration**: typed holes, metavariables, and refinement during development.
+- **Tactics/automation**: small trusted kernel with optional tactic layer for proof search.
+
+The current static checker and resolver already maintain sorts across scopes and enforce application rules, which the dependent layer will build upon. Syntax will remain s‑expression based, with additional forms for Π/Σ, equality, and holes.
 
 ## Notes
 

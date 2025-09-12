@@ -53,7 +53,7 @@ func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, expr Expr)
 		fmt.Println("resolved", match.Cond, "=", condValue, "of type", sorts.Name(sorts.Parent(condSort)))
 
 		for _, c := range match.Cases {
-			matchedFrame, err := alwaysMatchPattern(frame, condSort, c.Comp)
+			matchedFrame, err := reverseMatchPattern(frame, condSort, c.Comp)
 			if err != nil {
 				return false
 			}

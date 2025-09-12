@@ -48,8 +48,8 @@ func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr
 	}
 }
 
-// alwaysMatchPattern - similar to matchPattern, but always matches to get the updated frame
-func alwaysMatchPattern(frame Frame, condSort sorts.Sort, pattern Expr) (Frame, error) {
+// reverseMatchPattern - similar to matchPattern, but always matches to get the updated frame
+func reverseMatchPattern(frame Frame, condSort sorts.Sort, pattern Expr) (Frame, error) {
 	fmt.Println("match", pattern, "of type", sorts.Name(sorts.Parent(condSort)))
 	switch pattern := pattern.(type) {
 	case Exact:
@@ -69,7 +69,7 @@ func alwaysMatchPattern(frame Frame, condSort sorts.Sort, pattern Expr) (Frame, 
 		if cmdArrow.B != sorts.Parent(condSort) {
 			return frame, errors.New("wrong output type")
 		}
-		return alwaysMatchPattern(frame, sorts.NewTerm(cmdArrow.A, String(pattern.Arg)), pattern.Arg)
+		return reverseMatchPattern(frame, sorts.NewTerm(cmdArrow.A, String(pattern.Arg)), pattern.Arg)
 	default:
 		return frame, nil // not comparable
 	}
