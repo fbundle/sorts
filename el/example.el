@@ -26,8 +26,8 @@
     )}}
 
     # (is_two n2)
-    # ((add n2) n3)             # output (succ (succ (succ (succ (succ n0)))))
-    {23 + 27}
+    ((add n2) n3)             # output (succ (succ (succ (succ (succ n0)))))
+    # {23 + 27}
 )
 
 
