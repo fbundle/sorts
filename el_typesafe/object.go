@@ -52,9 +52,9 @@ type Frame struct {
 	dict ordered_map.OrderedMap[Term, _totalObject]
 }
 
-func (frame Frame) set(key Term, o _totalObject) {
+func (frame Frame) set(key Term, sort sorts.Sort, next Expr) Frame {
 	panic("not implemented")
 }
-func (frame Frame) get(key Term) (_totalObject, bool) {
+func (frame Frame) get(key Term) _totalObject {
 	panic("not implemented")
 }
