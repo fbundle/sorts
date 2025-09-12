@@ -118,18 +118,20 @@ func (parser parser) parseForm(e form.Form) (Expr, error) {
 		}
 
 		// It's a regular function call
-		if len(list) != 1 {
-			return nil, fmt.Errorf("regular function call must have exactly 1 argument: %v\n", e)
-		}
+		// convert (f a b c) into (((f a) b) c)
+
 		cmd, err := parser.parseForm(head)
 		if err != nil {
 			return nil, err
 		}
-		arg, err := parser.parseForm(list[0])
-		if err != nil {
-			return nil, err
+		for _, argExpr := range list {
+			arg, err := parser.parseForm(argExpr)
+			if err != nil {
+				return nil, err
+			}
+			cmd = FunctionCall{Cmd: cmd, Arg: arg}
 		}
-		return FunctionCall{Cmd: cmd, Arg: arg}, nil
+		return cmd, nil
 	default:
 		return nil, errors.New("unknown form")
 	}
