@@ -26,14 +26,14 @@ func (s Prod) sortAttr() sortAttr {
 
 // Intro - take (a: A) (b: B) give (a, b): A × B
 func (s Prod) Intro(a Sort, b Sort) Sort {
-	MustTermOf(a, s.A)
-	MustTermOf(b, s.B)
+	mustTermOf(a, s.A)
+	mustTermOf(b, s.B)
 	return Prod{A: a, B: b}
 }
 
 // Elim - take (t: A × B) give (a: A) and (b: B)
 func (s Prod) Elim(t Sort) (left Sort, right Sort) {
-	MustTermOf(t, s)
+	mustTermOf(t, s)
 	if t, ok := t.(Prod); ok {
 		return t.A, t.B
 	}

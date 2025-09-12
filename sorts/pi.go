@@ -40,15 +40,15 @@ func (s Pi) Intro(name string, arrow func(Sort) Sort) Sort {
 	a := NewTerm(s.A, "a")
 	b := arrow(a)
 	sBa := s.B.Apply(a)
-	MustTermOf(b, sBa) // TODO - think, shouldn't it have to check for every a of type A?
+	mustTermOf(b, sBa) // TODO - think, shouldn't it have to check for every a of type A?
 
 	return NewTerm(s, name)
 }
 
 // Elim - take (f: Π(x:A)B(x)) (a: A) give (b: B(a)) - Modus Ponens
 func (s Pi) Elim(arrow Sort, a Sort) Sort {
-	MustTermOf(arrow, s)
-	MustTermOf(a, s.A)
+	mustTermOf(arrow, s)
+	mustTermOf(a, s.A)
 	Ba := s.B.Apply(a)
 	return NewTerm(Ba, fmt.Sprintf("(%s %s)", Name(arrow), Name(a)))
 }

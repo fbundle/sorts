@@ -43,14 +43,14 @@ func (s Equal) sortAttr() sortAttr {
 
 func (s Equal) Refl(x Sort) Sort {
 	// reflexive
-	MustTermOf(x, s.A)
-	MustTermOf(x, s.B)
+	mustTermOf(x, s.A)
+	mustTermOf(x, s.B)
 	return equalTerm{A: x, B: x, Parent: s}
 }
 
 func (s Equal) Symm(t equalTerm) equalTerm {
 	// symmetric
-	MustTermOf(t, s)
+	mustTermOf(t, s)
 	return equalTerm{
 		A:      t.B,
 		B:      t.A,
@@ -60,8 +60,8 @@ func (s Equal) Symm(t equalTerm) equalTerm {
 
 func (s Equal) Trans(t1 equalTerm, t2 equalTerm) Sort {
 	// transitive
-	MustTermOf(t1, s)
-	MustTermOf(t2, s)
+	mustTermOf(t1, s)
+	mustTermOf(t2, s)
 	if t1.B != t2.A {
 		panic("type_error")
 	}

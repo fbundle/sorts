@@ -33,8 +33,8 @@ func (s Arrow) sortAttr() sortAttr {
 
 // Elim - take (f: A -> B) (a: A) give (b: B) - Modus Ponens
 func (s Arrow) Elim(arrow Sort, a Sort) Sort {
-	MustTermOf(arrow, s)
-	MustTermOf(a, s.A)
+	mustTermOf(arrow, s)
+	mustTermOf(a, s.A)
 	return NewTerm(s.B, fmt.Sprintf("(%s %s)", Name(arrow), Name(a)))
 }
 
@@ -43,7 +43,7 @@ func (s Arrow) Intro(name string, arrow func(Sort) Sort) Sort {
 	// verify
 	a := NewTerm(s.A, "a")
 	b := arrow(a)
-	MustTermOf(b, s.B)
+	mustTermOf(b, s.B)
 
 	// verify ok
 	return NewTerm(s, name)

@@ -1,15 +1,10 @@
 package sorts
 
-func MustTermOf(x Sort, X Sort) {
-	Must(TermOf(x, X))
+func mustTermOf(x Sort, X Sort) {
+	mustTypeOf(TermOf(x, X))
 }
 
-func TermOf(x Sort, X Sort) bool {
-	X1 := Parent(x)
-	return SubTypeOf(X1, X)
-}
-
-func Must(ok bool) {
+func mustTypeOf(ok bool) {
 	if !ok {
 		panic("type_error")
 	}

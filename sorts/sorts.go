@@ -31,6 +31,10 @@ func Parent(s Sort) Sort {
 func SubTypeOf(x Sort, y Sort) bool {
 	return x.sortAttr().lessEqual(y)
 }
+func TermOf(x Sort, X Sort) bool {
+	X1 := Parent(x)
+	return SubTypeOf(X1, X)
+}
 
 type Sort interface {
 	sortAttr() sortAttr
