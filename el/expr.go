@@ -68,13 +68,11 @@ func (f FunctionCall) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 			return frame, nil, nil, err
 		}
 		return cmd.Body.Resolve(frame)
-	case Term:
+	default:
 		if B, ok := frame.typeCheckFunctionCall(cmdSort, argSort); ok {
 			return frame, sorts.NewTerm(B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
 		}
 		return frame, nil, nil, fmt.Errorf("type_error: cmd %s, arg %s", sorts.Name(cmdSort), sorts.Name(argSort))
-	default:
-		return frame, nil, nil, fmt.Errorf("unknown function: %T", cmd)
 	}
 }
 

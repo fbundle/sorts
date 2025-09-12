@@ -176,7 +176,7 @@ func (m Match) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 
 	var matched bool
 	for _, c := range m.Cases {
-		frame, matched, err = match(frame, condSort, condValue, c.Comp)
+		frame, matched, err = matchPattern(frame, condSort, condValue, c.Comp)
 		if matched {
 			return c.Value.Resolve(frame)
 		}

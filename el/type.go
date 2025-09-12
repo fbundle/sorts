@@ -1,6 +1,8 @@
 package el
 
 import (
+	"fmt"
+
 	"github.com/fbundle/sorts/sorts"
 )
 
@@ -25,7 +27,7 @@ func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, expr Expr)
 	if lambda, ok := expr.(Lambda); ok {
 		callFrame := frame
 		// add function into frame
-		callFrame, err := callFrame.Set(name, parentSort, name)
+		callFrame, err := callFrame.Set(name, sorts.NewTerm(parentSort, string(name)), name)
 		if err != nil {
 			return false
 		}
@@ -44,7 +46,25 @@ func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, expr Expr)
 		return callFrame.typeCheckBinding(parentArrow.B, "", lambda.Body)
 	}
 	if match, ok := expr.(Match); ok {
-		_ = match
+		frame, condSort, condValue, err := match.Cond.Resolve(frame)
+		if err != nil {
+			return false
+		}
+		fmt.Println("resolved", match.Cond, "=", condValue, "of type", sorts.Name(sorts.Parent(condSort)))
+
+		for _, c := range match.Cases {
+			matchedFrame, err := alwaysMatchPattern(frame, condSort, c.Comp)
+			if err != nil {
+				return false
+			}
+			fmt.Println("comp", c.Comp)
+			fmt.Println("match frame", matchedFrame.dict.Repr())
+			if !matchedFrame.typeCheckBinding(parentSort, "", c.Value) {
+				return false
+			}
+		}
+
+		return frame.typeCheckBinding(parentSort, "", match.Final)
 	}
 
 	_, sort, _, err := expr.Resolve(frame)

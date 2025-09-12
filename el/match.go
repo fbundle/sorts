@@ -1,27 +1,11 @@
 package el
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/fbundle/sorts/sorts"
 )
-
-type matchFunc func(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error)
-
-func chainMatchFunc(matchFuncs ...matchFunc) matchFunc {
-	return func(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
-		for _, matchFunc := range matchFuncs {
-			newFrame, matched, err := matchFunc(frame, condSort, condValue, comp)
-			if err != nil {
-				return newFrame, false, err
-			}
-			if matched {
-				return newFrame, true, nil
-			}
-		}
-		return frame, false, nil
-	}
-}
-
-var match = chainMatchFunc(matchPattern)
 
 func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, bool, error) {
 	switch pattern := pattern.(type) {
@@ -65,32 +49,27 @@ func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr
 }
 
 // alwaysMatchPattern - similar to matchPattern, but always matches to get the updated frame
-func alwaysMatchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, error) {
+func alwaysMatchPattern(frame Frame, condSort sorts.Sort, pattern Expr) (Frame, error) {
+	fmt.Println("match", pattern, "of type", sorts.Name(sorts.Parent(condSort)))
 	switch pattern := pattern.(type) {
 	case Exact:
 		frame, _, _, err := pattern.Expr.Resolve(frame)
 		return frame, err
 	case Term:
-		return frame.Set(pattern, condSort, condValue)
+		return frame.Set(pattern, condSort, pattern)
 	case FunctionCall:
-		if cond, ok := condValue.(FunctionCall); ok {
-			frame, cmdSort, cmdValue, err := cond.Cmd.Resolve(frame)
-			if err != nil {
-				return frame, err
-			}
-			frame, err = alwaysMatchPattern(frame, cmdSort, cmdValue, pattern.Cmd)
-			if err != nil {
-				return frame, err
-			}
-			frame, argSort, argValue, err := cond.Arg.Resolve(frame)
-			if err != nil {
-				return frame, err
-			}
-			return alwaysMatchPattern(frame, argSort, argValue, pattern.Arg)
-		} else {
-			return frame, nil
+		frame, cmdSort, _, err := pattern.Cmd.Resolve(frame)
+		if err != nil {
+			return frame, err
 		}
-
+		cmdArrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
+		if !ok {
+			return frame, errors.New("expected function")
+		}
+		if cmdArrow.B != sorts.Parent(condSort) {
+			return frame, errors.New("wrong output type")
+		}
+		return alwaysMatchPattern(frame, sorts.NewTerm(cmdArrow.A, String(pattern.Arg)), pattern.Arg)
 	default:
 		return frame, nil // not comparable
 	}
