@@ -6,7 +6,7 @@ import (
 
 func (frame Frame) match(condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
 	// Try pattern matching first - don't resolve the pattern
-	if frame, matched, err := frame.patternMatch(condValue, comp); err != nil {
+	if frame, matched, err := frame.matchPattern(condSort, condValue, comp); err != nil {
 		return frame, false, err
 	} else if matched {
 		return frame, true, nil
@@ -25,51 +25,47 @@ func (frame Frame) match(condSort sorts.Sort, condValue Expr, comp Expr) (Frame,
 	return frame, false, nil
 }
 
-// patternMatch attempts to match a pattern against a value and bind variables
-func (frame Frame) patternMatch(value Expr, pattern Expr) (Frame, bool, error) {
+// matchPattern attempts to match a pattern against a value and bind variables
+func (frame Frame) matchPattern(condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, bool, error) {
 	switch pattern := pattern.(type) {
 	case Term:
-		return frame.matchVariable(value, pattern)
+		return frame.matchTerm(condSort, condValue, pattern)
 	case FunctionCall:
-		return frame.matchConstructor(value, pattern)
+		return frame.matchFunctionCall(condSort, condValue, pattern)
 	default:
-		// For other types, fall back to exact matching
-		return frame, String(pattern) == String(value), nil
+		return frame, false, nil // not comparable
 	}
 }
 
-// matchVariable handles pattern matching against a variable pattern
-func (frame Frame) matchVariable(value Expr, pattern Term) (Frame, bool, error) {
-	// Always bind the variable to the value (allow rebinding for recursive functions)
-	// Infer sort from the value's sort
-	_, valueSort, _, err := frame.Resolve(value)
-	if err != nil {
-		// If we can't resolve the value, use a generic sort
-		valueSort = sorts.NewAtom(1, "any", nil)
-	}
-	frame, err = frame.Set(pattern, valueSort, value)
+func (frame Frame) matchTerm(condSort sorts.Sort, condValue Expr, pattern Term) (Frame, bool, error) {
+	var err error
+	frame, err = frame.Set(pattern, condSort, condValue)
 	if err != nil {
 		return frame, false, err
 	}
 	return frame, true, nil
 }
 
-// matchConstructor handles pattern matching against constructor patterns like (succ z)
-func (frame Frame) matchConstructor(value Expr, pattern FunctionCall) (Frame, bool, error) {
-	// Resolve the value to get its actual form
-	_, _, resolvedValue, err := frame.Resolve(value)
-	if err != nil {
-		return frame, false, err
-	}
-
-	// Check if the resolved value is also a function call
-	if valueCall, ok := resolvedValue.(FunctionCall); ok {
-		// Check if constructors match
-		if String(pattern.Cmd) == String(valueCall.Cmd) {
-			// Constructors match, recursively match arguments
-			return frame.patternMatch(valueCall.Arg, pattern.Arg)
+func (frame Frame) matchFunctionCall(condSort sorts.Sort, condValue Expr, pattern FunctionCall) (Frame, bool, error) {
+	if condValue, ok := condValue.(FunctionCall); ok {
+		frame, cmdSort, cmdValue, err := frame.Resolve(condValue.Cmd)
+		if err != nil {
+			return frame, false, err
 		}
-	}
+		frame, argSort, argValue, err := frame.Resolve(condValue.Arg)
+		if err != nil {
+			return frame, false, err
+		}
 
+		frame, matched, err := frame.matchPattern(cmdSort, cmdValue, pattern.Cmd)
+		if err != nil {
+			return frame, false, err
+		}
+		if !matched {
+			return frame, false, nil
+		}
+		frame, matched, err = frame.matchPattern(argSort, argValue, pattern.Arg)
+		return frame, matched, err
+	}
 	return frame, false, nil
 }
