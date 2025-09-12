@@ -20,12 +20,13 @@
         False
     )}
 
-    add {Nat -> Nat -> Nat} {x => {y => (match x
-        (succ z) (succ ((add z) y))
-        y
+    add {Nat -> Nat -> Nat} {x => {y => (match y
+        (succ z) (succ ((add x) z))
+        x
     )}} # TODO - improve matching algorithm
 
     (is_two 2)
+    # ((add 2) 2)
 )
 
 
