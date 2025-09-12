@@ -15,7 +15,7 @@ func (frame Frame) match(condSort sorts.Sort, condValue Expr, comp Expr) (Frame,
 	}
 
 	// fall back to exact-match
-	frame, _, compValue, err := comp.Resolve(frame) // frame.Resolve(comp)
+	frame, _, compValue, err := comp.Resolve(frame)
 	if err != nil {
 		return frame, false, err
 	}
