@@ -97,7 +97,7 @@ func (l Let) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 			}
 		}
 
-		frame, err = frame.Set(name, sorts.NewTerm(parentSort, string(name)), value)
+		frame, err = frame.Set(name, sorts.NewAtomTerm(parentSort, string(name)), value)
 		if err != nil {
 			return frame, nil, nil, err
 		}

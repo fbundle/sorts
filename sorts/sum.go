@@ -44,5 +44,5 @@ func (s Sum) ByCases(t Sort, h1 Sort, h2 Sort) Sort {
 	mustTermOf(h1, Arrow{s.A, X})
 	mustTermOf(h2, Arrow{s.B, X})
 
-	return NewTerm(X, fmt.Sprintf("(by_cases %s %s %s)", Name(t), Name(h1), Name(h2)))
+	return NewAtomTerm(X, fmt.Sprintf("(by_cases %s %s %s)", Name(t), Name(h1), Name(h2)))
 }

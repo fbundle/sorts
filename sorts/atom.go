@@ -20,8 +20,8 @@ func NewAtom(level int, name string, parent Sort) Atom {
 	}
 }
 
-// NewTerm - make a dummy term of type parent
-func NewTerm(parent Sort, name string) Sort {
+// NewAtomTerm - make a dummy term of type parent
+func NewAtomTerm(parent Sort, name string) Sort {
 	newName := name
 	if nameWithType {
 		newName = fmt.Sprintf("(%s: %s)", name, Name(parent))
