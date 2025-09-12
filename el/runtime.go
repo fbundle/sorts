@@ -122,7 +122,7 @@ func (frame Frame) resolveMatch(expr Match) (Frame, sorts.Sort, Expr, error) {
 		}
 		if compSort == condSort {
 			if String(compValue) == String(condValue) {
-				// TODO - improve match - currenty we just have exact match
+				// TODO - improve match - currently we just have exact match
 				return frame.Resolve(c.Value)
 			}
 		}
