@@ -2,7 +2,6 @@ package el
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/fbundle/sorts/sorts"
 )
@@ -50,7 +49,6 @@ func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr
 
 // reverseMatchPattern - similar to matchPattern, but always matches to get the updated frame
 func reverseMatchPattern(frame Frame, condSort sorts.Sort, pattern Expr) (Frame, error) {
-	fmt.Println("match", pattern, "of type", sorts.Name(sorts.Parent(condSort)))
 	switch pattern := pattern.(type) {
 	case Exact:
 		frame, _, _, err := pattern.Expr.Resolve(frame)
