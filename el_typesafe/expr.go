@@ -8,7 +8,7 @@ type Expr interface {
 // need type binding - like lambda
 type partialExpr interface {
 	Expr
-	resolvePartial(frame Frame) (Frame, partialObject)
+	resolvePartial(frame Frame) (Frame, _partialObject)
 }
 
 // totalExpr - those Expr that type can be totally resolved
@@ -22,5 +22,16 @@ type Term string
 
 func (t Term) mustExpr() {}
 func (t Term) resolveTotal(frame Frame) (Frame, _totalObject) {
+	panic("not implemented")
+}
+
+// FunctionCall - (cmd arg1 arg2 ...)
+type FunctionCall struct {
+	Cmd Expr
+	Arg Expr
+}
+
+func (f FunctionCall) mustExpr() {}
+func (f FunctionCall) resolveTotal(frame Frame) (Frame, _totalObject) {
 	panic("not implemented")
 }

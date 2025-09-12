@@ -1,8 +1,6 @@
 package el_typesafe
 
-import "github.com/fbundle/sorts/sorts"
-
-func resolvePartial(frame Frame, expr Expr) (Frame, partialObject) {
+func resolvePartial(frame Frame, expr Expr) (Frame, _partialObject) {
 	switch expr := expr.(type) {
 	case partialExpr:
 		return expr.resolvePartial(frame)
@@ -14,11 +12,11 @@ func resolvePartial(frame Frame, expr Expr) (Frame, partialObject) {
 	}
 }
 
-func resolveTotal(frame Frame, parentSort sorts.Sort, expr Expr) (Frame, _totalObject) {
+func resolveTotal(frame Frame, parent _partialObject, expr Expr) (Frame, _totalObject) {
 	switch expr := expr.(type) {
 	case partialExpr:
 		frame, o := expr.resolvePartial(frame)
-		return frame, o.typeCheck(frame, parentSort)
+		return frame, o.typeCheck(frame, parent)
 	case totalExpr:
 		return expr.resolveTotal(frame)
 	default:
