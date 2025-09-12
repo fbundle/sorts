@@ -39,6 +39,12 @@ func (frame Frame) Get(key Term) (sort sorts.Sort, next Expr, err error) {
 
 func builtinValue(key Term) (sort sorts.Sort, next Expr, ok bool) {
 	keyStr := string(key)
+	if _, err := strconv.Atoi(keyStr); err == nil {
+		intType := sorts.NewAtom(1, "int", nil)
+		sort := sorts.NewAtomTerm(intType, keyStr)
+		return sort, key, true
+	}
+
 	if strings.HasPrefix(keyStr, "U_") {
 		levelStr := strings.TrimPrefix(keyStr, "U_")
 		level, err := strconv.Atoi(levelStr)
