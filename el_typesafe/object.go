@@ -48,8 +48,12 @@ type Frame struct {
 }
 
 func (frame Frame) set(key Term, o _totalObject) Frame {
-	panic("not implemented")
+	return Frame{dict: frame.dict.Set(key, o)}
 }
 func (frame Frame) get(key Term) _totalObject {
-	panic("not implemented")
+	o, ok := frame.dict.Get(key)
+	if !ok {
+		panic("type_error")
+	}
+	return o
 }
