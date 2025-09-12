@@ -8,6 +8,10 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
+const (
+	Undef Term = "undef"
+)
+
 // Lambda - (=> param body)
 type Lambda struct {
 	Param Term
@@ -76,23 +80,24 @@ func (l Let) Marshal() form.Form {
 
 func (l Let) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 	for _, binding := range l.Bindings {
+		typ, name, value := binding.Type, binding.Name, binding.Value
+
 		var err error
 		var parentSort sorts.Sort
-		frame, parentSort, _, err = binding.Type.Resolve(frame)
+		frame, parentSort, _, err = typ.Resolve(frame)
 		if err != nil {
 			return frame, nil, nil, err
 		}
 
-		var value Expr
-		if valTerm, ok := binding.Value.(Term); ok && valTerm == "undef" {
-			value = binding.Name
+		if value == Undef {
+			value = name
 		} else {
-			value = binding.Value
-			if !frame.typeCheckBinding(parentSort, binding.Name, value) {
+			if !frame.typeCheckBinding(parentSort, name, value) {
 				return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), sorts.Name(value))
 			}
 		}
-		frame, err = frame.Set(binding.Name, sorts.NewTerm(parentSort, string(binding.Name)), value)
+
+		frame, err = frame.Set(name, sorts.NewTerm(parentSort, string(name)), value)
 		if err != nil {
 			return frame, nil, nil, err
 		}
