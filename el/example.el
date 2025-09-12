@@ -25,9 +25,9 @@
         x
     )}} # TODO - improve matching algorithm
 
-    X U_1 (inductive {a : A}
-        make1 {a -> X}
-        make2 {a -> A -> X}
+    X {A -> U_1} (inductive {a : A}
+        make1 {a -> (X a)}
+        make2 {a -> A -> (X a)}
     )
 
     (is_two 2)

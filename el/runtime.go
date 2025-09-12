@@ -181,8 +181,6 @@ func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
 		return frame.resolveTerm(expr)
 	case FunctionCall:
 		return frame.resolveFunctionCall(expr)
-	case Lambda:
-		return frame, nil, expr, nil
 	case Let:
 		return frame.resolveLet(expr)
 	case Match:
@@ -193,8 +191,8 @@ func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
 		return frame.resolveSum(expr)
 	case Prod:
 		return frame.resolveProd(expr)
-
 	default:
-		return frame, nil, nil, fmt.Errorf("unknown expression: %T", expr)
+		// for other types, just return the original expression without sort
+		return frame, nil, expr, nil
 	}
 }

@@ -312,3 +312,6 @@ func init() {
 		}, nil
 	})
 }
+
+type Inductive struct {
+}
