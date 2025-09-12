@@ -123,7 +123,7 @@ func (frame Frame) resolveLet(expr Let) (Frame, sorts.Sort, Expr, error) {
 			value = binding.Name
 		} else {
 			value = binding.Value
-			if !frame.typeCheckBinding(parentSort, value) {
+			if !frame.typeCheckBinding(parentSort, binding.Name, value) {
 				return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), sorts.Name(valueSort))
 			}
 		}
