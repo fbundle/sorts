@@ -52,7 +52,7 @@ func init() {
 	})
 }
 
-// Let - (chain name1 type1 value1 ... namen typen valuen tail)
+// Let - (chain name1 type1 value1 ... nameN typeN valueN tail)
 type Let struct {
 	Bindings []Binding
 	Final    Expr
@@ -144,7 +144,7 @@ func init() {
 	})
 }
 
-// Match - (match cond comp1 value1 comp2 value2 ... compn valuen final)
+// Match - (match cond comp1 value1 comp2 value2 ... compN valueN final)
 type Match struct {
 	Cond  Expr
 	Cases []Case
