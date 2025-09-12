@@ -24,42 +24,46 @@ type Frame struct {
 	dict ordered_map.OrderedMap[Term, Value]
 }
 
-func (frame Frame) Set(key Term, sort sorts.Sort, next Expr) Frame {
-	return Frame{dict: frame.dict.Set(key, Value{Sort: sort, Next: next})}
+func (frame Frame) Set(key Term, sort sorts.Sort, next Expr) (Frame, error) {
+	if sort == nil || next == nil {
+		return frame, fmt.Errorf("cannot set nil sort or next: %v, %v, %v", key, sort, next)
+	}
+	return Frame{dict: frame.dict.Set(key, Value{Sort: sort, Next: next})}, nil
 }
 
-func (frame Frame) Get(key Term) (sort sorts.Sort, next Expr, ok bool) {
+func (frame Frame) Get(key Term) (sort sorts.Sort, next Expr, err error) {
+	notFoundErr := fmt.Errorf("variable not found: %s", key)
 	if value, ok := frame.dict.Get(key); ok {
-		return value.Sort, value.Next, true
+		return value.Sort, value.Next, nil
 	}
 	keyStr := string(key)
 	if strings.HasPrefix(keyStr, "U_") {
 		levelStr := strings.TrimPrefix(keyStr, "U_")
 		level, err := strconv.Atoi(levelStr)
 		if err != nil {
-			return nil, nil, false
+			return nil, nil, notFoundErr
 		}
 		// U_0 is at universe level 1
 		// U_1 is at universe level 2
-		return sorts.NewAtom(level+1, string(key), nil), key, true
+		return sorts.NewAtom(level+1, string(key), nil), key, nil
 	} else if strings.HasPrefix(keyStr, "Any_") {
 		levelStr := strings.TrimPrefix(keyStr, "Any_")
 		level, err := strconv.Atoi(levelStr)
 		if err != nil {
-			return nil, nil, false
+			return nil, nil, notFoundErr
 		}
 		// Any_0 is at universe level 1
 		// Any_1 is at universe level 2
-		return sorts.NewAtom(level+1, sorts.TerminalName, nil), key, true
+		return sorts.NewAtom(level+1, sorts.TerminalName, nil), key, nil
 	} else {
-		return nil, nil, false
+		return nil, nil, notFoundErr
 	}
 }
 
 func (frame Frame) resolveTerm(term Term) (Frame, sorts.Sort, Expr, error) {
-	sort, next, ok := frame.Get(term)
-	if !ok {
-		return frame, nil, nil, fmt.Errorf("variable not found: %s", term)
+	sort, next, err := frame.Get(term)
+	if err != nil {
+		return frame, nil, nil, err
 	}
 	if term == next {
 		// term is not assigned hence cannot be simplified using Resolve
@@ -80,7 +84,11 @@ func (frame Frame) resolveFunctionCall(expr FunctionCall) (Frame, sorts.Sort, Ex
 	}
 	switch cmd := cmdValue.(type) {
 	case Lambda:
-		return frame.Set(cmd.Param, argSort, argValue).Resolve(cmd.Body)
+		frame, err := frame.Set(cmd.Param, argSort, argValue)
+		if err != nil {
+			return frame, nil, nil, err
+		}
+		return frame.Resolve(cmd.Body)
 	case Term:
 		if B, ok := frame.typeCheckFunctionCall(cmdSort, argSort); ok {
 			return frame, sorts.NewTerm(B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
@@ -110,7 +118,10 @@ func (frame Frame) resolveLet(expr Let) (Frame, sorts.Sort, Expr, error) {
 				return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), sorts.Name(valueSort))
 			}
 		}
-		frame = frame.Set(binding.Name, sorts.NewTerm(parentSort, string(binding.Name)), value)
+		frame, err = frame.Set(binding.Name, sorts.NewTerm(parentSort, string(binding.Name)), value)
+		if err != nil {
+			return frame, nil, nil, err
+		}
 	}
 	return frame.Resolve(expr.Final)
 }
