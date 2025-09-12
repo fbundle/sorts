@@ -25,7 +25,6 @@ func (frame Frame) match(condSort sorts.Sort, condValue Expr, comp Expr) (Frame,
 	return frame, false, nil
 }
 
-// matchPattern attempts to match a pattern against a value and bind variables
 func (frame Frame) matchPattern(condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, bool, error) {
 	switch pattern := pattern.(type) {
 	case Term:
