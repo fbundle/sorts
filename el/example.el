@@ -12,7 +12,6 @@
     3 Nat (succ 2)
 
     Any U_0                 undef
-    x Any "example string with \"quotes\" and spaces"
     x Any {1 ⊕ 2 ⊕ 3}
     x Any {1 ⊗ 2 ⊗ 3 ⊗ 4}
 
