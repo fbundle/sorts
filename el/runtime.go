@@ -41,8 +41,16 @@ func (frame Frame) Get(key Term) (sort sorts.Sort, next Expr, ok bool) {
 		}
 		// U_0 is at universe level 1
 		// U_1 is at universe level 2
-
 		return sorts.NewAtom(level+1, string(key), nil), key, true
+	} else if strings.HasPrefix(keyStr, "Any_") {
+		levelStr := strings.TrimPrefix(keyStr, "Any_")
+		level, err := strconv.Atoi(levelStr)
+		if err != nil {
+			return nil, nil, false
+		}
+		// Any_0 is at universe level 1
+		// Any_1 is at universe level 2
+		return sorts.NewAtom(level+1, sorts.TerminalName, nil), key, true
 	} else {
 		return nil, nil, false
 	}
@@ -151,6 +159,22 @@ func (frame Frame) resolveSum(expr Sum) (Frame, sorts.Sort, Expr, error) {
 		B: bSort,
 	}, expr, nil
 }
+
+func (frame Frame) resolveProd(expr Prod) (Frame, sorts.Sort, Expr, error) {
+	frame, aSort, _, err := frame.Resolve(expr.A)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	frame, bSort, _, err := frame.Resolve(expr.B)
+	if err != nil {
+		return frame, nil, nil, err
+	}
+	return frame, sorts.Prod{
+		A: aSort,
+		B: bSort,
+	}, expr, nil
+}
+
 func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
 	switch expr := expr.(type) {
 	case Term:
@@ -167,6 +191,8 @@ func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
 		return frame.resolveArrow(expr)
 	case Sum:
 		return frame.resolveSum(expr)
+	case Prod:
+		return frame.resolveProd(expr)
 
 	default:
 		return frame, nil, nil, fmt.Errorf("unknown expression: %T", expr)

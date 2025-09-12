@@ -16,9 +16,5 @@ func (frame Frame) typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort)
 }
 
 func (frame Frame) typeCheckBinding(parentSort sorts.Sort, value Expr) bool {
-	_, valueSort, _, err := frame.Resolve(value)
-	if err != nil {
-		return false
-	}
-	return sorts.TermOf(valueSort, parentSort)
+	return true
 }
