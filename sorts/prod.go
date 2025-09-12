@@ -10,9 +10,12 @@ type Prod struct {
 func (s Prod) sortAttr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
-		name:   fmt.Sprintf("%s × %s", Name(s.A), Name(s.B)),
-		level:  level,
-		parent: defaultSort(nil, level+1),
+		name:  fmt.Sprintf("%s × %s", Name(s.A), Name(s.B)),
+		level: level,
+		parent: Prod{
+			A: Parent(s.A),
+			B: Parent(s.B),
+		},
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Prod:
@@ -28,12 +31,16 @@ func (s Prod) sortAttr() sortAttr {
 func (s Prod) Intro(a Sort, b Sort) Sort {
 	MustTermOf(a, s.A)
 	MustTermOf(b, s.B)
-	return NewTerm(s, fmt.Sprintf("<%s, %s>", Name(a), Name(b)))
+	return Prod{A: a, B: b}
 }
 
 // Elim - take (t: A × B) give (a: A) and (b: B)
 func (s Prod) Elim(t Sort) (left Sort, right Sort) {
 	MustTermOf(t, s)
+	if t, ok := t.(Prod); ok {
+		return t.A, t.B
+	}
+
 	a := NewTerm(s.A, fmt.Sprintf("(left %s)", Name(t)))
 	b := NewTerm(s.B, fmt.Sprintf("(right %s)", Name(t)))
 	return a, b
