@@ -17,13 +17,13 @@ type partialExpr interface {
 // no need type binding - like term
 type totalExpr interface {
 	Expr
-	resolveTotal(frame Frame) (Frame, totalObject)
+	resolveTotal(frame Frame) (Frame, _totalObject)
 }
 
 type Term string
 
 func (t Term) mustExpr() {}
-func (t Term) resolveTotal(frame Frame) (Frame, totalObject) {
+func (t Term) resolveTotal(frame Frame) (Frame, _totalObject) {
 	panic("not implemented")
 }
 
@@ -39,7 +39,7 @@ func resolvePartial(frame Frame, expr Expr) (Frame, partialObject) {
 	}
 }
 
-func resolveTotal(frame Frame, parentSort sorts.Sort, expr Expr) (Frame, totalObject) {
+func resolveTotal(frame Frame, parentSort sorts.Sort, expr Expr) (Frame, _totalObject) {
 	switch expr := expr.(type) {
 	case partialExpr:
 		frame, o := expr.resolvePartial(frame)
