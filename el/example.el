@@ -4,19 +4,19 @@
     False Bool              undef
 
     Nat U_1                 undef
-    0 Nat                   undef
+    n0 Nat                   undef
     succ {Nat -> Nat}       undef
 
-    1 Nat (succ 0)
-    2 Nat (succ 1)
-    3 Nat (succ 2)
-    4 Nat (succ 3)
+    n1 Nat (succ n0)
+    n2 Nat (succ n1)
+    n3 Nat (succ n2)
+    n4 Nat (succ n3)
 
-    x Any_0 {1 ⊕ 2 ⊕ 3}
-    x Any_0 {1 ⊗ 2 ⊗ 3 ⊗ 4}
+    x Any_0 {_1 ⊕ n2 ⊕ n3}
+    x Any_0 {_1 ⊗ n2 ⊗ n3 ⊗ n4}
 
     is_two {Nat -> Bool} {x => (match x
-        (exact (succ 1)) True
+        (exact (succ n1)) True
         False
     )}
 
@@ -25,8 +25,8 @@
         x
     )}}
 
-    # (is_two 2)
-    ((add 2) 3)             # output (succ (succ (succ (succ (succ 0)))))
+    # (is_two n2)
+    ((add n2) n3)             # output (succ (succ (succ (succ (succ n0)))))
 )
 
 
