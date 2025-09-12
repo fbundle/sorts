@@ -15,11 +15,15 @@ type Object struct {
 	parent *Object
 }
 
+func (o Object) Total() bool {
+	return o.Sort != nil
+}
 func (o Object) Parent() Object {
 	if o.parent != nil {
 		return *o.parent
 	} else {
-		// TODO -new design - refer to old EL
+		// TODO - new design - refer to old EL
+		// TODO - change every error into panic, I am sick of it
 		//  default parent
 		panic("not implemented")
 	}
