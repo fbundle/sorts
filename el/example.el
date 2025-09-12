@@ -12,8 +12,8 @@
     n3 Nat (succ n2)
     n4 Nat (succ n3)
 
-    x Any_0 {_1 ⊕ n2 ⊕ n3}
-    x Any_0 {_1 ⊗ n2 ⊗ n3 ⊗ n4}
+    x Any_0 {n1 ⊕ n2 ⊕ n3}
+    x Any_0 {n1 ⊗ n2 ⊗ n3 ⊗ n4}
 
     is_two {Nat -> Bool} {x => (match x
         (exact (succ n1)) True
