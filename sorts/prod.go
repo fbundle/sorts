@@ -10,12 +10,9 @@ type Prod struct {
 func (s Prod) sortAttr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
-		name:  fmt.Sprintf("%s × %s", Name(s.A), Name(s.B)),
-		level: level,
-		parent: Prod{
-			A: Parent(s.A),
-			B: Parent(s.B),
-		},
+		name:   fmt.Sprintf("%s × %s", Name(s.A), Name(s.B)),
+		level:  level,
+		parent: Prod{A: Parent(s.A), B: Parent(s.B)}, // smallest type containing A × B
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Prod:
