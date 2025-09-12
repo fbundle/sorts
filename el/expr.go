@@ -31,8 +31,9 @@ func (t Term) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 	if err != nil {
 		return frame, nil, nil, err
 	}
-	if next == t { // term not assigned, return itself
-		return frame, sort, t, nil
+	if next == t {
+		// term not assigned, set as cycle
+		return frame, sort, next, nil
 	}
 	return next.Resolve(frame)
 }
