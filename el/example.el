@@ -20,10 +20,10 @@
         False
     )}
 
-    add {Nat -> Nat -> Nat} {x => {y => (match y
+    add {Nat -> Nat -> Nat} {x => y => (match y
         (succ z) (succ ((add x) z))
         x
-    )}}
+    )}
 
     # (is_two n3)
     (add n2 n3)             # output (succ (succ (succ (succ (succ n0)))))
