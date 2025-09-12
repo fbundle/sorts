@@ -19,6 +19,7 @@ func (o Object) Parent() Object {
 	if o.parent != nil {
 		return *o.parent
 	} else {
+		// TODO -new design - refer to old EL
 		//  default parent
 		panic("not implemented")
 	}
