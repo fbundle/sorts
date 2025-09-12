@@ -11,17 +11,6 @@ func (s Inhabited) sortAttr() sortAttr {
 	return s.Sort.sortAttr()
 }
 
-type Term struct {
-	Sort   Sort
-	Parent Sort
-}
-
-func (t Term) sortAttr() sortAttr {
-	attr := t.Sort.sortAttr()
-	attr.parent = t.Parent
-	return attr
-}
-
 // Dependent - represent a type B(x) depends on Sort x
 type Dependent struct {
 	Name  string
