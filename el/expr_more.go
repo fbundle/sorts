@@ -411,41 +411,6 @@ func init() {
 	})
 }
 
-type Inspect struct {
-	Expr Expr
-}
-
-func (e Inspect) mustExpr() {}
-func (e Inspect) Marshal() form.Form {
-	return form.List{
-		form.Term("inspect"),
-		e.Expr.Marshal(),
-	}
-}
-
-func (e Inspect) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
-	frame, sort, value, err := e.Expr.Resolve(frame)
-	if err != nil {
-		return frame, nil, nil, err
-	}
-
-	fmt.Printf("inspect ==>\t%s: %s\n", String(value), sorts.Name(sorts.Parent(sort)))
-	return frame, nil, e, nil
-}
-
-func init() {
-	RegisterListParser("inspect", func(parseFunc ParseFunc, list form.List) (Expr, error) {
-		if len(list) != 1 {
-			return nil, errors.New("inspect must have exactly 1 argument: expr")
-		}
-		expr, err := parseFunc(list[0])
-		if err != nil {
-			return nil, err
-		}
-		return Inspect{Expr: expr}, nil
-	})
-}
-
 type IntAdd struct {
 	A Expr
 	B Expr
