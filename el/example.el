@@ -25,7 +25,7 @@
         y
     )}} # TODO - improve matching algorithm
 
-    (is_two 3)
+    (is_two 2)
 )
 
 
