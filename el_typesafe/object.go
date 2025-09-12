@@ -39,7 +39,7 @@ func newPartialObject(next Expr) partialObject {
 	return partialObject{object{sort: nil, next: next}}
 }
 
-func (o partialObject) typeCheck(frame Frame, parentSort sorts.Sort) (totalObject, bool) {
+func (o partialObject) typeCheck(frame Frame, parentSort sorts.Sort) totalObject {
 	// convert a partial object to a total object using type-check
 	panic("not implemented")
 }
