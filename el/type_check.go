@@ -31,7 +31,7 @@ func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, value Expr
 		paramSort := sorts.NewTerm(arrow.A, string(paramName)) // dummy param
 		frame, err = frame.Set(paramName, paramSort, paramName)
 
-		return frame.typeCheckBinding(arrow.B, "dummy", lambda.Body)
+		return frame.typeCheckBinding(arrow.B, "", lambda.Body)
 	} else {
 		_, sort, _, err := frame.Resolve(value)
 		if err != nil {
