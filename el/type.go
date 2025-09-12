@@ -16,6 +16,7 @@ func (frame Frame) typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort)
 }
 
 func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, value Expr) bool {
+
 	// TODO - for functionCall - add dummy param into frame then check the body
 	// TODO - for match - match all cases then check the value
 	return true

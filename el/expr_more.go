@@ -89,13 +89,11 @@ func (l Let) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 		if err != nil {
 			return frame, nil, nil, err
 		}
-
+		if !frame.typeCheckBinding(parentSort, name, value) {
+			return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), sorts.Name(value))
+		}
 		if value == Undef {
 			value = name // set cycle
-		} else {
-			if !frame.typeCheckBinding(parentSort, name, value) {
-				return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), sorts.Name(value))
-			}
 		}
 
 		frame, err = frame.Set(name, sorts.NewAtomTerm(parentSort, string(name)), value)
