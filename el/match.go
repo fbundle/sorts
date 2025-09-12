@@ -4,33 +4,16 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func (frame Frame) match(condSort sorts.Sort, cond Expr, comp Expr) (Frame, bool) {
-	if comp, ok := comp.(Term); ok {
-		// match all
-		if _, _, ok := frame.Get(comp); ok {
-			// exact match
-			return frame, cond == comp
-		} else {
-			// normal match
-			return frame.Set(comp, condSort, cond), true
+func (frame Frame) match(condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
+	frame, compSort, compValue, err := frame.Resolve(comp)
+	if err != nil {
+		return frame, false, err
+	}
+	if compSort == condSort {
+		if String(compValue) == String(condValue) {
+			// TODO - improve match - currently we just have exact match
+			return frame, true, nil
 		}
 	}
-	if comp, ok := comp.(FunctionCall); ok {
-		if cond, ok := cond.(FunctionCall); ok {
-			frame, cmdSort, _, err := frame.Resolve(comp.Cmd)
-			if err != nil {
-				return frame, false
-			}
-			frame, matched := frame.match(cmdSort, cond.Cmd, comp.Cmd)
-			if !matched {
-				return frame, false
-			}
-			frame, argSort, _, err := frame.Resolve(comp.Arg)
-			if err != nil {
-				return frame, false
-			}
-			return frame.match(argSort, cond.Arg, comp.Arg)
-		}
-	}
-	return frame, false
+	return frame, false, nil
 }

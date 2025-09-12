@@ -113,18 +113,11 @@ func (frame Frame) resolveMatch(expr Match) (Frame, sorts.Sort, Expr, error) {
 		return frame, nil, nil, err
 	}
 
-	var compSort sorts.Sort
-	var compValue Expr
+	var matched bool
 	for _, c := range expr.Cases {
-		frame, compSort, compValue, err = frame.Resolve(c.Comp)
-		if err != nil {
-			return frame, nil, nil, err
-		}
-		if compSort == condSort {
-			if String(compValue) == String(condValue) {
-				// TODO - improve match - currently we just have exact match
-				return frame.Resolve(c.Value)
-			}
+		frame, matched, err = frame.match(condSort, condValue, c.Comp)
+		if matched {
+			return frame.Resolve(c.Value)
 		}
 	}
 	return frame.Resolve(expr.Final)
