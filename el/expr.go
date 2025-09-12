@@ -42,20 +42,20 @@ func (f FunctionCall) Marshal() form.Form {
 type ParseFunc = func(form.Form) (Expr, error)
 type ListParseFunc = func(ParseFunc, form.List) (Expr, error)
 
-var defaultParser Parser
+var defaultParser parser
 
 func ParseForm(e form.Form) (Expr, error) {
-	return defaultParser.ParseForm(e)
+	return defaultParser.parseForm(e)
 }
 func RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) {
-	defaultParser = defaultParser.RegisterListParser(cmd, listParser)
+	defaultParser = defaultParser.registerListParser(cmd, listParser)
 }
 
-type Parser struct {
+type parser struct {
 	listParsers map[form.Term]ListParseFunc
 }
 
-func (parser Parser) RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) Parser {
+func (parser parser) registerListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) parser {
 	if parser.listParsers == nil {
 		parser.listParsers = make(map[form.Term]ListParseFunc)
 	}
@@ -63,7 +63,7 @@ func (parser Parser) RegisterListParser(cmd form.Term, listParser func(ParseFunc
 	return parser
 }
 
-func (parser Parser) ParseForm(e form.Form) (Expr, error) {
+func (parser parser) parseForm(e form.Form) (Expr, error) {
 	switch e := e.(type) {
 	case form.Term:
 		return Term(e), nil
@@ -76,7 +76,7 @@ func (parser Parser) ParseForm(e form.Form) (Expr, error) {
 		// Is it a special form?
 		if cmdTerm, ok := head.(form.Term); ok {
 			if listParser, ok := parser.listParsers[cmdTerm]; ok {
-				return listParser(parser.ParseForm, list)
+				return listParser(parser.parseForm, list)
 			}
 		}
 
@@ -84,11 +84,11 @@ func (parser Parser) ParseForm(e form.Form) (Expr, error) {
 		if len(list) != 1 {
 			return nil, fmt.Errorf("regular function call must have exactly 1 argument: %v\n", e)
 		}
-		cmd, err := parser.ParseForm(head)
+		cmd, err := parser.parseForm(head)
 		if err != nil {
 			return nil, err
 		}
-		arg, err := parser.ParseForm(list[0])
+		arg, err := parser.parseForm(list[0])
 		if err != nil {
 			return nil, err
 		}
