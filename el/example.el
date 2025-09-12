@@ -21,7 +21,7 @@
     )}
 
     add {Nat -> Nat -> Nat} {x => {y => (match y
-        (succ z) (succ ((add x) z))
+        (succ @z) (succ ((add x) @z))
         x
     )}}
 
