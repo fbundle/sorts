@@ -58,7 +58,7 @@ func (l Let) mustExpr() {}
 
 func (l Let) Marshal() form.Form {
 	forms := make([]form.Form, 0, 2+3*len(l.Bindings))
-	forms = append(forms, form.Term("chain"))
+	forms = append(forms, form.Term("let"))
 	for _, binding := range l.Bindings {
 		forms = append(forms, binding.Name.Marshal())
 		forms = append(forms, binding.Type.Marshal())
