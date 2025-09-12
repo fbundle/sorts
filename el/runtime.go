@@ -9,12 +9,6 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-// TODO - remove all Next
-
-// TODO check example.el_v2 for new syntax - no longer using define and assign
-
-// TODO - support multi argument function call
-
 type Value struct {
 	Sort sorts.Sort
 	Next Expr
