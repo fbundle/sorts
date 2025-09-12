@@ -90,7 +90,7 @@ func (l Let) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 		}
 
 		if value == Undef {
-			value = name
+			value = name // set cycle
 		} else {
 			if !frame.typeCheckBinding(parentSort, name, value) {
 				return frame, nil, nil, fmt.Errorf("type_error: type %s, value %s", sorts.Name(parentSort), sorts.Name(value))
