@@ -314,4 +314,5 @@ func init() {
 }
 
 type Inductive struct {
+	Annot *Annot
 }

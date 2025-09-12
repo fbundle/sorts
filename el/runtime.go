@@ -204,6 +204,7 @@ func (frame Frame) Resolve(expr Expr) (Frame, sorts.Sort, Expr, error) {
 		return frame.resolveProd(expr)
 	default:
 		// for other types, just return the original expression without sort
+		// hence these cannot be bound to variables
 		return frame, nil, expr, nil
 	}
 }
