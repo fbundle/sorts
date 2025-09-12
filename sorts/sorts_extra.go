@@ -11,6 +11,11 @@ func (s Inhabited) sortAttr() sortAttr {
 	return s.Sort.sortAttr()
 }
 
+type Term struct {
+	Sort   Sort
+	Parent Sort
+}
+
 // Dependent - represent a type B(x) depends on Sort x
 type Dependent struct {
 	Name  string
