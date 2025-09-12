@@ -23,18 +23,14 @@ func chainMatchFunc(matchFuncs ...matchFunc) matchFunc {
 
 var match = chainMatchFunc(matchPattern)
 
-func matchExact(frame Frame, condSort sorts.Sort, condValue Expr, comp Expr) (Frame, bool, error) {
-	frame, _, compValue, err := comp.Resolve(frame)
-	if err != nil {
-		return frame, false, err
-	}
-	return frame, String(compValue) == String(condValue), nil
-}
-
 func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr) (Frame, bool, error) {
 	switch pattern := pattern.(type) {
 	case Exact:
-		return matchExact(frame, condSort, condValue, pattern.Expr)
+		frame, _, compValue, err := pattern.Expr.Resolve(frame)
+		if err != nil {
+			return frame, false, err
+		}
+		return frame, String(compValue) == String(condValue), nil
 	case Term:
 		frame, err := frame.Set(pattern, condSort, condValue)
 		if err != nil {
