@@ -30,13 +30,13 @@ func (s Atom) sortAttr() sortAttr {
 		repr:   s.name,
 		level:  s.level,
 		parent: s.parent(),
-		lessEqual: func(u Universe, dst Sort) bool {
+		lessEqual: func(a SortAttr, dst Sort) bool {
 			switch d := dst.(type) {
 			case Atom:
 				if s.level != d.level {
 					return false
 				}
-				return u.lessEqual(s.name, d.name)
+				return a.nameLessEqual(s.name, d.name)
 			default:
 				return false
 			}

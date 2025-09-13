@@ -21,8 +21,24 @@ type List []Form
 
 func (l List) mustForm() {}
 
+type sortAttr struct {
+	repr      Form                            // every Sort is identified with a Form
+	level     int                             // universe Level
+	parent    Sort                            // (or Type) every Sort must have a Parent
+	lessEqual func(u SortAttr, dst Sort) bool // a partial order on sorts (subtype)
+}
+
 type Sort interface {
 	sortAttr() sortAttr
+}
+
+type SortAttr interface {
+	Form(s any) Form
+	Level(s Sort) int
+	Parent(s Sort) Sort
+	LessEqual(x Sort, y Sort) bool
+
+	nameLessEqual(src Name, dst Name) bool
 }
 
 type Universe interface {
@@ -32,11 +48,7 @@ type Universe interface {
 	NewTerm(name Name, parent Sort) Atom
 	NewListRule(head Name, parseList ParseListFunc) error
 
-	Form(s any) Form
-	Level(s Sort) int
-	Parent(s Sort) Sort
-	SubTypeOf(x Sort, y Sort) bool
-	TermOf(x Sort, X Sort) bool
+	SortAttr
 
 	NewNameRule(src Name, dst Name)
 	lessEqual(src Name, dst Name) bool
@@ -168,16 +180,16 @@ func (u *universe) Level(s Sort) int {
 func (u *universe) Parent(s Sort) Sort {
 	return s.sortAttr().parent
 }
-func (u *universe) SubTypeOf(x Sort, y Sort) bool {
+func (u *universe) LessEqual(x Sort, y Sort) bool {
 	return x.sortAttr().lessEqual(u, y)
 }
 func (u *universe) TermOf(x Sort, X Sort) bool {
-	return u.SubTypeOf(u.Parent(x), X)
+	return u.LessEqual(u.Parent(x), X)
 }
 
 // private
 
-func (u *universe) lessEqual(src Name, dst Name) bool {
+func (u *universe) nameLessEqual(src Name, dst Name) bool {
 	if src == u.initialHeader || dst == u.terminalHeader {
 		return true
 	}
@@ -188,11 +200,4 @@ func (u *universe) lessEqual(src Name, dst Name) bool {
 		return true
 	}
 	return false
-}
-
-type sortAttr struct {
-	repr      Form                            // every Sort is identified with a Form
-	level     int                             // universe Level
-	parent    Sort                            // (or Type) every Sort must have a Parent
-	lessEqual func(u Universe, dst Sort) bool // a partial order on sorts (subtype)
 }
