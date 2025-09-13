@@ -8,6 +8,7 @@ import (
 
 	"github.com/fbundle/sorts/el"
 	"github.com/fbundle/sorts/form"
+	"github.com/fbundle/sorts/form_processor"
 	"github.com/fbundle/sorts/sorts"
 )
 
@@ -20,15 +21,15 @@ func main() {
 
 	input := string(data)
 
-	tokens := form.Tokenize(input)
+	tokens := form_processor.Tokenize(input)
 
 	frame := el.Frame{}
 
 	for len(tokens) > 0 {
 		var formExpr form.Form
-		formExpr, tokens, err = form.Parse(tokens)
+		formExpr, tokens, err = form_processor.Parse(tokens)
 		if err != nil {
-			fmt.Printf("Error parsing form: %v\n", err)
+			fmt.Printf("Error parsing form_processor: %v\n", err)
 			fmt.Println(tokens)
 			os.Exit(1)
 		}

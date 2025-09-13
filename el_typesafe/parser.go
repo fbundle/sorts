@@ -40,7 +40,7 @@ func (parser parser) parseForm(e form.Form) (Expr, error) {
 		}
 		head, list := e[0], e[1:]
 
-		// Is it a special form?
+		// Is it a special form_processor?
 		if cmdTerm, ok := head.(form.Name); ok {
 			if listParser, ok := parser.listParsers[cmdTerm]; ok {
 				return listParser(parser.parseForm, list)
@@ -63,6 +63,6 @@ func (parser parser) parseForm(e form.Form) (Expr, error) {
 		}
 		return cmd, nil
 	default:
-		return nil, errors.New("unknown form")
+		return nil, errors.New("unknown form_processor")
 	}
 }
