@@ -6,7 +6,7 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func Basic(universeHeader sorts.Name, initialHeader sorts.Name, terminalHeader sorts.Name) (Universe, error) {
+func New(universeHeader sorts.Name, initialHeader sorts.Name, terminalHeader sorts.Name) (Universe, error) {
 	nameSet := make(map[sorts.Name]struct{})
 	nameSet[universeHeader] = struct{}{}
 	nameSet[initialHeader] = struct{}{}
@@ -19,6 +19,5 @@ func Basic(universeHeader sorts.Name, initialHeader sorts.Name, terminalHeader s
 		initialHeader:  initialHeader,
 		terminalHeader: terminalHeader,
 	}
-
 	return u, nil
 }
