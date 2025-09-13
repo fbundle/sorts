@@ -1,57 +1,38 @@
 package el2
 
-import (
-	"github.com/fbundle/sorts/form"
-	"github.com/fbundle/sorts/sorts"
-)
-
-type Name = form.Name
-type Form = form.Form
-type List = form.List
-type Sort = sorts.Sort
-type SortAttr = sorts.SortAttr
-
-var NewAtomChain = sorts.NewAtomChain
-var NewAtomTerm = sorts.NewAtomTerm
-
-type ListParseFunc = sorts.ListParseFunc
-
-var ListParseArrow = sorts.ListParseArrow
-var ListParseSum = sorts.ListParseSum
-var ListParseProd = sorts.ListParseProd
-
 // AlmostSort - almost a sort - for example, a lambda
 type AlmostSort interface {
 	TypeCheck(sa SortAttr, parent Sort) Sort
 }
 
-type actualSort struct {
+// Object - a sort
+type Object struct {
 	Sort
 }
 
-func (s actualSort) TypeCheck(sa SortAttr, parent Sort) Sort {
+func (s Object) TypeCheck(sa SortAttr, parent Sort) Sort {
 	must(sa).termOf(s, parent)
 	return s.Sort
 }
 
-// BetaReduction - beta reduction
-type BetaReduction struct {
+// Beta - beta reduction
+type Beta struct {
 	Cmd Form
 	Arg Form
 }
 
-func (f BetaReduction) TypeCheck(sa SortAttr, parent Sort) Sort {
+func (f Beta) TypeCheck(sa SortAttr, parent Sort) Sort {
 	//TODO implement me
 	panic("implement me")
 }
 
-// LambdaAbstraction - lambda abstraction
-type LambdaAbstraction struct {
+// Lambda - lambda abstraction
+type Lambda struct {
 	Param Name
 	Body  Form
 }
 
-func (l LambdaAbstraction) TypeCheck(sa SortAttr, parent Sort) Sort {
+func (l Lambda) TypeCheck(sa SortAttr, parent Sort) Sort {
 	//TODO implement me
 	panic("implement me")
 }
