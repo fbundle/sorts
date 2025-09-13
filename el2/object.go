@@ -9,6 +9,7 @@ type Name = form.Name
 type Form = form.Form
 type List = form.List
 type Sort = sorts.Sort
+type SortAttr = sorts.SortAttr
 
 var NewAtomChain = sorts.NewAtomChain
 var NewAtomTerm = sorts.NewAtomTerm
@@ -21,6 +22,14 @@ var ListParseProd = sorts.ListParseProd
 
 // AlmostSort - almost a sort - for example, a lambda
 type AlmostSort interface {
+	TypeCheck(sa SortAttr, parent Sort) Sort
+}
+
+type actualSort struct {
 	Sort
-	TypeCheck(parent Sort) Sort
+}
+
+func (s actualSort) TypeCheck(sa SortAttr, parent Sort) Sort {
+	must(sa).termOf(s, parent)
+	return s.Sort
 }
