@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/fbundle/sorts/persistent/ordered_map"
-	"github.com/fbundle/sorts/sorts"
 )
 
 func DefaultRuntime() Runtime {
@@ -13,46 +12,46 @@ func DefaultRuntime() Runtime {
 		InitialHeader:  "Unit",
 		TerminalHeader: "Any",
 	}.
-		NewListParser("->", sorts.ListParseArrow("->")).
-		NewListParser("⊕", sorts.ListParseSum("⊕")).
-		NewListParser("⊗", sorts.ListParseProd("⊗"))
+		NewListParser("->", ListParseArrow("->")).
+		NewListParser("⊕", ListParseSum("⊕")).
+		NewListParser("⊗", ListParseProd("⊗"))
 }
 
 type Runtime struct {
-	InitialHeader  sorts.Name
-	TerminalHeader sorts.Name
+	InitialHeader  Name
+	TerminalHeader Name
 
 	nameLessEqual ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
-	listParsers   ordered_map.OrderedMap[sorts.Name, sorts.ListParseFunc]
+	listParsers   ordered_map.OrderedMap[Name, ListParseFunc]
 
-	frame ordered_map.OrderedMap[sorts.Name, sorts.Sort]
+	frame ordered_map.OrderedMap[Name, Sort]
 }
 
 // Terminal - T_0 T_1 ... T_n
-func (u Runtime) Terminal(level int) sorts.Sort {
-	return sorts.NewAtomChain(level, func(level int) sorts.Name {
-		levelStr := sorts.Name(strconv.Itoa(level))
+func (u Runtime) Terminal(level int) Sort {
+	return NewAtomChain(level, func(level int) Name {
+		levelStr := Name(strconv.Itoa(level))
 		return u.TerminalHeader + "_" + levelStr
 	})
 }
 
 // Initial - I_0 I_1 ... I_n
-func (u Runtime) Initial(level int) sorts.Sort {
-	return sorts.NewAtomChain(level, func(level int) sorts.Name {
-		levelStr := sorts.Name(strconv.Itoa(level))
+func (u Runtime) Initial(level int) Sort {
+	return NewAtomChain(level, func(level int) Name {
+		levelStr := Name(strconv.Itoa(level))
 		return u.InitialHeader + "_" + levelStr
 	})
 }
 
-func (u Runtime) Parse(node sorts.Form) sorts.Sort {
+func (u Runtime) Parse(node Form) Sort {
 	switch node := node.(type) {
-	case sorts.Name:
+	case Name:
 		// lookup name
 		if sort, ok := u.frame.Get(node); ok {
 			return sort
 		}
 		// parse builtin: Runtime, initial, terminal
-		builtin := map[sorts.Name]func(level int) sorts.Sort{
+		builtin := map[Name]func(level int) Sort{
 			u.InitialHeader:  u.Initial,
 			u.TerminalHeader: u.Terminal,
 		}
@@ -69,11 +68,11 @@ func (u Runtime) Parse(node sorts.Form) sorts.Sort {
 			}
 		}
 		panic("name not found")
-	case sorts.List:
+	case List:
 		if len(node) == 0 {
 			panic("empty list")
 		}
-		head, ok := node[0].(sorts.Name)
+		head, ok := node[0].(Name)
 		if !ok {
 			panic("list must start with a name")
 		}
@@ -89,7 +88,7 @@ func (u Runtime) Parse(node sorts.Form) sorts.Sort {
 	}
 }
 
-func (u Runtime) NewListParser(head sorts.Name, parseList sorts.ListParseFunc) Runtime {
+func (u Runtime) NewListParser(head Name, parseList ListParseFunc) Runtime {
 	if _, ok := u.listParsers.Get(head); ok {
 		panic("list type already registered")
 	}
@@ -99,15 +98,15 @@ func (u Runtime) NewListParser(head sorts.Name, parseList sorts.ListParseFunc) R
 	})
 }
 
-func (u Runtime) NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Runtime {
+func (u Runtime) NewNameLessEqualRule(src Name, dst Name) Runtime {
 	return u.update(func(u Runtime) Runtime {
 		u.nameLessEqual = u.nameLessEqual.Set(rule{src, dst})
 		return u
 	})
 }
 
-func (u Runtime) NewTerm(name sorts.Name, parent sorts.Sort) (Runtime, sorts.Sort) {
-	atom := sorts.NewAtomTerm(u, name, parent)
+func (u Runtime) NewTerm(name Name, parent Sort) (Runtime, Sort) {
+	atom := NewAtomTerm(u, name, parent)
 	if _, ok := u.frame.Get(name); ok {
 		panic("name already registered")
 	}
