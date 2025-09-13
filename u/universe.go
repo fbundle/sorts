@@ -113,12 +113,12 @@ func (u universe) Parse(node sorts.Form) sorts.Sort {
 			panic("list must start with a name")
 		}
 
-		rule, ok := u.listParsers.Get(head)
+		listParser, ok := u.listParsers.Get(head)
 		if !ok {
 			panic("list type not registered")
 		}
 		// parse list
-		return rule(u.Parse, node)
+		return listParser(u.Parse, node)
 	default:
 		panic("parse error")
 	}
