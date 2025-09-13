@@ -6,19 +6,6 @@ import (
 
 var TypeErr = errors.New("type_error") // cannot recover
 
-// Form - Union[Name, List]
-type Form interface {
-	mustForm()
-}
-
-type Name string
-
-func (n Name) mustForm() {}
-
-type List []Form
-
-func (l List) mustForm() {}
-
 type ParseFunc = func(form Form) (Sort, error)
 
 type ParseListFunc = func(parse ParseFunc, args List) (Sort, error)
