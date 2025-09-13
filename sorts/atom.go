@@ -1,17 +1,17 @@
 package sorts
 
-func newAtomChain(level int, chainName func(int) Name) Atom {
+func NewAtomChain(level int, chainName func(int) Name) Atom {
 	return Atom{
 		level: level,
 		name:  chainName(level),
 		parent: func() Sort {
-			return newAtomChain(level+1, chainName)
+			return NewAtomChain(level+1, chainName)
 		},
 	}
 }
-func newAtomTerm(u Universe, name Name, parent Sort) Atom {
+func NewAtomTerm(a SortAttr, name Name, parent Sort) Atom {
 	return Atom{
-		level: u.Level(parent) - 1,
+		level: a.Level(parent) - 1,
 		name:  name,
 		parent: func() Sort {
 			return parent
@@ -36,7 +36,7 @@ func (s Atom) sortAttr(a SortAttr) sortAttr {
 				if s.level != d.level {
 					return false
 				}
-				return a.nameLessEqual(s.name, d.name)
+				return a.NameLessEqual(s.name, d.name)
 			default:
 				return false
 			}
