@@ -1,22 +1,20 @@
 package sorts
 
-import "fmt"
-
 type Sum struct {
+	H Name
 	A Sort
 	B Sort
 }
 
-func (s Sum) sortAttr() sortAttr {
-	level := max(Level(s.A), Level(s.B))
+func (s Sum) sortAttr(sa SortAttr) sortAttr {
 	return sortAttr{
-		name:   fmt.Sprintf("%s + %s", Name(s.A), Name(s.B)),
-		level:  level,
-		parent: Sum{A: Parent(s.A), B: Parent(s.B)},
+		form:   List{s.H, sa.Form(s.A), sa.Form(s.B)},
+		level:  max(sa.Level(s.A), sa.Level(s.B)),
+		parent: Sum{A: sa.Parent(s.A), B: sa.Parent(s.B)},
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Sum:
-				return SubTypeOf(s.A, d.A) && SubTypeOf(s.B, d.B)
+				return sa.LessEqual(s.A, d.A) && sa.LessEqual(s.B, d.B)
 			default:
 				return false
 			}
@@ -25,24 +23,24 @@ func (s Sum) sortAttr() sortAttr {
 }
 
 // Intro - IntroLeft or IntroRight
-func (s Sum) Intro(a Sort, b Sort) Sort {
+func (s Sum) Intro(sa SortAttr, a Sort, b Sort) Sort {
 	if a != nil {
 		// IntroLeft - take (a: A) give (x: A + B)
-		mustTermOf(a, s.A)
+		must(sa).termOf(a, s.A)
 		return a
 	} else {
 		// IntroRight - take (b: B) give (x: A + B)
-		mustTermOf(b, s.B)
+		must(sa).termOf(b, s.B)
 		return b
 	}
 }
 
 // ByCases - take (t: A + B) (h1: A -> X) (h2: B -> X) give (x: X)
-func (s Sum) ByCases(t Sort, h1 Sort, h2 Sort) Sort {
-	mustTermOf(t, s)
-	X := Parent(h1).(Arrow).B
-	mustTermOf(h1, Arrow{s.A, X})
-	mustTermOf(h2, Arrow{s.B, X})
+func (s Sum) ByCases(sa SortAttr, t Sort, h1 Sort, h2 Sort) Sort {
+	must(sa).termOf(t, s)
+	X := sa.Parent(h1).(Arrow).B
+	must(sa).termOf(h1, Arrow{s.H, s.A, X})
+	must(sa).termOf(h2, Arrow{s.H, s.B, X})
 
-	return NewTerm(X, fmt.Sprintf("(by_cases %s %s %s)", Name(t), Name(h1), Name(h2)))
+	return NewAtomTerm(sa, List{Name("by_cases"), sa.Form(t), sa.Form(h1), sa.Form(h2)}, X)
 }
