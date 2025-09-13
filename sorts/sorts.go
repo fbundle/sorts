@@ -68,7 +68,7 @@ type universe struct {
 	lessEqualMap   map[[2]Name]struct{}
 
 	listRuleDict map[Name]ParseListFunc
-	nameDict     map[Name]Sort
+	nameDict     map[Name]Atom
 }
 
 func (u *universe) Universe(level int) Atom {
