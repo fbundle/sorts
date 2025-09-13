@@ -12,9 +12,9 @@ import (
 type Universe interface {
 	sorts.SortAttr
 
-	Initial(level int) sorts.Atom
-	Terminal(level int) sorts.Atom
-	NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Atom)
+	Initial(level int) sorts.Sort
+	Terminal(level int) sorts.Sort
+	NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Sort)
 
 	NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe
 	NewParseListRule(head sorts.Name, parseList sorts.ParseListFunc) Universe
@@ -58,11 +58,11 @@ type universe struct {
 	nameLessEqualDict ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
 	parseListDict     ordered_map.OrderedMap[sorts.Name, sorts.ParseListFunc]
 
-	nameDict ordered_map.OrderedMap[sorts.Name, sorts.Atom]
+	nameDict ordered_map.OrderedMap[sorts.Name, sorts.Sort]
 }
 
 // Terminal - T_0 T_1 ... T_n
-func (u universe) Terminal(level int) sorts.Atom {
+func (u universe) Terminal(level int) sorts.Sort {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
 		return u.terminalHeader + "_" + levelStr
@@ -70,7 +70,7 @@ func (u universe) Terminal(level int) sorts.Atom {
 }
 
 // Initial - I_0 I_1 ... I_n
-func (u universe) Initial(level int) sorts.Atom {
+func (u universe) Initial(level int) sorts.Sort {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
 		return u.initialHeader + "_" + levelStr
@@ -85,7 +85,7 @@ func (u universe) Parse(node sorts.Form) sorts.Sort {
 			return sort
 		}
 		// parse builtin: universe, initial, terminal
-		builtin := map[sorts.Name]func(level int) sorts.Atom{
+		builtin := map[sorts.Name]func(level int) sorts.Sort{
 			u.initialHeader:  u.Initial,
 			u.terminalHeader: u.Terminal,
 		}
@@ -145,7 +145,7 @@ func (u universe) NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe 
 	})
 }
 
-func (u universe) NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Atom) {
+func (u universe) NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Sort) {
 	atom := sorts.NewAtomTerm(u, name, parent)
 	if _, ok := u.nameDict.Get(name); ok {
 		panic("name already registered")
