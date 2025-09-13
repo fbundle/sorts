@@ -21,6 +21,10 @@ func Universe(level int) Sort {
 	})
 }
 
+func NewTerm(repr form.Name, parent Sort) Sort {
+	return newAtomTerm(repr, parent)
+}
+
 //
 
 var typeErr = errors.New("type_error")
