@@ -13,9 +13,9 @@ func DefaultRuntime() Runtime {
 		InitialHeader:  "Unit",
 		TerminalHeader: "Any",
 	}.
-		NewListParser("->", ListParseArrow("->")).
-		NewListParser("⊕", ListParseSum("⊕")).
-		NewListParser("⊗", ListParseProd("⊗"))
+		NewListSortParser("->", ListParseArrow("->")).
+		NewListSortParser("⊕", ListParseSum("⊕")).
+		NewListSortParser("⊗", ListParseProd("⊗"))
 }
 
 type Runtime struct {
@@ -89,19 +89,14 @@ func (u Runtime) Parse(node Form) AlmostSort {
 	}
 }
 func (u Runtime) NewListSortParser(head Name, parseList ListParseSortFunc) Runtime {
-	if _, ok := u.listParsers.Get(head); ok {
-		panic("list type already registered")
-	}
-	return u.update(func(u Runtime) Runtime {
-		u.listParsers = u.listParsers.Set(head, func(parse ParseFunc, list List) AlmostSort {
-			sort := parseList(func(form sorts.Form) sorts.Sort {
-				return parse(form).(Object).Sort // inside a sort, must be sort
-			}, list)
-			return Object{sort}
-		})
-		return u
+	return u.NewListParser(head, func(parse ParseFunc, list List) AlmostSort {
+		sort := parseList(func(form sorts.Form) sorts.Sort {
+			return parse(form).(Object).Sort // inside a sort, must be sort
+		}, list)
+		return Object{sort}
 	})
 }
+
 func (u Runtime) NewListParser(head Name, parseList ListParseFunc) Runtime {
 	if _, ok := u.listParsers.Get(head); ok {
 		panic("list type already registered")
