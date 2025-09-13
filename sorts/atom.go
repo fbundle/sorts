@@ -3,16 +3,16 @@ package sorts
 func NewAtomChain(level int, chainName func(int) Name) Sort {
 	return Atom{
 		level: level,
-		name:  chainName(level),
+		form:  chainName(level),
 		parent: func() Sort {
 			return NewAtomChain(level+1, chainName)
 		},
 	}
 }
-func NewAtomTerm(a SortAttr, name Name, parent Sort) Sort {
+func NewAtomTerm(a SortAttr, form Form, parent Sort) Sort {
 	return Atom{
 		level: a.Level(parent) - 1,
-		name:  name,
+		form:  form,
 		parent: func() Sort {
 			return parent
 		},
@@ -21,13 +21,13 @@ func NewAtomTerm(a SortAttr, name Name, parent Sort) Sort {
 
 type Atom struct {
 	level  int
-	name   Name // TODO - consider using Form
+	form   Form
 	parent func() Sort
 }
 
 func (s Atom) sortAttr(a SortAttr) sortAttr {
 	return sortAttr{
-		form:   s.name,
+		form:   s.form,
 		level:  s.level,
 		parent: s.parent(),
 		lessEqual: func(dst Sort) bool {
@@ -36,7 +36,12 @@ func (s Atom) sortAttr(a SortAttr) sortAttr {
 				if s.level != d.level {
 					return false
 				}
-				return a.NameLessEqual(s.name, d.name)
+				sname, ok1 := s.form.(Name)
+				dname, ok2 := d.form.(Name)
+				if ok1 && ok2 {
+					return a.NameLessEqual(sname, dname)
+				}
+				return false
 			default:
 				return false
 			}

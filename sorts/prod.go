@@ -25,15 +25,15 @@ func (s Prod) sortAttr(a SortAttr) sortAttr {
 }
 
 // Intro - take (a: A) (b: B) give (a, b): A × B
-func (s Prod) Intro(a Sort, b Sort) Sort {
-	mustTermOf(a, s.A)
-	mustTermOf(b, s.B)
+func (s Prod) Intro(sa SortAttr, a Sort, b Sort) Sort {
+	must(sa).termOf(a, s.A)
+	must(sa).termOf(b, s.B)
 	return Prod{A: a, B: b}
 }
 
 // Elim - take (t: A × B) give (a: A) and (b: B)
-func (s Prod) Elim(t Sort) (left Sort, right Sort) {
-	mustTermOf(t, s)
+func (s Prod) Elim(sa SortAttr, t Sort) (left Sort, right Sort) {
+	must(sa).termOf(t, s)
 	if t, ok := t.(Prod); ok {
 		return t.A, t.B
 	}
