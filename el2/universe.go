@@ -20,8 +20,8 @@ type Universe interface {
 	NewParseListRule(head sorts.Name, parseList sorts.ParseListFunc) error
 }
 
-func newUniverse() Universe {
-	u, err := New("U", "Unit", "Any")
+func newDefaultUniverse() Universe {
+	u, err := newUniverse("U", "Unit", "Any")
 	if err != nil {
 		panic(err)
 	}
@@ -33,7 +33,7 @@ func newUniverse() Universe {
 	return u
 
 }
-func New(universeHeader sorts.Name, initialHeader sorts.Name, terminalHeader sorts.Name) (Universe, error) {
+func newUniverse(universeHeader sorts.Name, initialHeader sorts.Name, terminalHeader sorts.Name) (Universe, error) {
 	nameSet := make(map[sorts.Name]struct{})
 	nameSet[universeHeader] = struct{}{}
 	nameSet[initialHeader] = struct{}{}
