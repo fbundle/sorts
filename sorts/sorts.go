@@ -53,7 +53,7 @@ type Universe interface {
 	SortAttr
 }
 
-func newUniverse(universeHeader Name, initialHeader Name, terminalHeader Name) (*universe, error) {
+func NewUniverse(universeHeader Name, initialHeader Name, terminalHeader Name) (Universe, error) {
 	nameSet := make(map[Name]struct{})
 	nameSet[universeHeader] = struct{}{}
 	nameSet[initialHeader] = struct{}{}
@@ -188,8 +188,6 @@ func (u *universe) LessEqual(x Sort, y Sort) bool {
 func (u *universe) TermOf(x Sort, X Sort) bool {
 	return u.LessEqual(u.Parent(x), X)
 }
-
-// private
 
 func (u *universe) nameLessEqual(src Name, dst Name) bool {
 	if src == u.initialHeader || dst == u.terminalHeader {
