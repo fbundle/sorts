@@ -42,9 +42,13 @@ type Universe interface {
 	lessEqual(src Name, dst Name) bool
 }
 
-func NewUniverse(universeHeader Name, initialHeader Name, terminalHeader Name) (Universe, error) {
-	if initialHeader == terminalHeader {
-		return nil, errors.New("initial and terminal name must be different")
+func newUniverse(universeHeader Name, initialHeader Name, terminalHeader Name) (Universe, error) {
+	nameSet := make(map[Name]struct{})
+	nameSet[universeHeader] = struct{}{}
+	nameSet[initialHeader] = struct{}{}
+	nameSet[terminalHeader] = struct{}{}
+	if len(nameSet) != 3 {
+		return nil, errors.New("universe, initial, terminal name must be distinct")
 	}
 	return &universe{
 		universeHeader: universeHeader,
