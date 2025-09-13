@@ -1,5 +1,19 @@
 package sorts
 
+import "fmt"
+
+func ListParseProd(H Name) ListParseFunc {
+	return func(parse ParseFunc, list List) Sort {
+		if len(list) != 3 {
+			panic(fmt.Errorf("prod must be %s A B", H))
+		}
+		if list[0] != H {
+			panic(fmt.Errorf("prod must be %s A B", H))
+		}
+		return Prod{H: H, A: parse(list[1]), B: parse(list[2])}
+	}
+}
+
 type Prod struct {
 	H Name
 	A Sort

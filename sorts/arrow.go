@@ -12,9 +12,7 @@ func ListParseArrow(H Name) ListParseFunc {
 		if list[0] != H {
 			panic(fmt.Errorf("arrow must be %s domain codomain", H))
 		}
-		a := parse(list[1])
-		b := parse(list[2])
-		return Arrow{H: H, A: a, B: b}
+		return Arrow{H: H, A: parse(list[1]), B: parse(list[2])}
 	}
 }
 
