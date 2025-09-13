@@ -51,14 +51,14 @@ func (s Arrow) Elim(sa SortAttr, f Sort, a Sort) Sort {
 	must(sa).termOf(f, s)
 	must(sa).termOf(a, s.A)
 
-	name := Name(fmt.Sprintf("elim_%s_%s", sa.Form(f), sa.Form(a)))
-	return NewAtomTerm(sa, name, s.B)
+	// TODO - not hard code this
+	return NewAtomTerm(sa, List{Name("elim"), sa.Form(f), sa.Form(a)}, s.B)
 }
 
 // Intro - take a func that maps (a: A) into (b: B)  give (f: A -> B)
 func (s Arrow) Intro(sa SortAttr, name Name, f func(Sort) Sort) Sort {
 	// verify
-	a := NewAtomTerm(sa, "a", s.A)
+	a := NewAtomTerm(sa, Name("a"), s.A)
 	b := f(a)
 
 	must(sa).termOf(b, s.B)
