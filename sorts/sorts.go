@@ -9,18 +9,16 @@ import (
 
 // universe type
 
-// universe name - U_0 U_1 ...
-func universeName(level int) form.Name {
-	levelStr := strconv.Itoa(level)
-	if level < 0 {
-		return form.Name("U_{" + levelStr + "}")
-	} else {
-		return form.Name("U_" + levelStr)
-	}
-}
-
+// Universe - ... U_{-1}, U_0, U_1, ...
 func Universe(level int) Sort {
-	return newAtomChain()
+	return newAtomChain(level, func(i int) form.Name {
+		levelStr := strconv.Itoa(level)
+		if level < 0 {
+			return form.Name("U_{" + levelStr + "}")
+		} else {
+			return form.Name("U_" + levelStr)
+		}
+	})
 }
 
 //
