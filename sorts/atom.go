@@ -9,24 +9,24 @@ const (
 )
 
 func defaultSort(level int) Sort {
-	return NewAtom(level, DefaultName, func(level int) form.Name {
+	return newAtom(level, DefaultName, func(level int) form.Name {
 		return DefaultName
 	})
 }
 
-func NewAtom(level int, repr form.Name, ancestor func(int) form.Name) Sort {
+func newAtom(level int, repr form.Name, ancestor func(int) form.Name) Sort {
 	parentLevel := level + 1
 	parentRepr := ancestor(parentLevel)
 	return Atom{
 		level: level,
 		name:  repr,
 		parent: func() Sort {
-			return NewAtom(parentLevel, parentRepr, ancestor)
+			return newAtom(parentLevel, parentRepr, ancestor)
 		},
 	}
 }
 
-func NewTerm(termRepr form.Name, parent Sort) Sort {
+func newTerm(termRepr form.Name, parent Sort) Sort {
 	return Atom{
 		level:  Level(parent) - 1,
 		name:   termRepr,

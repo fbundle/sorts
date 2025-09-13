@@ -86,7 +86,7 @@ func (f FunctionCall) Resolve(frame Frame) (Frame, Object) {
 		return cmd.Body.Resolve(frame)
 	default:
 		if B, ok := frame.typeCheckFunctionCall(cmdSort, argSort); ok {
-			return frame, sorts.NewTerm(B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
+			return frame, sorts.newTerm(B, fmt.Sprintf("(%s %s)", String(cmd), String(argValue))), FunctionCall{cmd, argValue}, nil
 		}
 		return frame, nil, nil, fmt.Errorf("type_error: cmd %s, arg %s", sorts.Name(cmdSort), sorts.Name(argSort))
 	}

@@ -49,16 +49,16 @@ func (s Arrow) sortAttr() sortAttr {
 func (s Arrow) Elim(f Sort, a Sort) Sort {
 	mustTermOf(f, s)
 	mustTermOf(a, s.A)
-	return NewTerm(form.List{Repr(f), Repr(a)}, s.B)
+	return newTerm(form.List{Repr(f), Repr(a)}, s.B)
 }
 
 // Intro - take a go function (name) that maps (a: A) into (b: B)  give (f: A -> B)
 func (s Arrow) Intro(repr form.Form, f func(Sort) Sort) Sort {
 	// verify
-	a := NewTerm(form.Name("a"), s.A) // dummy term
+	a := newTerm(form.Name("a"), s.A) // dummy term
 	b := f(a)
 	mustTermOf(b, s.B)
 
 	// verify ok
-	return NewTerm(repr, s)
+	return newTerm(repr, s)
 }

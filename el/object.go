@@ -9,7 +9,7 @@ import (
 func newTerm(expr Expr, parent Object) Object {
 	return Object{
 		next: expr,
-		sort: sorts.NewTerm(String(expr), parent.sort),
+		sort: sorts.newTerm(String(expr), parent.sort),
 		parent: func() Object {
 			return parent
 		},
@@ -20,7 +20,7 @@ func newType(level int, name Term) Object {
 	parent := uType(level + 1)
 	return Object{
 		next: name,
-		sort: sorts.NewTerm(string(name), parent.sort),
+		sort: sorts.newTerm(string(name), parent.sort),
 		parent: func() Object {
 			return parent
 		},
@@ -40,7 +40,7 @@ func uType(level int) Object {
 	name := "U"
 	return Object{
 		next: Term(fmt.Sprintf("U_%d", level)),
-		sort: sorts.NewAtom(level, name, name),
+		sort: sorts.newAtom(level, name, name),
 		parent: func() Object {
 			return uType(level + 1)
 		},

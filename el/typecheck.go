@@ -43,7 +43,7 @@ func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, expr Expr)
 	if lambda, ok := expr.(Lambda); ok {
 		callFrame := frame
 		// add function into frame
-		callFrame, err := callFrame.set(name, sorts.NewTerm(parentSort, string(name)), name)
+		callFrame, err := callFrame.set(name, sorts.newTerm(parentSort, string(name)), name)
 		if err != nil {
 			return false
 		}
@@ -53,7 +53,7 @@ func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, expr Expr)
 			return false
 		}
 		argValue := lambda.Param
-		argSort := sorts.NewTerm(parentArrow.A, string(lambda.Param))
+		argSort := sorts.newTerm(parentArrow.A, string(lambda.Param))
 		callFrame, err = callFrame.set(lambda.Param, argSort, argValue)
 		if err != nil {
 			return false

@@ -67,7 +67,7 @@ func reverseMatchPattern(frame Frame, condSort sorts.Sort, pattern Expr) (Frame,
 		if !sorts.SubTypeOf(cmdArrow.B, sorts.Parent(condSort)) {
 			return frame, errors.New("wrong output type")
 		}
-		return reverseMatchPattern(frame, sorts.NewTerm(cmdArrow.A, String(pattern.Arg)), pattern.Arg)
+		return reverseMatchPattern(frame, sorts.newTerm(cmdArrow.A, String(pattern.Arg)), pattern.Arg)
 	default:
 		return frame, nil // not comparable
 	}

@@ -55,7 +55,7 @@ func (s Prod) Elim(t Sort) (left Sort, right Sort) {
 		return t.A, t.B
 	}
 
-	a := NewTerm(form.List{ProdLeftName, Repr(s)}, s.A)
-	b := NewTerm(form.List{ProdRightName, Repr(s)}, s.B)
+	a := newTerm(form.List{ProdLeftName, Repr(s)}, s.A)
+	b := newTerm(form.List{ProdRightName, Repr(s)}, s.B)
 	return a, b
 }

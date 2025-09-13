@@ -96,7 +96,7 @@ func (l Let) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 			value = name // set cycle
 		}
 
-		frame, err = frame.set(name, sorts.NewTerm(parentSort, string(name)), value)
+		frame, err = frame.set(name, sorts.newTerm(parentSort, string(name)), value)
 		if err != nil {
 			return frame, nil, nil, err
 		}
@@ -452,7 +452,7 @@ func (i IntAdd) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 
 	cTerm := Term(strconv.Itoa(c))
 
-	sort := sorts.NewTerm(intType, string(cTerm))
+	sort := sorts.newTerm(intType, string(cTerm))
 	return frame, sort, cTerm, nil
 }
 

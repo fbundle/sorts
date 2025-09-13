@@ -60,5 +60,5 @@ func (s Sum) ByCases(t Sort, h1 Sort, h2 Sort) Sort {
 	mustTermOf(h1, Arrow{s.A, X})
 	mustTermOf(h2, Arrow{s.B, X})
 
-	return NewTerm(form.List{ByCasesName, Repr(t), Repr(h1), Repr(h2)}, X)
+	return newTerm(form.List{ByCasesName, Repr(t), Repr(h1), Repr(h2)}, X)
 }
