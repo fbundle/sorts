@@ -20,10 +20,7 @@ var ListParseSum = sorts.ListParseSum
 var ListParseProd = sorts.ListParseProd
 
 // AlmostSort - almost a sort - for example, a lambda
-type AlmostSort struct {
-	form Form
-}
-
-func (s AlmostSort) TypeCheck(parent Sort) Sort {
-	panic("implement me")
+type AlmostSort interface {
+	Sort
+	TypeCheck(parent Sort) Sort
 }
