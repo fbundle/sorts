@@ -1,6 +1,13 @@
 package sorts
 
-import "fmt"
+import (
+	"github.com/fbundle/sorts/form"
+)
+
+const (
+	SumName     form.Name = "⊕"
+	ByCasesName form.Name = "by_cases"
+)
 
 type Sum struct {
 	A Sort
@@ -10,7 +17,7 @@ type Sum struct {
 func (s Sum) sortAttr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
-		name:   fmt.Sprintf("%s + %s", Name(s.A), Name(s.B)),
+		repr:   form.List{SumName, Repr(s.A), Repr(s.B)},
 		level:  level,
 		parent: Sum{A: Parent(s.A), B: Parent(s.B)},
 		lessEqual: func(dst Sort) bool {
@@ -44,6 +51,5 @@ func (s Sum) ByCases(t Sort, h1 Sort, h2 Sort) Sort {
 	mustTermOf(h1, Arrow{s.A, X})
 	mustTermOf(h2, Arrow{s.B, X})
 
-	name := fmt.Sprintf("(by_cases %s %s %s)", Name(t), Name(h1), Name(h2))
-	return NewTerm(name, X)
+	return NewTerm(form.List{ByCasesName, Repr(t), Repr(h1), Repr(h2)}, X)
 }

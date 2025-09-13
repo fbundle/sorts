@@ -1,6 +1,9 @@
 package sorts
 
-import "fmt"
+/*
+const (
+	EqualTerm form.Name = "Eq"
+)
 
 type Equal struct {
 	A Sort
@@ -14,11 +17,9 @@ type equalTerm struct {
 }
 
 func (s equalTerm) sortAttr() sortAttr {
-	name := fmt.Sprintf("%s = %s", Name(s.A), Name(s.B))
-	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
-		name:   name,
-		level:  level,
+		repr:   form.List{EqualTerm, Repr(s.A), Repr(s.B)},
+		level:  max(Level(s.A), Level(s.B)),
 		parent: s.Parent,
 		lessEqual: func(dst Sort) bool {
 			return false // I haven't find any useful thing for this
@@ -27,11 +28,9 @@ func (s equalTerm) sortAttr() sortAttr {
 }
 
 func (s Equal) sortAttr() sortAttr {
-	panic("not implemented")
-	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
-		name:   fmt.Sprintf("Eq(%s, %s)", Name(s.A), Name(s.B)),
-		level:  level,
+		repr:   form.List{EqualTerm, Repr(s.A), Repr(s.B)},
+		level:  max(Level(s.A), Level(s.B)),
 		parent: nil,
 		lessEqual: func(dst Sort) bool {
 			return false // I haven't find any useful thing for this
@@ -69,3 +68,5 @@ func (s Equal) Trans(t1 equalTerm, t2 equalTerm) Sort {
 		Parent: s,
 	}
 }
+
+*/

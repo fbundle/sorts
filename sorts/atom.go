@@ -1,50 +1,48 @@
 package sorts
 
+import "github.com/fbundle/sorts/form"
+
 const (
-	InitialName  = "Unit" // initial object
-	TerminalName = "Any"  // terminal object
-	DefaultName  = "Type"
+	InitialName  form.Name = "Unit" // initial object
+	TerminalName form.Name = "Any"  // terminal object
+	DefaultName  form.Name = "Type"
 )
 
 func defaultSort(level int) Sort {
-	return NewAtom(level, DefaultName, DefaultName)
+	return NewAtom(level, DefaultName, func(level int) form.Form {
+		return DefaultName
+	})
 }
 
-func NewAtom(level int, name string, parentName string) Sort {
+func NewAtom(level int, repr form.Form, ancestor func(int) form.Form) Sort {
+	parentLevel := level + 1
+	parentRepr := ancestor(parentLevel)
 	return Atom{
-		level:   level,
-		name:    name,
-		_parent: _atomParent{name: parentName, sort: nil},
+		level: level,
+		repr:  repr,
+		parent: func() Sort {
+			return NewAtom(parentLevel, parentRepr, ancestor)
+		},
 	}
 }
 
-func NewTerm(termName string, parent Sort) Sort {
+func NewTerm(termRepr form.Form, parent Sort) Sort {
 	return Atom{
-		level:   Level(parent) - 1,
-		name:    termName,
-		_parent: _atomParent{name: "", sort: parent},
+		level:  Level(parent) - 1,
+		repr:   termRepr,
+		parent: func() Sort { return parent },
 	}
 }
 
 type Atom struct {
-	level   int
-	name    string
-	_parent _atomParent
-}
-
-func (s Atom) parent() Sort {
-	if s._parent.sort != nil {
-		return s._parent.sort
-	}
-	parentLevel := s.level + 1
-	parentName := s._parent.name
-	grandParentName := s._parent.name
-	return NewAtom(parentLevel, parentName, grandParentName)
+	level  int
+	repr   form.Form
+	parent func() Sort
 }
 
 func (s Atom) sortAttr() sortAttr {
 	return sortAttr{
-		name:   s.name,
+		repr:   s.repr,
 		level:  s.level,
 		parent: s.parent(),
 		lessEqual: func(dst Sort) bool {
@@ -53,14 +51,21 @@ func (s Atom) sortAttr() sortAttr {
 				if s.level != d.level {
 					return false
 				}
-				if s.name == InitialName || d.name == TerminalName {
+				if s.repr == InitialName || d.repr == TerminalName {
 					return true
 				}
-				if s.name == d.name {
+				if s.repr == d.repr {
 					return true
 				}
-				_, ok := lessEqualMap[rule{s.name, d.name}]
-				return ok
+
+				srepr, ok1 := s.repr.(form.Name)
+				drepr, ok2 := d.repr.(form.Name)
+				if ok1 && ok2 {
+					_, ok := lessEqualMap[rule{srepr, drepr}]
+					return ok
+				}
+				return false
+
 			default:
 				return false
 			}
@@ -68,19 +73,13 @@ func (s Atom) sortAttr() sortAttr {
 	}
 }
 
-// _atomParent - parent of atom - must be either a name or a sort
-type _atomParent struct {
-	name string
-	sort Sort
-}
-
 type rule struct {
-	src string
-	dst string
+	src form.Name
+	dst form.Name
 }
 
 var lessEqualMap = make(map[rule]struct{})
 
-func AddRule(src string, dst string) {
+func AddRule(src form.Name, dst form.Name) {
 	lessEqualMap[rule{src, dst}] = struct{}{}
 }

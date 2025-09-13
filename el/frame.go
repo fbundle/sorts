@@ -8,24 +8,24 @@ import (
 )
 
 type Frame struct {
-	dict ordered_map.OrderedMap[Term, _object]
+	dict ordered_map.OrderedMap[Term, Object]
 }
 
-func (frame Frame) set(key Term, o _object) Frame {
+func (frame Frame) set(key Term, o Object) Frame {
 	if !o.isTotal() {
 		panic("set_must_total")
 	}
 	return Frame{dict: frame.dict.Set(key, o)}
 }
 
-func (frame Frame) get(key Term) _object {
+func (frame Frame) get(key Term) Object {
 	if o, ok := frame.dict.Get(key); ok {
 		return o
 	}
 	return builtinValue(key)
 }
 
-func builtinValue(key Term) _object {
+func builtinValue(key Term) Object {
 	keyStr := string(key)
 
 	// integer

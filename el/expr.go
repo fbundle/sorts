@@ -14,7 +14,7 @@ func String(e Expr) string {
 
 type Expr interface {
 	Marshal() form.Form
-	Resolve(frame Frame) (Frame, sorts.Sort, Expr, error)
+	Resolve(frame Frame) (Frame, Object)
 	mustExpr()
 }
 
@@ -23,19 +23,15 @@ type Term string
 func (t Term) mustExpr() {}
 
 func (t Term) Marshal() form.Form {
-	return form.Term(t)
+	return form.Name(t)
 }
 
-func (t Term) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
-	sort, next, err := frame.get(t)
-	if err != nil {
-		return frame, nil, nil, err
+func (t Term) Resolve(frame Frame) (Frame, Object) {
+	o := frame.get(t)
+	if o.next == t { // loopback - terminal object
+		return frame, o
 	}
-	if next == t {
-		// term not assigned, set as cycle
-		return frame, sort, next, nil
-	}
-	return next.Resolve(frame)
+	return o.next.Resolve(frame)
 }
 
 // FunctionCall - (cmd arg1 arg2 ...)
@@ -52,7 +48,27 @@ func (f FunctionCall) Marshal() form.Form {
 		f.Arg.Marshal(),
 	}
 }
-func (f FunctionCall) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (f FunctionCall) Resolve(frame Frame) (Frame, Object) {
+	frame, arg := f.Arg.Resolve(frame)
+	frame, cmd := f.Cmd.Resolve(frame)
+
+	if lambda, ok := cmd.next.(Lambda); ok {
+		// semantic function call - skip type check
+		frame := frame.set(lambda.Param, arg) // set arg into param
+		return lambda.Body.Resolve(frame)
+	} else {
+		// syntactic function call - do type check
+		mustTypeCheckFunctionCall(cmd, arg)
+		o := newTerm(
+			FunctionCall{
+				Cmd: cmd,
+				Arg: arg,
+			},
+			nil,
+		)
+
+	}
+
 	frame, argSort, argValue, err := f.Arg.Resolve(frame)
 	if err != nil {
 		return frame, nil, nil, err
@@ -84,17 +100,17 @@ var defaultParser parser
 func ParseForm(e form.Form) (Expr, error) {
 	return defaultParser.parseForm(e)
 }
-func RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) {
+func RegisterListParser(cmd form.Name, listParser func(ParseFunc, form.List) (Expr, error)) {
 	defaultParser = defaultParser.registerListParser(cmd, listParser)
 }
 
 type parser struct {
-	listParsers map[form.Term]ListParseFunc
+	listParsers map[form.Name]ListParseFunc
 }
 
-func (parser parser) registerListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) parser {
+func (parser parser) registerListParser(cmd form.Name, listParser func(ParseFunc, form.List) (Expr, error)) parser {
 	if parser.listParsers == nil {
-		parser.listParsers = make(map[form.Term]ListParseFunc)
+		parser.listParsers = make(map[form.Name]ListParseFunc)
 	}
 	parser.listParsers[cmd] = listParser
 	return parser
@@ -102,7 +118,7 @@ func (parser parser) registerListParser(cmd form.Term, listParser func(ParseFunc
 
 func (parser parser) parseForm(e form.Form) (Expr, error) {
 	switch e := e.(type) {
-	case form.Term:
+	case form.Name:
 		return Term(e), nil
 	case form.List:
 		if len(e) == 0 {
@@ -111,7 +127,7 @@ func (parser parser) parseForm(e form.Form) (Expr, error) {
 		head, list := e[0], e[1:]
 
 		// Is it a special form?
-		if cmdTerm, ok := head.(form.Term); ok {
+		if cmdTerm, ok := head.(form.Name); ok {
 			if listParser, ok := parser.listParsers[cmdTerm]; ok {
 				return listParser(parser.parseForm, list)
 			}

@@ -4,18 +4,19 @@ import "strings"
 
 type Token = string
 
+// Form - Union[Name, List]
 type Form interface {
 	Marshal() []Token
 	formAttr()
 }
 
-type Term string
+type Name string
 
-func (t Term) Marshal() []Token {
+func (t Name) Marshal() []Token {
 	return []Token{Token(t)}
 }
 
-func (t Term) formAttr() {}
+func (t Name) formAttr() {}
 
 type List []Form
 

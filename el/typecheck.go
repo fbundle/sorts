@@ -1,8 +1,26 @@
 package el
 
 import (
+	"errors"
+
 	"github.com/fbundle/sorts/sorts"
 )
+
+var typeErr = errors.New("type_error")
+
+func mustTypeCheckFunctionCall(cmd Object, arg Object) Object {
+	arrow, ok := cmd.parent().sort.(sorts.Arrow)
+	if !ok {
+		panic(typeErr)
+	}
+	if ok := sorts.TermOf(arg.sort, arrow.A); !ok {
+		panic(typeErr)
+	}
+
+	bParent := newTerm()
+	return newTerm()
+
+}
 
 // typeCheckFunctionCall - check if the function call is valid - (cmdSort argSort)
 func (frame Frame) typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort) (sorts.Sort, bool) {

@@ -14,17 +14,17 @@ var defaultParser parser
 func ParseForm(e form.Form) (Expr, error) {
 	return defaultParser.parseForm(e)
 }
-func RegisterListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) {
+func RegisterListParser(cmd form.Name, listParser func(ParseFunc, form.List) (Expr, error)) {
 	defaultParser = defaultParser.registerListParser(cmd, listParser)
 }
 
 type parser struct {
-	listParsers map[form.Term]ListParseFunc
+	listParsers map[form.Name]ListParseFunc
 }
 
-func (parser parser) registerListParser(cmd form.Term, listParser func(ParseFunc, form.List) (Expr, error)) parser {
+func (parser parser) registerListParser(cmd form.Name, listParser func(ParseFunc, form.List) (Expr, error)) parser {
 	if parser.listParsers == nil {
-		parser.listParsers = make(map[form.Term]ListParseFunc)
+		parser.listParsers = make(map[form.Name]ListParseFunc)
 	}
 	parser.listParsers[cmd] = listParser
 	return parser
@@ -32,7 +32,7 @@ func (parser parser) registerListParser(cmd form.Term, listParser func(ParseFunc
 
 func (parser parser) parseForm(e form.Form) (Expr, error) {
 	switch e := e.(type) {
-	case form.Term:
+	case form.Name:
 		return Term(e), nil
 	case form.List:
 		if len(e) == 0 {
@@ -41,7 +41,7 @@ func (parser parser) parseForm(e form.Form) (Expr, error) {
 		head, list := e[0], e[1:]
 
 		// Is it a special form?
-		if cmdTerm, ok := head.(form.Term); ok {
+		if cmdTerm, ok := head.(form.Name); ok {
 			if listParser, ok := parser.listParsers[cmdTerm]; ok {
 				return listParser(parser.parseForm, list)
 			}

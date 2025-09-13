@@ -1,6 +1,12 @@
 package sorts
 
-import "fmt"
+import (
+	"github.com/fbundle/sorts/form"
+)
+
+const (
+	PiName form.Name = "Π"
+)
 
 // Pi - (x: A) -> (y: B(x)) similar to Arrow
 // this is the universal quantifier
@@ -10,13 +16,13 @@ type Pi struct {
 }
 
 func (s Pi) sortAttr() sortAttr {
-	x := NewTerm("x", s.A) // dummy term
+	x := NewTerm(form.Name("x"), s.A) // dummy term
 	sBx := s.B.Apply(x)
 	level := max(Level(s.A), Level(sBx))
 	return sortAttr{
-		name:   fmt.Sprintf("Π(x:%s)%s(x)", Name(s.A), Name(s.B)),
+		repr:   form.List{PiName, Repr(s.A), Repr(s.B)},
 		level:  level,
-		parent: NewAtom(level+1, "Type", "Type"),
+		parent: nil, // TODO
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Pi:
@@ -24,7 +30,7 @@ func (s Pi) sortAttr() sortAttr {
 				if !SubTypeOf(d.A, s.A) {
 					return false
 				}
-				y := NewTerm("y", d.A)
+				y := NewTerm(form.Name("y"), d.A)
 				dBy := d.B.Apply(y)
 				return SubTypeOf(sBx, dBy)
 			default:
@@ -35,22 +41,21 @@ func (s Pi) sortAttr() sortAttr {
 }
 
 // Intro - take a func that maps (a: A) into (b: B(a))  give (f: Π(x:A)B(x))
-func (s Pi) Intro(name string, arrow func(Sort) Sort) Sort {
+func (s Pi) Intro(repr form.Form, f func(Sort) Sort) Sort {
 	// verify
-	a := NewTerm("a", s.A)
-	b := arrow(a)
+	a := NewTerm(form.Name("a"), s.A)
+	b := f(a)
 	sBa := s.B.Apply(a)
 	mustTermOf(b, sBa) // TODO - think, shouldn't it have to check for every a of type A?
 
-	return NewTerm(name, s)
+	return NewTerm(repr, s)
 }
 
 // Elim - take (f: Π(x:A)B(x)) (a: A) give (b: B(a)) - Modus Ponens
-func (s Pi) Elim(arrow Sort, a Sort) Sort {
-	mustTermOf(arrow, s)
+func (s Pi) Elim(f Sort, a Sort) Sort {
+	mustTermOf(f, s)
 	mustTermOf(a, s.A)
 	Ba := s.B.Apply(a)
 
-	name := fmt.Sprintf("(%s %s)", Name(arrow), Name(a))
-	return NewTerm(name, Ba)
+	return NewTerm(form.List{Repr(f), Repr(a)}, Ba)
 }

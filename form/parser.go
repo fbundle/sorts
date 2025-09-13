@@ -17,7 +17,7 @@ type Parser struct {
 }
 
 var defaultParser = Parser{
-	Split: []Token{"+", "*", "$", "⊕", "⊗", "=>", "->", ":", ",", "=", ":="},
+	Split: []Token{"+", "*", "$", "⊕", "⊗", "Π", "Σ", "=>", "->", ":", ",", "=", ":="},
 	Blocks: map[Token]Block{
 		"(": {
 			End: ")",
@@ -56,7 +56,7 @@ func (parser Parser) Parse(tokenList []Token) (Form, []Token, error) {
 			if err != nil {
 				return List(formList), tokenList, err
 			}
-			if term, ok := form.(Term); ok && Token(term) == block.End {
+			if term, ok := form.(Name); ok && Token(term) == block.End {
 				break
 			}
 			formList = append(formList, form)
@@ -64,7 +64,7 @@ func (parser Parser) Parse(tokenList []Token) (Form, []Token, error) {
 		form, err = block.Process(formList)
 		return form, tokenList, err
 	} else {
-		return Term(head), tokenList, nil
+		return Name(head), tokenList, nil
 	}
 }
 
@@ -99,12 +99,12 @@ func processInfix(argList []Form) (Form, error) {
 	if len(argList)%2 == 0 {
 		return nil, errors.New("infix syntax must have an odd number of arguments")
 	}
-	op, ok := argList[1].(Term)
+	op, ok := argList[1].(Name)
 	if !ok {
 		return nil, errors.New("infix operator must be a term")
 	}
 	for i := 3; i < len(argList); i += 2 {
-		op2, ok := argList[i].(Term)
+		op2, ok := argList[i].(Name)
 		if !ok {
 			return nil, errors.New("infix operator must be a term")
 		}
@@ -113,7 +113,7 @@ func processInfix(argList []Form) (Form, error) {
 		}
 	}
 
-	leftAssocOperator := map[Term]struct{}{
+	leftAssocOperator := map[Name]struct{}{
 		"+": {},
 		"*": {},
 	}

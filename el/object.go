@@ -6,57 +6,61 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func newTerm(expr Expr, parent _object) _object {
-	return _object{
+func newTerm(expr Expr, parent Object) Object {
+	return Object{
 		next: expr,
 		sort: sorts.NewTerm(String(expr), parent.sort),
-		parent: func() _object {
+		parent: func() Object {
 			return parent
 		},
 	}
 }
 
-func newType(level int, name Term) _object {
+func newType(level int, name Term) Object {
 	parent := uType(level + 1)
-	return _object{
+	return Object{
 		next: name,
 		sort: sorts.NewTerm(string(name), parent.sort),
-		parent: func() _object {
+		parent: func() Object {
 			return parent
 		},
 	}
 }
 
-func anyType(level int) _object {
+func anyType(level int) Object {
 	return newType(level, sorts.TerminalName)
 }
 
-func unitType(level int) _object {
+func unitType(level int) Object {
 	return newType(level, sorts.InitialName)
 }
 
 // uType - U_0 U_1 ... U_n
-func uType(level int) _object {
+func uType(level int) Object {
 	name := "U"
-	return _object{
+	return Object{
 		next: Term(fmt.Sprintf("U_%d", level)),
 		sort: sorts.NewAtom(level, name, name),
-		parent: func() _object {
+		parent: func() Object {
 			return uType(level + 1)
 		},
 	}
 }
 
-func (o _object) mustTotal(parent _object) _object {
+func (o Object) mustTotal(parent Object) Object {
 	// TODO - this is the new type check binding
 	panic("not implemented")
 }
-func (o _object) isTotal() bool {
+func (o Object) isTotal() bool {
 	return o.sort != nil
 }
 
-type _object struct {
+type Object struct {
 	next   Expr
-	sort   sorts.Sort     // can be nil for partial objects
-	parent func() _object // can be nil for partial objects
+	sort   sorts.Sort    // can be nil for partial objects
+	parent func() Object // can be nil for partial objects
+}
+
+func (o Object) Expr() Expr {
+	return o.next
 }

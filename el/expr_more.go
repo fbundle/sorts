@@ -23,13 +23,13 @@ func (l Lambda) mustExpr() {}
 
 func (l Lambda) Marshal() form.Form {
 	return form.List{
-		form.Term("=>"),
+		form.Name("=>"),
 		l.Param.Marshal(),
 		l.Body.Marshal(),
 	}
 }
 
-func (l Lambda) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (l Lambda) Resolve(frame Frame) (Frame, Object) {
 	return frame, nil, l, nil
 }
 
@@ -38,7 +38,7 @@ func init() {
 		if len(list) != 2 {
 			return nil, errors.New("lambda must have exactly 2 arguments: param and body")
 		}
-		param, ok := list[0].(form.Term)
+		param, ok := list[0].(form.Name)
 		if !ok {
 			return nil, errors.New("lambda parameter must be a term")
 		}
@@ -69,7 +69,7 @@ func (l Let) mustExpr() {}
 
 func (l Let) Marshal() form.Form {
 	forms := make([]form.Form, 0, 2+3*len(l.Bindings))
-	forms = append(forms, form.Term("let"))
+	forms = append(forms, form.Name("let"))
 	for _, binding := range l.Bindings {
 		forms = append(forms, binding.Name.Marshal())
 		forms = append(forms, binding.Type.Marshal())
@@ -114,7 +114,7 @@ func init() {
 		}
 		bindings := make([]Binding, 0, (len(list)-1)/3)
 		for i := 0; i < len(list)-1; i += 3 {
-			name, ok := list[i].(form.Term)
+			name, ok := list[i].(form.Name)
 			if !ok {
 				return nil, errors.New("let binding name must be a term")
 			}
@@ -158,7 +158,7 @@ func (m Match) mustExpr() {}
 
 func (m Match) Marshal() form.Form {
 	forms := make([]form.Form, 0, 2+2*len(m.Cases)+1)
-	forms = append(forms, form.Term("match"))
+	forms = append(forms, form.Name("match"))
 	forms = append(forms, m.Cond.Marshal())
 	for _, c := range m.Cases {
 		forms = append(forms, c.Comp.Marshal())
@@ -240,7 +240,7 @@ type Arrow struct {
 func (a Arrow) mustExpr() {}
 func (a Arrow) Marshal() form.Form {
 	return form.List{
-		form.Term("->"),
+		form.Name("->"),
 		a.A.Marshal(),
 		a.B.Marshal(),
 	}
@@ -290,7 +290,7 @@ type Sum struct {
 func (s Sum) mustExpr() {}
 func (s Sum) Marshal() form.Form {
 	return form.List{
-		form.Term("⊕"),
+		form.Name("⊕"),
 		s.A.Marshal(),
 		s.B.Marshal(),
 	}
@@ -339,7 +339,7 @@ type Prod struct {
 func (p Prod) mustExpr() {}
 func (p Prod) Marshal() form.Form {
 	return form.List{
-		form.Term("⊗"),
+		form.Name("⊗"),
 		p.A.Marshal(),
 		p.B.Marshal(),
 	}
@@ -387,7 +387,7 @@ type Exact struct {
 func (e Exact) mustExpr() {}
 func (e Exact) Marshal() form.Form {
 	return form.List{
-		form.Term("exact"),
+		form.Name("exact"),
 		e.Expr.Marshal(),
 	}
 }
@@ -417,7 +417,7 @@ type IntAdd struct {
 func (i IntAdd) mustExpr() {}
 func (i IntAdd) Marshal() form.Form {
 	return form.List{
-		form.Term("+"),
+		form.Name("+"),
 		i.A.Marshal(),
 		i.B.Marshal(),
 	}

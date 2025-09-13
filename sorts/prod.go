@@ -1,6 +1,14 @@
 package sorts
 
-import "fmt"
+import (
+	"github.com/fbundle/sorts/form"
+)
+
+const (
+	ProdName      form.Name = "⊗"
+	ProdLeftName  form.Name = "left"
+	ProdRightName form.Name = "right"
+)
 
 type Prod struct {
 	A Sort
@@ -10,7 +18,7 @@ type Prod struct {
 func (s Prod) sortAttr() sortAttr {
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
-		name:   fmt.Sprintf("%s × %s", Name(s.A), Name(s.B)),
+		repr:   form.List{ProdName, Repr(s.A), Repr(s.B)},
 		level:  level,
 		parent: Prod{A: Parent(s.A), B: Parent(s.B)}, // smallest type containing A × B
 		lessEqual: func(dst Sort) bool {
@@ -38,10 +46,7 @@ func (s Prod) Elim(t Sort) (left Sort, right Sort) {
 		return t.A, t.B
 	}
 
-	aName := fmt.Sprintf("(left %s)", Name(t))
-	bName := fmt.Sprintf("(right %s)", Name(t))
-
-	a := NewTerm(aName, s.A)
-	b := NewTerm(bName, s.B)
+	a := NewTerm(form.List{ProdLeftName, Repr(s)}, s.A)
+	b := NewTerm(form.List{ProdRightName, Repr(s)}, s.B)
 	return a, b
 }

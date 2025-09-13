@@ -1,6 +1,12 @@
 package sorts
 
-import "fmt"
+import (
+	"github.com/fbundle/sorts/form"
+)
+
+const (
+	ArrowName form.Name = "Arrow"
+)
 
 // Arrow - (A -> B)
 type Arrow struct {
@@ -9,10 +15,9 @@ type Arrow struct {
 }
 
 func (s Arrow) sortAttr() sortAttr {
-	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
-		name:   fmt.Sprintf("%s -> %s", Name(s.A), Name(s.B)),
-		level:  level,
+		repr:   form.List{ArrowName, Repr(s.A), Repr(s.B)},
+		level:  max(Level(s.A), Level(s.B)),
 		parent: Arrow{A: Parent(s.A), B: Parent(s.B)},
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
@@ -35,17 +40,16 @@ func (s Arrow) sortAttr() sortAttr {
 func (s Arrow) Elim(f Sort, a Sort) Sort {
 	mustTermOf(f, s)
 	mustTermOf(a, s.A)
-	termName := fmt.Sprintf("(%s %s)", Name(f), Name(a))
-	return NewTerm(termName, s.B)
+	return NewTerm(form.List{Repr(f), Repr(a)}, s.B)
 }
 
 // Intro - take a go function (repr) that maps (a: A) into (b: B)  give (f: A -> B)
-func (s Arrow) Intro(name string, repr func(Sort) Sort) Sort {
+func (s Arrow) Intro(repr form.Form, f func(Sort) Sort) Sort {
 	// verify
-	a := NewTerm("a", s.A) // dummy term
-	b := repr(a)
+	a := NewTerm(form.Name("a"), s.A) // dummy term
+	b := f(a)
 	mustTermOf(b, s.B)
 
 	// verify ok
-	return NewTerm(name, s)
+	return NewTerm(repr, s)
 }

@@ -1,17 +1,24 @@
 package sorts
 
-func Name(s any) string {
+import (
+	"errors"
+
+	"github.com/fbundle/sorts/form"
+)
+
+var typeErr = errors.New("type_error")
+
+func Repr(s any) form.Form {
 	if s == nil {
-		return "nil"
+		return form.List{}
 	}
-	switch s := s.(type) {
-	case Sort:
-		return s.sortAttr().name
-	case Dependent:
-		return s.Name
-	default:
-		panic("type_error")
+	if s, ok := s.(Sort); ok {
+		return s.sortAttr().repr
 	}
+	if s, ok := s.(Dependent); ok {
+		return s.Repr
+	}
+	panic(typeErr)
 }
 
 func Level(s Sort) int {
@@ -23,7 +30,7 @@ func Parent(s Sort) Sort {
 }
 
 func SubTypeOf(x Sort, y Sort) bool {
-	if Level(x) == Level(y) && (Name(x) == InitialName || Name(y) == TerminalName) {
+	if Level(x) == Level(y) && (Repr(x) == InitialName || Repr(y) == TerminalName) {
 		return true
 	}
 
@@ -39,7 +46,7 @@ type Sort interface {
 }
 
 type sortAttr struct {
-	name      string              // every Sort is identified with a Name (string)
+	repr      form.Form           // every Sort is identified with a Repr
 	level     int                 // universe Level
 	parent    Sort                // (or Type) every Sort must have a Parent
 	lessEqual func(dst Sort) bool // a partial order on sorts (subtype)
