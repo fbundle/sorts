@@ -14,6 +14,7 @@ func defaultSort(level int) Sort {
 	})
 }
 
+// newAtom - make atom with atom ancestors
 func newAtom(level int, repr form.Name, ancestor func(int) form.Name) Sort {
 	parentLevel := level + 1
 	parentRepr := ancestor(parentLevel)
@@ -26,6 +27,7 @@ func newAtom(level int, repr form.Name, ancestor func(int) form.Name) Sort {
 	}
 }
 
+// newTerm - make term with any parent
 func newTerm(termRepr form.Name, parent Sort) Sort {
 	return Atom{
 		level:  Level(parent) - 1,
