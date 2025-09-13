@@ -36,16 +36,16 @@ func (s Arrow) Elim(f Sort, a Sort) Sort {
 	mustTermOf(f, s)
 	mustTermOf(a, s.A)
 	termName := fmt.Sprintf("(%s %s)", Name(f), Name(a))
-	return MakeTerm(termName, s.B)
+	return makeTerm(termName, s.B)
 }
 
 // Intro - take a go function (repr) that maps (a: A) into (b: B)  give (f: A -> B)
 func (s Arrow) Intro(name string, repr func(Sort) Sort) Sort {
 	// verify
-	a := MakeTerm("a", s.A) // dummy term
+	a := makeTerm("a", s.A) // dummy term
 	b := repr(a)
 	mustTermOf(b, s.B)
 
 	// verify ok
-	return MakeTerm(name, s)
+	return makeTerm(name, s)
 }

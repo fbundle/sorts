@@ -45,5 +45,5 @@ func (s Sum) ByCases(t Sort, h1 Sort, h2 Sort) Sort {
 	mustTermOf(h2, Arrow{s.B, X})
 
 	name := fmt.Sprintf("(by_cases %s %s %s)", Name(t), Name(h1), Name(h2))
-	return MakeTerm(name, X)
+	return makeTerm(name, X)
 }
