@@ -17,12 +17,12 @@ type Universe interface {
 	NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Sort)
 
 	NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe
-	NewParseListRule(head sorts.Name, parseList sorts.ListParseFunc) Universe
+	NewListParser(head sorts.Name, parseList sorts.ListParseFunc) Universe
 }
 
 func newDefaultUniverse() Universe {
 	return newUniverse("Unit", "Any").
-		NewParseListRule("->", sorts.ParseListArrow("->"))
+		NewListParser("->", sorts.ListParseArrow("->"))
 }
 
 func newUniverse(initialHeader sorts.Name, terminalHeader sorts.Name) Universe {
@@ -128,7 +128,7 @@ func (u universe) Parse(node sorts.Form) sorts.Sort {
 	}
 }
 
-func (u universe) NewParseListRule(head sorts.Name, parseList sorts.ListParseFunc) Universe {
+func (u universe) NewListParser(head sorts.Name, parseList sorts.ListParseFunc) Universe {
 	if _, ok := u.listParsers.Get(head); ok {
 		panic("list type already registered")
 	}
