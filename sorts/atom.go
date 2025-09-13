@@ -1,50 +1,46 @@
 package sorts
 
-import (
-	"fmt"
-	"strconv"
-)
-
 const (
-	nameWithType = false
-)
-const (
-	defaultName  = "type"
 	InitialName  = "unit" // initial object
 	TerminalName = "any"  // terminal object
 )
 
-func NewAtom(level int, name string, parent Sort) Atom {
-	if parent != nil && Level(parent) != level+1 {
-		panic("type_error make")
-	}
+func MakeAtom(level int, name string, parentName string) Sort {
 	return Atom{
-		level:  level,
-		name:   name,
-		parent: parent,
+		level:   level,
+		name:    name,
+		_parent: _atomParent{name: parentName, sort: nil},
 	}
 }
-
-// NewTerm - make a dummy term of type parent
-func NewTerm(parent Sort, name string) Sort {
-	newName := name
-	if nameWithType {
-		newName = fmt.Sprintf("(%s: %s)", name, Name(parent))
+func MakeTerm(termName string, parent Sort) Sort {
+	return Atom{
+		level:   Level(parent) - 1,
+		name:    termName,
+		_parent: _atomParent{name: "", sort: parent},
 	}
-	return NewAtom(Level(parent)-1, newName, parent)
 }
 
 type Atom struct {
-	level  int
-	name   string
-	parent Sort
+	level   int
+	name    string
+	_parent _atomParent
+}
+
+func (s Atom) parent() Sort {
+	if s._parent.sort != nil {
+		return s._parent.sort
+	}
+	parentLevel := s.level + 1
+	parentName := s._parent.name
+	grandParentName := s._parent.name
+	return MakeAtom(parentLevel, parentName, grandParentName)
 }
 
 func (s Atom) sortAttr() sortAttr {
 	return sortAttr{
 		name:   s.name,
 		level:  s.level,
-		parent: defaultSort(s.parent, s.level+1),
+		parent: s.parent(),
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Atom:
@@ -66,38 +62,10 @@ func (s Atom) sortAttr() sortAttr {
 	}
 }
 
-func defaultSort(sort Sort, level int) Sort {
-	if sort != nil {
-		if Level(sort) != level {
-			panic("type_error Level")
-		}
-		return sort
-	}
-	return Atom{
-		level:  level,
-		name:   defaultName + "_" + strconv.Itoa(level),
-		parent: nil,
-	}
-}
-
 // _atomParent - parent of atom - must be either a name or a sort
 type _atomParent struct {
 	name string
 	sort Sort
-}
-
-func newAtomNameParent(name string) _atomParent {
-	return _atomParent{
-		name: name,
-		sort: nil,
-	}
-}
-
-func newAtomSortParent(sort Sort) _atomParent {
-	return _atomParent{
-		name: "",
-		sort: sort,
-	}
 }
 
 type rule struct {

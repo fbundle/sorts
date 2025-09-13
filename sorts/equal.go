@@ -15,9 +15,6 @@ type equalTerm struct {
 
 func (s equalTerm) sortAttr() sortAttr {
 	name := fmt.Sprintf("%s = %s", Name(s.A), Name(s.B))
-	if nameWithType {
-		name = fmt.Sprintf("(%s : %s)", name, Name(s.Parent))
-	}
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
 		name:   name,
@@ -30,11 +27,12 @@ func (s equalTerm) sortAttr() sortAttr {
 }
 
 func (s Equal) sortAttr() sortAttr {
+	panic("not implemented")
 	level := max(Level(s.A), Level(s.B))
 	return sortAttr{
 		name:   fmt.Sprintf("Eq(%s, %s)", Name(s.A), Name(s.B)),
 		level:  level,
-		parent: defaultSort(nil, level+1),
+		parent: nil,
 		lessEqual: func(dst Sort) bool {
 			return false // I haven't find any useful thing for this
 		},
