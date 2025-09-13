@@ -1,11 +1,5 @@
 package sorts
 
-const (
-	defaultName  = "type"
-	InitialName  = "unit" // initial object
-	TerminalName = "any"  // terminal object
-)
-
 func Name(s any) string {
 	if s == nil {
 		return "nil"

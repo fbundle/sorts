@@ -9,45 +9,21 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-type Object struct {
-	Sort   sorts.Sort // can be nil for partial objects
-	Next   Expr
-	parent *Object
-}
-
-func (o Object) MustTotal(parent Object) Object {
-	// TODO - this is the new type check binding
-	panic("not implemented")
-}
-func (o Object) Total() bool {
-	return o.Sort != nil
-}
-func (o Object) Parent() Object {
-	if o.parent != nil {
-		return *o.parent
-	} else {
-		// TODO - new design - refer to old EL
-		// TODO - change every error into panic, I am sick of it
-		//  default parent
-		panic("not implemented")
-	}
-}
-
 type Frame struct {
-	dict ordered_map.OrderedMap[Term, Object]
+	dict ordered_map.OrderedMap[Term, _object]
 }
 
 func (frame Frame) Set(key Term, sort sorts.Sort, next Expr) (Frame, error) {
 	if sort == nil || next == nil {
 		return frame, fmt.Errorf("cannot set nil sort or next: %v, %v, %v", key, sort, next)
 	}
-	return Frame{dict: frame.dict.Set(key, Object{Sort: sort, Next: next})}, nil
+	return Frame{dict: frame.dict.Set(key, _object{sort: sort, next: next})}, nil
 }
 
 func (frame Frame) Get(key Term) (sort sorts.Sort, next Expr, err error) {
 	notFoundErr := fmt.Errorf("variable not found: %s", key)
 	if value, ok := frame.dict.Get(key); ok {
-		return value.Sort, value.Next, nil
+		return value.sort, value.next, nil
 	}
 	sort, next, ok := builtinValue(key)
 	if ok {

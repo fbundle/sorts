@@ -36,7 +36,7 @@ func main() {
 		expr, err := el.ParseForm(formExpr)
 		if err != nil {
 			fmt.Printf("Error parsing  expression: %v\n", err)
-			fmt.Printf("Next: %s\n", strings.Join(formExpr.Marshal(), " "))
+			fmt.Printf("next: %s\n", strings.Join(formExpr.Marshal(), " "))
 			os.Exit(1)
 		}
 

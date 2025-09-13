@@ -8,6 +8,11 @@ import (
 const (
 	nameWithType = false
 )
+const (
+	defaultName  = "type"
+	InitialName  = "unit" // initial object
+	TerminalName = "any"  // terminal object
+)
 
 func NewAtom(level int, name string, parent Sort) Atom {
 	if parent != nil && Level(parent) != level+1 {
@@ -72,6 +77,26 @@ func defaultSort(sort Sort, level int) Sort {
 		level:  level,
 		name:   defaultName + "_" + strconv.Itoa(level),
 		parent: nil,
+	}
+}
+
+// _atomParent - parent of atom - must be either a name or a sort
+type _atomParent struct {
+	name string
+	sort Sort
+}
+
+func newAtomNameParent(name string) _atomParent {
+	return _atomParent{
+		name: name,
+		sort: nil,
+	}
+}
+
+func newAtomSortParent(sort Sort) _atomParent {
+	return _atomParent{
+		name: "",
+		sort: sort,
 	}
 }
 
