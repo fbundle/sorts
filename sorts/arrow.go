@@ -48,25 +48,22 @@ func (s Arrow) sortAttr(a SortAttr) sortAttr {
 
 // Elim - take (f: A -> B) (a: A) give (b: B) - Modus Ponens
 func (s Arrow) Elim(sa SortAttr, f Sort, a Sort) Sort {
-	if !sa.LessEqual(sa.Parent(f), s) {
-		panic(TypeErr)
-	}
-	if !sa.LessEqual(sa.Parent(a), s.A) {
-		panic(TypeErr)
-	}
+	must(sa).termOf(f, s)
+	must(sa).termOf(a, s.A)
 
 	name := Name(fmt.Sprintf("elim_%s_%s", sa.Form(f), sa.Form(a)))
 	return NewAtomTerm(sa, name, s.B)
 }
 
 // Intro - take a func that maps (a: A) into (b: B)  give (f: A -> B)
-func (s Arrow) Intro(sa SortAttr, name string, f func(Sort) Sort) Sort {
+func (s Arrow) Intro(sa SortAttr, name Name, f func(Sort) Sort) Sort {
 	// verify
 	a := NewAtomTerm(sa, "a", s.A)
 	b := f(a)
 
-	mustTermOf(b, s.B)
+	must(sa).termOf(b, s.B)
 
 	// verify ok
-	return NewTerm(s, name)
+
+	return NewAtomTerm(sa, name, s)
 }

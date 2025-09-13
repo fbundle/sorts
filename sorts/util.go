@@ -5,17 +5,17 @@ func must(a SortAttr) mustSortAttr {
 }
 
 type mustSortAttr struct {
-	SortAttr
+	a SortAttr
 }
 
-func (m mustSortAttr) mustLessEqual(x Sort, y Sort) {
-	if !m.LessEqual(x, y) {
+func (m mustSortAttr) lessEqual(x Sort, y Sort) {
+	if !m.a.LessEqual(x, y) {
 		panic(TypeErr)
 	}
 }
 
-func (m mustSortAttr) mustTermOf(x Sort, X Sort) {
-	if !m.LessEqual(m.Parent(x), X) {
+func (m mustSortAttr) termOf(x Sort, X Sort) {
+	if !m.a.LessEqual(m.a.Parent(x), X) {
 		panic(TypeErr)
 	}
 }
