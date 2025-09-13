@@ -22,7 +22,9 @@ type Universe interface {
 
 func newDefaultUniverse() Universe {
 	return newUniverse("Unit", "Any").
-		NewListParser("->", sorts.ListParseArrow("->"))
+		NewListParser("->", sorts.ListParseArrow("->")).
+		NewListParser("⊕", sorts.ListParseSum("⊕")).
+		NewListParser("⊗", sorts.ListParseProd("⊗"))
 }
 
 func newUniverse(initialHeader sorts.Name, terminalHeader sorts.Name) Universe {
