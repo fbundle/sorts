@@ -34,16 +34,24 @@ func (s actualSort) TypeCheck(sa SortAttr, parent Sort) Sort {
 	return s.Sort
 }
 
-type FunctionCall struct{}
+// BetaReduction - beta reduction
+type BetaReduction struct {
+	Cmd AlmostSort
+	Arg AlmostSort
+}
 
-func (f FunctionCall) TypeCheck(sa SortAttr, parent Sort) Sort {
+func (f BetaReduction) TypeCheck(sa SortAttr, parent Sort) Sort {
 	//TODO implement me
 	panic("implement me")
 }
 
-type Lambda struct{}
+// LambdaAbstraction - lambda abstraction
+type LambdaAbstraction struct {
+	Param Name
+	Body  AlmostSort
+}
 
-func (l Lambda) TypeCheck(sa SortAttr, parent Sort) Sort {
+func (l LambdaAbstraction) TypeCheck(sa SortAttr, parent Sort) Sort {
 	//TODO implement me
 	panic("implement me")
 }
