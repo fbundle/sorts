@@ -91,7 +91,7 @@ func (u Runtime) Parse(node Form) AlmostSort {
 func (u Runtime) NewListSortParser(head Name, parseList ListParseSortFunc) Runtime {
 	return u.NewListParser(head, func(parse ParseFunc, list List) AlmostSort {
 		sort := parseList(func(form sorts.Form) sorts.Sort {
-			return parse(form).(Object).Sort // inside a sort, must be sort
+			return parse(form).Sort() // inside a sort, must be sort
 		}, list)
 		return Object{sort}
 	})
