@@ -49,3 +49,8 @@ func (l Lambda) TypeCheck(sa SortAttr, parent Sort) Sort {
 	//TODO implement me
 	panic("implement me")
 }
+
+type Let struct {
+}
+type Match struct {
+}
