@@ -46,12 +46,11 @@ type Universe interface {
 	Initial(level int) Atom
 	Terminal(level int) Atom
 	NewTerm(name Name, parent Sort) Atom
-	NewListRule(head Name, parseList ParseListFunc) error
+
+	NewNameLessEqualRule(src Name, dst Name)
+	NewParseListRule(head Name, parseList ParseListFunc) error
 
 	SortAttr
-
-	NewNameRule(src Name, dst Name)
-	lessEqual(src Name, dst Name) bool
 }
 
 func newUniverse(universeHeader Name, initialHeader Name, terminalHeader Name) (*universe, error) {
@@ -148,7 +147,7 @@ func (u *universe) Parse(node Form) (Sort, error) {
 	}
 }
 
-func (u *universe) NewListRule(head Name, parseList ParseListFunc) error {
+func (u *universe) NewParseListRule(head Name, parseList ParseListFunc) error {
 	if _, ok := u.listRuleDict[head]; ok {
 		return errors.New("list type already registered")
 	}
@@ -156,7 +155,7 @@ func (u *universe) NewListRule(head Name, parseList ParseListFunc) error {
 	return nil
 }
 
-func (u *universe) NewNameRule(src Name, dst Name) {
+func (u *universe) NewNameLessEqualRule(src Name, dst Name) {
 	u.lessEqualMap[[2]Name{src, dst}] = struct{}{}
 }
 
