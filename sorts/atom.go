@@ -1,6 +1,6 @@
 package sorts
 
-func newAtomChain[T term](level int, name func(int) T) Sort[T] {
+func newAtomChain[T term](level int, name func(int) T) Atom[T] {
 	return Atom[T]{
 		level: level,
 		name:  name(level),
@@ -9,7 +9,7 @@ func newAtomChain[T term](level int, name func(int) T) Sort[T] {
 		},
 	}
 }
-func newAtomTerm[T term](u Universe[T], name T, parent Sort[T]) Sort[T] {
+func newAtomTerm[T term](u Universe[T], name T, parent Sort[T]) Atom[T] {
 	return Atom[T]{
 		level: u.Level(parent) - 1,
 		name:  name,

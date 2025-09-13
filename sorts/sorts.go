@@ -18,8 +18,8 @@ type Sort[T term] interface {
 }
 
 type Universe[T term] interface {
-	U(level int) Sort[T]
-	NewTerm(name T, parent Sort[T]) Sort[T]
+	U(level int) Atom[T]
+	NewTerm(name T, parent Sort[T]) Atom[T]
 
 	Repr(s any) Node[T]
 	Level(s Sort[T]) int
@@ -31,36 +31,55 @@ type Universe[T term] interface {
 	lessEqual(src T, dst T) bool
 }
 
-func NewUniverse[T term](universeName func(level int) T, initialName T, terminalName T) Universe[T] {
+func NewUniverse[T term](universeName func(level int) T, initialName T, terminalName T) (Universe[T], error) {
 	if initialName == terminalName {
-		panic(typeErr)
+		return nil, errors.New("initial and terminal name must be different")
 	}
 	return &universe[T]{
 		universeName: universeName,
 		initialName:  initialName,
 		terminalName: terminalName,
-	}
+		lessEqualMap: make(map[[2]T]struct{}),
+		parseListMap: make(map[T]ParseListFunc[T]),
+	}, nil
 }
+
+type ParseFunc[T term] = func(Node[T]) (Sort[T], error)
+
+type ParseListFunc[T term] = func(ParseFunc[T], []Node[T]) (Sort[T], error)
 
 type universe[T term] struct {
 	universeName func(level int) T
 	initialName  T
 	terminalName T
 	lessEqualMap map[[2]T]struct{}
+	parseListMap map[T]ParseListFunc[T]
+	nodeDict     map[T]Sort[T]
+}
+
+func (u *universe[T]) Parse(node Node[T]) (Sort[T], error) {
+	if len(node.Children) == 0 { // term
+
+	}
+}
+
+func (u *universe[T]) NewListType(name T, parseList ParseListFunc[T]) error {
+	if _, ok := u.parseListMap[name]; ok {
+		return errors.New("list type already registered")
+	}
+	u.parseListMap[name] = parseList
+	return nil
 }
 
 func (u *universe[T]) AddRule(src T, dst T) {
-	if u.lessEqualMap == nil {
-		u.lessEqualMap = make(map[[2]T]struct{})
-	}
 	u.lessEqualMap[[2]T{src, dst}] = struct{}{}
 }
 
-func (u *universe[T]) U(level int) Sort[T] {
+func (u *universe[T]) U(level int) Atom[T] {
 	return newAtomChain[T](level, u.universeName)
 }
 
-func (u *universe[T]) NewTerm(name T, parent Sort[T]) Sort[T] {
+func (u *universe[T]) NewTerm(name T, parent Sort[T]) Atom[T] {
 	return newAtomTerm(u, name, parent)
 }
 
@@ -96,10 +115,8 @@ func (u *universe[T]) lessEqual(src T, dst T) bool {
 	if src == dst {
 		return true
 	}
-	if u.lessEqualMap != nil {
-		if _, ok := u.lessEqualMap[[2]T{src, dst}]; ok {
-			return true
-		}
+	if _, ok := u.lessEqualMap[[2]T{src, dst}]; ok {
+		return true
 	}
 	return false
 }
