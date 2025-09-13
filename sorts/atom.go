@@ -7,17 +7,18 @@ const (
 )
 
 func defaultSort(level int) Sort {
-	return makeAtom(level, DefaultName, DefaultName)
+	return NewAtom(level, DefaultName, DefaultName)
 }
 
-func makeAtom(level int, name string, parentName string) Sort {
+func NewAtom(level int, name string, parentName string) Sort {
 	return Atom{
 		level:   level,
 		name:    name,
 		_parent: _atomParent{name: parentName, sort: nil},
 	}
 }
-func makeTerm(termName string, parent Sort) Sort {
+
+func NewTerm(termName string, parent Sort) Sort {
 	return Atom{
 		level:   Level(parent) - 1,
 		name:    termName,
@@ -38,7 +39,7 @@ func (s Atom) parent() Sort {
 	parentLevel := s.level + 1
 	parentName := s._parent.name
 	grandParentName := s._parent.name
-	return makeAtom(parentLevel, parentName, grandParentName)
+	return NewAtom(parentLevel, parentName, grandParentName)
 }
 
 func (s Atom) sortAttr() sortAttr {

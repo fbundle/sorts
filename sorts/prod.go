@@ -41,7 +41,7 @@ func (s Prod) Elim(t Sort) (left Sort, right Sort) {
 	aName := fmt.Sprintf("(left %s)", Name(t))
 	bName := fmt.Sprintf("(right %s)", Name(t))
 
-	a := makeTerm(aName, s.A)
-	b := makeTerm(bName, s.B)
+	a := NewTerm(aName, s.A)
+	b := NewTerm(bName, s.B)
 	return a, b
 }
