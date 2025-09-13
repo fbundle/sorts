@@ -2,8 +2,8 @@ package el2
 
 // AlmostSort - almost a sort - for example, a lambda
 type AlmostSort interface {
-	Sort() Sort // nullable
-	TypeCheck(sa SortAttr, parent Sort) Sort
+	Sort() Sort                              // nullable
+	TypeCheck(sa SortAttr, parent Sort) Sort // not nullable
 }
 
 // Object - a sort
