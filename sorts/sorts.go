@@ -30,6 +30,7 @@ type Universe interface {
 	Initial(level int) Atom
 	Terminal(level int) Atom
 	NewTerm(name Name, parent Sort) Atom
+	NewListRule(cmd Name, parseList ParseListFunc) error
 
 	Form(s any) Form
 	Level(s Sort) int
