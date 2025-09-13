@@ -1,14 +1,12 @@
 package sorts
 
-import (
-	"errors"
-)
+import "fmt"
 
-var TypeErr = errors.New("type_error") // cannot recover
+var TypeErr = fmt.Errorf("type_err") // cannot recover
 
-type ParseFunc = func(form Form) (Sort, error)
+type ParseFunc = func(form Form) Sort
 
-type ListParseFunc = func(parse ParseFunc, list List) (Sort, error)
+type ListParseFunc = func(parse ParseFunc, list List) Sort
 
 type sortAttr struct {
 	form      Form                // every Sort is identified with a Form

@@ -5,22 +5,16 @@ import (
 )
 
 func ListParseArrow(H Name) ListParseFunc {
-	return func(parse ParseFunc, list List) (Sort, error) {
+	return func(parse ParseFunc, list List) Sort {
 		if len(list) != 3 {
-			return nil, fmt.Errorf("arrow must be %s domain codomain", H)
+			panic(fmt.Errorf("arrow must be %s domain codomain", H))
 		}
 		if list[0] != H {
-			return nil, fmt.Errorf("arrow must be %s domain codomain", H)
+			panic(fmt.Errorf("arrow must be %s domain codomain", H))
 		}
-		a, err := parse(list[1])
-		if err != nil {
-			return nil, err
-		}
-		b, err := parse(list[2])
-		if err != nil {
-			return nil, err
-		}
-		return Arrow{H: H, A: a, B: b}, nil
+		a := parse(list[1])
+		b := parse(list[2])
+		return Arrow{H: H, A: a, B: b}
 	}
 }
 
@@ -50,4 +44,29 @@ func (s Arrow) sortAttr(a SortAttr) sortAttr {
 			}
 		},
 	}
+}
+
+// Elim - take (f: A -> B) (a: A) give (b: B) - Modus Ponens
+func (s Arrow) Elim(sa SortAttr, f Sort, a Sort) Sort {
+	if !sa.LessEqual(sa.Parent(f), s) {
+		panic(TypeErr)
+	}
+	if !sa.LessEqual(sa.Parent(a), s.A) {
+		panic(TypeErr)
+	}
+
+	name := Name(fmt.Sprintf("elim_%s_%s", sa.Form(f), sa.Form(a)))
+	return NewAtomTerm(sa, name, s.B)
+}
+
+// Intro - take a func that maps (a: A) into (b: B)  give (f: A -> B)
+func (s Arrow) Intro(sa SortAttr, name string, f func(Sort) Sort) Sort {
+	// verify
+	a := NewAtomTerm(sa, "a", s.A)
+	b := f(a)
+
+	mustTermOf(b, s.B)
+
+	// verify ok
+	return NewTerm(s, name)
 }

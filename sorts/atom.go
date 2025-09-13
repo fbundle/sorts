@@ -21,7 +21,7 @@ func NewAtomTerm(a SortAttr, name Name, parent Sort) Sort {
 
 type Atom struct {
 	level  int
-	name   Name
+	name   Name // TODO - consider using Form
 	parent func() Sort
 }
 
