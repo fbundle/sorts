@@ -118,13 +118,7 @@ func (u universe) Parse(node sorts.Form) sorts.Sort {
 			panic("list type not registered")
 		}
 		// parse list
-		sort, err := rule(func(form sorts.Form) (sorts.Sort, error) {
-			return u.Parse(form), nil
-		}, node)
-		if err != nil {
-			panic(err)
-		}
-		return sort
+		return rule(u.Parse, node)
 	default:
 		panic("parse error")
 	}
