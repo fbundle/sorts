@@ -1,9 +1,14 @@
 package sorts
 
 const (
-	InitialName  = "unit" // initial object
-	TerminalName = "any"  // terminal object
+	InitialName  = "Unit" // initial object
+	TerminalName = "Any"  // terminal object
+	DefaultName  = "Type"
 )
+
+func defaultSort(level int) Sort {
+	return MakeAtom(level, DefaultName, DefaultName)
+}
 
 func MakeAtom(level int, name string, parentName string) Sort {
 	return Atom{
