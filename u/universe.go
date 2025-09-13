@@ -1,64 +1,68 @@
 package u
 
 import (
-	"errors"
+	"cmp"
 	"strconv"
 	"strings"
 
+	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
 )
 
 type Universe interface {
 	sorts.SortAttr
 
-	Universe(level int) sorts.Atom
 	Initial(level int) sorts.Atom
 	Terminal(level int) sorts.Atom
-	NewTerm(name sorts.Name, parent sorts.Sort) sorts.Atom
+	NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Atom)
 
-	NewNameLessEqualRule(src sorts.Name, dst sorts.Name)
-	NewParseListRule(head sorts.Name, parseList sorts.ParseListFunc) error
+	NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe
+	NewParseListRule(head sorts.Name, parseList sorts.ParseListFunc) Universe
 }
 
 func newDefaultUniverse() Universe {
-	u, err := newUniverse("Unit", "Any")
-	if err != nil {
-		panic(err)
-	}
-
-	err = u.NewParseListRule("->", sorts.ParseListArrow("->"))
-	if err != nil {
-		panic(err)
-	}
-	return u
-
+	return newUniverse("Unit", "Any").
+		NewParseListRule("->", sorts.ParseListArrow("->"))
 }
-func newUniverse(initialHeader sorts.Name, terminalHeader sorts.Name) (Universe, error) {
+
+func newUniverse(initialHeader sorts.Name, terminalHeader sorts.Name) Universe {
 	nameSet := make(map[sorts.Name]struct{})
 	nameSet[initialHeader] = struct{}{}
 	nameSet[terminalHeader] = struct{}{}
 	if len(nameSet) != 3 {
-		return nil, errors.New("universe, initial, terminal name must be distinct")
+		panic("universe, initial, terminal name must be distinct")
 	}
 	u := &universe{
 		initialHeader:  initialHeader,
 		terminalHeader: terminalHeader,
 	}
-	return u, nil
+	return u
+}
+
+type rule struct {
+	src sorts.Name
+	dst sorts.Name
+}
+
+func (r rule) Cmp(s rule) int {
+	if c := cmp.Compare(r.src, s.src); c != 0 {
+		return c
+	}
+	return cmp.Compare(r.dst, s.dst)
 }
 
 type universe struct {
 	initialHeader  sorts.Name
 	terminalHeader sorts.Name
 
-	nameLessEqualDict map[[2]sorts.Name]struct{}
-	parseListDict     map[sorts.Name]sorts.ParseListFunc
+	nameLessEqualDict ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
+	parseListDict     ordered_map.OrderedMap[sorts.Name, sorts.ParseListFunc]
 
-	nameDict map[sorts.Name]sorts.Atom
+	nameDict ordered_map.OrderedMap[sorts.Name, sorts.Atom]
 }
 
 // Terminal - T_0 T_1 ... T_n
-func (u *universe) Terminal(level int) sorts.Atom {
+func (u universe) Terminal(level int) sorts.Atom {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
 		return u.terminalHeader + "_" + levelStr
@@ -66,23 +70,22 @@ func (u *universe) Terminal(level int) sorts.Atom {
 }
 
 // Initial - I_0 I_1 ... I_n
-func (u *universe) Initial(level int) sorts.Atom {
+func (u universe) Initial(level int) sorts.Atom {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
 		return u.initialHeader + "_" + levelStr
 	})
 }
 
-func (u *universe) Parse(node sorts.Form) (sorts.Sort, error) {
+func (u universe) Parse(node sorts.Form) sorts.Sort {
 	switch node := node.(type) {
 	case sorts.Name:
 		// lookup name
-		if sort, ok := u.nameDict[node]; ok {
-			return sort, nil
+		if sort, ok := u.nameDict.Get(node); ok {
+			return sort
 		}
 		// parse builtin: universe, initial, terminal
 		builtin := map[sorts.Name]func(level int) sorts.Atom{
-			u.universeHeader: u.Universe,
 			u.initialHeader:  u.Initial,
 			u.terminalHeader: u.Terminal,
 		}
@@ -92,77 +95,97 @@ func (u *universe) Parse(node sorts.Form) (sorts.Sort, error) {
 				levelStr := strings.TrimPrefix(name, string(header)+"_")
 				level, err := strconv.Atoi(levelStr)
 				if err != nil {
-					return nil, err
+					continue
 				}
 				sort := makeFunc(level)
-				return sort, nil
+				return sort
 			}
 		}
-		return nil, errors.New("name not found")
+		panic("name not found")
 	case sorts.List:
 		if len(node) == 0 {
-			return nil, errors.New("empty list")
+			panic("empty list")
 		}
 		head, ok := node[0].(sorts.Name)
 		if !ok {
-			return nil, errors.New("list must start with a name")
+			panic("list must start with a name")
 		}
 
-		rule, ok := u.parseListDict[head]
+		rule, ok := u.parseListDict.Get(head)
 		if !ok {
-			return nil, errors.New("list type not registered")
+			panic("list type not registered")
 		}
 		// parse list
-		return rule(u.Parse, node[1:])
+		sort, err := rule(func(form sorts.Form) (sorts.Sort, error) {
+			return u.Parse(form), nil
+		}, node)
+		if err != nil {
+			panic(err)
+		}
+		return sort
 	default:
-		return nil, errors.New("parse error")
+		panic("parse error")
 	}
 }
 
-func (u *universe) NewParseListRule(head sorts.Name, parseList sorts.ParseListFunc) error {
-	if _, ok := u.parseListDict[head]; ok {
-		return errors.New("list type already registered")
+func (u universe) NewParseListRule(head sorts.Name, parseList sorts.ParseListFunc) Universe {
+	if _, ok := u.parseListDict.Get(head); ok {
+		panic("list type already registered")
 	}
-	u.parseListDict[head] = parseList
-	return nil
+	return u.update(func(u universe) universe {
+		u.parseListDict = u.parseListDict.Set(head, parseList)
+		return u
+	})
 }
 
-func (u *universe) NewNameLessEqualRule(src sorts.Name, dst sorts.Name) {
-	u.nameLessEqualDict[[2]sorts.Name{src, dst}] = struct{}{}
+func (u universe) NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe {
+	return u.update(func(u universe) universe {
+		u.nameLessEqualDict = u.nameLessEqualDict.Set(rule{src, dst})
+		return u
+	})
 }
 
-func (u *universe) NewTerm(name sorts.Name, parent sorts.Sort) sorts.Atom {
+func (u universe) NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Atom) {
 	atom := sorts.NewAtomTerm(u, name, parent)
-	u.nameDict[name] = atom
-	return atom
+	if _, ok := u.nameDict.Get(name); ok {
+		panic("name already registered")
+	}
+	return u.update(func(u universe) universe {
+		u.nameDict = u.nameDict.Set(name, atom)
+		return u
+	}), atom
 }
 
-func (u *universe) Form(s any) sorts.Form {
+func (u universe) Form(s any) sorts.Form {
 	return sorts.GetForm(u, s)
 }
 
-func (u *universe) Level(s sorts.Sort) int {
+func (u universe) Level(s sorts.Sort) int {
 	return sorts.GetLevel(u, s)
 }
-func (u *universe) Parent(s sorts.Sort) sorts.Sort {
+func (u universe) Parent(s sorts.Sort) sorts.Sort {
 	return sorts.GetParent(u, s)
 }
-func (u *universe) LessEqual(x sorts.Sort, y sorts.Sort) bool {
+func (u universe) LessEqual(x sorts.Sort, y sorts.Sort) bool {
 	return sorts.GetLessEqual(u, x, y)
 }
-func (u *universe) TermOf(x sorts.Sort, X sorts.Sort) bool {
+func (u universe) TermOf(x sorts.Sort, X sorts.Sort) bool {
 	return u.LessEqual(u.Parent(x), X)
 }
 
-func (u *universe) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
+func (u universe) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
 	if src == u.initialHeader || dst == u.terminalHeader {
 		return true
 	}
 	if src == dst {
 		return true
 	}
-	if _, ok := u.nameLessEqualDict[[2]sorts.Name{src, dst}]; ok {
+	if _, ok := u.nameLessEqualDict.Get(rule{src, dst}); ok {
 		return true
 	}
 	return false
+}
+
+func (u universe) update(f func(universe) universe) universe {
+	return f(u)
 }
