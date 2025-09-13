@@ -10,6 +10,15 @@ const (
 	ProdRightName form.Name = "right"
 )
 
+func mustParseProd(parse MustParseFunc, args form.List) Sort {
+	if len(args) != 2 {
+		panic(typeErr)
+	}
+	A := parse(args[0])
+	B := parse(args[1])
+	return Prod{A, B}
+}
+
 type Prod struct {
 	A Sort
 	B Sort

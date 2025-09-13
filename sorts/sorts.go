@@ -8,6 +8,16 @@ import (
 
 var typeErr = errors.New("type_error")
 
+type MustParseFunc = func(form.Form) Sort
+
+type mustParseListFunc = func(MustParseFunc, form.List) Sort
+
+var listParsers = map[form.Name]mustParseListFunc{
+	ArrowName: mustParseArrow,
+	ProdName:  mustParseProd,
+	SumName:   mustParseSum,
+}
+
 func Repr(s any) form.Form {
 	if s == nil {
 		return form.List{}

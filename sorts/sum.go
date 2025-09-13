@@ -9,6 +9,15 @@ const (
 	ByCasesName form.Name = "by_cases"
 )
 
+func mustParseSum(parse MustParseFunc, args form.List) Sort {
+	if len(args) != 2 {
+		panic(typeErr)
+	}
+	A := parse(args[0])
+	B := parse(args[1])
+	return Sum{A, B}
+}
+
 type Sum struct {
 	A Sort
 	B Sort

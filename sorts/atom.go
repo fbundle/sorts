@@ -9,40 +9,40 @@ const (
 )
 
 func defaultSort(level int) Sort {
-	return NewAtom(level, DefaultName, func(level int) form.Form {
+	return NewAtom(level, DefaultName, func(level int) form.Name {
 		return DefaultName
 	})
 }
 
-func NewAtom(level int, repr form.Form, ancestor func(int) form.Form) Sort {
+func NewAtom(level int, repr form.Name, ancestor func(int) form.Name) Sort {
 	parentLevel := level + 1
 	parentRepr := ancestor(parentLevel)
 	return Atom{
 		level: level,
-		repr:  repr,
+		name:  repr,
 		parent: func() Sort {
 			return NewAtom(parentLevel, parentRepr, ancestor)
 		},
 	}
 }
 
-func NewTerm(termRepr form.Form, parent Sort) Sort {
+func NewTerm(termRepr form.Name, parent Sort) Sort {
 	return Atom{
 		level:  Level(parent) - 1,
-		repr:   termRepr,
+		name:   termRepr,
 		parent: func() Sort { return parent },
 	}
 }
 
 type Atom struct {
 	level  int
-	repr   form.Form
+	name   form.Name
 	parent func() Sort
 }
 
 func (s Atom) sortAttr() sortAttr {
 	return sortAttr{
-		repr:   s.repr,
+		repr:   s.name,
 		level:  s.level,
 		parent: s.parent(),
 		lessEqual: func(dst Sort) bool {
@@ -51,20 +51,15 @@ func (s Atom) sortAttr() sortAttr {
 				if s.level != d.level {
 					return false
 				}
-				if s.repr == InitialName || d.repr == TerminalName {
+				if s.name == InitialName || d.name == TerminalName {
 					return true
 				}
-				if s.repr == d.repr {
+				if s.name == d.name {
 					return true
 				}
 
-				srepr, ok1 := s.repr.(form.Name)
-				drepr, ok2 := d.repr.(form.Name)
-				if ok1 && ok2 {
-					_, ok := lessEqualMap[rule{srepr, drepr}]
-					return ok
-				}
-				return false
+				_, ok := lessEqualMap[rule{s.name, d.name}]
+				return ok
 
 			default:
 				return false
