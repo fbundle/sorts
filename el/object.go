@@ -6,25 +6,39 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
+func newType(level int, name string) _object {
+	parent := uType(level + 1)
+	return _object{
+		next: Term(name),
+		sort: sorts.NewTerm(name, parent.sort),
+		parent: func() _object {
+			return parent
+		},
+	}
+}
+
 // uType - U_0 U_1 ... U_n
 func uType(level int) _object {
-	name := fmt.Sprintf("U_%d", level)
-	sort := sorts.NewAtom(level, name, nil)
+	name := "U"
+	return _object{
+		next: Term(fmt.Sprintf("U_%d", level)),
+		sort: sorts.NewAtom(level, name, name),
+		parent: func() _object {
+			return uType(level + 1)
+		},
+	}
 }
 
-type _object struct {
-	sort   sorts.Sort // can be nil for partial objects
-	next   Expr
-	parent func() _object // can be nil for partial objects
-}
-
-func (o _object) MustTotal(parent _object) _object {
+func (o _object) mustTotal(parent _object) _object {
 	// TODO - this is the new type check binding
 	panic("not implemented")
 }
-func (o _object) Total() bool {
+func (o _object) isTotal() bool {
 	return o.sort != nil
 }
-func (o _object) Parent() _object {
-	return o.parent()
+
+type _object struct {
+	next   Expr
+	sort   sorts.Sort     // can be nil for partial objects
+	parent func() _object // can be nil for partial objects
 }

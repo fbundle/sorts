@@ -9,6 +9,10 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
+const (
+	TypeName = "Type"
+)
+
 type Frame struct {
 	dict ordered_map.OrderedMap[Term, _object]
 }
