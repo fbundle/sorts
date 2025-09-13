@@ -19,6 +19,10 @@ type List []Form
 
 func (l List) mustForm() {}
 
+type ParseFunc = func(form Form) (Sort, error)
+
+type ParseListFunc = func(parse ParseFunc, args List) (Sort, error)
+
 type sortAttr struct {
 	form      Form                // every Sort is identified with a Form
 	level     int                 // universe Level

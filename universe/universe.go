@@ -17,27 +17,8 @@ type Universe interface {
 	NewTerm(name sorts.Name, parent sorts.Sort) sorts.Atom
 
 	NewNameLessEqualRule(src sorts.Name, dst sorts.Name)
-	NewParseListRule(head sorts.Name, parseList ParseListFunc) error
+	NewParseListRule(head sorts.Name, parseList sorts.ParseListFunc) error
 }
-
-func NewUniverse(universeHeader sorts.Name, initialHeader sorts.Name, terminalHeader sorts.Name) (Universe, error) {
-	nameSet := make(map[sorts.Name]struct{})
-	nameSet[universeHeader] = struct{}{}
-	nameSet[initialHeader] = struct{}{}
-	nameSet[terminalHeader] = struct{}{}
-	if len(nameSet) != 3 {
-		return nil, errors.New("universe, initial, terminal name must be distinct")
-	}
-	return &universe{
-		universeHeader: universeHeader,
-		initialHeader:  initialHeader,
-		terminalHeader: terminalHeader,
-	}, nil
-}
-
-type ParseFunc = func(sorts.Form) (sorts.Sort, error)
-
-type ParseListFunc = func(ParseFunc, sorts.List) (sorts.Sort, error)
 
 type universe struct {
 	universeHeader sorts.Name
@@ -45,7 +26,7 @@ type universe struct {
 	terminalHeader sorts.Name
 
 	nameLessEqualDict map[[2]sorts.Name]struct{}
-	parseListDict     map[sorts.Name]ParseListFunc
+	parseListDict     map[sorts.Name]sorts.ParseListFunc
 
 	nameDict map[sorts.Name]sorts.Atom
 }
@@ -115,7 +96,7 @@ func (u *universe) Parse(node sorts.Form) (sorts.Sort, error) {
 	}
 }
 
-func (u *universe) NewParseListRule(head sorts.Name, parseList ParseListFunc) error {
+func (u *universe) NewParseListRule(head sorts.Name, parseList sorts.ParseListFunc) error {
 	if _, ok := u.parseListDict[head]; ok {
 		return errors.New("list type already registered")
 	}

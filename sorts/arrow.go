@@ -1,16 +1,35 @@
 package sorts
 
+import "errors"
+
+func ParseListArrow(H Name) ParseListFunc {
+	return func(parse ParseFunc, args List) (Sort, error) {
+		if len(args) != 2 {
+			return nil, errors.New("arrow must have exactly 2 arguments: domain and codomain")
+		}
+		a, err := parse(args[0])
+		if err != nil {
+			return nil, err
+		}
+		b, err := parse(args[1])
+		if err != nil {
+			return nil, err
+		}
+		return Arrow{H: H, A: a, B: b}, nil
+	}
+}
+
 type Arrow struct {
-	Head Name
-	A    Sort
-	B    Sort
+	H Name
+	A Sort
+	B Sort
 }
 
 func (s Arrow) sortAttr(a SortAttr) sortAttr {
 	return sortAttr{
-		form:   List{s.Head, a.Form(s.A), a.Form(s.B)},
+		form:   List{s.H, a.Form(s.A), a.Form(s.B)},
 		level:  max(a.Level(s.A), a.Level(s.B)),
-		parent: Arrow{Head: s.Head, A: a.Parent(s.A), B: a.Parent(s.B)},
+		parent: Arrow{H: s.H, A: a.Parent(s.A), B: a.Parent(s.B)},
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Arrow:
