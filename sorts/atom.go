@@ -1,6 +1,19 @@
 package sorts
 
-type Atom[T comparable] struct {
+func newAtomChain[T term](level int, name func(int) T) Sort[T] {
+	return Atom[T]{
+		level: level,
+		name:  name(level),
+		parent: func() Sort[T] {
+			return newAtomChain[T](level+1, name)
+		},
+	}
+}
+func newAtomTerm[T term](name T, parent Sort[T]) Sort[T] {
+	return Atom[T]{}
+}
+
+type Atom[T term] struct {
 	level  int
 	name   T
 	parent func() Sort[T]

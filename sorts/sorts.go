@@ -2,9 +2,6 @@ package sorts
 
 import (
 	"errors"
-	"strconv"
-
-	"github.com/fbundle/sorts/form"
 )
 
 var typeErr = errors.New("type_error")
@@ -14,11 +11,13 @@ type Node[T any] struct {
 	Children []Node[T]
 }
 
-type Sort[T comparable] interface {
+type term = comparable // leaf type constraint for sorts
+
+type Sort[T term] interface {
 	sortAttr() sortAttr[T]
 }
 
-type Universe[T comparable] struct {
+type Universe[T term] struct {
 	UniverseName func(level int) T
 	InitialName  T
 	TerminalName T
@@ -30,6 +29,37 @@ func (u *Universe[T]) AddRule(src T, dst T) {
 		u.lessEqualMap = make(map[[2]T]struct{})
 	}
 	u.lessEqualMap[[2]T{src, dst}] = struct{}{}
+}
+
+func (u *Universe[T]) Universe(level int) Sort[T] {
+	return newAtomChain[T](level, u.UniverseName)
+}
+
+func (u *Universe[T]) NewTerm(name T, parent Sort[T]) Sort[T] {
+	return newAtomTerm(name, parent)
+}
+
+func (u *Universe[T]) Repr(s any) Node[T] {
+	if sort, ok := s.(Sort[T]); ok {
+		return sort.sortAttr().repr
+	}
+	if dep, ok := s.(Dependent[T]); ok {
+		return dep.Repr
+	}
+	panic(typeErr)
+}
+
+func (u *Universe[T]) Level(s Sort[T]) int {
+	return s.sortAttr().level
+}
+func (u *Universe[T]) Parent(s Sort[T]) Sort[T] {
+	return s.sortAttr().parent
+}
+func (u *Universe[T]) SubTypeOf(x Sort[T], y Sort[T]) bool {
+	return x.sortAttr().lessEqual(u, y)
+}
+func (u *Universe[T]) TermOf(x Sort[T], X Sort[T]) bool {
+	return u.SubTypeOf(u.Parent(x), X)
 }
 
 func (u *Universe[T]) lessEqual(src T, dst T) bool {
@@ -47,69 +77,7 @@ func (u *Universe[T]) lessEqual(src T, dst T) bool {
 	return false
 }
 
-func (u *Universe[T]) Universe(level int) Atom[T] {
-
-}
-
-// universe - ... U_{-1}, U_0, U_1, ...
-func universe(level int) Sort {
-	return newAtomChain(level, func(i int) form.Name {
-		levelStr := strconv.Itoa(level)
-		if level < 0 {
-			return form.Name("U_{" + levelStr + "}")
-		} else {
-			return form.Name("U_" + levelStr)
-		}
-	})
-}
-
-//
-
-type mustParseFunc = func(form.Form) Sort
-
-type mustParseListFunc = func(mustParseFunc, form.List) Sort
-
-var listParsers = map[form.Name]mustParseListFunc{
-	ArrowName: mustParseArrow,
-	ProdName:  mustParseProd,
-	SumName:   mustParseSum,
-	// TODO - fill all types
-}
-
-func Repr(s any) form.Form {
-	if s == nil {
-		return form.List{}
-	}
-	if s, ok := s.(Sort); ok {
-		return s.sortAttr().repr
-	}
-	if s, ok := s.(Dependent); ok {
-		return s.Repr
-	}
-	panic(typeErr)
-}
-
-func Level(s Sort) int {
-	return s.sortAttr().level
-}
-
-func Parent(s Sort) Sort {
-	return s.sortAttr().parent
-}
-
-func SubTypeOf(x Sort, y Sort) bool {
-	if Level(x) == Level(y) && (Repr(x) == InitialName || Repr(y) == TerminalName) {
-		return true
-	}
-
-	return x.sortAttr().lessEqual(y)
-}
-func TermOf(x Sort, X Sort) bool {
-	X1 := Parent(x)
-	return SubTypeOf(X1, X)
-}
-
-type sortAttr[T comparable] struct {
+type sortAttr[T term] struct {
 	repr      Node[T]                                // every Sort is identified with a Repr
 	level     int                                    // universe Level
 	parent    Sort[T]                                // (or Type) every Sort must have a Parent
