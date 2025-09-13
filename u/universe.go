@@ -1,4 +1,4 @@
-package el2
+package u
 
 import (
 	"errors"
@@ -21,7 +21,7 @@ type Universe interface {
 }
 
 func newDefaultUniverse() Universe {
-	u, err := newUniverse("U", "Unit", "Any")
+	u, err := newUniverse("Unit", "Any")
 	if err != nil {
 		panic(err)
 	}
@@ -33,16 +33,14 @@ func newDefaultUniverse() Universe {
 	return u
 
 }
-func newUniverse(universeHeader sorts.Name, initialHeader sorts.Name, terminalHeader sorts.Name) (Universe, error) {
+func newUniverse(initialHeader sorts.Name, terminalHeader sorts.Name) (Universe, error) {
 	nameSet := make(map[sorts.Name]struct{})
-	nameSet[universeHeader] = struct{}{}
 	nameSet[initialHeader] = struct{}{}
 	nameSet[terminalHeader] = struct{}{}
 	if len(nameSet) != 3 {
 		return nil, errors.New("universe, initial, terminal name must be distinct")
 	}
 	u := &universe{
-		universeHeader: universeHeader,
 		initialHeader:  initialHeader,
 		terminalHeader: terminalHeader,
 	}
@@ -50,7 +48,6 @@ func newUniverse(universeHeader sorts.Name, initialHeader sorts.Name, terminalHe
 }
 
 type universe struct {
-	universeHeader sorts.Name
 	initialHeader  sorts.Name
 	terminalHeader sorts.Name
 
@@ -60,23 +57,18 @@ type universe struct {
 	nameDict map[sorts.Name]sorts.Atom
 }
 
-func (u *universe) Universe(level int) sorts.Atom {
+func (u *universe) Terminal(level int) sorts.Atom {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
-		return u.universeHeader + "_" + levelStr
+		return u.terminalHeader + "_" + levelStr
 	})
 }
 
 func (u *universe) Initial(level int) sorts.Atom {
-	levelStr := sorts.Name(strconv.Itoa(level))
-	name := u.initialHeader + "_" + levelStr
-	return sorts.NewAtomTerm(u, name, u.Universe(level+1))
-}
-
-func (u *universe) Terminal(level int) sorts.Atom {
-	levelStr := sorts.Name(strconv.Itoa(level))
-	name := u.terminalHeader + "_" + levelStr
-	return sorts.NewAtomTerm(u, name, u.Universe(level+1))
+	return sorts.NewAtomChain(level, func(level int) sorts.Name {
+		levelStr := sorts.Name(strconv.Itoa(level))
+		return u.initialHeader + "_" + levelStr
+	})
 }
 
 func (u *universe) Parse(node sorts.Form) (sorts.Sort, error) {
