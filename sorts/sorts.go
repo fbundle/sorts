@@ -2,128 +2,176 @@ package sorts
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 )
 
-var typeErr = errors.New("type_error")
+var TypeErr = errors.New("type_error") // cannot recover
 
-type Node[T any] struct {
-	Value    T
-	Children []Node[T]
+// Form - Union[Name, List]
+type Form interface {
+	mustForm()
 }
 
-type term = comparable // leaf type constraint for sorts
+type Name string
 
-type Sort[T term] interface {
-	sortAttr() sortAttr[T]
+func (n Name) mustForm() {}
+
+type List []Form
+
+func (l List) mustForm() {}
+
+type Sort interface {
+	sortAttr() sortAttr
 }
 
-type Universe[T term] interface {
-	U(level int) Atom[T]
-	NewTerm(name T, parent Sort[T]) Atom[T]
+type Universe interface {
+	Universe(level int) Sort
+	Initial(level int) Sort
+	Terminal(level int) Sort
+	NewTerm(name Name, parent Sort) Sort
 
-	Repr(s any) Node[T]
-	Level(s Sort[T]) int
-	Parent(s Sort[T]) Sort[T]
-	SubTypeOf(x Sort[T], y Sort[T]) bool
-	TermOf(x Sort[T], X Sort[T]) bool
+	Form(s any) Form
+	Level(s Sort) int
+	Parent(s Sort) Sort
+	SubTypeOf(x Sort, y Sort) bool
+	TermOf(x Sort, X Sort) bool
 
-	AddRule(src T, dst T)
-	lessEqual(src T, dst T) bool
+	AddRule(src Name, dst Name)
+	lessEqual(src Name, dst Name) bool
 }
 
-func NewUniverse[T term](universeName func(level int) T, initialName T, terminalName T) (Universe[T], error) {
-	if initialName == terminalName {
+func NewUniverse(universeHeader Name, initialHeader Name, terminalHeader Name) (Universe, error) {
+	if initialHeader == terminalHeader {
 		return nil, errors.New("initial and terminal name must be different")
 	}
-	return &universe[T]{
-		universeName: universeName,
-		initialName:  initialName,
-		terminalName: terminalName,
-		lessEqualMap: make(map[[2]T]struct{}),
-		parseListMap: make(map[T]ParseListFunc[T]),
+	return &universe{
+		universeHeader: universeHeader,
+		initialHeader:  initialHeader,
+		terminalHeader: terminalHeader,
 	}, nil
 }
 
-type ParseFunc[T term] = func(Node[T]) (Sort[T], error)
+type ParseFunc = func(Form) (Sort, error)
 
-type ParseListFunc[T term] = func(ParseFunc[T], []Node[T]) (Sort[T], error)
+type ParseListFunc = func(ParseFunc, List) (Sort, error)
 
-type universe[T term] struct {
-	universeName func(level int) T
-	initialName  T
-	terminalName T
-	lessEqualMap map[[2]T]struct{}
-	parseListMap map[T]ParseListFunc[T]
-	nodeDict     map[T]Sort[T]
+type universe struct {
+	universeHeader Name
+	initialHeader  Name
+	terminalHeader Name
+	lessEqualMap   map[[2]Name]struct{}
+	parseListMap   map[Name]ParseListFunc
+	sortDict       map[Name]Sort
 }
 
-func (u *universe[T]) Parse(node Node[T]) (Sort[T], error) {
-	if len(node.Children) == 0 { // term
+func (u *universe) Universe(level int) Sort {
+	return newAtomChain(level, func(level int) Name {
+		levelStr := Name(strconv.Itoa(level))
+		return u.universeHeader + "_" + levelStr
+	})
+}
 
+func (u *universe) Initial(level int) Sort {
+	levelStr := Name(strconv.Itoa(level))
+	name := u.initialHeader + "_" + levelStr
+	return newAtomTerm(u, name, u.Universe(level+1))
+}
+
+func (u *universe) Terminal(level int) Sort {
+	levelStr := Name(strconv.Itoa(level))
+	name := u.terminalHeader + "_" + levelStr
+	return newAtomTerm(u, name, u.Universe(level+1))
+}
+
+func (u *universe) Parse(node Form) (Sort, error) {
+	switch node := node.(type) {
+	case Name:
+		if sort, ok := u.sortDict[node]; ok {
+			return sort, nil
+		}
+		// parse builtin: universe, initial, terminal
+		builtin := map[Name]func(level int) Sort{
+			u.universeHeader: u.Universe,
+			u.initialHeader:  u.Initial,
+			u.terminalHeader: u.Terminal,
+		}
+		name := string(node)
+		for header, makeFunc := range builtin {
+			if strings.HasPrefix(name, string(header)+"_") {
+				levelStr := strings.TrimPrefix(name, string(header)+"_")
+				level, err := strconv.Atoi(levelStr)
+				if err != nil {
+					return nil, err
+				}
+				sort := makeFunc(level)
+				return sort, nil
+			}
+		}
+		return nil, errors.New("parse error")
+	case List:
+	default:
+		return nil, errors.New("parse error")
 	}
 }
 
-func (u *universe[T]) NewListType(name T, parseList ParseListFunc[T]) error {
-	if _, ok := u.parseListMap[name]; ok {
+func (u *universe) NewListType(cmd Name, parseList ParseListFunc) error {
+	if _, ok := u.parseListMap[cmd]; ok {
 		return errors.New("list type already registered")
 	}
-	u.parseListMap[name] = parseList
+	u.parseListMap[cmd] = parseList
 	return nil
 }
 
-func (u *universe[T]) AddRule(src T, dst T) {
-	u.lessEqualMap[[2]T{src, dst}] = struct{}{}
+func (u *universe) AddRule(src Name, dst Name) {
+	u.lessEqualMap[[2]Name{src, dst}] = struct{}{}
 }
 
-func (u *universe[T]) U(level int) Atom[T] {
-	return newAtomChain[T](level, u.universeName)
-}
-
-func (u *universe[T]) NewTerm(name T, parent Sort[T]) Atom[T] {
+func (u *universe) NewTerm(name Name, parent Sort) Sort {
 	return newAtomTerm(u, name, parent)
 }
 
-func (u *universe[T]) Repr(s any) Node[T] {
-	if sort, ok := s.(Sort[T]); ok {
+func (u *universe) Form(s any) Form {
+	if sort, ok := s.(Sort); ok {
 		return sort.sortAttr().repr
 	}
-	if dep, ok := s.(Dependent[T]); ok {
+	if dep, ok := s.(Dependent); ok {
 		return dep.Repr
 	}
-	panic(typeErr)
+	panic(TypeErr)
 }
 
-func (u *universe[T]) Level(s Sort[T]) int {
+func (u *universe) Level(s Sort) int {
 	return s.sortAttr().level
 }
-func (u *universe[T]) Parent(s Sort[T]) Sort[T] {
+func (u *universe) Parent(s Sort) Sort {
 	return s.sortAttr().parent
 }
-func (u *universe[T]) SubTypeOf(x Sort[T], y Sort[T]) bool {
+func (u *universe) SubTypeOf(x Sort, y Sort) bool {
 	return x.sortAttr().lessEqual(u, y)
 }
-func (u *universe[T]) TermOf(x Sort[T], X Sort[T]) bool {
+func (u *universe) TermOf(x Sort, X Sort) bool {
 	return u.SubTypeOf(u.Parent(x), X)
 }
 
 // private
 
-func (u *universe[T]) lessEqual(src T, dst T) bool {
-	if src == u.initialName || dst == u.terminalName {
+func (u *universe) lessEqual(src Name, dst Name) bool {
+	if src == u.initialHeader || dst == u.terminalHeader {
 		return true
 	}
 	if src == dst {
 		return true
 	}
-	if _, ok := u.lessEqualMap[[2]T{src, dst}]; ok {
+	if _, ok := u.lessEqualMap[[2]Name{src, dst}]; ok {
 		return true
 	}
 	return false
 }
 
-type sortAttr[T term] struct {
-	repr      Node[T]                               // every Sort is identified with a Repr
-	level     int                                   // universe Level
-	parent    Sort[T]                               // (or Type) every Sort must have a Parent
-	lessEqual func(u Universe[T], dst Sort[T]) bool // a partial order on sorts (subtype)
+type sortAttr struct {
+	repr      Form                            // every Sort is identified with a Form
+	level     int                             // universe Level
+	parent    Sort                            // (or Type) every Sort must have a Parent
+	lessEqual func(u Universe, dst Sort) bool // a partial order on sorts (subtype)
 }

@@ -37,7 +37,7 @@ func unitType(level int) Object {
 
 // uType - U_0 U_1 ... U_n
 func uType(level int) Object {
-	name := "U"
+	name := "Universe"
 	return Object{
 		next: Term(fmt.Sprintf("U_%d", level)),
 		sort: sorts.newAtom(level, name, name),

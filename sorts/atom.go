@@ -1,38 +1,38 @@
 package sorts
 
-func newAtomChain[T term](level int, name func(int) T) Atom[T] {
-	return Atom[T]{
+func newAtomChain(level int, chainName func(int) Name) Atom {
+	return Atom{
 		level: level,
-		name:  name(level),
-		parent: func() Sort[T] {
-			return newAtomChain[T](level+1, name)
+		name:  chainName(level),
+		parent: func() Sort {
+			return newAtomChain(level+1, chainName)
 		},
 	}
 }
-func newAtomTerm[T term](u Universe[T], name T, parent Sort[T]) Atom[T] {
-	return Atom[T]{
+func newAtomTerm(u Universe, name Name, parent Sort) Atom {
+	return Atom{
 		level: u.Level(parent) - 1,
 		name:  name,
-		parent: func() Sort[T] {
+		parent: func() Sort {
 			return parent
 		},
 	}
 }
 
-type Atom[T term] struct {
+type Atom struct {
 	level  int
-	name   T
-	parent func() Sort[T]
+	name   Name
+	parent func() Sort
 }
 
-func (s Atom[T]) sortAttr() sortAttr[T] {
-	return sortAttr[T]{
-		repr:   Node[T]{Value: s.name},
+func (s Atom) sortAttr() sortAttr {
+	return sortAttr{
+		repr:   s.name,
 		level:  s.level,
 		parent: s.parent(),
-		lessEqual: func(u Universe[T], dst Sort[T]) bool {
+		lessEqual: func(u Universe, dst Sort) bool {
 			switch d := dst.(type) {
-			case Atom[T]:
+			case Atom:
 				if s.level != d.level {
 					return false
 				}

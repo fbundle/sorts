@@ -18,7 +18,7 @@ type equalTerm struct {
 
 func (s equalTerm) sortAttr() sortAttr {
 	return sortAttr{
-		name:   form.List{EqualTerm, Repr(s.A), Repr(s.B)},
+		name:   form.List{EqualTerm, Form(s.A), Form(s.B)},
 		level:  max(Level(s.A), Level(s.B)),
 		parent: s.Parent,
 		lessEqual: func(dst Sort) bool {
@@ -29,7 +29,7 @@ func (s equalTerm) sortAttr() sortAttr {
 
 func (s Equal) sortAttr() sortAttr {
 	return sortAttr{
-		name:   form.List{EqualTerm, Repr(s.A), Repr(s.B)},
+		name:   form.List{EqualTerm, Form(s.A), Form(s.B)},
 		level:  max(Level(s.A), Level(s.B)),
 		parent: nil,
 		lessEqual: func(dst Sort) bool {
