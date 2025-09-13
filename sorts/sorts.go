@@ -76,10 +76,11 @@ type universe struct {
 	universeHeader Name
 	initialHeader  Name
 	terminalHeader Name
-	lessEqualMap   map[[2]Name]struct{}
 
-	listRuleDict map[Name]ParseListFunc
-	nameDict     map[Name]Atom
+	nameLessEqualDict map[[2]Name]struct{}
+	parseListDict     map[Name]ParseListFunc
+
+	nameDict map[Name]Atom
 }
 
 func (u *universe) Universe(level int) Atom {
@@ -136,7 +137,7 @@ func (u *universe) Parse(node Form) (Sort, error) {
 			return nil, errors.New("list must start with a name")
 		}
 
-		rule, ok := u.listRuleDict[head]
+		rule, ok := u.parseListDict[head]
 		if !ok {
 			return nil, errors.New("list type not registered")
 		}
@@ -148,15 +149,15 @@ func (u *universe) Parse(node Form) (Sort, error) {
 }
 
 func (u *universe) NewParseListRule(head Name, parseList ParseListFunc) error {
-	if _, ok := u.listRuleDict[head]; ok {
+	if _, ok := u.parseListDict[head]; ok {
 		return errors.New("list type already registered")
 	}
-	u.listRuleDict[head] = parseList
+	u.parseListDict[head] = parseList
 	return nil
 }
 
 func (u *universe) NewNameLessEqualRule(src Name, dst Name) {
-	u.lessEqualMap[[2]Name{src, dst}] = struct{}{}
+	u.nameLessEqualDict[[2]Name{src, dst}] = struct{}{}
 }
 
 func (u *universe) NewTerm(name Name, parent Sort) Atom {
@@ -195,7 +196,7 @@ func (u *universe) nameLessEqual(src Name, dst Name) bool {
 	if src == dst {
 		return true
 	}
-	if _, ok := u.lessEqualMap[[2]Name{src, dst}]; ok {
+	if _, ok := u.nameLessEqualDict[[2]Name{src, dst}]; ok {
 		return true
 	}
 	return false
