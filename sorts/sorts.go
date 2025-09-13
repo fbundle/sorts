@@ -30,7 +30,7 @@ type Universe interface {
 	Initial(level int) Atom
 	Terminal(level int) Atom
 	NewTerm(name Name, parent Sort) Atom
-	NewListRule(cmd Name, parseList ParseListFunc) error
+	NewListRule(head Name, parseList ParseListFunc) error
 
 	Form(s any) Form
 	Level(s Sort) int
@@ -136,11 +136,11 @@ func (u *universe) Parse(node Form) (Sort, error) {
 	}
 }
 
-func (u *universe) NewListRule(cmd Name, parseList ParseListFunc) error {
-	if _, ok := u.listRuleDict[cmd]; ok {
+func (u *universe) NewListRule(head Name, parseList ParseListFunc) error {
+	if _, ok := u.listRuleDict[head]; ok {
 		return errors.New("list type already registered")
 	}
-	u.listRuleDict[cmd] = parseList
+	u.listRuleDict[head] = parseList
 	return nil
 }
 
