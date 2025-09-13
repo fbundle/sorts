@@ -96,7 +96,7 @@ func (l Let) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 			value = name // set cycle
 		}
 
-		frame, err = frame.Set(name, sorts.NewTerm(parentSort, string(name)), value)
+		frame, err = frame.set(name, sorts.NewTerm(parentSort, string(name)), value)
 		if err != nil {
 			return frame, nil, nil, err
 		}

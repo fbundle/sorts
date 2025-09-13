@@ -15,7 +15,7 @@ func matchPattern(frame Frame, condSort sorts.Sort, condValue Expr, pattern Expr
 		}
 		return frame, String(compValue) == String(condValue), nil
 	case Term:
-		frame, err := frame.Set(pattern, condSort, condValue)
+		frame, err := frame.set(pattern, condSort, condValue)
 		if err != nil {
 			return frame, false, err
 		}
@@ -54,7 +54,7 @@ func reverseMatchPattern(frame Frame, condSort sorts.Sort, pattern Expr) (Frame,
 		frame, _, _, err := pattern.Expr.Resolve(frame)
 		return frame, err
 	case Term:
-		return frame.Set(pattern, condSort, pattern)
+		return frame.set(pattern, condSort, pattern)
 	case FunctionCall:
 		frame, cmdSort, _, err := pattern.Cmd.Resolve(frame)
 		if err != nil {

@@ -27,7 +27,7 @@ func (t Term) Marshal() form.Form {
 }
 
 func (t Term) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
-	sort, next, err := frame.Get(t)
+	sort, next, err := frame.get(t)
 	if err != nil {
 		return frame, nil, nil, err
 	}
@@ -63,7 +63,7 @@ func (f FunctionCall) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
 	}
 	switch cmd := cmdValue.(type) {
 	case Lambda:
-		frame, err := frame.Set(cmd.Param, argSort, argValue)
+		frame, err := frame.set(cmd.Param, argSort, argValue)
 		if err != nil {
 			return frame, nil, nil, err
 		}
