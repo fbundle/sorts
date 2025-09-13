@@ -33,3 +33,17 @@ func (s actualSort) TypeCheck(sa SortAttr, parent Sort) Sort {
 	must(sa).termOf(s, parent)
 	return s.Sort
 }
+
+type FunctionCall struct{}
+
+func (f FunctionCall) TypeCheck(sa SortAttr, parent Sort) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+type Lambda struct{}
+
+func (l Lambda) TypeCheck(sa SortAttr, parent Sort) Sort {
+	//TODO implement me
+	panic("implement me")
+}
