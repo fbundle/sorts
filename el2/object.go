@@ -21,6 +21,7 @@ var ListParseProd = sorts.ListParseProd
 
 // AlmostSort - almost a sort - for example, a lambda
 type AlmostSort struct {
+	form Form
 }
 
 func (s AlmostSort) TypeCheck(parent Sort) Sort {
