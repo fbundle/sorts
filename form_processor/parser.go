@@ -3,28 +3,26 @@ package form_processor
 import (
 	"errors"
 	"fmt"
-
-	"github.com/fbundle/sorts/form"
 )
 
 type Preprocessor func(string) string
 type Block struct {
-	End     form.Token
-	Process func([]form.Form) (form.Form, error)
+	End     Token
+	Process func([]Form) (Form, error)
 }
 
 type Parser struct {
-	Blocks map[form.Token]Block
-	Split  []form.Token
+	Blocks map[Token]Block
+	Split  []Token
 }
 
 var defaultParser = Parser{
-	Split: []form.Token{"+", "*", "$", "⊕", "⊗", "Π", "Σ", "=>", "->", ":", ",", "=", ":="},
-	Blocks: map[form.Token]Block{
+	Split: []Token{"+", "*", "$", "⊕", "⊗", "Π", "Σ", "=>", "->", ":", ",", "=", ":="},
+	Blocks: map[Token]Block{
 		"(": {
 			End: ")",
-			Process: func(forms []form.Form) (form.Form, error) {
-				return form.List(forms), nil
+			Process: func(forms []Form) (Form, error) {
+				return List(forms), nil
 			},
 		},
 		"{": {
@@ -34,7 +32,7 @@ var defaultParser = Parser{
 	},
 }
 
-func (parser Parser) Tokenize(s string, pList ...Preprocessor) []form.Token {
+func (parser Parser) Tokenize(s string, pList ...Preprocessor) []Token {
 	newPList := append([]Preprocessor{
 		removeComment("#"),
 	}, pList...)
@@ -45,40 +43,40 @@ func (parser Parser) Tokenize(s string, pList ...Preprocessor) []form.Token {
 	)
 }
 
-func (parser Parser) Parse(tokenList []form.Token) (form.Form, []form.Token, error) {
+func (parser Parser) Parse(tokenList []Token) (Form, []Token, error) {
 	tokenList, head, err := pop(tokenList)
 	if err != nil {
 		return nil, tokenList, err
 	}
 	if block, ok := parser.Blocks[head]; ok {
-		var form form.Form
-		var formList []form.Form
+		var f Form
+		var forms []Form
 		for {
-			form, tokenList, err = parser.Parse(tokenList)
+			f, tokenList, err = parser.Parse(tokenList)
 			if err != nil {
-				return form.List(formList), tokenList, err
+				return List(forms), tokenList, err
 			}
-			if term, ok := form.(form.Name); ok && form.Token(term) == block.End {
+			if term, ok := f.(Name); ok && Token(term) == block.End {
 				break
 			}
-			formList = append(formList, form)
+			forms = append(forms, f)
 		}
-		form, err = block.Process(formList)
-		return form, tokenList, err
+		f, err = block.Process(forms)
+		return f, tokenList, err
 	} else {
-		return form.Name(head), tokenList, nil
+		return Name(head), tokenList, nil
 	}
 }
 
-func Tokenize(s string) []form.Token {
+func Tokenize(s string) []Token {
 	return defaultParser.Tokenize(s)
 }
 
-func Parse(tokenList []form.Token) (form.Form, []form.Token, error) {
+func Parse(tokenList []Token) (Form, []Token, error) {
 	return defaultParser.Parse(tokenList)
 }
 
-func pop(tokenList []form.Token) ([]form.Token, form.Token, error) {
+func pop(tokenList []Token) ([]Token, Token, error) {
 	if len(tokenList) == 0 {
 		return nil, "", errors.New("empty token list")
 	}
@@ -91,9 +89,9 @@ func pop(tokenList []form.Token) ([]form.Token, form.Token, error) {
 // {x => y => (add x y)}	(=> x (=> y (add x y)))		// right assoc
 // {x -> y -> z}			(-> x (-> y z))				// right assoc
 // etc.
-func processInfix(argList []form.Form) (form.Form, error) {
+func processInfix(argList []Form) (Form, error) {
 	if len(argList) == 0 {
-		return form.List(nil), nil
+		return List(nil), nil
 	}
 	if len(argList) == 1 {
 		return argList[0], nil
@@ -101,12 +99,12 @@ func processInfix(argList []form.Form) (form.Form, error) {
 	if len(argList)%2 == 0 {
 		return nil, errors.New("infix syntax must have an odd number of arguments")
 	}
-	op, ok := argList[1].(form.Name)
+	op, ok := argList[1].(Name)
 	if !ok {
 		return nil, errors.New("infix operator must be a term")
 	}
 	for i := 3; i < len(argList); i += 2 {
-		op2, ok := argList[i].(form.Name)
+		op2, ok := argList[i].(Name)
 		if !ok {
 			return nil, errors.New("infix operator must be a term")
 		}
@@ -115,7 +113,7 @@ func processInfix(argList []form.Form) (form.Form, error) {
 		}
 	}
 
-	leftAssocOperator := map[form.Name]struct{}{
+	leftAssocOperator := map[Name]struct{}{
 		"+": {},
 		"*": {},
 	}
@@ -127,7 +125,7 @@ func processInfix(argList []form.Form) (form.Form, error) {
 		if err != nil {
 			return nil, err
 		}
-		return form.List([]form.Form{cmd, left, right}), nil
+		return List([]Form{cmd, left, right}), nil
 	} else {
 		// by default, right assoc
 		left, cmd, argList := argList[0], argList[1], argList[2:]
@@ -135,6 +133,6 @@ func processInfix(argList []form.Form) (form.Form, error) {
 		if err != nil {
 			return nil, err
 		}
-		return form.List([]form.Form{cmd, left, right}), nil
+		return List([]Form{cmd, left, right}), nil
 	}
 }

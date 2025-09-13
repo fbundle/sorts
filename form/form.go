@@ -10,7 +10,7 @@ type Form interface {
 type Name string
 type List []Form
 
-func (t Name) Marshal() []Token {
+func (t Name) Marshal(blockBeg Token, blockEnd Token) []Token {
 	return []Token{Token(t)}
 }
 

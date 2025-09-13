@@ -30,7 +30,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		fmt.Println(strings.Join(e.Marshal(), " "))
+		fmt.Println(strings.Join(e.Marshal("(", ")"), " "))
 	}
 
 }
