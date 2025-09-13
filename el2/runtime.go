@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fbundle/sorts/persistent/ordered_map"
+	"github.com/fbundle/sorts/sorts"
 )
 
 func DefaultRuntime() Runtime {
@@ -43,12 +44,12 @@ func (u Runtime) Initial(level int) Sort {
 	})
 }
 
-func (u Runtime) Parse(node Form) Sort {
+func (u Runtime) Parse(node Form) AlmostSort {
 	switch node := node.(type) {
 	case Name:
 		// lookup name
 		if sort, ok := u.frame.Get(node); ok {
-			return sort
+			return Object{sort}
 		}
 		// parse builtin: Runtime, initial, terminal
 		builtin := map[Name]func(level int) Sort{
@@ -64,7 +65,7 @@ func (u Runtime) Parse(node Form) Sort {
 					continue
 				}
 				sort := makeFunc(level)
-				return sort
+				return Object{sort}
 			}
 		}
 		panic("name not found")
@@ -87,7 +88,20 @@ func (u Runtime) Parse(node Form) Sort {
 		panic("parse error")
 	}
 }
-
+func (u Runtime) NewListSortParser(head Name, parseList ListParseSortFunc) Runtime {
+	if _, ok := u.listParsers.Get(head); ok {
+		panic("list type already registered")
+	}
+	return u.update(func(u Runtime) Runtime {
+		u.listParsers = u.listParsers.Set(head, func(parse ParseFunc, list List) AlmostSort {
+			sort := parseList(func(form sorts.Form) sorts.Sort {
+				return parse(form).(Object).Sort // inside a sort, must be sort
+			}, list)
+			return Object{sort}
+		})
+		return u
+	})
+}
 func (u Runtime) NewListParser(head Name, parseList ListParseFunc) Runtime {
 	if _, ok := u.listParsers.Get(head); ok {
 		panic("list type already registered")

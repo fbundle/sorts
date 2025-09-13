@@ -17,7 +17,10 @@ type SortAttr = sorts.SortAttr
 var NewAtomChain = sorts.NewAtomChain
 var NewAtomTerm = sorts.NewAtomTerm
 
-type ListParseFunc = sorts.ListParseFunc
+type ParseFunc = func(form Form) AlmostSort
+type ListParseFunc = func(parse ParseFunc, list List) AlmostSort
+type ParseSortFunc = sorts.ParseFunc
+type ListParseSortFunc = sorts.ListParseFunc
 
 var ListParseArrow = sorts.ListParseArrow
 var ListParseSum = sorts.ListParseSum
