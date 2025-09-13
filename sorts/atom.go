@@ -1,74 +1,26 @@
 package sorts
 
-import "github.com/fbundle/sorts/form"
-
-const (
-	InitialName  form.Name = "Unit" // initial object
-	TerminalName form.Name = "Any"  // terminal object
-	DefaultName  form.Name = "Type"
-)
-
-// newAtomChain - make atom with atom ancestors
-func newAtomChain(level int, name func(int) form.Name) Sort {
-	return Atom{
-		level: level,
-		name:  name(level),
-		parent: func() Sort {
-			return newAtomChain(level+1, name)
-		},
-	}
-}
-
-// newAtomTerm - make term with any parent
-func newAtomTerm(termRepr form.Name, parent Sort) Sort {
-	return Atom{
-		level:  Level(parent) - 1,
-		name:   termRepr,
-		parent: func() Sort { return parent },
-	}
-}
-
-type Atom struct {
+type Atom[T comparable] struct {
 	level  int
-	name   form.Name
-	parent func() Sort
+	name   T
+	parent func() Sort[T]
 }
 
-func (s Atom) sortAttr() sortAttr {
-	return sortAttr{
-		repr:   s.name,
+func (s Atom[T]) sortAttr() sortAttr[T] {
+	return sortAttr[T]{
+		repr:   Node[T]{Value: s.name},
 		level:  s.level,
 		parent: s.parent(),
-		lessEqual: func(dst Sort) bool {
+		lessEqual: func(u *Universe[T], dst Sort[T]) bool {
 			switch d := dst.(type) {
-			case Atom:
+			case Atom[T]:
 				if s.level != d.level {
 					return false
 				}
-				if s.name == InitialName || d.name == TerminalName {
-					return true
-				}
-				if s.name == d.name {
-					return true
-				}
-
-				_, ok := lessEqualMap[rule{s.name, d.name}]
-				return ok
-
+				return u.lessEqual(s.name, d.name)
 			default:
 				return false
 			}
 		},
 	}
-}
-
-type rule struct {
-	src form.Name
-	dst form.Name
-}
-
-var lessEqualMap = make(map[rule]struct{})
-
-func AddRule(src form.Name, dst form.Name) {
-	lessEqualMap[rule{src, dst}] = struct{}{}
 }
