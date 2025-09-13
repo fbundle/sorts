@@ -4,13 +4,11 @@ import (
 	"sort"
 	"strings"
 	"unicode"
-
-	"github.com/fbundle/sorts/form"
 )
 
 // getSplitTokens returns the sorted list of split tokens
-func (parser Parser) getSplitTokens() []form.Token {
-	splitTokenSet := make(map[form.Token]struct{})
+func (parser Parser) getSplitTokens() []Token {
+	splitTokenSet := make(map[Token]struct{})
 	for _, tok := range parser.Split {
 		splitTokenSet[tok] = struct{}{}
 	}
@@ -18,7 +16,7 @@ func (parser Parser) getSplitTokens() []form.Token {
 		splitTokenSet[beg] = struct{}{}
 		splitTokenSet[block.End] = struct{}{}
 	}
-	splitTokens := make([]form.Token, 0, len(splitTokenSet))
+	splitTokens := make([]Token, 0, len(splitTokenSet))
 	for tok := range splitTokenSet {
 		splitTokens = append(splitTokens, tok)
 	}
@@ -57,12 +55,12 @@ var removeComment = func(sep string) Preprocessor {
 }
 
 const (
-	CharStringBegin  form.Token = "\""
-	CharStringEnd    form.Token = "\""
-	CharStringEscape form.Token = "\\"
+	CharStringBegin  Token = "\""
+	CharStringEnd    Token = "\""
+	CharStringEscape Token = "\\"
 )
 
-func tokenize(str string, splitTokens []string, pList ...Preprocessor) []form.Token {
+func tokenize(str string, splitTokens []string, pList ...Preprocessor) []Token {
 	// preprocess
 	for _, p := range pList {
 		str = p(str)
@@ -74,7 +72,7 @@ func tokenize(str string, splitTokens []string, pList ...Preprocessor) []form.To
 		STATE_STRING
 	)
 
-	var tokens []form.Token
+	var tokens []Token
 	state := STATE_NORMAL
 	var buffer []rune
 	flushBuffer := func() {
