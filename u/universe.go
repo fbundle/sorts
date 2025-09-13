@@ -9,36 +9,14 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-type Universe interface {
-	sorts.SortAttr
-
-	Initial(level int) sorts.Sort
-	Terminal(level int) sorts.Sort
-	NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Sort)
-
-	NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe
-	NewListParser(head sorts.Name, parseList sorts.ListParseFunc) Universe
-}
-
-func newDefaultUniverse() Universe {
-	return newUniverse("Unit", "Any").
+func DefaultUniverse() Universe {
+	return Universe{
+		InitialHeader:  "Unit",
+		TerminalHeader: "Any",
+	}.
 		NewListParser("->", sorts.ListParseArrow("->")).
 		NewListParser("⊕", sorts.ListParseSum("⊕")).
 		NewListParser("⊗", sorts.ListParseProd("⊗"))
-}
-
-func newUniverse(initialHeader sorts.Name, terminalHeader sorts.Name) Universe {
-	nameSet := make(map[sorts.Name]struct{})
-	nameSet[initialHeader] = struct{}{}
-	nameSet[terminalHeader] = struct{}{}
-	if len(nameSet) != 3 {
-		panic("universe, initial, terminal name must be distinct")
-	}
-	u := &universe{
-		initialHeader:  initialHeader,
-		terminalHeader: terminalHeader,
-	}
-	return u
 }
 
 type rule struct {
@@ -53,9 +31,9 @@ func (r rule) Cmp(s rule) int {
 	return cmp.Compare(r.dst, s.dst)
 }
 
-type universe struct {
-	initialHeader  sorts.Name
-	terminalHeader sorts.Name
+type Universe struct {
+	InitialHeader  sorts.Name
+	TerminalHeader sorts.Name
 
 	nameLessEqual ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
 	listParsers   ordered_map.OrderedMap[sorts.Name, sorts.ListParseFunc]
@@ -64,32 +42,32 @@ type universe struct {
 }
 
 // Terminal - T_0 T_1 ... T_n
-func (u universe) Terminal(level int) sorts.Sort {
+func (u Universe) Terminal(level int) sorts.Sort {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
-		return u.terminalHeader + "_" + levelStr
+		return u.TerminalHeader + "_" + levelStr
 	})
 }
 
 // Initial - I_0 I_1 ... I_n
-func (u universe) Initial(level int) sorts.Sort {
+func (u Universe) Initial(level int) sorts.Sort {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
-		return u.initialHeader + "_" + levelStr
+		return u.InitialHeader + "_" + levelStr
 	})
 }
 
-func (u universe) Parse(node sorts.Form) sorts.Sort {
+func (u Universe) Parse(node sorts.Form) sorts.Sort {
 	switch node := node.(type) {
 	case sorts.Name:
 		// lookup name
 		if sort, ok := u.frame.Get(node); ok {
 			return sort
 		}
-		// parse builtin: universe, initial, terminal
+		// parse builtin: Universe, initial, terminal
 		builtin := map[sorts.Name]func(level int) sorts.Sort{
-			u.initialHeader:  u.Initial,
-			u.terminalHeader: u.Terminal,
+			u.InitialHeader:  u.Initial,
+			u.TerminalHeader: u.Terminal,
 		}
 		name := string(node)
 		for header, makeFunc := range builtin {
@@ -124,53 +102,53 @@ func (u universe) Parse(node sorts.Form) sorts.Sort {
 	}
 }
 
-func (u universe) NewListParser(head sorts.Name, parseList sorts.ListParseFunc) Universe {
+func (u Universe) NewListParser(head sorts.Name, parseList sorts.ListParseFunc) Universe {
 	if _, ok := u.listParsers.Get(head); ok {
 		panic("list type already registered")
 	}
-	return u.update(func(u universe) universe {
+	return u.update(func(u Universe) Universe {
 		u.listParsers = u.listParsers.Set(head, parseList)
 		return u
 	})
 }
 
-func (u universe) NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe {
-	return u.update(func(u universe) universe {
+func (u Universe) NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe {
+	return u.update(func(u Universe) Universe {
 		u.nameLessEqual = u.nameLessEqual.Set(rule{src, dst})
 		return u
 	})
 }
 
-func (u universe) NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Sort) {
+func (u Universe) NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Sort) {
 	atom := sorts.NewAtomTerm(u, name, parent)
 	if _, ok := u.frame.Get(name); ok {
 		panic("name already registered")
 	}
-	return u.update(func(u universe) universe {
+	return u.update(func(u Universe) Universe {
 		u.frame = u.frame.Set(name, atom)
 		return u
 	}), atom
 }
 
-func (u universe) Form(s any) sorts.Form {
+func (u Universe) Form(s any) sorts.Form {
 	return sorts.GetForm(u, s)
 }
 
-func (u universe) Level(s sorts.Sort) int {
+func (u Universe) Level(s sorts.Sort) int {
 	return sorts.GetLevel(u, s)
 }
-func (u universe) Parent(s sorts.Sort) sorts.Sort {
+func (u Universe) Parent(s sorts.Sort) sorts.Sort {
 	return sorts.GetParent(u, s)
 }
-func (u universe) LessEqual(x sorts.Sort, y sorts.Sort) bool {
+func (u Universe) LessEqual(x sorts.Sort, y sorts.Sort) bool {
 	return sorts.GetLessEqual(u, x, y)
 }
-func (u universe) TermOf(x sorts.Sort, X sorts.Sort) bool {
+func (u Universe) TermOf(x sorts.Sort, X sorts.Sort) bool {
 	return u.LessEqual(u.Parent(x), X)
 }
 
-func (u universe) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
-	if src == u.initialHeader || dst == u.terminalHeader {
+func (u Universe) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
+	if src == u.InitialHeader || dst == u.TerminalHeader {
 		return true
 	}
 	if src == dst {
@@ -182,6 +160,6 @@ func (u universe) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
 	return false
 }
 
-func (u universe) update(f func(universe) universe) universe {
+func (u Universe) update(f func(Universe) Universe) Universe {
 	return f(u)
 }
