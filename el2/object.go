@@ -36,8 +36,8 @@ func (s actualSort) TypeCheck(sa SortAttr, parent Sort) Sort {
 
 // BetaReduction - beta reduction
 type BetaReduction struct {
-	Cmd AlmostSort
-	Arg AlmostSort
+	Cmd Form
+	Arg Form
 }
 
 func (f BetaReduction) TypeCheck(sa SortAttr, parent Sort) Sort {
@@ -48,7 +48,7 @@ func (f BetaReduction) TypeCheck(sa SortAttr, parent Sort) Sort {
 // LambdaAbstraction - lambda abstraction
 type LambdaAbstraction struct {
 	Param Name
-	Body  AlmostSort
+	Body  Form
 }
 
 func (l LambdaAbstraction) TypeCheck(sa SortAttr, parent Sort) Sort {
