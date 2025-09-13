@@ -9,7 +9,7 @@ const (
 	ByCasesName form.Name = "by_cases"
 )
 
-func mustParseSum(parse MustParseFunc, args form.List) Sort {
+func mustParseSum(parse mustParseFunc, args form.List) Sort {
 	if len(args) != 2 {
 		panic(typeErr)
 	}
@@ -60,5 +60,5 @@ func (s Sum) ByCases(t Sort, h1 Sort, h2 Sort) Sort {
 	mustTermOf(h1, Arrow{s.A, X})
 	mustTermOf(h2, Arrow{s.B, X})
 
-	return newTerm(form.List{ByCasesName, Repr(t), Repr(h1), Repr(h2)}, X)
+	return newAtomTerm(form.List{ByCasesName, Repr(t), Repr(h1), Repr(h2)}, X)
 }

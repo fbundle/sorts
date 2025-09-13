@@ -16,7 +16,7 @@ type Pi struct {
 }
 
 func (s Pi) sortAttr() sortAttr {
-	x := newTerm(form.Name("x"), s.A) // dummy term
+	x := newAtomTerm(form.Name("x"), s.A) // dummy term
 	sBx := s.B.Apply(x)
 	level := max(Level(s.A), Level(sBx))
 	return sortAttr{
@@ -30,7 +30,7 @@ func (s Pi) sortAttr() sortAttr {
 				if !SubTypeOf(d.A, s.A) {
 					return false
 				}
-				y := newTerm(form.Name("y"), d.A)
+				y := newAtomTerm(form.Name("y"), d.A)
 				dBy := d.B.Apply(y)
 				return SubTypeOf(sBx, dBy)
 			default:
@@ -43,12 +43,12 @@ func (s Pi) sortAttr() sortAttr {
 // Intro - take a func that maps (a: A) into (b: B(a))  give (f: Π(x:A)B(x))
 func (s Pi) Intro(repr form.Form, f func(Sort) Sort) Sort {
 	// verify
-	a := newTerm(form.Name("a"), s.A)
+	a := newAtomTerm(form.Name("a"), s.A)
 	b := f(a)
 	sBa := s.B.Apply(a)
 	mustTermOf(b, sBa) // TODO - think, shouldn't it have to check for every a of type A?
 
-	return newTerm(repr, s)
+	return newAtomTerm(repr, s)
 }
 
 // Elim - take (f: Π(x:A)B(x)) (a: A) give (b: B(a)) - Modus Ponens
@@ -57,5 +57,5 @@ func (s Pi) Elim(f Sort, a Sort) Sort {
 	mustTermOf(a, s.A)
 	Ba := s.B.Apply(a)
 
-	return newTerm(form.List{Repr(f), Repr(a)}, Ba)
+	return newAtomTerm(form.List{Repr(f), Repr(a)}, Ba)
 }

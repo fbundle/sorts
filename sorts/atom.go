@@ -8,27 +8,19 @@ const (
 	DefaultName  form.Name = "Type"
 )
 
-func defaultSort(level int) Sort {
-	return newAtom(level, DefaultName, func(level int) form.Name {
-		return DefaultName
-	})
-}
-
-// newAtom - make atom with atom ancestors
-func newAtom(level int, repr form.Name, ancestor func(int) form.Name) Sort {
-	parentLevel := level + 1
-	parentRepr := ancestor(parentLevel)
+// newAtomChain - make atom with atom ancestors
+func newAtomChain(level int, name func(int) form.Name) Sort {
 	return Atom{
 		level: level,
-		name:  repr,
+		name:  name(level),
 		parent: func() Sort {
-			return newAtom(parentLevel, parentRepr, ancestor)
+			return newAtomChain(level+1, name)
 		},
 	}
 }
 
-// newTerm - make term with any parent
-func newTerm(termRepr form.Name, parent Sort) Sort {
+// newAtomTerm - make term with any parent
+func newAtomTerm(termRepr form.Name, parent Sort) Sort {
 	return Atom{
 		level:  Level(parent) - 1,
 		name:   termRepr,

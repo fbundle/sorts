@@ -2,20 +2,40 @@ package sorts
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/fbundle/sorts/form"
 )
 
+// universe type
+
+// universe name - U_0 U_1 ...
+func universeName(level int) form.Name {
+	levelStr := strconv.Itoa(level)
+	if level < 0 {
+		return form.Name("U_{" + levelStr + "}")
+	} else {
+		return form.Name("U_" + levelStr)
+	}
+}
+
+func Universe(level int) Sort {
+	return newAtomChain()
+}
+
+//
+
 var typeErr = errors.New("type_error")
 
-type MustParseFunc = func(form.Form) Sort
+type mustParseFunc = func(form.Form) Sort
 
-type mustParseListFunc = func(MustParseFunc, form.List) Sort
+type mustParseListFunc = func(mustParseFunc, form.List) Sort
 
 var listParsers = map[form.Name]mustParseListFunc{
 	ArrowName: mustParseArrow,
 	ProdName:  mustParseProd,
 	SumName:   mustParseSum,
+	// TODO - fill all types
 }
 
 func Repr(s any) form.Form {

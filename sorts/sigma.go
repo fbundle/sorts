@@ -16,17 +16,17 @@ type Sigma struct {
 }
 
 func (s Sigma) sortAttr() sortAttr {
-	x := newTerm(form.Name("x"), s.A)
+	x := newAtomTerm(form.Name("x"), s.A)
 	sBx := s.B.Apply(x)
 	level := max(Level(s.A), Level(sBx))
 	return sortAttr{
 		repr:   form.List{SigmaName, Repr(s.A), Repr(s.B)},
 		level:  level,
-		parent: defaultSort(level + 1),
+		parent: nil,
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Sigma:
-				y := newTerm(form.Name("y"), d.A)
+				y := newAtomTerm(form.Name("y"), d.A)
 				dBy := d.B.Apply(y)
 				return SubTypeOf(s.A, d.A) && SubTypeOf(sBx, dBy)
 			default:
@@ -40,14 +40,14 @@ func (s Sigma) sortAttr() sortAttr {
 func (s Sigma) Intro(a Sort, b Sort) Sort {
 	mustTermOf(a, s.A)
 	mustTermOf(b, s.B.Apply(a))
-	return newTerm(form.List{SigmaName, Repr(a), Repr(b)}, s)
+	return newAtomTerm(form.List{SigmaName, Repr(a), Repr(b)}, s)
 }
 
 // Elim - take (t: Σ(x:A)B(x)) give (a: A) (b: B(a))
 func (s Sigma) Elim(t Sort) (left Sort, right Sort) {
 	mustTermOf(t, s)
 
-	a := newTerm(form.Name("a"), s.A)
-	b := newTerm(form.Name("b"), s.B.Apply(a))
+	a := newAtomTerm(form.Name("a"), s.A)
+	b := newAtomTerm(form.Name("b"), s.B.Apply(a))
 	return a, b
 }

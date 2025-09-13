@@ -8,7 +8,7 @@ const (
 	ArrowName form.Name = "Arrow"
 )
 
-func mustParseArrow(parse MustParseFunc, args form.List) Sort {
+func mustParseArrow(parse mustParseFunc, args form.List) Sort {
 	if len(args) != 2 {
 		panic(typeErr)
 	}
@@ -49,16 +49,16 @@ func (s Arrow) sortAttr() sortAttr {
 func (s Arrow) Elim(f Sort, a Sort) Sort {
 	mustTermOf(f, s)
 	mustTermOf(a, s.A)
-	return newTerm(form.List{Repr(f), Repr(a)}, s.B)
+	return newAtomTerm(form.List{Repr(f), Repr(a)}, s.B)
 }
 
 // Intro - take a go function (name) that maps (a: A) into (b: B)  give (f: A -> B)
 func (s Arrow) Intro(repr form.Form, f func(Sort) Sort) Sort {
 	// verify
-	a := newTerm(form.Name("a"), s.A) // dummy term
+	a := newAtomTerm(form.Name("a"), s.A) // dummy term
 	b := f(a)
 	mustTermOf(b, s.B)
 
 	// verify ok
-	return newTerm(repr, s)
+	return newAtomTerm(repr, s)
 }

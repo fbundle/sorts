@@ -10,7 +10,7 @@ const (
 	ProdRightName form.Name = "right"
 )
 
-func mustParseProd(parse MustParseFunc, args form.List) Sort {
+func mustParseProd(parse mustParseFunc, args form.List) Sort {
 	if len(args) != 2 {
 		panic(typeErr)
 	}
@@ -55,7 +55,7 @@ func (s Prod) Elim(t Sort) (left Sort, right Sort) {
 		return t.A, t.B
 	}
 
-	a := newTerm(form.List{ProdLeftName, Repr(s)}, s.A)
-	b := newTerm(form.List{ProdRightName, Repr(s)}, s.B)
+	a := newAtomTerm(form.List{ProdLeftName, Repr(s)}, s.A)
+	b := newAtomTerm(form.List{ProdRightName, Repr(s)}, s.B)
 	return a, b
 }
