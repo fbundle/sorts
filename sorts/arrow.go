@@ -1,17 +1,22 @@
 package sorts
 
-import "errors"
+import (
+	"fmt"
+)
 
 func ParseListArrow(H Name) ParseListFunc {
-	return func(parse ParseFunc, args List) (Sort, error) {
-		if len(args) != 2 {
-			return nil, errors.New("arrow must have exactly 2 arguments: domain and codomain")
+	return func(parse ParseFunc, list List) (Sort, error) {
+		if len(list) != 3 {
+			return nil, fmt.Errorf("arrow must be %s domain codomain", H)
 		}
-		a, err := parse(args[0])
+		if list[0] != H {
+			return nil, fmt.Errorf("arrow must be %s domain codomain", H)
+		}
+		a, err := parse(list[1])
 		if err != nil {
 			return nil, err
 		}
-		b, err := parse(args[1])
+		b, err := parse(list[2])
 		if err != nil {
 			return nil, err
 		}

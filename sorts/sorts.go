@@ -8,7 +8,7 @@ var TypeErr = errors.New("type_error") // cannot recover
 
 type ParseFunc = func(form Form) (Sort, error)
 
-type ParseListFunc = func(parse ParseFunc, args List) (Sort, error)
+type ParseListFunc = func(parse ParseFunc, list List) (Sort, error)
 
 type sortAttr struct {
 	form      Form                // every Sort is identified with a Form
