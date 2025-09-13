@@ -1,7 +1,5 @@
 package sorts
 
-import "fmt"
-
 type Prod struct {
 	H Name
 	A Sort
@@ -38,7 +36,7 @@ func (s Prod) Elim(sa SortAttr, t Sort) (left Sort, right Sort) {
 		return t.A, t.B
 	}
 
-	a := NewTerm(s.A, fmt.Sprintf("(left %s)", Name(t)))
-	b := NewTerm(s.B, fmt.Sprintf("(right %s)", Name(t)))
+	a := NewAtomTerm(sa, List{Name("left"), sa.Form(t)}, s.A)
+	b := NewAtomTerm(sa, List{Name("right"), sa.Form(t)}, s.B)
 	return a, b
 }
