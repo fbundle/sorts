@@ -22,14 +22,14 @@ type List []Form
 func (l List) mustForm() {}
 
 type sortAttr struct {
-	repr      Form                            // every Sort is identified with a Form
-	level     int                             // universe Level
-	parent    Sort                            // (or Type) every Sort must have a Parent
-	lessEqual func(u SortAttr, dst Sort) bool // a partial order on sorts (subtype)
+	form      Form                // every Sort is identified with a Form
+	level     int                 // universe Level
+	parent    Sort                // (or Type) every Sort must have a Parent
+	lessEqual func(dst Sort) bool // a partial order on sorts (subtype)
 }
 
 type Sort interface {
-	sortAttr() sortAttr
+	sortAttr(a SortAttr) sortAttr
 }
 
 type SortAttr interface {
@@ -168,7 +168,7 @@ func (u *universe) NewTerm(name Name, parent Sort) Atom {
 
 func (u *universe) Form(s any) Form {
 	if sort, ok := s.(Sort); ok {
-		return sort.sortAttr().repr
+		return sort.sortAttr().form
 	}
 	if dep, ok := s.(Dependent); ok {
 		return dep.Repr

@@ -25,12 +25,12 @@ type Atom struct {
 	parent func() Sort
 }
 
-func (s Atom) sortAttr() sortAttr {
+func (s Atom) sortAttr(a SortAttr) sortAttr {
 	return sortAttr{
-		repr:   s.name,
+		form:   s.name,
 		level:  s.level,
 		parent: s.parent(),
-		lessEqual: func(a SortAttr, dst Sort) bool {
+		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Atom:
 				if s.level != d.level {
