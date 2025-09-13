@@ -161,7 +161,9 @@ func (u *universe) NewNameLessEqualRule(src Name, dst Name) {
 }
 
 func (u *universe) NewTerm(name Name, parent Sort) Atom {
-	return newAtomTerm(u, name, parent)
+	atom := newAtomTerm(u, name, parent)
+	u.nameDict[name] = atom
+	return atom
 }
 
 func (u *universe) Form(s any) Form {
