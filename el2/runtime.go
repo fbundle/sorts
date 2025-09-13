@@ -1,4 +1,4 @@
-package u
+package el2
 
 import (
 	"cmp"
@@ -9,8 +9,8 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func DefaultUniverse() Universe {
-	return Universe{
+func DefaultRuntime() Runtime {
+	return Runtime{
 		InitialHeader:  "Unit",
 		TerminalHeader: "Any",
 	}.
@@ -31,7 +31,7 @@ func (r rule) Cmp(s rule) int {
 	return cmp.Compare(r.dst, s.dst)
 }
 
-type Universe struct {
+type Runtime struct {
 	InitialHeader  sorts.Name
 	TerminalHeader sorts.Name
 
@@ -42,7 +42,7 @@ type Universe struct {
 }
 
 // Terminal - T_0 T_1 ... T_n
-func (u Universe) Terminal(level int) sorts.Sort {
+func (u Runtime) Terminal(level int) sorts.Sort {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
 		return u.TerminalHeader + "_" + levelStr
@@ -50,21 +50,21 @@ func (u Universe) Terminal(level int) sorts.Sort {
 }
 
 // Initial - I_0 I_1 ... I_n
-func (u Universe) Initial(level int) sorts.Sort {
+func (u Runtime) Initial(level int) sorts.Sort {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
 		return u.InitialHeader + "_" + levelStr
 	})
 }
 
-func (u Universe) Parse(node sorts.Form) sorts.Sort {
+func (u Runtime) Parse(node sorts.Form) sorts.Sort {
 	switch node := node.(type) {
 	case sorts.Name:
 		// lookup name
 		if sort, ok := u.frame.Get(node); ok {
 			return sort
 		}
-		// parse builtin: Universe, initial, terminal
+		// parse builtin: Runtime, initial, terminal
 		builtin := map[sorts.Name]func(level int) sorts.Sort{
 			u.InitialHeader:  u.Initial,
 			u.TerminalHeader: u.Terminal,
@@ -102,52 +102,52 @@ func (u Universe) Parse(node sorts.Form) sorts.Sort {
 	}
 }
 
-func (u Universe) NewListParser(head sorts.Name, parseList sorts.ListParseFunc) Universe {
+func (u Runtime) NewListParser(head sorts.Name, parseList sorts.ListParseFunc) Runtime {
 	if _, ok := u.listParsers.Get(head); ok {
 		panic("list type already registered")
 	}
-	return u.update(func(u Universe) Universe {
+	return u.update(func(u Runtime) Runtime {
 		u.listParsers = u.listParsers.Set(head, parseList)
 		return u
 	})
 }
 
-func (u Universe) NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe {
-	return u.update(func(u Universe) Universe {
+func (u Runtime) NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Runtime {
+	return u.update(func(u Runtime) Runtime {
 		u.nameLessEqual = u.nameLessEqual.Set(rule{src, dst})
 		return u
 	})
 }
 
-func (u Universe) NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Sort) {
+func (u Runtime) NewTerm(name sorts.Name, parent sorts.Sort) (Runtime, sorts.Sort) {
 	atom := sorts.NewAtomTerm(u, name, parent)
 	if _, ok := u.frame.Get(name); ok {
 		panic("name already registered")
 	}
-	return u.update(func(u Universe) Universe {
+	return u.update(func(u Runtime) Runtime {
 		u.frame = u.frame.Set(name, atom)
 		return u
 	}), atom
 }
 
-func (u Universe) Form(s any) sorts.Form {
+func (u Runtime) Form(s any) sorts.Form {
 	return sorts.GetForm(u, s)
 }
 
-func (u Universe) Level(s sorts.Sort) int {
+func (u Runtime) Level(s sorts.Sort) int {
 	return sorts.GetLevel(u, s)
 }
-func (u Universe) Parent(s sorts.Sort) sorts.Sort {
+func (u Runtime) Parent(s sorts.Sort) sorts.Sort {
 	return sorts.GetParent(u, s)
 }
-func (u Universe) LessEqual(x sorts.Sort, y sorts.Sort) bool {
+func (u Runtime) LessEqual(x sorts.Sort, y sorts.Sort) bool {
 	return sorts.GetLessEqual(u, x, y)
 }
-func (u Universe) TermOf(x sorts.Sort, X sorts.Sort) bool {
+func (u Runtime) TermOf(x sorts.Sort, X sorts.Sort) bool {
 	return u.LessEqual(u.Parent(x), X)
 }
 
-func (u Universe) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
+func (u Runtime) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
 	if src == u.InitialHeader || dst == u.TerminalHeader {
 		return true
 	}
@@ -160,6 +160,6 @@ func (u Universe) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
 	return false
 }
 
-func (u Universe) update(f func(Universe) Universe) Universe {
+func (u Runtime) update(f func(Runtime) Runtime) Runtime {
 	return f(u)
 }
