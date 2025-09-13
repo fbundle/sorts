@@ -10,7 +10,7 @@ func (s Arrow) sortAttr(a SortAttr) sortAttr {
 	return sortAttr{
 		form:   List{s.Head, a.Form(s.A), a.Form(s.B)},
 		level:  max(a.Level(s.A), a.Level(s.B)),
-		parent: nil,
+		parent: Arrow{Head: s.Head, A: a.Parent(s.A), B: a.Parent(s.B)},
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Arrow:
