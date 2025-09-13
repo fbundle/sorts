@@ -57,6 +57,7 @@ type universe struct {
 	nameDict map[sorts.Name]sorts.Atom
 }
 
+// Terminal - T_0 T_1 ... T_n
 func (u *universe) Terminal(level int) sorts.Atom {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
@@ -64,6 +65,7 @@ func (u *universe) Terminal(level int) sorts.Atom {
 	})
 }
 
+// Initial - I_0 I_1 ... I_n
 func (u *universe) Initial(level int) sorts.Atom {
 	return sorts.NewAtomChain(level, func(level int) sorts.Name {
 		levelStr := sorts.Name(strconv.Itoa(level))
