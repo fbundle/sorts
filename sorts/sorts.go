@@ -26,10 +26,10 @@ type Sort interface {
 }
 
 type Universe interface {
-	Universe(level int) Sort
-	Initial(level int) Sort
-	Terminal(level int) Sort
-	NewTerm(name Name, parent Sort) Sort
+	Universe(level int) Atom
+	Initial(level int) Atom
+	Terminal(level int) Atom
+	NewTerm(name Name, parent Sort) Atom
 
 	Form(s any) Form
 	Level(s Sort) int
@@ -37,7 +37,7 @@ type Universe interface {
 	SubTypeOf(x Sort, y Sort) bool
 	TermOf(x Sort, X Sort) bool
 
-	AddRule(src Name, dst Name)
+	NewNameRule(src Name, dst Name)
 	lessEqual(src Name, dst Name) bool
 }
 
@@ -61,24 +61,25 @@ type universe struct {
 	initialHeader  Name
 	terminalHeader Name
 	lessEqualMap   map[[2]Name]struct{}
-	parseListMap   map[Name]ParseListFunc
-	sortDict       map[Name]Sort
+
+	listRuleDict map[Name]ParseListFunc
+	nameDict     map[Name]Sort
 }
 
-func (u *universe) Universe(level int) Sort {
+func (u *universe) Universe(level int) Atom {
 	return newAtomChain(level, func(level int) Name {
 		levelStr := Name(strconv.Itoa(level))
 		return u.universeHeader + "_" + levelStr
 	})
 }
 
-func (u *universe) Initial(level int) Sort {
+func (u *universe) Initial(level int) Atom {
 	levelStr := Name(strconv.Itoa(level))
 	name := u.initialHeader + "_" + levelStr
 	return newAtomTerm(u, name, u.Universe(level+1))
 }
 
-func (u *universe) Terminal(level int) Sort {
+func (u *universe) Terminal(level int) Atom {
 	levelStr := Name(strconv.Itoa(level))
 	name := u.terminalHeader + "_" + levelStr
 	return newAtomTerm(u, name, u.Universe(level+1))
@@ -87,11 +88,12 @@ func (u *universe) Terminal(level int) Sort {
 func (u *universe) Parse(node Form) (Sort, error) {
 	switch node := node.(type) {
 	case Name:
-		if sort, ok := u.sortDict[node]; ok {
+		// lookup name
+		if sort, ok := u.nameDict[node]; ok {
 			return sort, nil
 		}
 		// parse builtin: universe, initial, terminal
-		builtin := map[Name]func(level int) Sort{
+		builtin := map[Name]func(level int) Atom{
 			u.universeHeader: u.Universe,
 			u.initialHeader:  u.Initial,
 			u.terminalHeader: u.Terminal,
@@ -108,26 +110,40 @@ func (u *universe) Parse(node Form) (Sort, error) {
 				return sort, nil
 			}
 		}
-		return nil, errors.New("parse error")
+		return nil, errors.New("name not found")
 	case List:
+		if len(node) == 0 {
+			return nil, errors.New("empty list")
+		}
+		head, ok := node[0].(Name)
+		if !ok {
+			return nil, errors.New("list must start with a name")
+		}
+
+		rule, ok := u.listRuleDict[head]
+		if !ok {
+			return nil, errors.New("list type not registered")
+		}
+		// parse list
+		return rule(u.Parse, node[1:])
 	default:
 		return nil, errors.New("parse error")
 	}
 }
 
-func (u *universe) NewListType(cmd Name, parseList ParseListFunc) error {
-	if _, ok := u.parseListMap[cmd]; ok {
+func (u *universe) NewListRule(cmd Name, parseList ParseListFunc) error {
+	if _, ok := u.listRuleDict[cmd]; ok {
 		return errors.New("list type already registered")
 	}
-	u.parseListMap[cmd] = parseList
+	u.listRuleDict[cmd] = parseList
 	return nil
 }
 
-func (u *universe) AddRule(src Name, dst Name) {
+func (u *universe) NewNameRule(src Name, dst Name) {
 	u.lessEqualMap[[2]Name{src, dst}] = struct{}{}
 }
 
-func (u *universe) NewTerm(name Name, parent Sort) Sort {
+func (u *universe) NewTerm(name Name, parent Sort) Atom {
 	return newAtomTerm(u, name, parent)
 }
 
