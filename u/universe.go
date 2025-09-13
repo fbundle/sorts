@@ -17,7 +17,7 @@ type Universe interface {
 	NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Sort)
 
 	NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe
-	NewParseListRule(head sorts.Name, parseList sorts.ParseListFunc) Universe
+	NewParseListRule(head sorts.Name, parseList sorts.ListParseFunc) Universe
 }
 
 func newDefaultUniverse() Universe {
@@ -55,10 +55,10 @@ type universe struct {
 	initialHeader  sorts.Name
 	terminalHeader sorts.Name
 
-	nameLessEqualDict ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
-	parseListDict     ordered_map.OrderedMap[sorts.Name, sorts.ParseListFunc]
+	nameLessEqual ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
+	listParsers   ordered_map.OrderedMap[sorts.Name, sorts.ListParseFunc]
 
-	nameDict ordered_map.OrderedMap[sorts.Name, sorts.Sort]
+	frame ordered_map.OrderedMap[sorts.Name, sorts.Sort]
 }
 
 // Terminal - T_0 T_1 ... T_n
@@ -81,7 +81,7 @@ func (u universe) Parse(node sorts.Form) sorts.Sort {
 	switch node := node.(type) {
 	case sorts.Name:
 		// lookup name
-		if sort, ok := u.nameDict.Get(node); ok {
+		if sort, ok := u.frame.Get(node); ok {
 			return sort
 		}
 		// parse builtin: universe, initial, terminal
@@ -111,7 +111,7 @@ func (u universe) Parse(node sorts.Form) sorts.Sort {
 			panic("list must start with a name")
 		}
 
-		rule, ok := u.parseListDict.Get(head)
+		rule, ok := u.listParsers.Get(head)
 		if !ok {
 			panic("list type not registered")
 		}
@@ -128,30 +128,30 @@ func (u universe) Parse(node sorts.Form) sorts.Sort {
 	}
 }
 
-func (u universe) NewParseListRule(head sorts.Name, parseList sorts.ParseListFunc) Universe {
-	if _, ok := u.parseListDict.Get(head); ok {
+func (u universe) NewParseListRule(head sorts.Name, parseList sorts.ListParseFunc) Universe {
+	if _, ok := u.listParsers.Get(head); ok {
 		panic("list type already registered")
 	}
 	return u.update(func(u universe) universe {
-		u.parseListDict = u.parseListDict.Set(head, parseList)
+		u.listParsers = u.listParsers.Set(head, parseList)
 		return u
 	})
 }
 
 func (u universe) NewNameLessEqualRule(src sorts.Name, dst sorts.Name) Universe {
 	return u.update(func(u universe) universe {
-		u.nameLessEqualDict = u.nameLessEqualDict.Set(rule{src, dst})
+		u.nameLessEqual = u.nameLessEqual.Set(rule{src, dst})
 		return u
 	})
 }
 
 func (u universe) NewTerm(name sorts.Name, parent sorts.Sort) (Universe, sorts.Sort) {
 	atom := sorts.NewAtomTerm(u, name, parent)
-	if _, ok := u.nameDict.Get(name); ok {
+	if _, ok := u.frame.Get(name); ok {
 		panic("name already registered")
 	}
 	return u.update(func(u universe) universe {
-		u.nameDict = u.nameDict.Set(name, atom)
+		u.frame = u.frame.Set(name, atom)
 		return u
 	}), atom
 }
@@ -180,7 +180,7 @@ func (u universe) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
 	if src == dst {
 		return true
 	}
-	if _, ok := u.nameLessEqualDict.Get(rule{src, dst}); ok {
+	if _, ok := u.nameLessEqual.Get(rule{src, dst}); ok {
 		return true
 	}
 	return false

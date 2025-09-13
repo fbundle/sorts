@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func ParseListArrow(H Name) ParseListFunc {
+func ParseListArrow(H Name) ListParseFunc {
 	return func(parse ParseFunc, list List) (Sort, error) {
 		if len(list) != 3 {
 			return nil, fmt.Errorf("arrow must be %s domain codomain", H)
