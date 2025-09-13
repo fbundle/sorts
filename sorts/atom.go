@@ -9,8 +9,14 @@ func newAtomChain[T term](level int, name func(int) T) Sort[T] {
 		},
 	}
 }
-func newAtomTerm[T term](name T, parent Sort[T]) Sort[T] {
-	return Atom[T]{}
+func newAtomTerm[T term](u Universe[T], name T, parent Sort[T]) Sort[T] {
+	return Atom[T]{
+		level: u.Level(parent) - 1,
+		name:  name,
+		parent: func() Sort[T] {
+			return parent
+		},
+	}
 }
 
 type Atom[T term] struct {
@@ -24,7 +30,7 @@ func (s Atom[T]) sortAttr() sortAttr[T] {
 		repr:   Node[T]{Value: s.name},
 		level:  s.level,
 		parent: s.parent(),
-		lessEqual: func(u *Universe[T], dst Sort[T]) bool {
+		lessEqual: func(u Universe[T], dst Sort[T]) bool {
 			switch d := dst.(type) {
 			case Atom[T]:
 				if s.level != d.level {
