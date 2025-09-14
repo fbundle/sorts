@@ -17,6 +17,11 @@ func MustSort(as AlmostSort) sorts.Sort {
 	return as.(ActualSort).Sort
 }
 
+func IsSort(as AlmostSort) bool {
+	_, ok := as.(ActualSort)
+	return ok
+}
+
 // AlmostSort - almost a Sort - for example, a lambda
 type AlmostSort interface {
 	almostSortAttr()

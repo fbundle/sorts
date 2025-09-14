@@ -3,9 +3,7 @@ package el2
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/el2/almost_sort"
 	"github.com/fbundle/sorts/el2/frame"
-	"github.com/fbundle/sorts/el2/parser"
 	"github.com/fbundle/sorts/el2/sort_universe"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
@@ -18,6 +16,20 @@ type Runtime struct {
 	sortUniverse el2_sort_universe.SortUniverse
 }
 
+func (r Runtime) Get(name form.Name) sorts.Sort {
+	if sort, ok := r.frame.Get(name); ok {
+		return sort
+	}
+	if sort, ok := r.sortUniverse.ParseBuiltin(name); ok {
+		return sort
+	}
+	panic(fmt.Errorf("name_not_found: %s", name))
+}
+func (r Runtime) Set(name form.Name, value sorts.Sort) Runtime {
+	r.frame = r.frame.Set(name, value)
+	return r
+}
+
 func NewRuntime() Runtime {
 	return Runtime{
 		frame: el2_frame.Frame{},
@@ -28,7 +40,8 @@ func NewRuntime() Runtime {
 	}
 }
 
-func NewParser(r Runtime) el2_parser.Parser {
+/*
+func NewParser(r Runtime) el2_parser.el2_parser {
 	p := el2_parser.Parser{
 		ParseName: nil,
 	}
@@ -50,3 +63,4 @@ func NewParser(r Runtime) el2_parser.Parser {
 		WithListParser("let", el2_almost_sort.ListParseLet("undef")).
 		WithListParser("match", el2_almost_sort.ListParseMatch("exact"))
 }
+*/
