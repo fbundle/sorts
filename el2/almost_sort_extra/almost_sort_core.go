@@ -15,7 +15,6 @@ func NewActualSort(sort sorts.Sort) ActualSort {
 // AlmostSort - almost a sort - for example, a lambda
 type AlmostSort interface {
 	attrAlmostSort() // use for type safety
-	String() string
 	TypeCheck(ctx Context, parent ActualSort) ActualSort
 }
 
