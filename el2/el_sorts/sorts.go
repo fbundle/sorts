@@ -109,17 +109,13 @@ type Inhabitant struct {
 func ListCompileInhabitant(Head form.Name) ListCompileFunc {
 	return func(ctx Context, list form.List) Sort {
 		mustMatchHead(Head, list)
-		if len(list) < 3 {
-			panic(fmt.Errorf("inhabitant must be (%s name type)", Head))
+		if len(list) < 2 {
+			panic(fmt.Errorf("inhabitant must be (%s type)", Head))
 		}
-		nameForm := list[1]
-		name, ok := nameForm.(form.Name)
-		if !ok {
-			panic(TypeErr)
-		}
-		parentForm := list[2]
+		parentForm := list[1]
 		parent := ctx.Compile(parentForm)
 
+		name := Head + "_" + form.Name(randString(6))
 		atom := ctx.NewTerm(name, parent)
 		return Inhabitant{
 			Atom: atom,

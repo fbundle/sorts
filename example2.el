@@ -1,7 +1,7 @@
 (let
-    Bool (inhabitant U_1)
-    True (inhabitant Bool)
-    False (inhabitant Bool)
+    Bool (@inh U_1)
+    True (@inh Bool)
+    False (@inh Bool)
 
     Nat U_1                 undef
     n0 Nat                  undef
