@@ -156,13 +156,13 @@ func ListCompileLet(Head form.Name) ListCompileFunc {
 			}
 			value := ctx.Compile(valueForm)
 			if v, ok := value.(Inhabitant); ok {
-				// TODO - DEBUG feature - rename inhabitant
+				// rename inhabitant
 				value = Inhabitant{
 					Atom: ctx.NewTerm(name, ctx.Parent(v.Atom)),
 					Head: v.Head,
 					Name: name,
 				}
-				log.Printf("rename %s -> %s\n", v.Name, name)
+				log.Printf("rename inhabitant %s -> %s\n", v.Name, name)
 			}
 
 			bindings = append(bindings, LetBinding{
