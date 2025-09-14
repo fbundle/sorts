@@ -7,10 +7,10 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func toAlmostSortListParser(listParse sorts.ListParseFuncWithHead) el2_almost_sort.ListParseFuncWithHead {
-	return func(H form.Name) el2_almost_sort.ListCompileFunc {
+func toAlmostSortListParser(listParse sorts.ListParseFuncWithHead) almost_sort_extra.ListParseFuncWithHead {
+	return func(H form.Name) almost_sort_extra.ListCompileFunc {
 		sortListParse := listParse(H)
-		return func(parse el2_almost_sort.ParseFunc, list form.List) almost_sort.AlmostSort {
+		return func(parse almost_sort_extra.ParseFunc, list form.List) almost_sort.AlmostSort {
 			sort := sortListParse(func(form sorts.Form) sorts.Sort {
 				return almost_sort.MustSort(parse(form))
 			}, list)

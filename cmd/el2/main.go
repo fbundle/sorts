@@ -27,7 +27,7 @@ func mustReadSource(filename string) string {
 	return string(b)
 }
 
-func mustRun(r el2.Runtime, p el2_parser.el2_parser, tokens []form.Token) {
+func mustRun(r el2.Context, p el2_parser.el2_parser, tokens []form.Token) {
 	var node form.Form
 	var err error
 	for len(tokens) > 0 {

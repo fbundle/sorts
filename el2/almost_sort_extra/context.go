@@ -1,4 +1,4 @@
-package el2_almost_sort
+package almost_sort_extra
 
 import (
 	"github.com/fbundle/sorts/el2/almost_sort"
