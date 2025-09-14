@@ -3,7 +3,7 @@ package el2_parser
 import (
 	"github.com/fbundle/sorts/el2"
 	"github.com/fbundle/sorts/el2/almost_sort"
-	"github.com/fbundle/sorts/el2/formmm"
+	"github.com/fbundle/sorts/el2/almost_sort_extra"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 )
