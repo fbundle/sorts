@@ -1,7 +1,7 @@
 package el2
 
 import (
-	"github.com/fbundle/sorts/el2/almost_sort"
+	"github.com/fbundle/sorts/el2/almost_sort_extra"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
 )
@@ -26,7 +26,7 @@ func (ctx Context) GetRule(src sorts.Name, dst sorts.Name) bool {
 	return ctx.universe.GetRule(src, dst)
 }
 
-func (ctx Context) NewTerm(name form.Name, parent almost_sort.ActualSort) almost_sort.ActualSort {
+func (ctx Context) NewTerm(name form.Name, parent almost_sort_extra.ActualSort) almost_sort_extra.ActualSort {
 	sort := ctx.universe.NewTerm(name, parent.Repr())
-	return almost_sort.NewActualSort(sort)
+	return almost_sort_extra.NewActualSort(sort)
 }

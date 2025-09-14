@@ -3,7 +3,6 @@ package el2
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/el2/almost_sort"
 	"github.com/fbundle/sorts/el2/almost_sort_extra"
 	"github.com/fbundle/sorts/el2/universe"
 	"github.com/fbundle/sorts/form"
@@ -16,7 +15,7 @@ var TypeErr = fmt.Errorf("type_error")
 var _ almost_sort_extra.Context = Context{}
 
 type Context struct {
-	frame               ordered_map.OrderedMap[form.Name, almost_sort.ActualSort]
+	frame               ordered_map.OrderedMap[form.Name, almost_sort_extra.ActualSort]
 	universe            universe.SortUniverse
 	listCompiler        ordered_map.OrderedMap[form.Name, almost_sort_extra.ListCompileFunc]
 	defaultListCompiler almost_sort_extra.ListCompileFunc
@@ -24,7 +23,7 @@ type Context struct {
 
 func (ctx Context) Reset() Context {
 	return Context{
-		frame: ordered_map.OrderedMap[form.Name, almost_sort.ActualSort]{},
+		frame: ordered_map.OrderedMap[form.Name, almost_sort_extra.ActualSort]{},
 		universe: universe.SortUniverse{
 			InitialTypeName:  "Unit",
 			TerminalTypeName: "Any",

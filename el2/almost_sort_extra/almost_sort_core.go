@@ -1,4 +1,4 @@
-package almost_sort
+package almost_sort_extra
 
 import (
 	"fmt"
@@ -9,29 +9,30 @@ import (
 var TypeErr = fmt.Errorf("type_error")
 
 func NewActualSort(sort sorts.Sort) ActualSort {
-	return ActualSort{sort: sort}
+	return ActualSort{_sort: sort}
 }
 
 // AlmostSort - almost a sort - for example, a lambda
 type AlmostSort interface {
-	AttrAlmostSort() // use for type safety
-	TypeCheck(sa sorts.SortAttr, parent ActualSort) ActualSort
+	attrAlmostSort() // use for type safety
+	String() string
+	TypeCheck(ctx Context, parent ActualSort) ActualSort
 }
 
 // ActualSort - a sort
 type ActualSort struct {
-	sort sorts.Sort
+	_sort sorts.Sort
 }
 
 func (s ActualSort) AttrAlmostSort() {}
 
 func (s ActualSort) Repr() sorts.Sort {
-	return s.sort
+	return s._sort
 }
 
 func (s ActualSort) TypeCheck(a sorts.SortAttr, parent ActualSort) ActualSort {
-	if !a.LessEqual(a.Parent(s.sort), parent.sort) {
+	if !a.LessEqual(a.Parent(s._sort), parent._sort) {
 		panic(TypeErr)
 	}
-	return ActualSort{s.sort}
+	return ActualSort{s._sort}
 }

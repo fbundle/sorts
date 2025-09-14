@@ -1,13 +1,8 @@
 package almost_sort_extra
 
 import (
-	"fmt"
-
-	"github.com/fbundle/sorts/el2/almost_sort"
 	"github.com/fbundle/sorts/form"
 )
-
-var TypeErr = fmt.Errorf("type_err")
 
 func mustMatchHead(H form.Name, list form.List) {
 	if H != list[0] {
@@ -15,8 +10,8 @@ func mustMatchHead(H form.Name, list form.List) {
 	}
 }
 
-func mustSort(s almost_sort.AlmostSort) almost_sort.ActualSort {
-	s1, ok := s.(almost_sort.ActualSort)
+func mustSort(s AlmostSort) ActualSort {
+	s1, ok := s.(ActualSort)
 	if !ok {
 		panic(TypeErr)
 	}
