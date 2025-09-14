@@ -60,9 +60,13 @@ const (
 	CharStringEscape Token = "\\"
 )
 
-func tokenize(str string, splitTokens []string, pList ...Preprocessor) []Token {
+func tokenize(str string,
+	splitTokens []string,
+	preProcessorList []Preprocessor,
+	postProcessorList []PostProcessor,
+) []Token {
 	// preprocess
-	for _, p := range pList {
+	for _, p := range preProcessorList {
 		str = p(str)
 	}
 
@@ -127,5 +131,10 @@ func tokenize(str string, splitTokens []string, pList ...Preprocessor) []Token {
 	}
 
 	flushBuffer()
+
+	for _, p := range postProcessorList {
+		tokens = p(tokens)
+	}
+
 	return tokens
 }

@@ -10,6 +10,7 @@ var Tokenize = defaultProcessor.Tokenize
 var Parse = defaultProcessor.Parse
 
 type Preprocessor func(string) string
+type PostProcessor func([]Token) []Token
 type Block struct {
 	End     Token
 	Process func([]Form) (Form, error)
@@ -36,14 +37,16 @@ var defaultProcessor = Processor{
 	},
 }
 
-func (p Processor) Tokenize(s string, pList ...Preprocessor) []Token {
-	newPList := append([]Preprocessor{
+func (p Processor) Tokenize(s string) []Token {
+	preProcessorList := []Preprocessor{
 		removeComment("#"),
-	}, pList...)
+	}
+	postProcessorList := []PostProcessor{}
 
 	return tokenize(
 		s, p.getSplitTokens(),
-		newPList...,
+		preProcessorList,
+		postProcessorList,
 	)
 }
 
