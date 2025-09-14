@@ -4,7 +4,7 @@ const (
 	delta = 3
 )
 
-// implement persistent sequence using weight-balanced tree
+// implement persistent sequence using weight-balanced sorts.ind
 
 type node[T any] struct {
 	weight uint64

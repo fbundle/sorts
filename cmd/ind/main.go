@@ -41,7 +41,7 @@ func (ind Inductive) MustOk() Inductive {
 		if !unicode.IsUpper([]rune(c.Name)[0]) {
 			panic("constructor name must be public")
 		}
-		if c.TypeList[len(c.TypeList)-1] != ind.Name {
+		if c.TypeList[len(c.TypeList)-1] != ind.Name && c.TypeList[len(c.TypeList)-1] != fmt.Sprintf("%s[T]", ind.Name) {
 			panic("constructor type must return inductive type")
 		}
 	}
@@ -50,6 +50,13 @@ func (ind Inductive) MustOk() Inductive {
 
 func (ind Inductive) Generate() string {
 	ind = ind.MustOk()
+
+	outputType := func(typ string) string {
+		if typ == ind.Name {
+			return fmt.Sprintf("%s[T]", ind.Name)
+		}
+		return typ
+	}
 
 	lines := make([]string, 0)
 	push := func(format string, args ...interface{}) {
@@ -63,24 +70,28 @@ func (ind Inductive) Generate() string {
 	push(ind.String())
 	push("*/")
 
-	push("type %s interface {", ind.Name)
+	push("type %s[T any] interface {", ind.Name)
 	push("\tattr%s()", ind.Name)
 	push("}")
 
 	for _, c := range ind.Constructors {
-		argTypeList := c.TypeList[:len(c.TypeList)-1]
+		paramTypeList := c.TypeList[:len(c.TypeList)-1]
+		outputTypeList := make([]string, 0, len(paramTypeList))
+		for _, t := range paramTypeList {
+			outputTypeList = append(outputTypeList, outputType(t))
+		}
 
-		push("type %s struct {", c.Name)
-		for i, t := range argTypeList {
-			push("\tField_%d %s", i, t)
+		push("type %s[T any] struct {", c.Name)
+		for i, _ := range paramTypeList {
+			push("\tField_%d %s", i, outputTypeList[i])
 		}
 		push("}")
 
-		push("func (o %s) attr%s() {}", c.Name, ind.Name)
+		push("func (o %s[T]) attr%s() {}", c.Name, ind.Name)
 
-		push("func (o %s) Unwrap() (%s) {", c.Name, strings.Join(argTypeList, ","))
-		vals := make([]string, 0, len(argTypeList))
-		for i, _ := range argTypeList {
+		push("func (o %s[T]) Unwrap() (%s) {", c.Name, strings.Join(outputTypeList, ","))
+		vals := make([]string, 0, len(paramTypeList))
+		for i, _ := range paramTypeList {
 			vals = append(vals, fmt.Sprintf("o.Field_%d", i))
 		}
 		push("\treturn %s", strings.Join(vals, " , "))
@@ -88,17 +99,17 @@ func (ind Inductive) Generate() string {
 
 	}
 
-	push("type Match[T any] struct {")
+	push("type Match[T any, V any] struct {")
 	for _, c := range ind.Constructors {
-		push("\tMap%s func(%s) T", c.Name, c.Name)
+		push("\tMap%s func(%s[T]) V", c.Name, c.Name)
 	}
 	push("}")
 
-	push("func (m Match[T]) Apply(o %s) T {", ind.Name)
+	push("func (m Match[T, V]) Apply(o %s[T]) V {", ind.Name)
 
 	push("\tswitch o := o.(type) {")
 	for _, c := range ind.Constructors {
-		push("\t\tcase %s:", c.Name)
+		push("\t\tcase %s[T]:", c.Name)
 		push("\t\t\treturn m.Map%s(o)", c.Name)
 	}
 	push("\t\tdefault:")
