@@ -35,10 +35,10 @@ func (p Parser) Parse(node form.Form) el_almost_sort.AlmostSort {
 	}
 }
 
-func (p Parser) NewListParser(head form.Name, parseList el_almost_sort.ListParseFunc) Parser {
+func (p Parser) NewListParser(head form.Name, parseList el_almost_sort.ListParseFuncWithHead) Parser {
 	if _, ok := p.listParsers.Get(head); ok {
 		panic("list type already registered")
 	}
-	p.listParsers = p.listParsers.Set(head, parseList)
+	p.listParsers = p.listParsers.Set(head, parseList(head))
 	return p
 }

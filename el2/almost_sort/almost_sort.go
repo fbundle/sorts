@@ -9,6 +9,7 @@ import (
 
 type ParseFunc = func(form form.Form) AlmostSort
 type ListParseFunc = func(parse ParseFunc, list form.List) AlmostSort
+type ListParseFuncWithHead = func(H form.Name) ListParseFunc
 
 var TypeErr = fmt.Errorf("type_error")
 
