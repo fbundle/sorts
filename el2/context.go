@@ -19,16 +19,6 @@ type Context struct {
 	universe            universe.SortUniverse
 	listCompiler        ordered_map.OrderedMap[form.Name, el_sorts.ListCompileFunc]
 	defaultListCompiler el_sorts.ListCompileFunc
-	evalMode            bool
-}
-
-func (ctx Context) WithEval(eval bool) Context {
-	ctx.evalMode = eval
-	return ctx
-}
-
-func (ctx Context) EvalMode() bool {
-	return ctx.evalMode
 }
 
 func (ctx Context) Reset() Context {
