@@ -1,25 +1,26 @@
-package el2
+package el_parser
 
 import (
-	"github.com/fbundle/sorts/el2/el_almost_sort"
+	"github.com/fbundle/sorts/el2/almost_sort"
+	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
 )
 
 type Parser struct {
-	parseName   func(Name) sorts.Sort
-	listParsers ordered_map.OrderedMap[Name, ListParseFunc]
+	ParseName   func(form.Name) sorts.Sort
+	listParsers ordered_map.OrderedMap[form.Name, el_almost_sort.ListParseFunc]
 }
 
-func (p Parser) Parse(node Form) el_almost_sort.AlmostSort {
+func (p Parser) Parse(node form.Form) el_almost_sort.AlmostSort {
 	switch node := node.(type) {
-	case Name:
-		return el_almost_sort.ActualSort{Sort: p.parseName(node)}
-	case List:
+	case form.Name:
+		return el_almost_sort.ActualSort{Sort: p.ParseName(node)}
+	case form.List:
 		if len(node) == 0 {
 			panic("empty list")
 		}
-		head, ok := node[0].(Name)
+		head, ok := node[0].(form.Name)
 		if !ok {
 			panic("list must start with a name")
 		}
@@ -34,7 +35,7 @@ func (p Parser) Parse(node Form) el_almost_sort.AlmostSort {
 	}
 }
 
-func (p Parser) newListParser(head Name, parseList ListParseFunc) Parser {
+func (p Parser) NewListParser(head form.Name, parseList el_almost_sort.ListParseFunc) Parser {
 	if _, ok := p.listParsers.Get(head); ok {
 		panic("list type already registered")
 	}

@@ -1,6 +1,6 @@
 package el2
 
-import "github.com/fbundle/sorts/el2/el_almost_sort"
+import "github.com/fbundle/sorts/el2/almost_sort"
 
 func DefaultRuntime() Parser {
 	return Parser{
