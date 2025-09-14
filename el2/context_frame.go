@@ -24,3 +24,7 @@ func (ctx Context) Set(name form.Name, sort almost_sort_extra.ActualSort) almost
 	ctx.frame = ctx.frame.Set(name, sort)
 	return ctx
 }
+func (ctx Context) Del(name form.Name) almost_sort_extra.Context {
+	ctx.frame = ctx.frame.Del(name)
+	return ctx
+}

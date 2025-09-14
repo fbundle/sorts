@@ -14,6 +14,7 @@ type Compiler interface {
 type Frame interface {
 	Get(name form.Name) ActualSort
 	Set(name form.Name, sort ActualSort) Context
+	Del(name form.Name) Context
 }
 
 // Universe - type/sort universe

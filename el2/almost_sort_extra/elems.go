@@ -93,18 +93,24 @@ func ListCompileLet(Undef form.Name) func(Head form.Name) ListCompileFunc {
 					panic(TypeErr)
 				}
 
-				fmt.Println("binding name", name)
-
 				ctx, almostType = ctx.Compile(typeForm)
 				actualType := mustSort(almostType)
 
+				undefValue := ctx.NewTerm(name, actualType)
+
 				var actualValue ActualSort
 				if nameUndef, ok := valueForm.(form.Name); ok && nameUndef == Undef {
-					actualValue = ctx.NewTerm(name, actualType)
+					actualValue = undefValue
 				} else {
-					var almostValue AlmostSort
-					ctx, almostValue = ctx.Compile(valueForm)
-					actualValue = almostValue.TypeCheck(ctx, actualType)
+					// temporary add name with the correct type for recursive function
+					// i.e. assuming the name is already type-checked
+					recCtx := ctx.Set(name, undefValue)
+					// compile value
+					recCtx, almostValue := recCtx.Compile(valueForm)
+					actualValue = almostValue.TypeCheck(recCtx, actualType)
+					// remove name
+					recCtx = recCtx.Del(name)
+					ctx = recCtx
 				}
 
 				b := LetBinding{
@@ -170,19 +176,19 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 				patternForm, valueForm := list[i], list[i+1]
 
 				var pattern any
+				var value AlmostSort
 				if patternForm, ok := patternForm.(form.List); ok && patternForm[0] == Exact {
 					if len(patternForm) != 2 {
 						panic(fmt.Errorf("exact match must be (%s form)", Exact))
 					}
 					// exact match
 					ctx, pattern = ctx.Compile(patternForm[1])
+					ctx, value = ctx.Compile(valueForm)
 				} else {
 					// pattern match
 					pattern = patternForm[1]
 				}
 
-				var value AlmostSort
-				ctx, value = ctx.Compile(valueForm)
 				cases = append(cases, MatchCase{
 					Pattern: pattern,
 					Value:   value,
