@@ -38,9 +38,6 @@ func (p Parser) WithRuntime(r el2.Runtime) el2_almost_sort.ParseFunc {
 	}
 }
 
-func (p Parser) Parse(r el2.Runtime, node form.Form) el2_almost_sort.AlmostSort {
-}
-
 func (p Parser) WithListParser(head form.Name, parseList el2_almost_sort.ListParseFuncWithHead) Parser {
 	if _, ok := p.listParsers.Get(head); ok {
 		panic("list type already registered")
