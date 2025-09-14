@@ -1,6 +1,6 @@
 package sorts
 
-func NewAtomChain(level int, chainName func(int) Name) Sort {
+func NewAtomChain(level int, chainName func(int) Name) Atom {
 	return Atom{
 		level: level,
 		form:  chainName(level),
@@ -9,7 +9,7 @@ func NewAtomChain(level int, chainName func(int) Name) Sort {
 		},
 	}
 }
-func NewAtomTerm(a SortAttr, form Form, parent Sort) Sort {
+func NewAtomTerm(a SortAttr, form Form, parent Sort) Atom {
 	return Atom{
 		level: a.Level(parent) - 1,
 		form:  form,

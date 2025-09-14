@@ -26,7 +26,13 @@ func (ctx Context) LessEqualAtom(x sorts.Atom, y sorts.Atom) bool {
 	return ctx.universe.LessEqualAtom(x, y)
 }
 
-func (ctx Context) NewTerm(name form.Form, parent almost_sort_extra.typeSort) almost_sort_extra.typeSort {
-	sort := ctx.universe.NewTerm(name, parent.Repr())
-	return almost_sort_extra.NewTypeSort(sort)
+func (ctx Context) NewTerm(name form.Form, parent el_sorts.Sort) el_sorts.Atom {
+	return ctx.universe.NewTerm(name, parent)
+}
+func (ctx Context) Initial(level int) el_sorts.Sort {
+	return ctx.universe.Initial(level)
+}
+
+func (ctx Context) Terminal(level int) el_sorts.Sort {
+	return ctx.universe.Terminal(level)
 }

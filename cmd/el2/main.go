@@ -28,11 +28,11 @@ func mustReadSource(filename string) string {
 }
 
 func mustRun(tokens []form.Token) {
-	var ctx almost_sort_extra.Context = el2.Context{}.Reset()
+	var ctx el_sorts.Context = el2.Context{}.Reset()
 
 	var node form.Form
 	var err error
-	var almostSort almost_sort_extra.Sort
+	var almostSort el_sorts.Sort
 	for len(tokens) > 0 {
 		tokens, node, err = form_processor.Parse(tokens)
 		if err != nil {

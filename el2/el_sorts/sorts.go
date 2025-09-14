@@ -1,4 +1,4 @@
-package almost_sort_extra
+package el_sorts
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ type Beta struct {
 	Arg Sort
 }
 
-func ListCompileBeta(ctx Context, list form.List) (Context, Sort) {
+func ListCompileBeta(ctx Context, list form.List) Sort {
 	if not(len(list) == 2) {
 		panic("beta must be (cmd arg)")
 	}
@@ -32,7 +32,7 @@ func ListCompileBeta(ctx Context, list form.List) (Context, Sort) {
 	mustTermOf(ctx, arg, arrow.A)
 	atom := ctx.NewTerm(list, arrow.B)
 
-	return ctx, Beta{
+	return Beta{
 		Atom: atom,
 		Cmd:  cmd,
 		Arg:  arg,

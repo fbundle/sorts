@@ -6,22 +6,11 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func mustSort(s almost_sort_extra.Sort) almost_sort_extra.typeSort {
-	s1, ok := s.(almost_sort_extra.typeSort)
-	if !ok {
-		panic(TypeErr)
-	}
-	return s1
-}
-func sortCompilerToAlmostSortCompiler(f func(form.Name) sorts.ListCompileFunc) func(form.Name) almost_sort_extra.ListCompileFunc {
-	return func(name form.Name) almost_sort_extra.ListCompileFunc {
-		sortCompiler := f(name)
-		return func(r almost_sort_extra.Context, list form.List) (almost_sort_extra.Context, almost_sort_extra.Sort) {
-			return r, almost_sort_extra.NewTypeSort(sortCompiler(func(form sorts.Form) sorts.Sort {
-				var as almost_sort_extra.Sort
-				r, as = r.Compile(form)
-				return mustSort(as).Repr()
-			}, list))
+func sortCompilerToAlmostSortCompiler(f func(form.Name) sorts.ListCompileFunc) func(form.Name) el_sorts.ListCompileFunc {
+	return func(name form.Name) el_sorts.ListCompileFunc {
+		compileFunc := f(name)
+		return func(r el_sorts.Context, list form.List) el_sorts.Sort {
+			return compileFunc(r.Compile, list)
 		}
 	}
 }

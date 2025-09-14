@@ -6,7 +6,7 @@ import (
 
 var TypeErr = fmt.Errorf("type_err") // cannot recover
 
-type ListCompileFunc = func(parse func(form Form) Sort, list List) Sort
+type ListCompileFunc = func(compile func(form Form) Sort, list List) Sort
 
 type sortAttr struct {
 	form      Form                // every Sort is identified with a Form

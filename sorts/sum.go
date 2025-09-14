@@ -3,14 +3,14 @@ package sorts
 import "fmt"
 
 func ListCompileSum(H Name) ListCompileFunc {
-	return func(parse func(form Form) Sort, list List) Sort {
+	return func(compile func(form Form) Sort, list List) Sort {
 		if len(list) != 3 {
 			panic(fmt.Errorf("sum must be %s A B", H))
 		}
 		if list[0] != H {
 			panic(fmt.Errorf("sum must be %s A B", H))
 		}
-		return Sum{H: H, A: parse(list[1]), B: parse(list[2])}
+		return Sum{H: H, A: compile(list[1]), B: compile(list[2])}
 	}
 }
 

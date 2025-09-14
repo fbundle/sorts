@@ -5,10 +5,10 @@ import (
 	"github.com/fbundle/sorts/form"
 )
 
-func (ctx Context) Compile(node form.Form) (almost_sort_extra.Context, almost_sort_extra.Sort) {
+func (ctx Context) Compile(node form.Form) el_sorts.Sort {
 	switch node := node.(type) {
 	case form.Name:
-		return ctx, ctx.Get(node)
+		return ctx.Get(node)
 	case form.List:
 		if len(node) == 0 {
 			panic("empty list")
@@ -25,7 +25,7 @@ func (ctx Context) Compile(node form.Form) (almost_sort_extra.Context, almost_so
 	}
 }
 
-func (ctx Context) WithListCompiler(name form.Name, compileFunc func(form.Name) almost_sort_extra.ListCompileFunc) Context {
+func (ctx Context) WithListCompiler(name form.Name, compileFunc func(form.Name) el_sorts.ListCompileFunc) Context {
 	ctx.listCompiler = ctx.listCompiler.Set(name, compileFunc(name))
 	return ctx
 }

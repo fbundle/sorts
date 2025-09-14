@@ -7,12 +7,12 @@ import (
 	"github.com/fbundle/sorts/form"
 )
 
-func (ctx Context) Get(name form.Name) almost_sort_extra.typeSort {
+func (ctx Context) Get(name form.Name) el_sorts.Sort {
 	if s, ok := ctx.frame.Get(name); ok {
 		return s
 	}
 	if s, ok := ctx.universe.GetBuiltin(name); ok {
-		return almost_sort_extra.NewTypeSort(s)
+		return s
 	}
 	for k, _ := range ctx.frame.Iter {
 		fmt.Println(k)
@@ -20,11 +20,11 @@ func (ctx Context) Get(name form.Name) almost_sort_extra.typeSort {
 	panic(fmt.Errorf("name_not_found: %s", name))
 }
 
-func (ctx Context) Set(name form.Name, sort almost_sort_extra.typeSort) almost_sort_extra.Context {
+func (ctx Context) Set(name form.Name, sort el_sorts.Sort) el_sorts.Context {
 	ctx.frame = ctx.frame.Set(name, sort)
 	return ctx
 }
-func (ctx Context) Del(name form.Name) almost_sort_extra.Context {
+func (ctx Context) Del(name form.Name) el_sorts.Context {
 	ctx.frame = ctx.frame.Del(name)
 	return ctx
 }

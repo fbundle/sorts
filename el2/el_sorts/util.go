@@ -1,4 +1,4 @@
-package almost_sort_extra
+package el_sorts
 
 import (
 	"fmt"
