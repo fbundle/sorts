@@ -2,7 +2,7 @@ package el2
 
 // AlmostSort - almost a sort - for example, a lambda
 type AlmostSort interface {
-	Sort() Sort                              // nullable
+	MaybeSort() Sort                         // nullable
 	TypeCheck(sa SortAttr, parent Sort) Sort // not nullable
 }
 
@@ -11,7 +11,7 @@ type ActualSort struct {
 	sort Sort
 }
 
-func (s ActualSort) Sort() Sort {
+func (s ActualSort) MaybeSort() Sort {
 	return s.sort
 }
 
@@ -36,7 +36,7 @@ type Beta struct {
 	Arg AlmostSort
 }
 
-func (f Beta) Sort() Sort {
+func (f Beta) MaybeSort() Sort {
 	return nil
 }
 
@@ -51,7 +51,7 @@ type Lambda struct {
 	Body  Form
 }
 
-func (l Lambda) Sort() Sort {
+func (l Lambda) MaybeSort() Sort {
 	return nil
 }
 
