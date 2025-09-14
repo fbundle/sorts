@@ -1,4 +1,6 @@
 (let
+    Nil (inh Any_2)
+    nil (inh Nil)
     Bool (inh Any_2)
     True (inh Bool)
     False (inh Bool)
@@ -20,8 +22,16 @@
                     False
     ))
 
+    must_two (lambda x Nat (match x
+        (exact n2)   n2
+                     nil
+    ))
+
+
+
     # (is_two n2)
-    is_two                  # is_two was successfully resolved type as Nat -> Bool
+    # is_two                  # is_two was successfully resolved type as Nat -> Bool
+    must_two                  # is_two was successfully resolved type as Nat -> Bool
 )
 
 
