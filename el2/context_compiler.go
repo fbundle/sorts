@@ -16,13 +16,10 @@ func (ctx Context) Compile(node form.Form) (almost_sort_extra.Context, almost_so
 		if head, ok := node[0].(form.Name); ok {
 			if listParser, ok := ctx.listCompiler.Get(head); ok {
 				return listParser(ctx, node)
-			} else {
-				panic("list_compiler_not_found: " + head)
 			}
-		} else {
-			// use default
-			return ctx.defaultListCompiler(ctx, node)
 		}
+		// use default
+		return ctx.defaultListCompiler(ctx, node)
 	default:
 		panic("parse_error")
 	}
