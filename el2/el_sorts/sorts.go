@@ -19,7 +19,7 @@ type Beta struct {
 
 func ListCompileBeta(ctx Context, list form.List) Sort {
 	if not(len(list) == 2) {
-		panic("beta must be (cmd arg)")
+		panic(fmt.Errorf("beta must be (cmd arg)"))
 	}
 
 	cmd := ctx.Compile(list[0])
@@ -237,7 +237,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 					// pattern match
 					pattern = patternForm[1]
 					// suppose the pattern is (succ z) - how to set z into nextCtx to compile valueForm?
-					panic("TODO")
+					panic(fmt.Errorf("pattern matching is not implemented for now"))
 				}
 
 				cases = append(cases, MatchCase{
@@ -286,6 +286,30 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 				Cases: cases,
 				Final: final,
 			}
+		}
+	}
+}
+
+type Type struct {
+	Sort
+	Head  form.Name
+	Value Sort
+}
+
+func ListCompileType(Head form.Name) ListCompileFunc {
+	return func(ctx Context, list form.List) Sort {
+		mustMatchHead(Head, list)
+
+		if not(len(list) == 2) {
+			panic(fmt.Errorf("type must be (%s value)", Head))
+		}
+
+		value := ctx.Compile(list[1])
+		sort := ctx.Parent(value)
+		return Type{
+			Sort:  sort,
+			Head:  Head,
+			Value: value,
 		}
 	}
 }

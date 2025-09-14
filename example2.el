@@ -20,7 +20,8 @@
                     False
     ))
 
-    (is_two n2)
+    # (is_two n2)
+    (type is_two)
 )
 
 
