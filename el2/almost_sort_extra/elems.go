@@ -93,6 +93,8 @@ func ListCompileLet(Undef form.Name) func(Head form.Name) ListCompileFunc {
 					panic(TypeErr)
 				}
 
+				fmt.Println("binding name", name)
+
 				ctx, almostType = ctx.Compile(typeForm)
 				actualType := mustSort(almostType)
 
