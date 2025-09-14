@@ -76,6 +76,8 @@ func (ind Inductive) Generate() string {
 		}
 		push("}")
 
+		push("func (o %s) attr%s() {}", c.Name, ind.Name)
+
 		push("func (o %s) Unwrap() (%s) {", c.Name, strings.Join(argTypeList, ","))
 		vals := make([]string, 0, len(argTypeList))
 		for i, _ := range argTypeList {
@@ -92,7 +94,7 @@ func (ind Inductive) Generate() string {
 	}
 	push("}")
 
-	push("func (m Match[T]) Apply(o %s) {", ind.Name)
+	push("func (m Match[T]) Apply(o %s) T {", ind.Name)
 
 	push("\tswitch o := o.(type) {")
 	for _, c := range ind.Constructors {
@@ -107,15 +109,14 @@ func (ind Inductive) Generate() string {
 	return strings.Join(lines, "\n")
 }
 
-func trimSpaces(parts []string) []string {
-	newParts := make([]string, 0, len(parts))
-	for _, part := range parts {
-		newParts = append(newParts, strings.TrimSpace(part))
-	}
-	return newParts
-}
-
 func split(s string, sep string) []string {
+	trimSpaces := func(parts []string) []string {
+		newParts := make([]string, 0, len(parts))
+		for _, part := range parts {
+			newParts = append(newParts, strings.TrimSpace(part))
+		}
+		return newParts
+	}
 	return trimSpaces(strings.Split(s, sep))
 }
 
@@ -126,8 +127,8 @@ func Parse(s string) Inductive {
 
 	part0 := parts[0]
 	fields := strings.Fields(part0)
-	if len(fields) != 2 || fields[0] != "inductive" {
-		panic("inductive must start with \"inductive TypeName\"")
+	if len(fields) < 2 || fields[0] != "inductive" {
+		panic("inductive must start with \"inductive TypeName ...\"")
 	}
 	ind.Name = fields[1]
 
@@ -158,7 +159,7 @@ func main() {
 	ind := Parse(string(b))
 
 	outputFilename := strings.TrimSuffix(filename, ".ind") + ".go"
-	err = os.WriteFile(outputFilename, []byte(ind.String()), 0644)
+	err = os.WriteFile(outputFilename, []byte(ind.Generate()), 0644)
 	if err != nil {
 		panic(err)
 	}
