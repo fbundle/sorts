@@ -1,35 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/fbundle/sorts/el2"
-	"github.com/fbundle/sorts/el2/el_sorts"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
-	"github.com/fbundle/sorts/sorts"
 )
-
-func toString(o any) string {
-	sortToString := func(s el_sorts.Sort) string {
-		f := strings.Join(ctx.Form(sort).Marshal("(", ")"), " ")
-		t := strings.Join(ctx.Form(ctx.Parent(sort)).Marshal("(", ")"), " ")
-		l := ctx.Level(sort)
-		return fmt.Sprintf("(form %s - type %s - level %d)", f, t, l)
-	}
-	if s, ok := o.(sorts.Sort); ok {
-		return sortToString(s)
-	}
-
-	b, err := json.Marshal(o)
-	if err != nil {
-		panic(err)
-	}
-	return string(b)
-}
 
 func mustReadSource(filename string) string {
 	b, err := os.ReadFile(filename)
@@ -40,7 +18,7 @@ func mustReadSource(filename string) string {
 }
 
 func mustRun(tokens []form.Token) {
-	var ctx el_sorts.Context = el2.Context{}.Reset()
+	ctx := el2.Context{}.Reset()
 
 	var node form.Form
 	var err error
@@ -50,7 +28,7 @@ func mustRun(tokens []form.Token) {
 			panic(err)
 		}
 		sort := ctx.Compile(node)
-		fmt.Println(toString(sort))
+		fmt.Println(ctx.ToString(sort))
 	}
 }
 

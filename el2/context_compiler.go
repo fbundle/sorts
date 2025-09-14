@@ -10,22 +10,25 @@ import (
 	"github.com/fbundle/sorts/form"
 )
 
-func logCompile(ctx Context, node form.Form, sort el_sorts.Sort) {
-	toString := func(o any) string {
-		b, err := json.Marshal(o)
-		if err != nil {
-			panic(err)
-		}
+func (ctx Context) ToString(o any) string {
+	switch v := o.(type) {
+	case string:
+		return v
+	case form.Form:
+		return strings.Join(v.Marshal("(", ")"), " ")
+	case el_sorts.Sort:
+		f := ctx.ToString(ctx.Form(v))
+		t := strings.Join(ctx.Form(ctx.Parent(v)).Marshal("(", ")"), " ")
+		l := ctx.Level(v)
+		return fmt.Sprintf("(form %s - type %s - level %d)", f, t, l)
+	default:
+		b, _ := json.Marshal(v)
 		return string(b)
 	}
-	sortToString := func(s el_sorts.Sort) string {
-		f := strings.Join(ctx.Form(sort).Marshal("(", ")"), " ")
-		t := strings.Join(ctx.Form(ctx.Parent(sort)).Marshal("(", ")"), " ")
-		l := ctx.Level(sort)
-		return fmt.Sprintf("(form %s - type %s - level %d)", f, t, l)
-	}
+}
 
-	log.Printf("compiled %s from %s\n", sortToString(sort), toString(node))
+func logCompile(ctx Context, node form.Form, sort el_sorts.Sort) {
+	log.Printf("compiled %s from %s\n", ctx.ToString(sort), ctx.ToString(node))
 }
 
 func (ctx Context) Compile(node form.Form) el_sorts.Sort {
