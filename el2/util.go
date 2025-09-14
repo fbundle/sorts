@@ -8,7 +8,7 @@ import (
 )
 
 func toAlmostSortListParser(listParse sorts.ListParseFuncWithHead) el2_almost_sort.ListParseFuncWithHead {
-	return func(H form.Name) el2_almost_sort.ListParseFunc {
+	return func(H form.Name) el2_almost_sort.ListCompileFunc {
 		sortListParse := listParse(H)
 		return func(parse el2_almost_sort.ParseFunc, list form.List) almost_sort.AlmostSort {
 			sort := sortListParse(func(form sorts.Form) sorts.Sort {

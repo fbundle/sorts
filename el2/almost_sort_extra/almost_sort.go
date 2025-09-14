@@ -8,7 +8,9 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func ListParseBeta(ctx Context, list form.List) (Context, almost_sort.AlmostSort) {
+type ListCompileFunc = func(r Context, list form.List) (Context, almost_sort.AlmostSort)
+
+func ListCompileBeta(ctx Context, list form.List) (Context, almost_sort.AlmostSort) {
 	if not(len(list) == 2) {
 		panic("beta must be (cmd arg)")
 	}
@@ -28,14 +30,14 @@ type Beta struct {
 	Arg almost_sort.AlmostSort
 }
 
-func (b Beta) almostSortAttr() {}
+func (b Beta) AttrAlmostSort() {}
 
 func (b Beta) TypeCheck(sa sorts.SortAttr, parent almost_sort.ActualSort) almost_sort.ActualSort {
 	//TODO implement me
 	panic("implement me")
 }
 
-func ListParseLambda(H form.Name) ListParseFunc {
+func ListCompileLambda(H form.Name) ListCompileFunc {
 	return func(ctx Context, list form.List) (Context, almost_sort.AlmostSort) {
 		mustMatchHead(H, list)
 		if not(len(list) == 3) {
@@ -56,14 +58,14 @@ type Lambda struct {
 	Body  almost_sort.AlmostSort
 }
 
-func (l Lambda) almostSortAttr() {}
+func (l Lambda) AttrAlmostSort() {}
 func (l Lambda) TypeCheck(sa sorts.SortAttr, parent almost_sort.ActualSort) almost_sort.ActualSort {
 	//TODO implement me
 	panic("implement me")
 }
 
-func ListParseLet(Undef form.Name) func(H form.Name) ListParseFunc {
-	return func(H form.Name) ListParseFunc {
+func ListCompileLet(Undef form.Name) func(H form.Name) ListCompileFunc {
+	return func(H form.Name) ListCompileFunc {
 		return func(ctx Context, list form.List) (Context, almost_sort.AlmostSort) {
 			mustMatchHead(H, list)
 			if len(list) < 2 || not((len(list)+1)%3 == 0) {
@@ -85,8 +87,8 @@ func ListParseLet(Undef form.Name) func(H form.Name) ListParseFunc {
 
 				ctx, almostType = ctx.Compile(typeForm)
 
-				actualType := almost_sort.MustSort(almostType)
-				actualValue := almostValue.TypeCheck(ctx.SortAttr(), actualType)
+				actualType := mustSort(almostType)
+				actualValue := almostValue.TypeCheck(ctx, actualType)
 
 				b := LetBinding{
 					Name:  nameForm.(form.Name),
@@ -119,13 +121,13 @@ type Let struct {
 	Final    almost_sort.AlmostSort
 }
 
-func (l Let) almostSortAttr() {}
+func (l Let) AttrAlmostSort() {}
 func (l Let) TypeCheck(sa sorts.SortAttr, parent almost_sort.ActualSort) almost_sort.ActualSort {
 	panic("implement me")
 }
 
-func ListParseMatch(Exact form.Name) func(H form.Name) ListParseFunc {
-	return func(H form.Name) ListParseFunc {
+func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
+	return func(H form.Name) ListCompileFunc {
 		return func(ctx Context, list form.List) (Context, almost_sort.AlmostSort) {
 			mustMatchHead(H, list)
 			if len(list) < 3 || not(len(list)%2 == 1) {
@@ -180,7 +182,7 @@ type Match struct {
 	Final almost_sort.AlmostSort
 }
 
-func (m Match) almostSortAttr() {}
+func (m Match) AttrAlmostSort() {}
 func (m Match) TypeCheck(sa sorts.SortAttr, parent almost_sort.ActualSort) almost_sort.ActualSort {
 	panic("implement me")
 }

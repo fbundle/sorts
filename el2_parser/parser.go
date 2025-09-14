@@ -9,7 +9,7 @@ import (
 )
 
 type Parser struct {
-	listParsers ordered_map.OrderedMap[form.Name, el2_almost_sort.ListParseFunc]
+	listParsers ordered_map.OrderedMap[form.Name, el2_almost_sort.ListCompileFunc]
 }
 
 func (p Parser) WithRuntime(r el2.Runtime) el2_almost_sort.ParseFunc {
@@ -31,7 +31,7 @@ func (p Parser) WithRuntime(r el2.Runtime) el2_almost_sort.ParseFunc {
 			if listParser, ok := p.listParsers.Get(head); ok {
 				return listParser(p.WithRuntime(r), node)
 			} else { // by default, Compile as beta reduction (function call)
-				return el2_almost_sort.ListParseBeta(p.WithRuntime(r), node)
+				return el2_almost_sort.ListCompileBeta(p.WithRuntime(r), node)
 			}
 		default:
 			panic("parse_error")

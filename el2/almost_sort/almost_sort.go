@@ -14,7 +14,7 @@ func NewActualSort(sort sorts.Sort) ActualSort {
 
 // AlmostSort - almost a sort - for example, a lambda
 type AlmostSort interface {
-	almostSortAttr()
+	AttrAlmostSort() // use for type safety
 	TypeCheck(sa sorts.SortAttr, parent ActualSort) ActualSort
 }
 
@@ -23,7 +23,7 @@ type ActualSort struct {
 	sort sorts.Sort
 }
 
-func (s ActualSort) almostSortAttr() {}
+func (s ActualSort) AttrAlmostSort() {}
 
 func (s ActualSort) TypeCheck(a sorts.SortAttr, parent ActualSort) ActualSort {
 	if !a.LessEqual(a.Parent(s.sort), parent.sort) {
