@@ -46,11 +46,17 @@ func ListCompileLambda(Head form.Name) ListCompileFunc {
 		if not(len(list) == 3) {
 			panic(fmt.Errorf("lambda must be (%s param body)", Head))
 		}
-		ctx, body := ctx.Compile(list[2])
+		paramForm, bodyForm := list[1], list[2]
+		param := paramForm.(form.Name)
+
+		//
+		panic("checkpoint")
+		// bodyCtx := ctx.Set(param, ctx.NewTerm())
+		ctx, body := ctx.Compile(bodyForm)
 
 		return ctx, Lambda{
 			Head:  Head,
-			Param: list[1].(form.Name),
+			Param: param,
 			Body:  body,
 		}
 	}
@@ -170,6 +176,8 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 			if len(list) < 3 || not(len(list)%2 == 1) {
 				panic(fmt.Errorf("match must be (%s cond pattern1 value1 ... patternN valueN final)", H))
 			}
+			var cond AlmostSort
+			ctx, cond = ctx.Compile(list[1])
 
 			cases := make([]MatchCase, 0)
 			for i := 2; i < len(list)-1; i += 2 {
@@ -188,9 +196,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 					// pattern match
 					pattern = patternForm[1]
 					// suppose the pattern is (succ z) - how to set z into nextCtx to compile valueForm?
-					p := patternForm[1]
-					nextCtx := ctx
-
+					panic("checkpoint")
 				}
 
 				cases = append(cases, MatchCase{
@@ -199,8 +205,6 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 				})
 			}
 
-			var cond AlmostSort
-			ctx, cond = ctx.Compile(list[1])
 			var final AlmostSort
 			ctx, final = ctx.Compile(list[len(list)-1])
 
