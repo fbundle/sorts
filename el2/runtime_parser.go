@@ -1,41 +1,22 @@
 package el2
 
 import (
-	"strconv"
-	"strings"
-
 	"github.com/fbundle/sorts/persistent/ordered_map"
 )
 
 type runtimeParser struct {
+	parseName   func(Name) (Sort, bool)
 	listParsers ordered_map.OrderedMap[Name, ListParseFunc]
 }
 
 func (u runtimeParser) parse(node Form) AlmostSort {
 	switch node := node.(type) {
 	case Name:
-		// lookup name
-		if sort, ok := u.frame.Get(node); ok {
-			return ActualSort{sort}
+		sort, ok := u.parseName(node)
+		if !ok {
+			panic("name not found")
 		}
-		// parse builtin: initial, terminal
-		builtin := map[Name]func(level int) Sort{
-			u.initialHeader:  u.Initial,
-			u.terminalHeader: u.Terminal,
-		}
-		name := string(node)
-		for header, makeFunc := range builtin {
-			if strings.HasPrefix(name, string(header)+"_") {
-				levelStr := strings.TrimPrefix(name, string(header)+"_")
-				level, err := strconv.Atoi(levelStr)
-				if err != nil {
-					continue
-				}
-				sort := makeFunc(level)
-				return ActualSort{sort}
-			}
-		}
-		panic("name not found")
+		return ActualSort{sort: sort}
 	case List:
 		if len(node) == 0 {
 			panic("empty list")
