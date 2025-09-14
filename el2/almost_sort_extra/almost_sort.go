@@ -78,20 +78,25 @@ func ListCompileLet(Undef form.Name) func(H form.Name) ListCompileFunc {
 			for i := 1; i < len(list)-1; i += 3 {
 				nameForm, typeForm, valueForm := list[i], list[i+1], list[i+2]
 
-				var almostValue almost_sort.AlmostSort
-				if valueForm, ok := valueForm.(form.Name); ok && valueForm == Undef {
-					almostValue = nil
-				} else {
-					ctx, almostValue = ctx.Compile(valueForm)
+				name, ok := nameForm.(form.Name)
+				if !ok {
+					panic(TypeErr)
 				}
 
 				ctx, almostType = ctx.Compile(typeForm)
-
 				actualType := mustSort(almostType)
-				actualValue := almostValue.TypeCheck(ctx, actualType)
+
+				var actualValue almost_sort.ActualSort
+				if nameUndef, ok := valueForm.(form.Name); ok && nameUndef == Undef {
+					actualValue = ctx.NewTerm(name, actualType)
+				} else {
+					var almostValue almost_sort.AlmostSort
+					ctx, almostValue = ctx.Compile(valueForm)
+					actualValue = almostValue.TypeCheck(ctx, actualType)
+				}
 
 				b := LetBinding{
-					Name:  nameForm.(form.Name),
+					Name:  name,
 					Type:  actualType,
 					Value: actualValue,
 				}
