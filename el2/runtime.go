@@ -3,6 +3,7 @@ package el2
 import (
 	"fmt"
 
+	el_almost_sort "github.com/fbundle/sorts/el2/almost_sort"
 	el_frame "github.com/fbundle/sorts/el2/frame"
 	el_parser "github.com/fbundle/sorts/el2/parser"
 	el_sort_universe "github.com/fbundle/sorts/el2/sort_universe"
@@ -39,4 +40,20 @@ func newRuntime() Runtime {
 		panic(fmt.Errorf("name_not_found: %s", name))
 	}
 	return r
+}
+
+func DefaultRuntime() Parser {
+	r := newRuntime()
+	r.parser = r.parser.NewListParser()
+
+	return Parser{
+		sortUniverse: sortUniverse{
+			initialHeader:  "Unit",
+			terminalHeader: "Any",
+		}.mustSortAttr(),
+	}.
+		NewListParser("->", toListParser(ListParseArrow("->"))).
+		NewListParser("⊕", toListParser(ListParseSum("⊕"))).
+		NewListParser("⊗", toListParser(ListParseProd("⊗"))).
+		NewListParser("=>", el_almost_sort.ListParseLambda)
 }
