@@ -94,7 +94,7 @@ func (l Let) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
 	panic("implement me")
 }
 
-func ListParseMatch(H form.Name) ListParseFunc {
+func ListParseMatch(H form.Name, Exact form.Name) ListParseFunc {
 	return func(parse ParseFunc, list form.List) AlmostSort {
 		mustMatchHead(H, list)
 		if len(list) < 2 || not(len(list)%2 == 0) {
@@ -105,8 +105,18 @@ func ListParseMatch(H form.Name) ListParseFunc {
 		for i := 1; i < len(list)-1; i += 2 {
 			patternForm, valueForm := list[i], list[i+1]
 
+			var pattern any
+			if patternForm, ok := patternForm.(form.List); ok && patternForm[0] == Exact {
+				if len(patternForm) != 2 {
+					panic(fmt.Errorf("exact match must be (%s form)", Exact))
+				}
+				pattern = patternForm[1]
+			} else {
+				pattern = MustSort(parse(patternForm))
+			}
+
 			cases = append(cases, MatchCase{
-				Pattern: patternForm,
+				Pattern: pattern,
 				Value:   parse(valueForm),
 			})
 		}
@@ -120,7 +130,7 @@ func ListParseMatch(H form.Name) ListParseFunc {
 }
 
 type MatchCase struct {
-	Pattern form.Form
+	Pattern any // Union[form.Form, sorts.Sort] - pattern matching vs exact matching
 	Value   AlmostSort
 }
 type Match struct {
