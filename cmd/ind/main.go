@@ -20,18 +20,21 @@ type Inductive struct {
 }
 
 func (i Inductive) String() string {
-	header := fmt.Sprintf("inductive %s", i.Name)
-	lines := make([]string, len(i.Constructors))
+	lines := make([]string, 0, len(i.Constructors)+1)
+	lines = append(lines, fmt.Sprintf("inductive %s", i.Name))
 	for _, constructor := range i.Constructors {
 		lines = append(lines, constructor.String())
 	}
-	return header + strings.Join(lines, "\n")
+	return strings.Join(lines, "\n")
 }
 
 func main() {
 	i := Inductive{
-		Name:         "Nat",
-		Constructors: []Constructor{},
+		Name: "Nat",
+		Constructors: []Constructor{
+			{Name: "zero", TypeList: []string{"Nat"}},
+			{Name: "succ", TypeList: []string{"Nat", "Nat"}},
+		},
 	}
 	fmt.Println(i.String())
 }
