@@ -21,7 +21,7 @@
     ))
 
     # (is_two n2)
-    (type is_two)
+    is_two
 )
 
 
