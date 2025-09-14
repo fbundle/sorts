@@ -94,37 +94,39 @@ func (l Let) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
 	panic("implement me")
 }
 
-func ListParseMatch(H form.Name, Exact form.Name) ListParseFunc {
-	return func(parse ParseFunc, list form.List) AlmostSort {
-		mustMatchHead(H, list)
-		if len(list) < 2 || not(len(list)%2 == 0) {
-			panic(fmt.Errorf("match must be (%s pattern1 value1 ... patternN valueN final)", H))
-		}
-
-		cases := make([]MatchCase, 0)
-		for i := 1; i < len(list)-1; i += 2 {
-			patternForm, valueForm := list[i], list[i+1]
-
-			var pattern any
-			if patternForm, ok := patternForm.(form.List); ok && patternForm[0] == Exact {
-				if len(patternForm) != 2 {
-					panic(fmt.Errorf("exact match must be (%s form)", Exact))
-				}
-				pattern = patternForm[1]
-			} else {
-				pattern = MustSort(parse(patternForm))
+func ListParseMatch(Exact form.Name) ListParseFuncWithHead {
+	return func(H form.Name) ListParseFunc {
+		return func(parse ParseFunc, list form.List) AlmostSort {
+			mustMatchHead(H, list)
+			if len(list) < 2 || not(len(list)%2 == 0) {
+				panic(fmt.Errorf("match must be (%s pattern1 value1 ... patternN valueN final)", H))
 			}
 
-			cases = append(cases, MatchCase{
-				Pattern: pattern,
-				Value:   parse(valueForm),
-			})
-		}
+			cases := make([]MatchCase, 0)
+			for i := 1; i < len(list)-1; i += 2 {
+				patternForm, valueForm := list[i], list[i+1]
 
-		return Match{
-			Cond:  parse(list[0]),
-			Cases: cases,
-			Final: parse(list[len(list)-1]),
+				var pattern any
+				if patternForm, ok := patternForm.(form.List); ok && patternForm[0] == Exact {
+					if len(patternForm) != 2 {
+						panic(fmt.Errorf("exact match must be (%s form)", Exact))
+					}
+					pattern = patternForm[1]
+				} else {
+					pattern = MustSort(parse(patternForm))
+				}
+
+				cases = append(cases, MatchCase{
+					Pattern: pattern,
+					Value:   parse(valueForm),
+				})
+			}
+
+			return Match{
+				Cond:  parse(list[0]),
+				Cases: cases,
+				Final: parse(list[len(list)-1]),
+			}
 		}
 	}
 }

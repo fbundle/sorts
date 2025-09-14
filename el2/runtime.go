@@ -47,7 +47,8 @@ func newParser(r Runtime) el_parser.Parser {
 		NewListParser("⊕", toAlmostSortListParser(sorts.ListParseSum)).
 		NewListParser("⊗", toAlmostSortListParser(sorts.ListParseProd)).
 		NewListParser("=>", el_almost_sort.ListParseLambda).
-		NewListParser("let", el_almost_sort.ListParseLet)
+		NewListParser("let", el_almost_sort.ListParseLet).
+		NewListParser("match", el_almost_sort.ListParseMatch("exact"))
 
 	return p
 }
