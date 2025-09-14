@@ -17,17 +17,16 @@ type SortUniverse struct {
 	InitialTypeName  form.Name
 	TerminalTypeName form.Name
 	nameLessEqual    ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
-
 }
 
-func (u SortUniverse) mustSortAttr() SortUniverse {
+func (u SortUniverse) MustSortUniverse() SortUniverse {
 	if u.InitialTypeName == u.TerminalTypeName {
 		panic(TypeErr)
 	}
 	return u
 }
 
-func (u SortUniverse) parseConstant(key form.Name) (sorts.Sort, bool) {
+func (u SortUniverse) ParseBuiltin(key form.Name) (sorts.Sort, bool) {
 	// parse builtin: initial, terminal
 	builtin := map[form.Name]func(level int) sorts.Sort{
 		u.InitialTypeName:  u.Initial,
@@ -53,7 +52,7 @@ func (u SortUniverse) NewNameLessEqualRule(src form.Name, dst form.Name) SortUni
 	return u
 }
 
-func (u SortUniverse) newTerm(name form.Name, parent sorts.Sort) sorts.Sort {
+func (u SortUniverse) NewTerm(name form.Name, parent sorts.Sort) sorts.Sort {
 	return sorts.NewAtomTerm(u, name, parent)
 }
 
