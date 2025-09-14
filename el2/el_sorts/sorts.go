@@ -117,7 +117,7 @@ func ListCompileInhabitant(Head form.Name) ListCompileFunc {
 		parentForm := list[1]
 		parent := ctx.Compile(parentForm)
 
-		name := Head + "_" + form.Name(randString(6))
+		name := form.Name(fmt.Sprintf("%s_%d", Head, nextValue()))
 		atom := ctx.NewTerm(name, parent)
 		return Inhabitant{
 			Atom: atom,

@@ -2,16 +2,15 @@ package el_sorts
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
+	"sync/atomic"
 
 	"github.com/fbundle/sorts/form"
 )
 
 var TypeErr = fmt.Errorf("type_err")
 
-func mustMatchHead(H form.Name, list form.List) {
-	if H != list[0] {
+func mustMatchHead(Head form.Name, list form.List) {
+	if len(list) == 0 || Head != list[0] {
 		panic(TypeErr)
 	}
 }
@@ -26,14 +25,8 @@ func mustTermOf(ctx Context, x Sort, X Sort) {
 	}
 }
 
-var rs = rand.New(rand.NewSource(time.Now().UnixNano()))
+var valueCount uint64
 
-const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-func randString(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letters[rs.Intn(len(letters))]
-	}
-	return string(b)
+func nextValue() uint64 {
+	return atomic.AddUint64(&valueCount, 1)
 }
