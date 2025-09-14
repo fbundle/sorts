@@ -117,7 +117,7 @@ func (u SortUniverse) LessEqualBasic(x sorts.Sort, y sorts.Sort) bool {
 	}
 
 	src, ok1 := sorts.GetForm(u, x).(form.Name)
-	dst, ok2 := sorts.GetForm(u, x).(form.Name)
+	dst, ok2 := sorts.GetForm(u, y).(form.Name)
 	if ok1 && ok2 {
 		if src == dst {
 			return true

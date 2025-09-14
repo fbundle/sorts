@@ -30,8 +30,8 @@
 
 
     # (is_two n2)
-    # is_two                  # is_two was successfully resolved type as Nat -> Bool
-    must_two                  # should be Nat -> (Nat + Nil) # TODO debug
+    # is_two                  # resolved type as Nat -> Bool
+    must_two                  # resolved type as Nat -> (Nat + Nil)
 )
 
 
