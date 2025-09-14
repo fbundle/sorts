@@ -153,6 +153,15 @@ func ListCompileLet(Head form.Name) ListCompileFunc {
 				panic(TypeErr)
 			}
 			value := ctx.Compile(valueForm)
+			if v, ok := value.(Inhabitant); ok {
+				// TODO - DEBUG feature - rename inhabitant
+				value = Inhabitant{
+					Atom: ctx.NewTerm(name, ctx.Parent(v.Atom)),
+					Head: v.Head,
+					Name: name,
+				}
+			}
+
 			bindings = append(bindings, LetBinding{
 				Name:  name,
 				Value: value,

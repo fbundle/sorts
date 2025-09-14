@@ -26,7 +26,7 @@ type SortAttr interface {
 	Parent(s Sort) Sort
 	LessEqual(x Sort, y Sort) bool
 
-	LessEqualAtom(x Atom, y Atom) bool
+	LessEqualBasic(x Sort, y Sort) bool
 }
 
 func GetForm(a SortAttr, s any) Form {

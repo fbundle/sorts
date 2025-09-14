@@ -22,8 +22,8 @@ func (ctx Context) LessEqual(x sorts.Sort, y sorts.Sort) bool {
 	return ctx.universe.LessEqual(x, y)
 }
 
-func (ctx Context) LessEqualAtom(x sorts.Atom, y sorts.Atom) bool {
-	return ctx.universe.LessEqualAtom(x, y)
+func (ctx Context) LessEqualBasic(x sorts.Sort, y sorts.Sort) bool {
+	return ctx.universe.LessEqualBasic(x, y)
 }
 
 func (ctx Context) NewTerm(name form.Form, parent el_sorts.Sort) el_sorts.Atom {

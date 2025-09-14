@@ -31,12 +31,7 @@ func (s Atom) sortAttr(a SortAttr) sortAttr {
 		level:  s.level,
 		parent: s.parent(),
 		lessEqual: func(dst Sort) bool {
-			switch d := dst.(type) {
-			case Atom:
-				return a.LessEqualAtom(s, d)
-			default:
-				return false
-			}
+			return a.LessEqualBasic(s, dst)
 		},
 	}
 }

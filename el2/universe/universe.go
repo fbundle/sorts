@@ -87,30 +87,28 @@ func (u SortUniverse) LessEqual(x sorts.Sort, y sorts.Sort) bool {
 	if u.checkLessEqualBuiltin(x, y) {
 		return true
 	}
-	return sorts.GetLessEqual(u, x, y)
+	ok := sorts.GetLessEqual(u, x, y)
+	if !ok {
+		return false
+	}
+	return true
 }
 
 func (u SortUniverse) checkLessEqualBuiltin(x sorts.Sort, y sorts.Sort) bool {
 	if xName, ok := sorts.GetForm(u, x).(form.Name); ok {
-		if xLevel, ok := getBuiltinLevel(u.InitialTypeName, xName); ok {
-			if xLevel == sorts.GetLevel(u, y) {
-				// x is of initial type and same xLevel with y
-				return true
-			}
+		if _, ok := getBuiltinLevel(u.InitialTypeName, xName); ok {
+			return true
 		}
 	}
 	if yName, ok := sorts.GetForm(u, y).(form.Name); ok {
-		if yLevel, ok := getBuiltinLevel(u.TerminalTypeName, yName); ok {
-			if yLevel == sorts.GetLevel(u, x) {
-				// y is of terminal type and same level with x
-				return true
-			}
+		if _, ok := getBuiltinLevel(u.TerminalTypeName, yName); ok {
+			return true
 		}
 	}
 	return false
 }
 
-func (u SortUniverse) LessEqualAtom(x sorts.Atom, y sorts.Atom) bool {
+func (u SortUniverse) LessEqualBasic(x sorts.Sort, y sorts.Sort) bool {
 	if sorts.GetLevel(u, x) > sorts.GetLevel(u, y) {
 		return false
 	}
@@ -121,6 +119,9 @@ func (u SortUniverse) LessEqualAtom(x sorts.Atom, y sorts.Atom) bool {
 	src, ok1 := sorts.GetForm(u, x).(form.Name)
 	dst, ok2 := sorts.GetForm(u, x).(form.Name)
 	if ok1 && ok2 {
+		if src == dst {
+			return true
+		}
 		if _, ok := u.nameLessEqual.Get(rule{src, dst}); ok {
 			return true
 		}
