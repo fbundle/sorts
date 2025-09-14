@@ -4,12 +4,12 @@ import (
 	"github.com/fbundle/sorts/persistent/ordered_map"
 )
 
-type runtimeParser struct {
+type parser struct {
 	parseName   func(Name) Sort
 	listParsers ordered_map.OrderedMap[Name, ListParseFunc]
 }
 
-func (u runtimeParser) parse(node Form) AlmostSort {
+func (u parser) parse(node Form) AlmostSort {
 	switch node := node.(type) {
 	case Name:
 		return ActualSort{sort: u.parseName(node)}
@@ -32,7 +32,7 @@ func (u runtimeParser) parse(node Form) AlmostSort {
 	}
 }
 
-func (u runtimeParser) newListParser(head Name, parseList ListParseFunc) runtimeParser {
+func (u parser) newListParser(head Name, parseList ListParseFunc) parser {
 	if _, ok := u.listParsers.Get(head); ok {
 		panic("list type already registered")
 	}

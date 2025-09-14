@@ -19,10 +19,11 @@ func newEmptyRuntime(InitialHeader Name, TerminalHeader Name) Runtime {
 			initialHeader:  InitialHeader,
 			terminalHeader: TerminalHeader,
 		},
-		frame:         frame{},
-		runtimeParser: runtimeParser{},
+		frame:  frame{},
+		parser: parser{},
 	}
-	r.runtimeParser.parseName = func(name Name) Sort {
+	// parser depends on sortUniverse and frame
+	r.parser.parseName = func(name Name) Sort {
 		if sort, ok := r.frame.Get(name); ok {
 			return sort
 		}
@@ -37,7 +38,7 @@ func newEmptyRuntime(InitialHeader Name, TerminalHeader Name) Runtime {
 type Runtime struct {
 	sortUniverse
 	frame
-	runtimeParser
+	parser
 }
 
 func (u Runtime) NewTerm(name Name, parent Sort) (Runtime, Sort) {
