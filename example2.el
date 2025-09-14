@@ -22,7 +22,7 @@
                     False
     ))
 
-    must_two (lambda x Nat (match x
+    must_two (lambda x Nat (match x         # TODO we can get away with compiling function by setting x to be Unit type
         (exact n2)   n2
                      nil
     ))
