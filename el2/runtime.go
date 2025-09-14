@@ -42,18 +42,12 @@ func newRuntime() Runtime {
 	return r
 }
 
-func DefaultRuntime() Parser {
+func DefaultRuntime() Runtime {
 	r := newRuntime()
-	r.parser = r.parser.NewListParser()
-
-	return Parser{
-		sortUniverse: sortUniverse{
-			initialHeader:  "Unit",
-			terminalHeader: "Any",
-		}.mustSortAttr(),
-	}.
-		NewListParser("->", toListParser(ListParseArrow("->"))).
-		NewListParser("⊕", toListParser(ListParseSum("⊕"))).
-		NewListParser("⊗", toListParser(ListParseProd("⊗"))).
+	r.parser = r.parser.
+		NewListParser("->", toListParser(sorts.ListParseArrow("->"))).
+		NewListParser("⊕", toListParser(sorts.ListParseSum("⊕"))).
+		NewListParser("⊗", toListParser(sorts.ListParseProd("⊗"))).
 		NewListParser("=>", el_almost_sort.ListParseLambda)
+	return r
 }
