@@ -1,9 +1,9 @@
 (let
-    Bool Any_2                undef
-    True Bool               undef
-    False Bool              undef
+    Bool (inhabitant U_1)
+    True (inhabitant Bool)
+    False (inhabitant Bool)
 
-    Nat Any_2                 undef
+    Nat U_1                 undef
     n0 Nat                  undef
     succ {Nat -> Nat}       undef
 
@@ -12,8 +12,8 @@
     n3 Nat (succ n2)
     n4 Nat (succ n3)
 
-    x Any_1 {n1 ⊕ n2 ⊕ n3}
-    x Any_1 {n1 ⊗ n2 ⊗ n3 ⊗ n4}
+    x Any_0 {n1 ⊕ n2 ⊕ n3}
+    x Any_0 {n1 ⊗ n2 ⊗ n3 ⊗ n4}
 
     is_two {Nat -> Bool} {x => (match x
         (exact (succ n1))   True

@@ -5,22 +5,25 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
+type Sort = sorts.Sort
+type Atom = sorts.Atom
+
 // Compiler - recursive compilation
 type Compiler interface {
-	Compile(form form.Form) (Context, Sort)
+	Compile(form form.Form) Sort
 }
 
 // Frame - name binding
 type Frame interface {
-	Get(name form.Name) typeSort
-	Set(name form.Name, sort typeSort) Context
+	Get(name form.Name) Sort
+	Set(name form.Name, sort Sort) Context
 	Del(name form.Name) Context
 }
 
 // Universe - type/el_sorts universe
 type Universe interface {
 	sorts.SortAttr
-	NewTerm(name form.Form, parent typeSort) typeSort
+	NewTerm(form form.Form, parent Sort) Atom
 }
 
 type Context interface {
