@@ -14,9 +14,6 @@ func (ctx Context) Get(name form.Name) el_sorts.Sort {
 	if s, ok := ctx.universe.GetBuiltin(name); ok {
 		return s
 	}
-	for k, _ := range ctx.frame.Iter {
-		fmt.Println(k)
-	}
 	panic(fmt.Errorf("name_not_found: %s", name))
 }
 
