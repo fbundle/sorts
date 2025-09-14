@@ -3,10 +3,10 @@ package el2
 import (
 	"fmt"
 
-	el_almost_sort "github.com/fbundle/sorts/el2/almost_sort"
-	el_frame "github.com/fbundle/sorts/el2/frame"
-	el_parser "github.com/fbundle/sorts/el2/parser"
-	el_sort_universe "github.com/fbundle/sorts/el2/sort_universe"
+	"github.com/fbundle/sorts/el2/almost_sort"
+	"github.com/fbundle/sorts/el2/frame"
+	"github.com/fbundle/sorts/el2/parser"
+	"github.com/fbundle/sorts/el2/sort_universe"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
 )
