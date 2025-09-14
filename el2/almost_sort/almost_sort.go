@@ -18,6 +18,7 @@ func MustSort(as AlmostSort) sorts.Sort {
 
 // AlmostSort - almost a Sort - for example, a lambda
 type AlmostSort interface {
+	almostSortAttr()
 	TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort // not nullable
 }
 
@@ -25,6 +26,8 @@ type AlmostSort interface {
 type ActualSort struct {
 	Sort sorts.Sort
 }
+
+func (s ActualSort) almostSortAttr() {}
 
 func (s ActualSort) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
 	must(sa).termOf(s.Sort, parent)

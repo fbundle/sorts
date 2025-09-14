@@ -1,13 +1,15 @@
 package el_almost_sort
 
 import (
+	"fmt"
+
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
 )
 
 func ListParseBeta(parse ParseFunc, list form.List) AlmostSort {
-	if len(list) != 2 {
-		panic("beta list must have two elements")
+	if not(len(list) == 2) {
+		panic("beta must be (cmd arg)")
 	}
 	return Beta{
 		Cmd: parse(list[0]),
@@ -21,17 +23,19 @@ type Beta struct {
 	Arg AlmostSort
 }
 
-func (f Beta) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
+func (b Beta) almostSortAttr() {}
+
+func (b Beta) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
 	//TODO implement me
 	panic("implement me")
 }
 
 func ListParseLambda(H form.Name) ListParseFunc {
 	return func(parse ParseFunc, list form.List) AlmostSort {
-		if len(list) != 2 {
-			panic("lambda list must have two elements")
-		}
 		mustMatchHead(H, list)
+		if not(len(list) == 3) {
+			panic(fmt.Errorf("lambda must be (%s param body)", H))
+		}
 		return Lambda{
 			Param: list[0].(form.Name),
 			Body:  parse(list[1]),
@@ -45,6 +49,7 @@ type Lambda struct {
 	Body  AlmostSort
 }
 
+func (l Lambda) almostSortAttr() {}
 func (l Lambda) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
 	//TODO implement me
 	panic("implement me")
@@ -52,10 +57,10 @@ func (l Lambda) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
 
 func ListParseLet(H form.Name) ListParseFunc {
 	return func(parse ParseFunc, list form.List) AlmostSort {
-		if len(list)+1%3 != 0 {
-			panic("lambda list must have 3k+2 elements")
-		}
 		mustMatchHead(H, list)
+		if len(list) < 2 || not((len(list)+1)%3 == 0) {
+			panic(fmt.Errorf("let must be (%s name1 type1 value1 ... nameN typeN valueN final)", H))
+		}
 
 		bindings := make([]LetBinding, 0)
 		for i := 1; i < len(list)-1; i += 3 {
@@ -85,8 +90,20 @@ type Let struct {
 	Final    AlmostSort
 }
 
+func (l Let) almostSortAttr() {}
 func (l Let) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
 	panic("implement me")
+}
+
+func ListParseMatch(H form.Name) ListParseFunc {
+	return func(parse ParseFunc, list form.List) AlmostSort {
+		mustMatchHead(H, list)
+		if len(list) < 2 || not(len(list)%2 == 0) {
+			panic(fmt.Errorf("match must be (%s pattern1 value1 ... patternN valueN final)", H))
+		}
+
+		return Match{}
+	}
 }
 
 type MatchCase struct {
@@ -99,6 +116,7 @@ type Match struct {
 	Final AlmostSort
 }
 
+func (m Match) almostSortAttr() {}
 func (m Match) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
 	panic("implement me")
 }

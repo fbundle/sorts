@@ -30,3 +30,7 @@ func mustMatchHead(H form.Name, list form.List) {
 		panic(TypeErr)
 	}
 }
+
+func not(b bool) bool {
+	return !b
+}
