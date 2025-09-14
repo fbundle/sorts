@@ -1,8 +1,11 @@
 package el2
 
+func mustSort(as AlmostSort) Sort {
+	return as.(ActualSort).sort
+}
+
 // AlmostSort - almost a sort - for example, a lambda
 type AlmostSort interface {
-	MaybeSort() Sort                         // nullable
 	TypeCheck(sa SortAttr, parent Sort) Sort // not nullable
 }
 
@@ -11,7 +14,7 @@ type ActualSort struct {
 	sort Sort
 }
 
-func (s ActualSort) MaybeSort() Sort {
+func (s ActualSort) MustSort() Sort {
 	return s.sort
 }
 
@@ -36,7 +39,7 @@ type Beta struct {
 	Arg AlmostSort
 }
 
-func (f Beta) MaybeSort() Sort {
+func (f Beta) MustSort() Sort {
 	return nil
 }
 
@@ -51,7 +54,7 @@ type Lambda struct {
 	Body  Form
 }
 
-func (l Lambda) MaybeSort() Sort {
+func (l Lambda) MustSort() Sort {
 	return nil
 }
 
