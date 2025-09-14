@@ -29,6 +29,7 @@ type Universe interface {
 }
 
 type Context interface {
+	EvalMode() bool
 	Universe
 	Compiler
 	Frame
