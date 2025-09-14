@@ -2,181 +2,226 @@
 
 started from some basic dependent type in [lean4](https://github.com/leanprover/lean4), I stated this project with the goal to implement the full dependent type system so that it is capable for mathemtical proof. This is probably a decade-long project, hope it would last.  
 
+# EL2 - Enhanced Expression Language
 
-# EXAMPLES
+EL2 is an enhanced version of the EL expression language, built on top of the `sorts` dependent type system. It provides a more robust and feature-rich environment for working with dependent types, pattern matching, and functional programming constructs.
 
-## EL — a tiny typed, expression language
+## Overview
 
-EL is a small, homoiconic, s‑expression language with a minimal core and a typed evaluation model built on the `sorts` library. Code and data share the same shape: lists and terms. The evaluator performs stepwise resolution under a persistent frame, tracking both inferred sorts (types) and values.
+EL2 extends the original EL language with improved type checking, better error handling, and enhanced compilation capabilities. It serves as a more mature implementation of the expression language, designed to support complex mathematical reasoning and proof development.
 
-### Features
-- **Homoiconic forms**: programs are made of terms and lists.
-- **Function application**: simple two‑element list `(f x)`.
-- **Lambdas**: `=>` special form.
-- **Let‑bindings**: `let` special form for introducing names with declared sorts.
-- **Pattern matching**: `match` with exact and structural patterns.
-- **Type constructors**: function arrow `->`, sum `⊕`, product `⊗`.
-- **Universes and built‑ins**: `U_n`, `Any_n`, `Unit_n` provide universe levels and terminal/initial sorts.
-- **Static type checking**: validates applications against arrow sorts, enforces special‑form arities, and tracks sorts across pattern matches and bindings.
+## Architecture
 
-### Structure
+### Core Components
 
-This project is organized into several packages:
+- **`context.go`**: Main context implementation that orchestrates compilation, frame management, and universe operations
+- **`context_compiler.go`**: Compilation logic for converting forms into sorts
+- **`context_frame.go`**: Frame management for name binding and variable scoping
+- **`context_universe.go`**: Universe operations and type hierarchy management
+- **`el_sorts/`**: Extended sort definitions and compilation functions
+- **`universe/`**: Universe implementation with built-in type support
 
-- **`sorts`**: The core of the project, this package implements a dependent type system. It includes features like Pi (`Π`), Sigma (`Σ`), Arrow (`->`), Sum (`+`), and Product (`×`) types. It also defines the fundamental building blocks such as `Sort`, `Atom`, and `Dependent`.
+### Key Features
 
-- **`form`**: This package provides a parser and tokenizer for a simple S-expression-based language. It supports both prefix and infix notations, enabling a flexible and readable syntax.
+#### 1. Enhanced Type System
+- **Universe levels**: Support for `Unit_n` and `Any_n` at different levels
+- **Type constructors**: Arrow (`->`), Sum (`⊕`), Product (`⊗`) types
+- **Dependent types**: Basic dependent types implemented, full dependent type system planned for future
+- **Type checking**: Comprehensive static type checking with detailed error reporting
 
-- **`el`**: An expression language built on top of the `sorts` and `form` packages. It implements features like `let` bindings, `lambda` functions, and `match` expressions. A simple type checker is also included to ensure type safety.
+#### 2. Advanced Language Constructs
 
-- **`persistent`**: This package provides a set of persistent data structures, including `ordered_map`, `seq`, and `stack`. These data structures are used in the `el` package to implement the runtime environment and ensure immutability.
+**Lambda Abstraction**:
+```el
+(lambda param1 type1 ... paramN typeN body)
+```
+- Multi-parameter lambda functions
+- Type annotations for parameters
+- Automatic arrow type construction
 
-- **`cmd`**: This directory contains the main applications for the project.
-  - **`cmd/el`**: A command-line interface (CLI) for the `el` language, allowing users to execute `el` code and see the results.
+**Beta Reduction**:
+```el
+(cmd arg)
+```
+- Function application with type checking
+- Validates argument types against function domain
 
-## Install / Build
+**Let Bindings**:
+```el
+(let name1 value1 ... nameN valueN final)
+```
+- Sequential name binding
+- Support for inhabitant renaming
+- Lexical scoping
 
-### Requirements
-- Go 1.25+
+**Pattern Matching**:
+```el
+(match cond pattern1 value1 ... patternN valueN final)
+```
+- Currently supports exact pattern matching with `(exact expr)`
+- Type-safe pattern binding
+- Structural pattern matching planned for future implementation
 
-### Build the CLI
+**Inhabitants**:
+```el
+(inh type)
+```
+- Generate undefined terms of a given type
+- Automatic name generation
+- Useful for proof construction
+
+**Type Annotation**:
+```el
+(type value)
+```
+- get type of an object
+
+#### 3. Compilation System
+
+The compilation system in EL2 is built around a context-based approach:
+
+- **Context Interface**: Unified interface for compilation, frame management, and universe operations
+- **List Compilers**: Extensible system for handling different language constructs
+- **Type Inference**: Automatic type inference with manual override capabilities
+- **Error Handling**: Comprehensive error reporting with context information
+
+#### 4. Universe Management
+
+EL2 includes a sophisticated universe system:
+
+- **Level Management**: Support for universe levels with proper hierarchy
+- **Built-in Types**: `Unit` and `Any` types at various levels
+- **Type Ordering**: Subtyping relationships and type ordering
+- **Rule System**: Custom type ordering rules
+
+## Usage
+
+### Command Line Interface
+
+EL2 can be used through the command-line interface:
+
 ```bash
-go build -o ./bin/el ./cmd/el
+# Build the el2 command
+go build -o ./bin/el2 ./cmd/el2
+
+# Run el2 on a file
+./bin/el2 example.el
 ```
 
-Or install into your `GOBIN`:
-```bash
-go install ./cmd/el
+### Example Programs
+
+**Basic Lambda and Application**:
+```el
+(lambda x Any_0 (x x))
 ```
 
-Verify:
-```bash
-echo "(let x U_1 undef x)" | ./bin/el
-```
-
-## Language overview
-
-### Syntax
-- **Terms**: bare identifiers like `Nat`, `succ`, `x`.
-- **Lists**: `(head arg)`; the empty list is not allowed as a term.
-- **Application**: a regular two‑element list. Multi‑arg functions are curried: `((add 2) 3)`.
-
-### Special forms
-
-- **Lambda**: `(=> param body)`
-  - Produces a function value without immediately evaluating the body.
-
-- **Let**: `(let name1 type1 value1 ... nameN typeN valueN final)`
-  - Binds a sequence of names, each with a declared sort and a value; evaluates `final` in the extended frame.
-  - Use the literal `undef` to declare a name without assigning a value yet; the name becomes a self‑reference (useful for recursive references and data declarations).
-
-- **Match**: `(match cond comp1 value1 ... compN valueN final)`
-  - Tries each pattern `compK` against `cond`. On first match, evaluates `valueK` in the possibly extended frame (pattern variables are bound). If none match, evaluates `final`.
-
-### Patterns
-- **Exact**: `(exact expr)` matches only when the resolved value is syntactically equal to `expr`.
-- **Variable**: a bare term in pattern position binds to the matched value (and its sort).
-- **Structural**: `(f x)` patterns match function calls and recurse over command and argument.
-
-### Sorts (types)
-- **Arrow**: `(-> A B)` is the sort of functions from `A` to `B`.
-- **Sum**: `(⊕ A B)` disjoint union of sorts.
-- **Product**: `(⊗ A B)` pair/product of sorts.
-- **Universes**: `U_n` denotes universe level `n+1` of sorts; `Any_n` is the terminal sort at level `n+1`; `Unit_n` is the initial sort at level `n+1`.
-
-### Static typing and guarantees
-- **Application checking**: `(f x)` type checks iff `f : (-> A B)` and `x : A`, yielding result sort `B`.
-- **Universe inference**: bare `U_n`/`Any_n`/`Unit_n` resolve to atoms at level `n+1`, ensuring level‑correctness for declarations.
-- **Pattern binding**: variables bound in `match` patterns carry the matched value’s sort into the branch scope.
-- **Special‑form arity**: `=>`, `let`, `match`, `->`, `⊕`, `⊗`, `exact` are arity‑checked at parse time.
-- **Error reporting**: ill‑typed applications and malformed forms surface precise errors during resolution.
-
-For the precise algorithms behind pattern matching, reverse pattern matching, and type checking (variable binding and function calling), see `el/ALGORITHM.md`.
-
-Note: binding and match exhaustiveness checks are intentionally conservative and will be tightened further as the language evolves.
-
-## Example
-
-`el/example.el` demonstrates natural numbers, addition, and simple matching:
-
+**Let Bindings with Types**:
 ```el
 (let
-    Bool U_1                undef
-    True Bool               undef
-    False Bool              undef
-
-    Nat U_1                 undef
-    n0 Nat                  undef
-    succ {Nat -> Nat}       undef
-
-    n1 Nat (succ n0)
-    n2 Nat (succ n1)
-    n3 Nat (succ n2)
-    n4 Nat (succ n3)
-
-    x Any_0 {n1 ⊕ n2 ⊕ n3}
-    x Any_0 {n1 ⊗ n2 ⊗ n3 ⊗ n4}
-
-    is_two {Nat -> Bool} {x => (match x
-        (exact (succ n1))   True
-                            False
-    )}
-
-    add {Nat -> Nat -> Nat} {x => y => (match y
-        (succ z)    (succ ((add x) z))
-                    x
-    )}
-
-    # (is_two n2)
-    (add n2 n3)             # output (succ (succ (succ (succ (succ n0)))))
+    Bool (inh Any_2)
+    True (inh Bool)
+    False (inh Bool)
+    
+    Nat (inh Any_2)
+    n0 (inh Nat)
+    succ (inh {Nat -> Nat})
+    
+    n1 (succ n0)
+    n2 (succ n1)
+    
+    is_two (lambda x Nat (match x
+        (exact n2)   True
+                    False
+    ))
+    
+    (is_two n2)
 )
 ```
 
-Run it with the CLI:
-
-```bash
-./bin/el < el/example.el
+**Pattern Matching**:
+```el
+(let
+    Bool (inh Any_2)
+    True (inh Bool)
+    False (inh Bool)
+    
+    is_two (lambda x Nat (match x
+        (exact n2)   True
+                    False
+    ))
+    
+    (is_two n2)
+)
 ```
 
-You will see, for each top‑level form, the printed form, its inferred sort, and its resolved value, e.g.:
-
-```text
-expr	 (add n2 n3)
-sort	 Nat
-value	 (succ (succ (succ (succ (succ n0)))))
+**Sum and Product Types**:
+```el
+(let
+    x {n1 ⊕ n2 ⊕ n3}
+    x {n1 ⊗ n2 ⊗ n3 ⊗ n4}
+    x
+)
 ```
 
-## CLI usage
+## Implementation Details
 
-- **Input**: reads UTF‑8 EL code from stdin; multiple top‑level forms are allowed one after another.
-- **Output**: for each form, prints three lines: `expr`, `sort`, `value`.
+### Context System
 
-Examples:
-```bash
-echo "(=> x x)" | ./bin/el
-echo "(let id {Any_0 -> Any_0} {x => x} (id id))" | ./bin/el
-```
+The `Context` struct implements the `el_sorts.Context` interface and provides:
 
-## Dependent types and proof assistant roadmap
+- **Frame Management**: Persistent ordered map for variable bindings
+- **Universe Integration**: Access to type universe operations
+- **Compiler Registry**: Extensible list compiler system
+- **Type Operations**: Parent type resolution, level checking, subtyping
 
-The `sorts` library already implements the following dependent types:
+### Compilation Process
 
-- **Dependent function (Π)**: Also known as a dependent product, this type represents a function where the type of the return value depends on the input value.
-- **Dependent pair (Σ)**: Also known as a dependent sum, this type represents a pair where the type of the second element depends on the value of the first.
+1. **Tokenization**: Input is tokenized using the form processor
+2. **Parsing**: Forms are parsed into abstract syntax trees
+3. **Compilation**: Forms are compiled into sorts using the context
+4. **Type Checking**: Types are validated and inferred
+5. **Output**: Results are formatted and displayed
 
-The following features are planned for the future:
+### Error Handling
 
-- **Definitional equality and normalization**: Implementing a robust definitional equality check, likely using normalization-by-evaluation, is a crucial next step.
-- **Universe polymorphism**: To avoid paradoxes and manage the hierarchy of types, the system will need to support universe polymorphism, including cumulativity and level inference for `Π` and `Σ` types.
-- **Equality/type of paths**: The introduction of an identity type with `refl`, `cong`, and `transport` primitives will enable reasoning about equality within the type system.
-- **Pattern coverage & termination**: To ensure the reliability of proofs, the system will need to perform totality checks for functions defined by `match`, verifying both pattern coverage and termination.
-- **Holes and elaboration**: To improve the user experience and support interactive proof development, the system will feature typed holes, metavariables, and an elaboration mechanism to refine proofs.
-- **Tactics/automation**: A small, trusted kernel will be extended with an optional tactic layer for proof search and automation, making it easier to construct complex proofs.
+EL2 provides detailed error reporting:
 
-## Notes
+- **Type Errors**: Clear messages for type mismatches
+- **Parse Errors**: Syntax error reporting
+- **Name Resolution**: Undefined variable errors
+- **Arity Errors**: Incorrect number of arguments
 
-- Unicode operators `⊕` and `⊗` are regular identifiers; ensure your editor saves files as UTF‑8.
-- EL uses explicit braces `{ ... }` in examples purely for readability; they are not required by the reader—any list is written with parentheses.
-- The implementation favors clarity; sorts are reported using names from the `sorts` package.
+## Extensibility
 
+EL2 is designed to be extensible:
 
+- **Custom Compilers**: Add new language constructs by implementing `ListCompileFunc`
+- **Type Rules**: Extend the universe with custom type ordering rules
+- **Built-in Types**: Add new built-in types to the universe
+- **Pattern Matching**: Extend pattern matching capabilities
+
+## Dependencies
+
+EL2 depends on several packages:
+
+- **`sorts`**: Core dependent type system
+- **`form`**: S-expression parsing and tokenization
+- **`form_processor`**: Form processing utilities
+- **`persistent`**: Persistent data structures for immutable state
+
+## Future Development
+
+Planned enhancements for EL2 include:
+
+- **Pattern Matching Improvements**: Full structural pattern matching (currently only exact matching is supported)
+- **Dependent Types**: Complete implementation of dependent function (Π) and dependent pair (Σ) types
+- **Type Inference**: More sophisticated type inference algorithms
+- **Proof Tactics**: Built-in proof tactics and automation
+- **Module System**: Support for modular development
+- **IDE Integration**: Language server protocol support
+
+## Related Documentation
+
+- See the main project README for overall architecture
+- Check `el/DOC.md` for detailed algorithm descriptions
+- Refer to `sorts/` package documentation for type system details
