@@ -187,6 +187,10 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 				} else {
 					// pattern match
 					pattern = patternForm[1]
+					// suppose the pattern is (succ z) - how to set z into nextCtx to compile valueForm?
+					p := patternForm[1]
+					nextCtx := ctx
+
 				}
 
 				cases = append(cases, MatchCase{
