@@ -1,12 +1,15 @@
 package sorts
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var TypeErr = fmt.Errorf("type_err") // cannot recover
 
 type ParseFunc = func(form Form) Sort
 
 type ListParseFunc = func(parse ParseFunc, list List) Sort
+type ListParseFuncWithHead = func(H Name) ListParseFunc
 
 type sortAttr struct {
 	form      Form                // every Sort is identified with a Form
