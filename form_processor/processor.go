@@ -41,7 +41,9 @@ func (p Processor) Tokenize(s string) []Token {
 	preProcessorList := []Preprocessor{
 		removeComment("#"),
 	}
-	postProcessorList := []PostProcessor{}
+	postProcessorList := []PostProcessor{
+		wrapInhabitant("$", "inh", "(", ")"),
+	}
 
 	return tokenize(
 		s, p.getSplitTokens(),
