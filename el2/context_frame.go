@@ -6,15 +6,15 @@ import (
 	"github.com/fbundle/sorts/form"
 )
 
-func (r Context) Get(name form.Name) almost_sort.ActualSort {
-	s, ok := r.frame.Get(name)
+func (ctx Context) Get(name form.Name) almost_sort.ActualSort {
+	s, ok := ctx.frame.Get(name)
 	if !ok {
 		panic(TypeErr)
 	}
 	return s
 }
 
-func (r Context) Set(name form.Name, sort almost_sort.ActualSort) almost_sort_extra.Context {
-	r.frame = r.frame.Set(name, sort)
-	return r
+func (ctx Context) Set(name form.Name, sort almost_sort.ActualSort) almost_sort_extra.Context {
+	ctx.frame = ctx.frame.Set(name, sort)
+	return ctx
 }

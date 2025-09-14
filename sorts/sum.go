@@ -2,8 +2,8 @@ package sorts
 
 import "fmt"
 
-func ListParseSum(H Name) ListParseFunc {
-	return func(parse ParseFunc, list List) Sort {
+func ListCompileSum(H Name) ListCompileFunc {
+	return func(parse func(form Form) Sort, list List) Sort {
 		if len(list) != 3 {
 			panic(fmt.Errorf("sum must be %s A B", H))
 		}

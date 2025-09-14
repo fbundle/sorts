@@ -6,10 +6,10 @@ import (
 	"github.com/fbundle/sorts/form"
 )
 
-func (r Context) Compile(node form.Form) (almost_sort_extra.Context, almost_sort.AlmostSort) {
+func (ctx Context) Compile(node form.Form) (almost_sort_extra.Context, almost_sort.AlmostSort) {
 	switch node := node.(type) {
 	case form.Name:
-		return r, r.Get(node)
+		return ctx, ctx.Get(node)
 	case form.List:
 		if len(node) == 0 {
 			panic("empty list")
@@ -19,13 +19,18 @@ func (r Context) Compile(node form.Form) (almost_sort_extra.Context, almost_sort
 			panic("list must start with a name")
 		}
 
-		if listParser, ok := r.listParsers.Get(head); ok {
-			return listParser(r, node)
+		if listParser, ok := ctx.listCompiler.Get(head); ok {
+			return listParser(ctx, node)
 		} else {
 			// by default, compile as beta reduction (function call)
-			return almost_sort_extra.ListCompileBeta(r, node)
+			return almost_sort_extra.ListCompileBeta(ctx, node)
 		}
 	default:
 		panic("parse_error")
 	}
+}
+
+func (ctx Context) WithListCompiler(name form.Name, compileFunc almost_sort_extra.ListCompileFunc) Context {
+	ctx.listCompiler = ctx.listCompiler.Set(name, compileFunc)
+	return ctx
 }

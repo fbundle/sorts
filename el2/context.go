@@ -17,5 +17,18 @@ var _ almost_sort_extra.Context = Context{}
 type Context struct {
 	frame        ordered_map.OrderedMap[form.Name, almost_sort.ActualSort]
 	sortUniverse el2_sort_universe.SortUniverse
-	listParsers  ordered_map.OrderedMap[form.Name, almost_sort_extra.ListCompileFunc]
+	listCompiler ordered_map.OrderedMap[form.Name, almost_sort_extra.ListCompileFunc]
+}
+
+func (ctx Context) Reset() Context {
+	ctx := Context{
+		frame: ordered_map.OrderedMap[form.Name, almost_sort.ActualSort]{},
+		sortUniverse: el2_sort_universe.SortUniverse{
+			InitialTypeName:  "Unit",
+			TerminalTypeName: "Any",
+		},
+		listCompiler: ordered_map.OrderedMap[form.Name, almost_sort_extra.ListCompileFunc]{},
+	}.
+		WithListCompiler()
+
 }

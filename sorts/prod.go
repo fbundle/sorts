@@ -2,8 +2,8 @@ package sorts
 
 import "fmt"
 
-func ListParseProd(H Name) ListParseFunc {
-	return func(parse ParseFunc, list List) Sort {
+func ListCompileProd(H Name) ListCompileFunc {
+	return func(parse func(form Form) Sort, list List) Sort {
 		if len(list) != 3 {
 			panic(fmt.Errorf("prod must be %s A B", H))
 		}
