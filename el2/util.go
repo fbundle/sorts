@@ -19,8 +19,6 @@ var NewAtomTerm = sorts.NewAtomTerm
 
 type ParseFunc = func(form Form) AlmostSort
 type ListParseFunc = func(parse ParseFunc, list List) AlmostSort
-type ParseSortFunc = sorts.ParseFunc
-type ListParseSortFunc = sorts.ListParseFunc
 
 var ListParseArrow = sorts.ListParseArrow
 var ListParseSum = sorts.ListParseSum
