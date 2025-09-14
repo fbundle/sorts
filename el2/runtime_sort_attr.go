@@ -1,26 +1,69 @@
 package el2
 
-import "github.com/fbundle/sorts/sorts"
+import (
+	"strconv"
 
-func (u Runtime) Form(s any) sorts.Form {
+	"github.com/fbundle/sorts/persistent/ordered_map"
+	"github.com/fbundle/sorts/sorts"
+)
+
+type runtimeSortAttr struct {
+	initialHeader  Name
+	terminalHeader Name
+	nameLessEqual  ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
+
+}
+
+func (u runtimeSortAttr) mustSortAttr() runtimeSortAttr {
+	if u.initialHeader == u.terminalHeader {
+		panic(TypeErr)
+	}
+	return u
+}
+func (u runtimeSortAttr) NewNameLessEqualRule(src Name, dst Name) runtimeSortAttr {
+	u.nameLessEqual = u.nameLessEqual.Set(rule{src, dst})
+	return u
+}
+
+func (u runtimeSortAttr) newTerm(name Name, parent Sort) Sort {
+	return NewAtomTerm(u, name, parent)
+}
+
+// Terminal - T_0 T_1 ... T_n
+func (u runtimeSortAttr) Terminal(level int) Sort {
+	return NewAtomChain(level, func(level int) Name {
+		levelStr := Name(strconv.Itoa(level))
+		return u.terminalHeader + "_" + levelStr
+	})
+}
+
+// Initial - I_0 I_1 ... I_n
+func (u runtimeSortAttr) Initial(level int) Sort {
+	return NewAtomChain(level, func(level int) Name {
+		levelStr := Name(strconv.Itoa(level))
+		return u.initialHeader + "_" + levelStr
+	})
+}
+
+func (u runtimeSortAttr) Form(s any) sorts.Form {
 	return sorts.GetForm(u, s)
 }
 
-func (u Runtime) Level(s sorts.Sort) int {
+func (u runtimeSortAttr) Level(s sorts.Sort) int {
 	return sorts.GetLevel(u, s)
 }
-func (u Runtime) Parent(s sorts.Sort) sorts.Sort {
+func (u runtimeSortAttr) Parent(s sorts.Sort) sorts.Sort {
 	return sorts.GetParent(u, s)
 }
-func (u Runtime) LessEqual(x sorts.Sort, y sorts.Sort) bool {
+func (u runtimeSortAttr) LessEqual(x sorts.Sort, y sorts.Sort) bool {
 	return sorts.GetLessEqual(u, x, y)
 }
-func (u Runtime) TermOf(x sorts.Sort, X sorts.Sort) bool {
+func (u runtimeSortAttr) TermOf(x sorts.Sort, X sorts.Sort) bool {
 	return u.LessEqual(u.Parent(x), X)
 }
 
-func (u Runtime) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
-	if src == u.InitialHeader || dst == u.TerminalHeader {
+func (u runtimeSortAttr) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
+	if src == u.initialHeader || dst == u.terminalHeader {
 		return true
 	}
 	if src == dst {
