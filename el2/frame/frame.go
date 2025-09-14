@@ -1,4 +1,4 @@
-package el_frame
+package el2_frame
 
 import (
 	"github.com/fbundle/sorts/form"

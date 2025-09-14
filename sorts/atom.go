@@ -39,7 +39,7 @@ func (s Atom) sortAttr(a SortAttr) sortAttr {
 				sname, ok1 := s.form.(Name)
 				dname, ok2 := d.form.(Name)
 				if ok1 && ok2 {
-					return a.NameLessEqual(sname, dname)
+					return a.GetRule(sname, dname)
 				}
 				return false
 			default:

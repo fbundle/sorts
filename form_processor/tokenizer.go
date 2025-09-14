@@ -7,12 +7,12 @@ import (
 )
 
 // getSplitTokens returns the sorted list of split tokens
-func (parser Parser) getSplitTokens() []Token {
+func (p Processor) getSplitTokens() []Token {
 	splitTokenSet := make(map[Token]struct{})
-	for _, tok := range parser.Split {
+	for _, tok := range p.Split {
 		splitTokenSet[tok] = struct{}{}
 	}
-	for beg, block := range parser.Blocks {
+	for beg, block := range p.Blocks {
 		splitTokenSet[beg] = struct{}{}
 		splitTokenSet[block.End] = struct{}{}
 	}

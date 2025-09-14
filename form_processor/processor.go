@@ -5,18 +5,22 @@ import (
 	"fmt"
 )
 
+var Tokenize = defaultProcessor.Tokenize
+
+var Parse = defaultProcessor.Parse
+
 type Preprocessor func(string) string
 type Block struct {
 	End     Token
 	Process func([]Form) (Form, error)
 }
 
-type Parser struct {
+type Processor struct {
 	Blocks map[Token]Block
 	Split  []Token
 }
 
-var defaultParser = Parser{
+var defaultProcessor = Processor{
 	Split: []Token{"+", "*", "$", "⊕", "⊗", "Π", "Σ", "=>", "->", ":", ",", "=", ":="},
 	Blocks: map[Token]Block{
 		"(": {
@@ -32,29 +36,29 @@ var defaultParser = Parser{
 	},
 }
 
-func (parser Parser) Tokenize(s string, pList ...Preprocessor) []Token {
+func (p Processor) Tokenize(s string, pList ...Preprocessor) []Token {
 	newPList := append([]Preprocessor{
 		removeComment("#"),
 	}, pList...)
 
 	return tokenize(
-		s, parser.getSplitTokens(),
+		s, p.getSplitTokens(),
 		newPList...,
 	)
 }
 
-func (parser Parser) Parse(tokenList []Token) (Form, []Token, error) {
+func (p Processor) Parse(tokenList []Token) ([]Token, Form, error) {
 	tokenList, head, err := pop(tokenList)
 	if err != nil {
-		return nil, tokenList, err
+		return tokenList, nil, err
 	}
-	if block, ok := parser.Blocks[head]; ok {
+	if block, ok := p.Blocks[head]; ok {
 		var f Form
 		var forms []Form
 		for {
-			f, tokenList, err = parser.Parse(tokenList)
+			tokenList, f, err = p.Parse(tokenList)
 			if err != nil {
-				return List(forms), tokenList, err
+				return tokenList, List(forms), err
 			}
 			if term, ok := f.(Name); ok && Token(term) == block.End {
 				break
@@ -62,20 +66,11 @@ func (parser Parser) Parse(tokenList []Token) (Form, []Token, error) {
 			forms = append(forms, f)
 		}
 		f, err = block.Process(forms)
-		return f, tokenList, err
+		return tokenList, f, err
 	} else {
-		return Name(head), tokenList, nil
+		return tokenList, Name(head), nil
 	}
 }
-
-func Tokenize(s string) []Token {
-	return defaultParser.Tokenize(s)
-}
-
-func Parse(tokenList []Token) (Form, []Token, error) {
-	return defaultParser.Parse(tokenList)
-}
-
 func pop(tokenList []Token) ([]Token, Token, error) {
 	if len(tokenList) == 0 {
 		return nil, "", errors.New("empty token list")

@@ -14,22 +14,22 @@ import (
 var TypeErr = fmt.Errorf("type_error")
 
 type Runtime struct {
-	frame        el_frame.Frame
-	sortUniverse el_sort_universe.SortUniverse
+	frame        el2_frame.Frame
+	sortUniverse el2_sort_universe.SortUniverse
 }
 
-func newRuntime() Runtime {
+func NewRuntime() Runtime {
 	return Runtime{
-		frame: el_frame.Frame{},
-		sortUniverse: el_sort_universe.SortUniverse{
+		frame: el2_frame.Frame{},
+		sortUniverse: el2_sort_universe.SortUniverse{
 			InitialTypeName:  "Unit",
 			TerminalTypeName: "Any",
 		},
 	}
 }
 
-func newParser(r Runtime) el_parser.Parser {
-	p := el_parser.Parser{
+func NewParser(r Runtime) el2_parser.Parser {
+	p := el2_parser.Parser{
 		ParseName: nil,
 	}
 	p.ParseName = func(name form.Name) sorts.Sort {
@@ -43,10 +43,10 @@ func newParser(r Runtime) el_parser.Parser {
 	}
 
 	return p.
-		NewListParser("->", toAlmostSortListParser(sorts.ListParseArrow)).
-		NewListParser("⊕", toAlmostSortListParser(sorts.ListParseSum)).
-		NewListParser("⊗", toAlmostSortListParser(sorts.ListParseProd)).
-		NewListParser("=>", el_almost_sort.ListParseLambda).
-		NewListParser("let", el_almost_sort.ListParseLet).
-		NewListParser("match", el_almost_sort.ListParseMatch("exact"))
+		WithListParser("->", toAlmostSortListParser(sorts.ListParseArrow)).
+		WithListParser("⊕", toAlmostSortListParser(sorts.ListParseSum)).
+		WithListParser("⊗", toAlmostSortListParser(sorts.ListParseProd)).
+		WithListParser("=>", el2_almost_sort.ListParseLambda).
+		WithListParser("let", el2_almost_sort.ListParseLet).
+		WithListParser("match", el2_almost_sort.ListParseMatch("exact"))
 }

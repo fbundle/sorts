@@ -1,4 +1,4 @@
-package el_almost_sort
+package el2_almost_sort
 
 import (
 	"github.com/fbundle/sorts/form"

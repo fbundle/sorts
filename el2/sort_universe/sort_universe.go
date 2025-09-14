@@ -1,4 +1,4 @@
-package el_sort_universe
+package el2_sort_universe
 
 import (
 	"cmp"
@@ -47,12 +47,12 @@ func (u SortUniverse) ParseBuiltin(key form.Name) (sorts.Sort, bool) {
 	return nil, false
 }
 
-func (u SortUniverse) NewNameLessEqualRule(src form.Name, dst form.Name) SortUniverse {
+func (u SortUniverse) WithRule(src form.Name, dst form.Name) SortUniverse {
 	u.nameLessEqual = u.nameLessEqual.Set(rule{src, dst})
 	return u
 }
 
-func (u SortUniverse) NewTerm(name form.Name, parent sorts.Sort) sorts.Sort {
+func (u SortUniverse) MakeTerm(name form.Name, parent sorts.Sort) sorts.Sort {
 	return sorts.NewAtomTerm(u, name, parent)
 }
 
@@ -89,7 +89,7 @@ func (u SortUniverse) TermOf(x sorts.Sort, X sorts.Sort) bool {
 	return u.LessEqual(u.Parent(x), X)
 }
 
-func (u SortUniverse) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
+func (u SortUniverse) GetRule(src sorts.Name, dst sorts.Name) bool {
 	if src == u.InitialTypeName || dst == u.TerminalTypeName {
 		return true
 	}

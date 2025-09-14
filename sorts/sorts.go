@@ -29,7 +29,7 @@ type SortAttr interface {
 	Parent(s Sort) Sort
 	LessEqual(x Sort, y Sort) bool
 
-	NameLessEqual(src Name, dst Name) bool
+	GetRule(src Name, dst Name) bool
 }
 
 func GetForm(a SortAttr, s any) Form {
