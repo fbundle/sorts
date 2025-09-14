@@ -15,6 +15,7 @@ func DefaultRuntime() Runtime {
 		NewListParser("->", toListParser(ListParseArrow("->"))).
 		NewListParser("⊕", toListParser(ListParseSum("⊕"))).
 		NewListParser("⊗", toListParser(ListParseProd("⊗"))).
+		NewListParser("=>", ListParseLambda).
 		mustOk()
 }
 

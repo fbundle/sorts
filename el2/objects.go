@@ -48,10 +48,20 @@ func (f Beta) TypeCheck(sa SortAttr, parent Sort) Sort {
 	panic("implement me")
 }
 
+func ListParseLambda(parse ParseFunc, list List) AlmostSort {
+	if len(list) != 2 {
+		panic("lambda list must have two elements")
+	}
+	return Lambda{
+		Param: list[0].(Name),
+		Body:  parse(list[1]),
+	}
+}
+
 // Lambda - lambda abstraction
 type Lambda struct {
 	Param Name
-	Body  Form
+	Body  AlmostSort
 }
 
 func (l Lambda) MustSort() Sort {
