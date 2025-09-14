@@ -24,18 +24,6 @@ var ListParseArrow = sorts.ListParseArrow
 var ListParseSum = sorts.ListParseSum
 var ListParseProd = sorts.ListParseProd
 
-type rule struct {
-	src sorts.Name
-	dst sorts.Name
-}
-
-func (r rule) Cmp(s rule) int {
-	if c := cmp.Compare(r.src, s.src); c != 0 {
-		return c
-	}
-	return cmp.Compare(r.dst, s.dst)
-}
-
 func must(a SortAttr) mustSortAttr {
 	return mustSortAttr{a}
 }
