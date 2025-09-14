@@ -55,26 +55,35 @@ func (l Lambda) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
 	panic("implement me")
 }
 
-func ListParseLet(H form.Name) ListParseFunc {
-	return func(parse ParseFunc, list form.List) AlmostSort {
-		mustMatchHead(H, list)
-		if len(list) < 2 || not((len(list)+1)%3 == 0) {
-			panic(fmt.Errorf("let must be (%s name1 type1 value1 ... nameN typeN valueN final)", H))
-		}
+func ListParseLet(Undef form.Name) ListParseFuncWithHead {
+	return func(H form.Name) ListParseFunc {
+		return func(parse ParseFunc, list form.List) AlmostSort {
+			mustMatchHead(H, list)
+			if len(list) < 2 || not((len(list)+1)%3 == 0) {
+				panic(fmt.Errorf("let must be (%s name1 type1 value1 ... nameN typeN valueN final)", H))
+			}
 
-		bindings := make([]LetBinding, 0)
-		for i := 1; i < len(list)-1; i += 3 {
-			nameForm, typeForm, valueForm := list[i], list[i+1], list[i+2]
+			bindings := make([]LetBinding, 0)
+			for i := 1; i < len(list)-1; i += 3 {
+				nameForm, typeForm, valueForm := list[i], list[i+1], list[i+2]
 
-			bindings = append(bindings, LetBinding{
-				Name:  nameForm.(form.Name),
-				Type:  MustSort(parse(typeForm)),
-				Value: parse(valueForm),
-			})
-		}
-		return Let{
-			Bindings: bindings,
-			Final:    parse(list[len(list)-1]),
+				var value AlmostSort
+				if valueForm, ok := valueForm.(form.Name); ok && valueForm == Undef {
+					value = nil
+				} else {
+					value = parse(valueForm)
+				}
+
+				bindings = append(bindings, LetBinding{
+					Name:  nameForm.(form.Name),
+					Type:  MustSort(parse(typeForm)),
+					Value: value,
+				})
+			}
+			return Let{
+				Bindings: bindings,
+				Final:    parse(list[len(list)-1]),
+			}
 		}
 	}
 }
