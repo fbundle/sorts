@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/fbundle/sorts/el2"
-	"github.com/fbundle/sorts/el2/almost_sort_extra"
+	"github.com/fbundle/sorts/el2/el_sorts"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
 )
@@ -32,7 +32,7 @@ func mustRun(tokens []form.Token) {
 
 	var node form.Form
 	var err error
-	var almostSort almost_sort_extra.AlmostSort
+	var almostSort almost_sort_extra.Sort
 	for len(tokens) > 0 {
 		tokens, node, err = form_processor.Parse(tokens)
 		if err != nil {

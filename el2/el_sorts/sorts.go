@@ -4,11 +4,18 @@ import (
 	"fmt"
 
 	"github.com/fbundle/sorts/form"
+	"github.com/fbundle/sorts/sorts"
 )
 
-type ListCompileFunc = func(r Context, list form.List) (Context, AlmostSort)
+func mustTermOf(ctx Context, x sorts.Sort, X sorts.Sort) {
+	if !ctx.LessEqual(ctx.Parent(x), X) {
+		panic(TypeErr)
+	}
+}
 
-func ListCompileBeta(ctx Context, list form.List) (Context, AlmostSort) {
+type ListCompileFunc = func(r Context, list form.List) (Context, Sort)
+
+func ListCompileBeta(ctx Context, list form.List) (Context, Sort) {
 	if not(len(list) == 2) {
 		panic("beta must be (cmd arg)")
 	}
@@ -16,7 +23,16 @@ func ListCompileBeta(ctx Context, list form.List) (Context, AlmostSort) {
 	ctx, cmd := ctx.Compile(list[0])
 	ctx, arg := ctx.Compile(list[1])
 
+	// type check
+	arrow, ok := ctx.Parent(cmd.Sort()).(sorts.Arrow)
+	if !ok {
+		panic(TypeErr)
+	}
+	mustTermOf(ctx, arg.Sort(), arrow.A)
+	atom :=
+
 	return ctx, Beta{
+
 		Cmd: cmd,
 		Arg: arg,
 	}
@@ -24,27 +40,26 @@ func ListCompileBeta(ctx Context, list form.List) (Context, AlmostSort) {
 
 // Beta - beta reduction
 type Beta struct {
-	Cmd AlmostSort
-	Arg AlmostSort
+	Atom sorts.Atom
+	Cmd  Sort
+	Arg  Sort
 }
 
-func (b Beta) attrAlmostSort(ctx Context) attrAlmostSort {
-	return attrAlmostSort{
-		form: form.List{Form(ctx, b.Cmd), Form(ctx, b.Arg)},
-	}
+func (b Beta) Sort() sorts.Sort {
+	return b.Atom
 }
 
-func (b Beta) TypeCheck(ctx Context, parent ActualSort) ActualSort {
+func (b Beta) TypeCheck(ctx Context, parent typeSort) typeSort {
 	// TODO implement me
 	// type check all pass for now
 	return ctx.NewTerm(Form(ctx, b), parent)
 }
 
 func ListCompileLambda(Head form.Name) ListCompileFunc {
-	return func(ctx Context, list form.List) (Context, AlmostSort) {
+	return func(ctx Context, list form.List) (Context, Sort) {
 		mustMatchHead(Head, list)
-		if not(len(list) == 3) {
-			panic(fmt.Errorf("lambda must be (%s param body)", Head))
+		if len(list) < 3 {
+			panic(fmt.Errorf("lambda must be (%s type param1 type1 ... paramN typeN body)", Head))
 		}
 		paramForm, bodyForm := list[1], list[2]
 		param := paramForm.(form.Name)
@@ -64,17 +79,18 @@ func ListCompileLambda(Head form.Name) ListCompileFunc {
 
 // Lambda - lambda abstraction
 type Lambda struct {
-	Head  form.Name
-	Param form.Name
-	Body  AlmostSort
+	Head   form.Name
+	Type   Sort
+	Params []form.Name
+	Body   Sort
 }
 
-func (l Lambda) attrAlmostSort(ctx Context) attrAlmostSort {
+func (l Lambda) attrSort(ctx Context) attrAlmostSort {
 	return attrAlmostSort{
 		form: form.List{l.Head, l.Param, Form(ctx, l.Body)},
 	}
 }
-func (l Lambda) TypeCheck(ctx Context, parent ActualSort) ActualSort {
+func (l Lambda) TypeCheck(ctx Context, parent typeSort) typeSort {
 	// TODO implement me
 	// type check all pass for now
 	return ctx.NewTerm(Form(ctx, l), parent)
@@ -82,7 +98,7 @@ func (l Lambda) TypeCheck(ctx Context, parent ActualSort) ActualSort {
 
 func ListCompileLet(Undef form.Name) func(Head form.Name) ListCompileFunc {
 	return func(H form.Name) ListCompileFunc {
-		return func(ctx Context, list form.List) (Context, AlmostSort) {
+		return func(ctx Context, list form.List) (Context, Sort) {
 			mustMatchHead(H, list)
 			if len(list) < 2 || not((len(list)+1)%3 == 0) {
 				panic(fmt.Errorf("let must be (%s name1 type1 value1 ... nameN typeN valueN final)", H))
@@ -90,7 +106,7 @@ func ListCompileLet(Undef form.Name) func(Head form.Name) ListCompileFunc {
 
 			bindings := make([]LetBinding, 0)
 
-			var almostType AlmostSort
+			var almostType Sort
 			for i := 1; i < len(list)-1; i += 3 {
 				nameForm, typeForm, valueForm := list[i], list[i+1], list[i+2]
 
@@ -104,7 +120,7 @@ func ListCompileLet(Undef form.Name) func(Head form.Name) ListCompileFunc {
 
 				undefValue := ctx.NewTerm(name, actualType)
 
-				var actualValue ActualSort
+				var actualValue typeSort
 				if nameUndef, ok := valueForm.(form.Name); ok && nameUndef == Undef {
 					actualValue = undefValue
 				} else {
@@ -142,16 +158,16 @@ func ListCompileLet(Undef form.Name) func(Head form.Name) ListCompileFunc {
 
 type LetBinding struct {
 	Name  form.Name
-	Type  ActualSort
-	Value ActualSort
+	Type  typeSort
+	Value typeSort
 }
 type Let struct {
 	Head     form.Name
 	Bindings []LetBinding
-	Final    AlmostSort
+	Final    Sort
 }
 
-func (l Let) attrAlmostSort(ctx Context) attrAlmostSort {
+func (l Let) attrSort(ctx Context) attrAlmostSort {
 	f := form.List{l.Head}
 	for _, b := range l.Bindings {
 		f = append(f, b.Name)
@@ -163,7 +179,7 @@ func (l Let) attrAlmostSort(ctx Context) attrAlmostSort {
 		form: f,
 	}
 }
-func (l Let) TypeCheck(ctx Context, parent ActualSort) ActualSort {
+func (l Let) TypeCheck(ctx Context, parent typeSort) typeSort {
 	// TODO implement me
 	// type check all pass for now
 	return ctx.NewTerm(Form(ctx, l), parent)
@@ -171,12 +187,12 @@ func (l Let) TypeCheck(ctx Context, parent ActualSort) ActualSort {
 
 func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 	return func(H form.Name) ListCompileFunc {
-		return func(ctx Context, list form.List) (Context, AlmostSort) {
+		return func(ctx Context, list form.List) (Context, Sort) {
 			mustMatchHead(H, list)
 			if len(list) < 3 || not(len(list)%2 == 1) {
 				panic(fmt.Errorf("match must be (%s cond pattern1 value1 ... patternN valueN final)", H))
 			}
-			var cond AlmostSort
+			var cond Sort
 			ctx, cond = ctx.Compile(list[1])
 
 			cases := make([]MatchCase, 0)
@@ -184,7 +200,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 				patternForm, valueForm := list[i], list[i+1]
 
 				var pattern any
-				var value AlmostSort
+				var value Sort
 				if patternForm, ok := patternForm.(form.List); ok && patternForm[0] == Exact {
 					if len(patternForm) != 2 {
 						panic(fmt.Errorf("exact match must be (%s form)", Exact))
@@ -205,7 +221,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 				})
 			}
 
-			var final AlmostSort
+			var final Sort
 			ctx, final = ctx.Compile(list[len(list)-1])
 
 			return ctx, Match{
@@ -218,15 +234,15 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 }
 
 type MatchCase struct {
-	Pattern any // Union[form.Form, AlmostSort] - pattern matching vs exact matching
-	Value   AlmostSort
+	Pattern any // Union[form.Form, Sort] - pattern matching vs exact matching
+	Value   Sort
 }
 
 func (mc MatchCase) form(ctx Context) (form.Form, form.Form) {
 	switch pattern := mc.Pattern.(type) {
 	case form.Form: // pattern matching
 		return pattern, Form(ctx, mc.Value)
-	case AlmostSort: // exact matching
+	case Sort: // exact matching
 		return Form(ctx, pattern), Form(ctx, mc.Value)
 	default:
 		panic(TypeErr)
@@ -235,12 +251,12 @@ func (mc MatchCase) form(ctx Context) (form.Form, form.Form) {
 
 type Match struct {
 	Head  form.Name
-	Cond  AlmostSort
+	Cond  Sort
 	Cases []MatchCase
-	Final AlmostSort
+	Final Sort
 }
 
-func (m Match) attrAlmostSort(ctx Context) attrAlmostSort {
+func (m Match) attrSort(ctx Context) attrAlmostSort {
 	f := form.List{m.Head, Form(ctx, m.Cond)}
 	for _, c := range m.Cases {
 		patternForm, valueForm := c.form(ctx)
@@ -253,7 +269,7 @@ func (m Match) attrAlmostSort(ctx Context) attrAlmostSort {
 		form: f,
 	}
 }
-func (m Match) TypeCheck(ctx Context, parent ActualSort) ActualSort {
+func (m Match) TypeCheck(ctx Context, parent typeSort) typeSort {
 	// TODO implement me
 	// type check all pass for now
 	return ctx.NewTerm(Form(ctx, m), parent)

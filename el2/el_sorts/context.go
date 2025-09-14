@@ -7,20 +7,20 @@ import (
 
 // Compiler - recursive compilation
 type Compiler interface {
-	Compile(form form.Form) (Context, AlmostSort)
+	Compile(form form.Form) (Context, Sort)
 }
 
 // Frame - name binding
 type Frame interface {
-	Get(name form.Name) ActualSort
-	Set(name form.Name, sort ActualSort) Context
+	Get(name form.Name) typeSort
+	Set(name form.Name, sort typeSort) Context
 	Del(name form.Name) Context
 }
 
-// Universe - type/sort universe
+// Universe - type/el_sorts universe
 type Universe interface {
 	sorts.SortAttr
-	NewTerm(name form.Form, parent ActualSort) ActualSort
+	NewTerm(name form.Form, parent typeSort) typeSort
 }
 
 type Context interface {

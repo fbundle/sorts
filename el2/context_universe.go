@@ -1,7 +1,7 @@
 package el2
 
 import (
-	"github.com/fbundle/sorts/el2/almost_sort_extra"
+	"github.com/fbundle/sorts/el2/el_sorts"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
 )
@@ -26,7 +26,7 @@ func (ctx Context) LessEqualAtom(x sorts.Atom, y sorts.Atom) bool {
 	return ctx.universe.LessEqualAtom(x, y)
 }
 
-func (ctx Context) NewTerm(name form.Form, parent almost_sort_extra.ActualSort) almost_sort_extra.ActualSort {
+func (ctx Context) NewTerm(name form.Form, parent almost_sort_extra.typeSort) almost_sort_extra.typeSort {
 	sort := ctx.universe.NewTerm(name, parent.Repr())
-	return almost_sort_extra.NewActualSort(sort)
+	return almost_sort_extra.NewTypeSort(sort)
 }

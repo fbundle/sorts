@@ -10,8 +10,8 @@ func mustMatchHead(H form.Name, list form.List) {
 	}
 }
 
-func mustSort(s AlmostSort) ActualSort {
-	s1, ok := s.(ActualSort)
+func mustSort(s Sort) typeSort {
+	s1, ok := s.(typeSort)
 	if !ok {
 		panic(TypeErr)
 	}
@@ -22,6 +22,6 @@ func not(b bool) bool {
 	return !b
 }
 
-func Form(ctx Context, s AlmostSort) form.Form {
-	return s.attrAlmostSort(ctx).form
+func Form(ctx Context, s Sort) form.Form {
+	return s.attrSort(ctx).form
 }

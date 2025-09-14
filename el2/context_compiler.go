@@ -1,11 +1,11 @@
 package el2
 
 import (
-	"github.com/fbundle/sorts/el2/almost_sort_extra"
+	"github.com/fbundle/sorts/el2/el_sorts"
 	"github.com/fbundle/sorts/form"
 )
 
-func (ctx Context) Compile(node form.Form) (almost_sort_extra.Context, almost_sort_extra.AlmostSort) {
+func (ctx Context) Compile(node form.Form) (almost_sort_extra.Context, almost_sort_extra.Sort) {
 	switch node := node.(type) {
 	case form.Name:
 		return ctx, ctx.Get(node)

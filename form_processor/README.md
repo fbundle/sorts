@@ -12,7 +12,7 @@ It supports both prefix lists, delimited by `(` `)`, and a lightweight infix blo
 ### Install
 
 ```bash
-go get github.com/fbundle/sorts/form_processor
+go get github.com/fbundle/el_sorts/form_processor
 ```
 
 ---
