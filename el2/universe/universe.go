@@ -56,19 +56,17 @@ func (u SortUniverse) NewTerm(name form.Form, parent sorts.Sort) sorts.Sort {
 	return sorts.NewAtomTerm(u, name, parent)
 }
 
-// Terminal - T_0 T_1 ... T_n
-func (u SortUniverse) Terminal(level int) sorts.Sort {
-	return sorts.NewAtomChain(level, func(level int) form.Name {
-		levelStr := form.Name(strconv.Itoa(level))
-		return u.TerminalTypeName + "_" + levelStr
-	})
-}
-
 // Initial - I_0 I_1 ... I_n
 func (u SortUniverse) Initial(level int) sorts.Sort {
 	return sorts.NewAtomChain(level, func(level int) form.Name {
-		levelStr := form.Name(strconv.Itoa(level))
-		return u.InitialTypeName + "_" + levelStr
+		return setBuiltinLevel(u.InitialTypeName, level)
+	})
+}
+
+// Terminal - T_0 T_1 ... T_n
+func (u SortUniverse) Terminal(level int) sorts.Sort {
+	return sorts.NewAtomChain(level, func(level int) form.Name {
+		return setBuiltinLevel(u.TerminalTypeName, level)
 	})
 }
 
@@ -83,25 +81,48 @@ func (u SortUniverse) Parent(s sorts.Sort) sorts.Sort {
 	return sorts.GetParent(u, s)
 }
 func (u SortUniverse) LessEqual(x sorts.Sort, y sorts.Sort) bool {
-	xForm := sorts.GetForm(u, x)
-
+	if u.checkLessEqualBuiltin(x, y) {
+		return true
+	}
 	return sorts.GetLessEqual(u, x, y)
+}
+
+func (u SortUniverse) checkLessEqualBuiltin(x sorts.Sort, y sorts.Sort) bool {
+	if xName, ok := sorts.GetForm(u, x).(form.Name); ok {
+		if xLevel, ok := getBuiltinLevel(u.InitialTypeName, xName); ok {
+			if xLevel == sorts.GetLevel(u, y) {
+				// x is of initial type and same xLevel with y
+				return true
+			}
+		}
+	}
+	if yName, ok := sorts.GetForm(u, y).(form.Name); ok {
+		if yLevel, ok := getBuiltinLevel(u.TerminalTypeName, yName); ok {
+			if yLevel == sorts.GetLevel(u, x) {
+				// y is of terminal type and same level with x
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (u SortUniverse) LessEqualAtom(x sorts.Atom, y sorts.Atom) bool {
+	if u.checkLessEqualBuiltin(x, y) {
+		return true
+	}
+
+	src, ok1 := sorts.GetForm(u, x).(form.Name)
+	dst, ok2 := sorts.GetForm(u, x).(form.Name)
+	if ok1 && ok2 {
+		if _, ok := u.nameLessEqual.Get(rule{src, dst}); ok {
+			return true
+		}
+	}
+	return false
 }
 func (u SortUniverse) TermOf(x sorts.Sort, X sorts.Sort) bool {
 	return u.LessEqual(u.Parent(x), X)
-}
-
-func (u SortUniverse) LessEqualAtom(src sorts.Name, dst sorts.Name) bool {
-	if src == u.InitialTypeName || dst == u.TerminalTypeName {
-		return true
-	}
-	if src == dst {
-		return true
-	}
-	if _, ok := u.nameLessEqual.Get(rule{src, dst}); ok {
-		return true
-	}
-	return false
 }
 
 type rule struct {
