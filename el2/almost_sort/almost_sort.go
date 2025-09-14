@@ -7,6 +7,8 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
+var TypeErr = fmt.Errorf("type_error")
+
 type Runtime interface {
 	Parse(form form.Form) (Runtime, AlmostSort)
 	SortAttr() sorts.SortAttr
@@ -14,9 +16,7 @@ type Runtime interface {
 	Set(name form.Name, sort ActualSort) Runtime
 }
 
-type ListParseFunc = func(ctx Runtime, list form.List) (Runtime, AlmostSort)
-
-var TypeErr = fmt.Errorf("type_error")
+type ListParseFunc = func(r Runtime, list form.List) (Runtime, AlmostSort)
 
 func MustSort(as AlmostSort) ActualSort {
 	return as.(ActualSort)
