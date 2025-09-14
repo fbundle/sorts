@@ -18,7 +18,7 @@ func (u runtimeParser) parse(node Form) AlmostSort {
 		if sort, ok := u.frame.Get(node); ok {
 			return ActualSort{sort}
 		}
-		// parse builtin: Runtime, initial, terminal
+		// parse builtin: initial, terminal
 		builtin := map[Name]func(level int) Sort{
 			u.initialHeader:  u.Initial,
 			u.terminalHeader: u.Terminal,
@@ -46,9 +46,9 @@ func (u runtimeParser) parse(node Form) AlmostSort {
 		}
 
 		if listParser, ok := u.listParsers.Get(head); ok {
-			return listParser(u.Parse, node)
+			return listParser(u.parse, node)
 		} else { // by default, parse as beta reduction (function call)
-			return ListParseBeta(u.Parse, node)
+			return ListParseBeta(u.parse, node)
 		}
 	default:
 		panic("parse error")

@@ -2,6 +2,7 @@ package el2
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
@@ -20,6 +21,28 @@ func (u runtimeSortAttr) mustSortAttr() runtimeSortAttr {
 	}
 	return u
 }
+
+func (u runtimeSortAttr) parseConstant(key Name) (Sort, bool) {
+	// parse builtin: initial, terminal
+	builtin := map[Name]func(level int) Sort{
+		u.initialHeader:  u.Initial,
+		u.terminalHeader: u.Terminal,
+	}
+	name := string(key)
+	for header, makeFunc := range builtin {
+		if strings.HasPrefix(name, string(header)+"_") {
+			levelStr := strings.TrimPrefix(name, string(header)+"_")
+			level, err := strconv.Atoi(levelStr)
+			if err != nil {
+				continue
+			}
+			sort := makeFunc(level)
+			return sort, true
+		}
+	}
+	return nil, false
+}
+
 func (u runtimeSortAttr) NewNameLessEqualRule(src Name, dst Name) runtimeSortAttr {
 	u.nameLessEqual = u.nameLessEqual.Set(rule{src, dst})
 	return u
