@@ -6,18 +6,18 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-type Parser interface {
-	Parse(form form.Form) (Runtime, almost_sort.AlmostSort)
+type Compiler interface {
+	Compile(form form.Form) (Context, almost_sort.AlmostSort)
 }
 type Frame interface {
 	Get(name form.Name) almost_sort.ActualSort
-	Set(name form.Name, sort almost_sort.ActualSort) Runtime
+	Set(name form.Name, sort almost_sort.ActualSort) Context
 }
 
-type Runtime interface {
+type Context interface {
 	sorts.SortAttr
-	Parser
+	Compiler
 	Frame
 }
 
-type ListParseFunc = func(r Runtime, list form.List) (Runtime, almost_sort.AlmostSort)
+type ListParseFunc = func(r Context, list form.List) (Context, almost_sort.AlmostSort)

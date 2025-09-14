@@ -8,13 +8,13 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func ListParseBeta(ctx Runtime, list form.List) (Runtime, almost_sort.AlmostSort) {
+func ListParseBeta(ctx Context, list form.List) (Context, almost_sort.AlmostSort) {
 	if not(len(list) == 2) {
 		panic("beta must be (cmd arg)")
 	}
 
-	ctx, cmd := ctx.Parse(list[0])
-	ctx, arg := ctx.Parse(list[1])
+	ctx, cmd := ctx.Compile(list[0])
+	ctx, arg := ctx.Compile(list[1])
 
 	return ctx, Beta{
 		Cmd: cmd,
@@ -36,12 +36,12 @@ func (b Beta) TypeCheck(sa sorts.SortAttr, parent almost_sort.ActualSort) almost
 }
 
 func ListParseLambda(H form.Name) ListParseFunc {
-	return func(ctx Runtime, list form.List) (Runtime, almost_sort.AlmostSort) {
+	return func(ctx Context, list form.List) (Context, almost_sort.AlmostSort) {
 		mustMatchHead(H, list)
 		if not(len(list) == 3) {
 			panic(fmt.Errorf("lambda must be (%s param body)", H))
 		}
-		ctx, body := ctx.Parse(list[0])
+		ctx, body := ctx.Compile(list[0])
 
 		return ctx, Lambda{
 			Param: list[0].(form.Name),
@@ -64,7 +64,7 @@ func (l Lambda) TypeCheck(sa sorts.SortAttr, parent almost_sort.ActualSort) almo
 
 func ListParseLet(Undef form.Name) func(H form.Name) ListParseFunc {
 	return func(H form.Name) ListParseFunc {
-		return func(ctx Runtime, list form.List) (Runtime, almost_sort.AlmostSort) {
+		return func(ctx Context, list form.List) (Context, almost_sort.AlmostSort) {
 			mustMatchHead(H, list)
 			if len(list) < 2 || not((len(list)+1)%3 == 0) {
 				panic(fmt.Errorf("let must be (%s name1 type1 value1 ... nameN typeN valueN final)", H))
@@ -80,10 +80,10 @@ func ListParseLet(Undef form.Name) func(H form.Name) ListParseFunc {
 				if valueForm, ok := valueForm.(form.Name); ok && valueForm == Undef {
 					almostValue = nil
 				} else {
-					ctx, almostValue = ctx.Parse(valueForm)
+					ctx, almostValue = ctx.Compile(valueForm)
 				}
 
-				ctx, almostType = ctx.Parse(typeForm)
+				ctx, almostType = ctx.Compile(typeForm)
 
 				actualType := almost_sort.MustSort(almostType)
 				actualValue := almostValue.TypeCheck(ctx.SortAttr(), actualType)
@@ -99,7 +99,7 @@ func ListParseLet(Undef form.Name) func(H form.Name) ListParseFunc {
 				bindings = append(bindings, b)
 			}
 
-			ctx, final := ctx.Parse(list[len(list)-1])
+			ctx, final := ctx.Compile(list[len(list)-1])
 
 			return ctx, Let{
 				Bindings: bindings,
@@ -126,7 +126,7 @@ func (l Let) TypeCheck(sa sorts.SortAttr, parent almost_sort.ActualSort) almost_
 
 func ListParseMatch(Exact form.Name) func(H form.Name) ListParseFunc {
 	return func(H form.Name) ListParseFunc {
-		return func(ctx Runtime, list form.List) (Runtime, almost_sort.AlmostSort) {
+		return func(ctx Context, list form.List) (Context, almost_sort.AlmostSort) {
 			mustMatchHead(H, list)
 			if len(list) < 3 || not(len(list)%2 == 1) {
 				panic(fmt.Errorf("match must be (%s cond pattern1 value1 ... patternN valueN final)", H))
@@ -142,14 +142,14 @@ func ListParseMatch(Exact form.Name) func(H form.Name) ListParseFunc {
 						panic(fmt.Errorf("exact match must be (%s form)", Exact))
 					}
 					// exact match
-					ctx, pattern = ctx.Parse(patternForm[0])
+					ctx, pattern = ctx.Compile(patternForm[0])
 				} else {
 					// pattern match
 					pattern = patternForm[1]
 				}
 
 				var value almost_sort.AlmostSort
-				ctx, value = ctx.Parse(valueForm)
+				ctx, value = ctx.Compile(valueForm)
 				cases = append(cases, MatchCase{
 					Pattern: pattern,
 					Value:   value,
@@ -157,9 +157,9 @@ func ListParseMatch(Exact form.Name) func(H form.Name) ListParseFunc {
 			}
 
 			var cond almost_sort.AlmostSort
-			ctx, cond = ctx.Parse(list[1])
+			ctx, cond = ctx.Compile(list[1])
 			var final almost_sort.AlmostSort
-			ctx, final = ctx.Parse(list[len(list)-1])
+			ctx, final = ctx.Compile(list[len(list)-1])
 
 			return ctx, Match{
 				Cond:  cond,

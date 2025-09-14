@@ -30,7 +30,7 @@ func (p Parser) WithRuntime(r el2.Runtime) el2_almost_sort.ParseFunc {
 
 			if listParser, ok := p.listParsers.Get(head); ok {
 				return listParser(p.WithRuntime(r), node)
-			} else { // by default, Parse as beta reduction (function call)
+			} else { // by default, Compile as beta reduction (function call)
 				return el2_almost_sort.ListParseBeta(p.WithRuntime(r), node)
 			}
 		default:
