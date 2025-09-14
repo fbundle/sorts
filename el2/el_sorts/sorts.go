@@ -125,6 +125,55 @@ func ListCompileInhabitant(Head form.Name) ListCompileFunc {
 	}
 }
 
+type LetBinding struct {
+	Name  form.Name
+	Value Sort
+}
+
+type Let struct {
+	Atom
+	Head     form.Name
+	Bindings []LetBinding
+	Final    Sort
+}
+
+func ListCompileLet(Head form.Name) ListCompileFunc {
+	return func(ctx Context, list form.List) Sort {
+		mustMatchHead(Head, list)
+		if len(list) < 2 || not(len(list)%2 == 0) {
+			panic(fmt.Errorf("let must be (%s name1 value1 ... nameN valueN final)", Head))
+		}
+
+		bindings := make([]LetBinding, 0)
+		for i := 1; i < len(list)-1; i += 2 {
+			nameForm, valueForm := list[i], list[i+1]
+
+			name, ok := nameForm.(form.Name)
+			if !ok {
+				panic(TypeErr)
+			}
+			value := ctx.Compile(valueForm)
+			bindings = append(bindings, LetBinding{
+				Name:  name,
+				Value: value,
+			})
+
+			ctx = ctx.Set(name, value) // binding
+		}
+
+		finalForm := list[len(list)-1]
+		final := ctx.Compile(finalForm)
+		atom := ctx.NewTerm(list, ctx.Parent(final))
+
+		return Let{
+			Atom:     atom,
+			Head:     Head,
+			Bindings: bindings,
+			Final:    final,
+		}
+	}
+}
+
 type MatchCase struct {
 	Pattern any // Union[form.Form, Sort] - pattern matching vs exact matching
 	Value   Sort
