@@ -203,6 +203,18 @@ type MatchCase struct {
 	Pattern any // Union[form.Form, ActualSort] - pattern matching vs exact matching
 	Value   AlmostSort
 }
+
+func (mc MatchCase) form(ctx Context) (form.Form, form.Form) {
+	switch pattern := mc.Pattern.(type) {
+	case form.Form: // pattern matching
+		return pattern, Form(ctx, mc.Value)
+	case ActualSort: // exact matching
+		return Form(ctx, pattern), Form(ctx, mc.Value)
+	default:
+		panic(TypeErr)
+	}
+}
+
 type Match struct {
 	Head  form.Name
 	Cond  AlmostSort
@@ -210,7 +222,19 @@ type Match struct {
 	Final AlmostSort
 }
 
-func (m Match) attrAlmostSort(ctx Context) attrAlmostSort {}
+func (m Match) attrAlmostSort(ctx Context) attrAlmostSort {
+	f := form.List{m.Head, Form(ctx, m.Cond)}
+	for _, c := range m.Cases {
+		patternForm, valueForm := c.form(ctx)
+		f = append(f, patternForm)
+		f = append(f, valueForm)
+	}
+	f = append(f, Form(ctx, m.Final))
+
+	return attrAlmostSort{
+		form: f,
+	}
+}
 func (m Match) TypeCheck(ctx Context, parent ActualSort) ActualSort {
 	panic("implement me")
 }
