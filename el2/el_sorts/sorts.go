@@ -182,15 +182,16 @@ type MatchCase struct {
 func (mc MatchCase) form(ctx Context) (form.Form, form.Form) {
 	switch pattern := mc.Pattern.(type) {
 	case form.Form: // pattern matching
-		return pattern, Form(ctx, mc.Value)
+		return pattern, ctx.Form(mc.Value)
 	case Sort: // exact matching
-		return Form(ctx, pattern), Form(ctx, mc.Value)
+		return ctx.Form(pattern), ctx.Form(mc.Value)
 	default:
 		panic(TypeErr)
 	}
 }
 
 type Match struct {
+	Atom
 	Head  form.Name
 	Cond  Sort
 	Cases []MatchCase
@@ -204,8 +205,8 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 			if len(list) < 3 || not(len(list)%2 == 1) {
 				panic(fmt.Errorf("match must be (%s cond pattern1 value1 ... patternN valueN final)", H))
 			}
-			var cond Sort
-			ctx, cond = ctx.Compile(list[1])
+			condForm := list[1]
+			cond := ctx.Compile(condForm)
 
 			cases := make([]MatchCase, 0)
 			for i := 2; i < len(list)-1; i += 2 {
@@ -218,13 +219,13 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 						panic(fmt.Errorf("exact match must be (%s form)", Exact))
 					}
 					// exact match
-					ctx, pattern = ctx.Compile(patternForm[1])
-					ctx, value = ctx.Compile(valueForm)
+					pattern = ctx.Compile(patternForm[1])
+					value = ctx.Compile(valueForm)
 				} else {
 					// pattern match
 					pattern = patternForm[1]
 					// suppose the pattern is (succ z) - how to set z into nextCtx to compile valueForm?
-					panic("checkpoint")
+					panic("TODO")
 				}
 
 				cases = append(cases, MatchCase{
@@ -233,10 +234,10 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 				})
 			}
 
-			var final Sort
-			ctx, final = ctx.Compile(list[len(list)-1])
+			finalForm := list[len(list)-1]
+			final := ctx.Compile(finalForm)
 
-			return ctx, Match{
+			return Match{
 				Cond:  cond,
 				Cases: cases,
 				Final: final,
