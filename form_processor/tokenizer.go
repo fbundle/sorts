@@ -54,24 +54,6 @@ var removeComment = func(sep string) Preprocessor {
 	}
 }
 
-var wrapInhabitant = func(sym string, inh string, blockBeg string, blockEnd string) PostProcessor {
-	return func(tokens []Token) []Token {
-		newTokens := make([]Token, 0, len(tokens))
-		i := 0
-		for i < len(tokens) {
-			if tokens[i] == sym {
-				inhList := []Token{blockBeg, inh, tokens[i+1], blockEnd}
-				newTokens = append(newTokens, inhList...)
-				i += 2
-			}
-
-			newTokens = append(newTokens, tokens[i])
-			i++
-		}
-		return newTokens
-	}
-}
-
 const (
 	CharStringBegin  Token = "\""
 	CharStringEnd    Token = "\""

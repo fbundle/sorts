@@ -255,28 +255,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 				typeList = append(typeList, ctx.Parent(c.Value))
 			}
 
-			returnType := func() Sort {
-				// TODO - use Sum type instead
-				for _, t1 := range typeList {
-					dominate := true
-					// check if c1Type dominate everyone else
-					for _, t2 := range typeList {
-						if not(ctx.LessEqual(t2, t1)) {
-							dominate = false
-							break
-						}
-					}
-					if dominate {
-						return t1
-					}
-				}
-				// return terminal type of maximal level
-				maxLevel := ctx.Level(typeList[0])
-				for _, t := range typeList {
-					maxLevel = max(maxLevel, ctx.Level(t))
-				}
-				return ctx.Terminal(maxLevel)
-			}()
+			returnType := sorts.LeastUpperBound(ctx, "⊕", typeList...)
 
 			atom := ctx.NewTerm(list, returnType)
 
