@@ -1,6 +1,6 @@
 package el2
 
-import "github.com/fbundle/sorts/el2/almost_sort"
+import "github.com/fbundle/sorts/el2/el_almost_sort"
 
 func DefaultRuntime() Parser {
 	return Parser{
@@ -12,5 +12,5 @@ func DefaultRuntime() Parser {
 		NewListParser("->", toListParser(ListParseArrow("->"))).
 		NewListParser("⊕", toListParser(ListParseSum("⊕"))).
 		NewListParser("⊗", toListParser(ListParseProd("⊗"))).
-		NewListParser("=>", almost_sort.ListParseLambda)
+		NewListParser("=>", el_almost_sort.ListParseLambda)
 }
