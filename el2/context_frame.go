@@ -12,7 +12,7 @@ func (ctx Context) Get(name form.Name) almost_sort.ActualSort {
 	if s, ok := ctx.frame.Get(name); ok {
 		return s
 	}
-	if s, ok := ctx.sortUniverse.GetBuiltin(name); ok {
+	if s, ok := ctx.universe.GetBuiltin(name); ok {
 		return almost_sort.NewActualSort(s)
 	}
 	panic(fmt.Errorf("name_not_found: %s", name))

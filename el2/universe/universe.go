@@ -1,4 +1,4 @@
-package el2_sort_universe
+package universe
 
 import (
 	"cmp"
@@ -52,7 +52,7 @@ func (u SortUniverse) WithRule(src form.Name, dst form.Name) SortUniverse {
 	return u
 }
 
-func (u SortUniverse) MakeTerm(name form.Name, parent sorts.Sort) sorts.Sort {
+func (u SortUniverse) NewTerm(name form.Name, parent sorts.Sort) sorts.Sort {
 	return sorts.NewAtomTerm(u, name, parent)
 }
 
