@@ -1,9 +1,9 @@
 package el2
 
 import (
-	"cmp"
 	"fmt"
 
+	"github.com/fbundle/sorts/el2/almost_sort"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
 )
@@ -17,44 +17,24 @@ type SortAttr = sorts.SortAttr
 var NewAtomChain = sorts.NewAtomChain
 var NewAtomTerm = sorts.NewAtomTerm
 
-type ParseFunc = func(form Form) AlmostSort
-type ListParseFunc = func(parse ParseFunc, list List) AlmostSort
+type ParseFunc = func(form Form) almost_sort.AlmostSort
+type ListParseFunc = func(parse ParseFunc, list List) almost_sort.AlmostSort
 
 var ListParseArrow = sorts.ListParseArrow
 var ListParseSum = sorts.ListParseSum
 var ListParseProd = sorts.ListParseProd
 
-func must(a SortAttr) mustSortAttr {
-	return mustSortAttr{a}
-}
-
 var TypeErr = fmt.Errorf("type_error")
 
-type mustSortAttr struct {
-	a SortAttr
-}
-
-func (m mustSortAttr) lessEqual(x Sort, y Sort) {
-	if !m.a.LessEqual(x, y) {
-		panic(TypeErr)
-	}
-}
-
-func (m mustSortAttr) termOf(x Sort, X Sort) {
-	if !m.a.LessEqual(m.a.Parent(x), X) {
-		panic(TypeErr)
-	}
-}
-
 func toListParser(listParse sorts.ListParseFunc) ListParseFunc {
-	return func(parse ParseFunc, list List) AlmostSort {
+	return func(parse ParseFunc, list List) almost_sort.AlmostSort {
 		sort := listParse(func(form sorts.Form) sorts.Sort {
-			s := mustSort(parse(form)) // inside a sort, must be sort
+			s := almost_sort.mustSort(parse(form)) // inside a sort, must be sort
 			if s == nil {
 				panic(TypeErr)
 			}
 			return s
 		}, list)
-		return ActualSort{sort}
+		return almost_sort.ActualSort{sort}
 	}
 }
