@@ -22,7 +22,7 @@ func logCompile(ctx Context, node form.Form, sort el_sorts.Sort) {
 		f := strings.Join(ctx.Form(sort).Marshal("(", ")"), " ")
 		t := strings.Join(ctx.Form(ctx.Parent(sort)).Marshal("(", ")"), " ")
 		l := ctx.Level(sort)
-		return fmt.Sprintf("(%s:%s:%d)", f, t, l)
+		return fmt.Sprintf("(form %s - type %s - level %d)", f, t, l)
 	}
 
 	log.Printf("compiled %s from %s\n", sortToString(sort), toString(node))

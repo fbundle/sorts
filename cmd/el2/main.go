@@ -4,14 +4,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/fbundle/sorts/el2"
 	"github.com/fbundle/sorts/el2/el_sorts"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
+	"github.com/fbundle/sorts/sorts"
 )
 
 func toString(o any) string {
+	sortToString := func(s el_sorts.Sort) string {
+		f := strings.Join(ctx.Form(sort).Marshal("(", ")"), " ")
+		t := strings.Join(ctx.Form(ctx.Parent(sort)).Marshal("(", ")"), " ")
+		l := ctx.Level(sort)
+		return fmt.Sprintf("(form %s - type %s - level %d)", f, t, l)
+	}
+	if s, ok := o.(sorts.Sort); ok {
+		return sortToString(s)
+	}
+
 	b, err := json.Marshal(o)
 	if err != nil {
 		panic(err)
