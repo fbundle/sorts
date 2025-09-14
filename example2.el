@@ -1,32 +1,26 @@
 (let
-    Bool (@inh U_1)
-    True (@inh Bool)
-    False (@inh Bool)
+    Bool (inh Any_2)
+    True (inh Bool)
+    False (inh Bool)
 
-    Nat U_1                 undef
-    n0 Nat                  undef
-    succ {Nat -> Nat}       undef
+    Nat (inh Any_2)
+    n0 (inh Nat)
+    succ (inh {Nat -> Nat})
 
-    n1 Nat (succ n0)
-    n2 Nat (succ n1)
-    n3 Nat (succ n2)
-    n4 Nat (succ n3)
+    n1 (succ n0)
+    n2 (succ n1)
+    n3 (succ n2)
+    n4 (succ n3)
 
-    x Any_0 {n1 ⊕ n2 ⊕ n3}
-    x Any_0 {n1 ⊗ n2 ⊗ n3 ⊗ n4}
+    x {n1 ⊕ n2 ⊕ n3}
+    x {n1 ⊗ n2 ⊗ n3 ⊗ n4}
 
-    is_two {Nat -> Bool} {x => (match x
-        (exact (succ n1))   True
-                            False
-    )}
+    is_two (lambda x Nat (match x
+        (exact 2)   True
+                    False
+    ))
 
-    add {Nat -> Nat -> Nat} {x => y => (match y
-        (succ z)    (succ ((add x) z))
-                    x
-    )}
-
-    # (is_two n2)
-    (add n2 n3)             # output (succ (succ (succ (succ (succ n0)))))
+    (is_two n2)
 )
 
 
