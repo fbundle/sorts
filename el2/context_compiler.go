@@ -13,13 +13,12 @@ func (ctx Context) Compile(node form.Form) (almost_sort_extra.Context, almost_so
 		if len(node) == 0 {
 			panic("empty list")
 		}
-		head, ok := node[0].(form.Name)
-		if !ok {
-			panic("list must start with a name")
-		}
-
-		if listParser, ok := ctx.listCompiler.Get(head); ok {
-			return listParser(ctx, node)
+		if head, ok := node[0].(form.Name); ok {
+			if listParser, ok := ctx.listCompiler.Get(head); ok {
+				return listParser(ctx, node)
+			} else {
+				panic("list_compiler_not_found: " + head)
+			}
 		} else {
 			// use default
 			return ctx.defaultListCompiler(ctx, node)

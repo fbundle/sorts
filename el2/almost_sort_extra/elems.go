@@ -46,11 +46,11 @@ func ListCompileLambda(Head form.Name) ListCompileFunc {
 		if not(len(list) == 3) {
 			panic(fmt.Errorf("lambda must be (%s param body)", Head))
 		}
-		ctx, body := ctx.Compile(list[0])
+		ctx, body := ctx.Compile(list[2])
 
 		return ctx, Lambda{
 			Head:  Head,
-			Param: list[0].(form.Name),
+			Param: list[1].(form.Name),
 			Body:  body,
 		}
 	}
@@ -69,8 +69,9 @@ func (l Lambda) attrAlmostSort(ctx Context) attrAlmostSort {
 	}
 }
 func (l Lambda) TypeCheck(ctx Context, parent ActualSort) ActualSort {
-	//TODO implement me
-	panic("implement me")
+	// TODO implement me
+	// type check all pass for now
+	return ctx.NewTerm(Form(ctx, l), parent)
 }
 
 func ListCompileLet(Undef form.Name) func(Head form.Name) ListCompileFunc {
@@ -172,7 +173,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 						panic(fmt.Errorf("exact match must be (%s form)", Exact))
 					}
 					// exact match
-					ctx, pattern = ctx.Compile(patternForm[0])
+					ctx, pattern = ctx.Compile(patternForm[1])
 				} else {
 					// pattern match
 					pattern = patternForm[1]
@@ -201,7 +202,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 }
 
 type MatchCase struct {
-	Pattern any // Union[form.Form, ActualSort] - pattern matching vs exact matching
+	Pattern any // Union[form.Form, AlmostSort] - pattern matching vs exact matching
 	Value   AlmostSort
 }
 
@@ -209,7 +210,7 @@ func (mc MatchCase) form(ctx Context) (form.Form, form.Form) {
 	switch pattern := mc.Pattern.(type) {
 	case form.Form: // pattern matching
 		return pattern, Form(ctx, mc.Value)
-	case ActualSort: // exact matching
+	case AlmostSort: // exact matching
 		return Form(ctx, pattern), Form(ctx, mc.Value)
 	default:
 		panic(TypeErr)
