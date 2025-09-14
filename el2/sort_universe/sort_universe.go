@@ -26,7 +26,7 @@ func (u SortUniverse) MustSortUniverse() SortUniverse {
 	return u
 }
 
-func (u SortUniverse) ParseBuiltin(key form.Name) (sorts.Sort, bool) {
+func (u SortUniverse) GetBuiltin(key form.Name) (sorts.Sort, bool) {
 	// parse builtin: initial, terminal
 	builtin := map[form.Name]func(level int) sorts.Sort{
 		u.InitialTypeName:  u.Initial,
