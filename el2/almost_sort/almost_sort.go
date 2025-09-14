@@ -7,14 +7,19 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-type ParseFunc = func(form form.Form) AlmostSort
-type ListParseFunc = func(parse ParseFunc, list form.List) AlmostSort
-type ListParseFuncWithHead = func(H form.Name) ListParseFunc
+type Runtime interface {
+	Parse(form form.Form) (Runtime, AlmostSort)
+	SortAttr() sorts.SortAttr
+	Get(name form.Name) ActualSort
+	Set(name form.Name, sort ActualSort) Runtime
+}
+
+type ListParseFunc = func(ctx Runtime, list form.List) (Runtime, AlmostSort)
 
 var TypeErr = fmt.Errorf("type_error")
 
-func MustSort(as AlmostSort) sorts.Sort {
-	return as.(ActualSort).Sort
+func MustSort(as AlmostSort) ActualSort {
+	return as.(ActualSort)
 }
 
 func IsSort(as AlmostSort) bool {
@@ -25,7 +30,7 @@ func IsSort(as AlmostSort) bool {
 // AlmostSort - almost a Sort - for example, a lambda
 type AlmostSort interface {
 	almostSortAttr()
-	TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort // not nullable
+	TypeCheck(sa sorts.SortAttr, parent ActualSort) ActualSort
 }
 
 // ActualSort - a Sort
@@ -35,7 +40,7 @@ type ActualSort struct {
 
 func (s ActualSort) almostSortAttr() {}
 
-func (s ActualSort) TypeCheck(sa sorts.SortAttr, parent sorts.Sort) sorts.Sort {
-	must(sa).termOf(s.Sort, parent)
-	return s.Sort
+func (s ActualSort) TypeCheck(sa sorts.SortAttr, parent ActualSort) ActualSort {
+	must(sa).termOf(s.Sort, parent.Sort)
+	return ActualSort{s.Sort}
 }
