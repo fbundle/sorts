@@ -16,21 +16,23 @@ var TypeErr = fmt.Errorf("type_error")
 type Runtime struct {
 	frame        el_frame.Frame
 	sortUniverse el_sort_universe.SortUniverse
-	parser       el_parser.Parser
 }
 
 func newRuntime() Runtime {
-	r := Runtime{
+	return Runtime{
 		frame: el_frame.Frame{},
 		sortUniverse: el_sort_universe.SortUniverse{
 			InitialTypeName:  "Unit",
 			TerminalTypeName: "Any",
 		},
-		parser: el_parser.Parser{
-			ParseName: nil,
-		},
 	}
-	r.parser.ParseName = func(name form.Name) sorts.Sort {
+}
+
+func newParser(r Runtime) el_parser.Parser {
+	p := el_parser.Parser{
+		ParseName: nil,
+	}
+	p.ParseName = func(name form.Name) sorts.Sort {
 		if sort, ok := r.frame.Get(name); ok {
 			return sort
 		}
@@ -39,15 +41,11 @@ func newRuntime() Runtime {
 		}
 		panic(fmt.Errorf("name_not_found: %s", name))
 	}
-	return r
-}
 
-func DefaultRuntime() Runtime {
-	r := newRuntime()
-	r.parser = r.parser.
+	p = p.
 		NewListParser("->", toListParser(sorts.ListParseArrow("->"))).
 		NewListParser("⊕", toListParser(sorts.ListParseSum("⊕"))).
 		NewListParser("⊗", toListParser(sorts.ListParseProd("⊗"))).
 		NewListParser("=>", el_almost_sort.ListParseLambda)
-	return r
+	return p
 }
