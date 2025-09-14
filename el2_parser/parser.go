@@ -3,6 +3,7 @@ package el2_parser
 import (
 	"github.com/fbundle/sorts/el2"
 	"github.com/fbundle/sorts/el2/almost_sort"
+	"github.com/fbundle/sorts/el2/formmm"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 )
@@ -12,11 +13,11 @@ type Parser struct {
 }
 
 func (p Parser) WithRuntime(r el2.Runtime) el2_almost_sort.ParseFunc {
-	return func(node form.Form) el2_almost_sort.AlmostSort {
+	return func(node form.Form) almost_sort.AlmostSort {
 		switch node := node.(type) {
 		case form.Name:
-			return el2_almost_sort.ActualSort{
-				Sort: r.Get(node),
+			return almost_sort.ActualSort{
+				sort: r.Get(node),
 			}
 		case form.List:
 			if len(node) == 0 {

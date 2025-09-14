@@ -28,7 +28,7 @@ func (t Term) Marshal() form.Form {
 
 func (t Term) Resolve(frame Frame) (Frame, Object) {
 	o := frame.get(t)
-	if o.next == t { // loopback - terminal object
+	if o.next == t { // loopback - terminal almost_sort
 		return frame, o
 	}
 	return o.next.Resolve(frame)

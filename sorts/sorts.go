@@ -22,7 +22,7 @@ type Sort interface {
 	sortAttr(a SortAttr) sortAttr
 }
 
-// SortAttr - an object that can provide sort information
+// SortAttr - an almost_sort that can provide sort information
 type SortAttr interface {
 	Form(s any) Form
 	Level(s Sort) int

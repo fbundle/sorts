@@ -1,22 +1,16 @@
-package el2_almost_sort
+package almost_sort
 
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
 )
 
 var TypeErr = fmt.Errorf("type_error")
 
-type Runtime interface {
-	Parse(form form.Form) (Runtime, AlmostSort)
-	SortAttr() sorts.SortAttr
-	Get(name form.Name) ActualSort
-	Set(name form.Name, sort ActualSort) Runtime
+func NewActualSort(sort sorts.Sort) ActualSort {
+	return ActualSort{sort: sort}
 }
-
-type ListParseFunc = func(r Runtime, list form.List) (Runtime, AlmostSort)
 
 func MustSort(as AlmostSort) ActualSort {
 	return as.(ActualSort)
@@ -27,20 +21,22 @@ func IsSort(as AlmostSort) bool {
 	return ok
 }
 
-// AlmostSort - almost a Sort - for example, a lambda
+// AlmostSort - almost a sort - for example, a lambda
 type AlmostSort interface {
 	almostSortAttr()
 	TypeCheck(sa sorts.SortAttr, parent ActualSort) ActualSort
 }
 
-// ActualSort - a Sort
+// ActualSort - a sort
 type ActualSort struct {
-	Sort sorts.Sort
+	sort sorts.Sort
 }
 
 func (s ActualSort) almostSortAttr() {}
 
-func (s ActualSort) TypeCheck(sa sorts.SortAttr, parent ActualSort) ActualSort {
-	must(sa).termOf(s.Sort, parent.Sort)
-	return ActualSort{s.Sort}
+func (s ActualSort) TypeCheck(a sorts.SortAttr, parent ActualSort) ActualSort {
+	if !a.LessEqual(a.Parent(s.sort), parent.sort) {
+		panic(TypeErr)
+	}
+	return ActualSort{s.sort}
 }

@@ -45,7 +45,7 @@ func NewParser(r Runtime) el2_parser.el2_parser {
 	p := el2_parser.Parser{
 		ParseName: nil,
 	}
-	p.ParseName = func(name form.Name) sorts.Sort {
+	p.ParseName = func(name form.Name) sorts.sort {
 		if sort, ok := r.frame.Get(name); ok {
 			return sort
 		}

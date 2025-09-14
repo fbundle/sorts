@@ -2,8 +2,8 @@ package sorts
 
 const (
 	defaultName  = "type"
-	InitialName  = "unit" // initial object
-	TerminalName = "any"  // terminal object
+	InitialName  = "unit" // initial almost_sort
+	TerminalName = "any"  // terminal almost_sort
 )
 
 func Name(s any) string {
