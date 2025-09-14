@@ -1,4 +1,4 @@
-package sort_universe
+package el_sort_universe
 
 import (
 	"cmp"
