@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/fbundle/sorts/persistent/ordered_map"
-	"github.com/fbundle/sorts/sorts"
 )
 
 func DefaultRuntime() Runtime {
@@ -13,9 +12,10 @@ func DefaultRuntime() Runtime {
 		InitialHeader:  "Unit",
 		TerminalHeader: "Any",
 	}.
-		NewListSortParser("->", ListParseArrow("->")).
-		NewListSortParser("⊕", ListParseSum("⊕")).
-		NewListSortParser("⊗", ListParseProd("⊗"))
+		NewListParser("->", toListParser(ListParseArrow("->"))).
+		NewListParser("⊕", toListParser(ListParseSum("⊕"))).
+		NewListParser("⊗", toListParser(ListParseProd("⊗"))).
+		mustOk()
 }
 
 type Runtime struct {
@@ -26,6 +26,13 @@ type Runtime struct {
 	listParsers   ordered_map.OrderedMap[Name, ListParseFunc]
 
 	frame ordered_map.OrderedMap[Name, Sort]
+}
+
+func (u Runtime) mustOk() Runtime {
+	if u.InitialHeader == u.TerminalHeader {
+		panic(TypeErr)
+	}
+	return u
 }
 
 // Terminal - T_0 T_1 ... T_n
@@ -49,7 +56,7 @@ func (u Runtime) Parse(node Form) AlmostSort {
 	case Name:
 		// lookup name
 		if sort, ok := u.frame.Get(node); ok {
-			return Object{sort}
+			return ActualSort{sort}
 		}
 		// parse builtin: Runtime, initial, terminal
 		builtin := map[Name]func(level int) Sort{
@@ -65,7 +72,7 @@ func (u Runtime) Parse(node Form) AlmostSort {
 					continue
 				}
 				sort := makeFunc(level)
-				return Object{sort}
+				return ActualSort{sort}
 			}
 		}
 		panic("name not found")
@@ -87,18 +94,6 @@ func (u Runtime) Parse(node Form) AlmostSort {
 	default:
 		panic("parse error")
 	}
-}
-func (u Runtime) NewListSortParser(head Name, parseList ListParseSortFunc) Runtime {
-	return u.NewListParser(head, func(parse ParseFunc, list List) AlmostSort {
-		sort := parseList(func(form sorts.Form) sorts.Sort {
-			s := parse(form).Sort() // inside a sort, must be sort
-			if s == nil {
-				panic(TypeErr)
-			}
-			return s
-		}, list)
-		return Object{sort}
-	})
 }
 
 func (u Runtime) NewListParser(head Name, parseList ListParseFunc) Runtime {

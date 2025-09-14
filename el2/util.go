@@ -59,3 +59,16 @@ func (m mustSortAttr) termOf(x Sort, X Sort) {
 		panic(TypeErr)
 	}
 }
+
+func toListParser(listParse sorts.ListParseFunc) ListParseFunc {
+	return func(parse ParseFunc, list List) AlmostSort {
+		sort := listParse(func(form sorts.Form) sorts.Sort {
+			s := parse(form).Sort() // inside a sort, must be sort
+			if s == nil {
+				panic(TypeErr)
+			}
+			return s
+		}, list)
+		return ActualSort{sort}
+	}
+}

@@ -6,16 +6,16 @@ type AlmostSort interface {
 	TypeCheck(sa SortAttr, parent Sort) Sort // not nullable
 }
 
-// Object - a sort
-type Object struct {
+// ActualSort - a sort
+type ActualSort struct {
 	sort Sort
 }
 
-func (s Object) Sort() Sort {
+func (s ActualSort) Sort() Sort {
 	return s.sort
 }
 
-func (s Object) TypeCheck(sa SortAttr, parent Sort) Sort {
+func (s ActualSort) TypeCheck(sa SortAttr, parent Sort) Sort {
 	must(sa).termOf(s.sort, parent)
 	return s.sort
 }
