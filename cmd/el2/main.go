@@ -6,7 +6,8 @@ import (
 	"os"
 
 	"github.com/fbundle/sorts/el2"
-	"github.com/fbundle/sorts/el2_parser"
+	"github.com/fbundle/sorts/el2/almost_sort"
+	"github.com/fbundle/sorts/el2/almost_sort_extra"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
 )
@@ -27,16 +28,19 @@ func mustReadSource(filename string) string {
 	return string(b)
 }
 
-func mustRun(r el2.Context, p el2_parser.el2_parser, tokens []form.Token) {
+func mustRun(tokens []form.Token) {
+	var ctx almost_sort_extra.Context = el2.Context{}.Reset()
+
 	var node form.Form
 	var err error
+	var almostSort almost_sort.AlmostSort
 	for len(tokens) > 0 {
 		tokens, node, err = form_processor.Parse(tokens)
 		if err != nil {
 			panic(err)
 		}
-		s := p.Parse(node)
-		fmt.Println(toString(s))
+		ctx, almostSort = ctx.Compile(node)
+		fmt.Println(toString(almostSort))
 	}
 }
 
@@ -49,8 +53,6 @@ func main() {
 		panic("usage: el2 <filename>")
 	}
 
-	r := el2.NewRuntime()
-	p := el2.NewParser(r)
 	tokens := form_processor.Tokenize(mustReadSource(args[0]))
-	mustRun(r, p, tokens)
+	mustRun(tokens)
 }
