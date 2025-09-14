@@ -20,10 +20,20 @@ func (s ActualSort) TypeCheck(sa SortAttr, parent Sort) Sort {
 	return s.sort
 }
 
+func ListParseBeta(parse ParseFunc, list List) AlmostSort {
+	if len(list) != 2 {
+		panic("beta list must have two elements")
+	}
+	return Beta{
+		Cmd: parse(list[0]),
+		Arg: parse(list[1]),
+	}
+}
+
 // Beta - beta reduction
 type Beta struct {
-	Cmd Form
-	Arg Form
+	Cmd AlmostSort
+	Arg AlmostSort
 }
 
 func (f Beta) Sort() Sort {

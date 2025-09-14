@@ -85,12 +85,11 @@ func (u Runtime) Parse(node Form) AlmostSort {
 			panic("list must start with a name")
 		}
 
-		listParser, ok := u.listParsers.Get(head)
-		if !ok {
-			panic("list type not registered")
+		if listParser, ok := u.listParsers.Get(head); ok {
+			return listParser(u.Parse, node)
+		} else { // by default, parse as beta reduction (function call)
+			return ListParseBeta(u.Parse, node)
 		}
-		// parse list
-		return listParser(u.Parse, node)
 	default:
 		panic("parse error")
 	}
