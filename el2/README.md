@@ -22,7 +22,7 @@ EL2 extends the original EL language with improved type checking, better error h
 #### 1. Enhanced Type System
 - **Universe levels**: Support for `Unit_n` and `Any_n` at different levels
 - **Type constructors**: Arrow (`->`), Sum (`⊕`), Product (`⊗`) types
-- **Dependent types**: Full support for dependent function and pair types
+- **Dependent types**: Basic dependent types implemented, full dependent type system planned for future
 - **Type checking**: Comprehensive static type checking with detailed error reporting
 
 #### 2. Advanced Language Constructs
@@ -114,8 +114,23 @@ go build -o ./bin/el2 ./cmd/el2
 **Let Bindings with Types**:
 ```el
 (let
-    id {Any_0 -> Any_0} (lambda x Any_0 x)
-    (id id)
+    Bool (inh Any_2)
+    True (inh Bool)
+    False (inh Bool)
+    
+    Nat (inh Any_2)
+    n0 (inh Nat)
+    succ (inh {Nat -> Nat})
+    
+    n1 (succ n0)
+    n2 (succ n1)
+    
+    is_two (lambda x Nat (match x
+        (exact n2)   True
+                    False
+    ))
+    
+    (is_two n2)
 )
 ```
 
@@ -194,7 +209,8 @@ EL2 depends on several packages:
 
 Planned enhancements for EL2 include:
 
-- **Pattern Matching Improvements**: Full structural pattern matching
+- **Pattern Matching Improvements**: Full structural pattern matching (currently only exact matching is supported)
+- **Dependent Types**: Complete implementation of dependent function (Π) and dependent pair (Σ) types
 - **Type Inference**: More sophisticated type inference algorithms
 - **Proof Tactics**: Built-in proof tactics and automation
 - **Module System**: Support for modular development
