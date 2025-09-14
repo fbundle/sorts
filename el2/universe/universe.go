@@ -83,13 +83,15 @@ func (u SortUniverse) Parent(s sorts.Sort) sorts.Sort {
 	return sorts.GetParent(u, s)
 }
 func (u SortUniverse) LessEqual(x sorts.Sort, y sorts.Sort) bool {
+	xForm := sorts.GetForm(u, x)
+
 	return sorts.GetLessEqual(u, x, y)
 }
 func (u SortUniverse) TermOf(x sorts.Sort, X sorts.Sort) bool {
 	return u.LessEqual(u.Parent(x), X)
 }
 
-func (u SortUniverse) GetRule(src sorts.Name, dst sorts.Name) bool {
+func (u SortUniverse) LessEqualAtom(src sorts.Name, dst sorts.Name) bool {
 	if src == u.InitialTypeName || dst == u.TerminalTypeName {
 		return true
 	}

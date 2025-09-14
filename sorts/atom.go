@@ -36,12 +36,7 @@ func (s Atom) sortAttr(a SortAttr) sortAttr {
 				if s.level != d.level {
 					return false
 				}
-				sname, ok1 := s.form.(Name)
-				dname, ok2 := d.form.(Name)
-				if ok1 && ok2 {
-					return a.GetRule(sname, dname)
-				}
-				return false
+				return a.LessEqualAtom(s.form, d.form)
 			default:
 				return false
 			}
