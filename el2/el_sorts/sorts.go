@@ -256,6 +256,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 			}
 
 			returnType := func() Sort {
+				// TODO - use Sum type instead
 				for _, t1 := range typeList {
 					dominate := true
 					// check if c1Type dominate everyone else
