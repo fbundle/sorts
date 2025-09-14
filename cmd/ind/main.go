@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"unicode"
 )
@@ -105,14 +106,60 @@ func (ind Inductive) Generate() string {
 
 	return strings.Join(lines, "\n")
 }
-func main() {
-	i := Inductive{
-		Name: "Nat",
-		Constructors: []Constructor{
-			{Name: "Zero", TypeList: []string{"Nat"}},
-			{Name: "Succ", TypeList: []string{"Nat", "Nat"}},
-			{Name: "Add", TypeList: []string{"Nat", "Nat", "Nat"}},
-		},
+
+func trimSpaces(parts []string) []string {
+	newParts := make([]string, 0, len(parts))
+	for _, part := range parts {
+		newParts = append(newParts, strings.TrimSpace(part))
 	}
-	fmt.Println(i.Generate())
+	return newParts
+}
+
+func split(s string, sep string) []string {
+	return trimSpaces(strings.Split(s, sep))
+}
+
+func Parse(s string) Inductive {
+	ind := Inductive{}
+
+	parts := split(s, "|")
+
+	part0 := parts[0]
+	fields := strings.Fields(part0)
+	if len(fields) != 2 || fields[0] != "inductive" {
+		panic("inductive must start with \"inductive TypeName\"")
+	}
+	ind.Name = fields[1]
+
+	for _, part := range parts[1:] {
+		subParts := split(part, ":")
+		if len(subParts) != 2 {
+			panic("constructor must be in the form \"ConstructorName : ConstructorType\"")
+		}
+		c := Constructor{}
+		c.Name = strings.TrimSpace(subParts[0])
+		c.TypeList = split(subParts[1], "->")
+		ind.Constructors = append(ind.Constructors, c)
+	}
+	return ind.MustOk()
+}
+
+func main() {
+	filename := os.Args[1]
+
+	if !strings.HasSuffix(filename, ".ind") {
+		panic("induction filename must end with .ind")
+	}
+
+	b, err := os.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	ind := Parse(string(b))
+
+	outputFilename := strings.TrimSuffix(filename, ".ind") + ".go"
+	err = os.WriteFile(outputFilename, []byte(ind.String()), 0644)
+	if err != nil {
+		panic(err)
+	}
 }
