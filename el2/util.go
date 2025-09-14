@@ -7,14 +7,22 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-func toAlmostSortListParser(listParse sorts.ListParseFuncWithHead) almost_sort_extra.ListParseFuncWithHead {
-	return func(H form.Name) almost_sort_extra.ListCompileFunc {
-		sortListParse := listParse(H)
-		return func(parse almost_sort_extra.ParseFunc, list form.List) almost_sort.AlmostSort {
-			sort := sortListParse(func(form sorts.Form) sorts.Sort {
-				return almost_sort.MustSort(parse(form))
-			}, list)
-			return almost_sort.ActualSort{sort: sort}
+func mustSort(s almost_sort.AlmostSort) almost_sort.ActualSort {
+	s1, ok := s.(almost_sort.ActualSort)
+	if !ok {
+		panic(TypeErr)
+	}
+	return s1
+}
+func sortCompilerToAlmostSortCompiler(f func(form.Name) sorts.ListCompileFunc) func(form.Name) almost_sort_extra.ListCompileFunc {
+	return func(name form.Name) almost_sort_extra.ListCompileFunc {
+		sortCompiler := f(name)
+		return func(r almost_sort_extra.Context, list form.List) (almost_sort_extra.Context, almost_sort.AlmostSort) {
+			return r, almost_sort.NewActualSort(sortCompiler(func(form sorts.Form) sorts.Sort {
+				var as almost_sort.AlmostSort
+				r, as = r.Compile(form)
+				return mustSort(as).Repr()
+			}, list))
 		}
 	}
 }

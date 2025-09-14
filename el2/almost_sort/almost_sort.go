@@ -25,6 +25,10 @@ type ActualSort struct {
 
 func (s ActualSort) AttrAlmostSort() {}
 
+func (s ActualSort) Repr() sorts.Sort {
+	return s.sort
+}
+
 func (s ActualSort) TypeCheck(a sorts.SortAttr, parent ActualSort) ActualSort {
 	if !a.LessEqual(a.Parent(s.sort), parent.sort) {
 		panic(TypeErr)

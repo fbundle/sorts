@@ -22,15 +22,15 @@ func (ctx Context) Compile(node form.Form) (almost_sort_extra.Context, almost_so
 		if listParser, ok := ctx.listCompiler.Get(head); ok {
 			return listParser(ctx, node)
 		} else {
-			// by default, compile as beta reduction (function call)
-			return almost_sort_extra.ListCompileBeta(ctx, node)
+			// use default
+			return ctx.defaultListCompiler(ctx, node)
 		}
 	default:
 		panic("parse_error")
 	}
 }
 
-func (ctx Context) WithListCompiler(name form.Name, compileFunc almost_sort_extra.ListCompileFunc) Context {
-	ctx.listCompiler = ctx.listCompiler.Set(name, compileFunc)
+func (ctx Context) WithListCompiler(name form.Name, compileFunc func(form.Name) almost_sort_extra.ListCompileFunc) Context {
+	ctx.listCompiler = ctx.listCompiler.Set(name, compileFunc(name))
 	return ctx
 }
