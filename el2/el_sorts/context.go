@@ -23,6 +23,8 @@ type Frame interface {
 // Universe - type/el_sorts universe
 type Universe interface {
 	sorts.SortAttr
+	Initial(level int) Sort
+	Terminal(level int) Sort
 	NewTerm(form form.Form, parent Sort) Atom
 }
 

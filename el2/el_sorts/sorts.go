@@ -199,11 +199,11 @@ type Match struct {
 }
 
 func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
-	return func(H form.Name) ListCompileFunc {
+	return func(Head form.Name) ListCompileFunc {
 		return func(ctx Context, list form.List) Sort {
-			mustMatchHead(H, list)
+			mustMatchHead(Head, list)
 			if len(list) < 3 || not(len(list)%2 == 1) {
-				panic(fmt.Errorf("match must be (%s cond pattern1 value1 ... patternN valueN final)", H))
+				panic(fmt.Errorf("match must be (%s cond pattern1 value1 ... patternN valueN final)", Head))
 			}
 			condForm := list[1]
 			cond := ctx.Compile(condForm)
@@ -237,7 +237,39 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 			finalForm := list[len(list)-1]
 			final := ctx.Compile(finalForm)
 
+			// find the weakest type / largest type of return values
+			typeList := []Sort{ctx.Parent(final)}
+			for _, c := range cases {
+				typeList = append(typeList, ctx.Parent(c.Value))
+			}
+
+			returnType := func() Sort {
+				for _, t1 := range typeList {
+					dominate := true
+					// check if c1Type dominate everyone else
+					for _, t2 := range typeList {
+						if not(ctx.LessEqual(t2, t1)) {
+							dominate = false
+							break
+						}
+					}
+					if dominate {
+						return t1
+					}
+				}
+				// return terminal type of maximal level
+				maxLevel := ctx.Level(typeList[0])
+				for _, t := range typeList {
+					maxLevel = max(maxLevel, ctx.Level(t))
+				}
+				return ctx.Terminal(maxLevel)
+			}()
+
+			atom := ctx.NewTerm(list, returnType)
+
 			return Match{
+				Atom:  atom,
+				Head:  Head,
 				Cond:  cond,
 				Cases: cases,
 				Final: final,

@@ -81,6 +81,9 @@ func (u SortUniverse) Parent(s sorts.Sort) sorts.Sort {
 	return sorts.GetParent(u, s)
 }
 func (u SortUniverse) LessEqual(x sorts.Sort, y sorts.Sort) bool {
+	if sorts.GetLevel(u, x) > sorts.GetLevel(u, y) {
+		return false
+	}
 	if u.checkLessEqualBuiltin(x, y) {
 		return true
 	}
@@ -108,6 +111,9 @@ func (u SortUniverse) checkLessEqualBuiltin(x sorts.Sort, y sorts.Sort) bool {
 }
 
 func (u SortUniverse) LessEqualAtom(x sorts.Atom, y sorts.Atom) bool {
+	if sorts.GetLevel(u, x) > sorts.GetLevel(u, y) {
+		return false
+	}
 	if u.checkLessEqualBuiltin(x, y) {
 		return true
 	}
