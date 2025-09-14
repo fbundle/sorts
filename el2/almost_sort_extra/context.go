@@ -19,7 +19,7 @@ type Frame interface {
 // Universe - type/sort universe
 type Universe interface {
 	sorts.SortAttr
-	NewTerm(name form.Name, parent ActualSort) ActualSort
+	NewTerm(name form.Form, parent ActualSort) ActualSort
 }
 
 type Context interface {
