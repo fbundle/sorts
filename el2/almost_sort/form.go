@@ -66,12 +66,11 @@ func ListParseLet(H form.Name) ListParseFunc {
 		for i := 1; i < len(list)-1; i += 3 {
 			nameForm, typeForm, valueForm := list[i], list[i+1], list[i+2]
 
-			b := LetBinding{
+			bindings = append(bindings, LetBinding{
 				Name:  nameForm.(form.Name),
 				Type:  MustSort(parse(typeForm)),
 				Value: parse(valueForm),
-			}
-			bindings = append(bindings, b)
+			})
 		}
 		return Let{
 			Bindings: bindings,
@@ -102,7 +101,21 @@ func ListParseMatch(H form.Name) ListParseFunc {
 			panic(fmt.Errorf("match must be (%s pattern1 value1 ... patternN valueN final)", H))
 		}
 
-		return Match{}
+		cases := make([]MatchCase, 0)
+		for i := 1; i < len(list)-1; i += 2 {
+			patternForm, valueForm := list[i], list[i+1]
+
+			cases = append(cases, MatchCase{
+				Pattern: patternForm,
+				Value:   parse(valueForm),
+			})
+		}
+
+		return Match{
+			Cond:  parse(list[0]),
+			Cases: cases,
+			Final: parse(list[len(list)-1]),
+		}
 	}
 }
 
