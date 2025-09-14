@@ -14,6 +14,9 @@ func (ctx Context) Get(name form.Name) almost_sort_extra.ActualSort {
 	if s, ok := ctx.universe.GetBuiltin(name); ok {
 		return almost_sort_extra.NewActualSort(s)
 	}
+	for k, _ := range ctx.frame.Iter {
+		fmt.Println(k)
+	}
 	panic(fmt.Errorf("name_not_found: %s", name))
 }
 
