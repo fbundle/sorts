@@ -32,14 +32,13 @@ func mustRun(tokens []form.Token) {
 
 	var node form.Form
 	var err error
-	var almostSort el_sorts.Sort
 	for len(tokens) > 0 {
 		tokens, node, err = form_processor.Parse(tokens)
 		if err != nil {
 			panic(err)
 		}
-		ctx, almostSort = ctx.Compile(node)
-		fmt.Println(toString(almostSort))
+		sort := ctx.Compile(node)
+		fmt.Println(toString(sort))
 	}
 }
 
