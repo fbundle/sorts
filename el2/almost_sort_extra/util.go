@@ -21,3 +21,7 @@ func mustSort(s AlmostSort) ActualSort {
 func not(b bool) bool {
 	return !b
 }
+
+func Form(ctx Context, s AlmostSort) form.Form {
+	return s.attrAlmostSort(ctx).form
+}
