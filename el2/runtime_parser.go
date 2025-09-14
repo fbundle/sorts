@@ -5,18 +5,14 @@ import (
 )
 
 type runtimeParser struct {
-	parseName   func(Name) (Sort, bool)
+	parseName   func(Name) Sort
 	listParsers ordered_map.OrderedMap[Name, ListParseFunc]
 }
 
 func (u runtimeParser) parse(node Form) AlmostSort {
 	switch node := node.(type) {
 	case Name:
-		sort, ok := u.parseName(node)
-		if !ok {
-			panic("name not found")
-		}
-		return ActualSort{sort: sort}
+		return ActualSort{sort: u.parseName(node)}
 	case List:
 		if len(node) == 0 {
 			panic("empty list")
