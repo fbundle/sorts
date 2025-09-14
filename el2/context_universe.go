@@ -26,7 +26,7 @@ func (ctx Context) GetRule(src sorts.Name, dst sorts.Name) bool {
 	return ctx.universe.GetRule(src, dst)
 }
 
-func (ctx Context) NewTerm(name form.Name, parent almost_sort_extra.ActualSort) almost_sort_extra.ActualSort {
+func (ctx Context) NewTerm(name form.Form, parent almost_sort_extra.ActualSort) almost_sort_extra.ActualSort {
 	sort := ctx.universe.NewTerm(name, parent.Repr())
 	return almost_sort_extra.NewActualSort(sort)
 }
