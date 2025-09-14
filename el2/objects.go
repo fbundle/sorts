@@ -14,10 +14,6 @@ type ActualSort struct {
 	sort Sort
 }
 
-func (s ActualSort) MustSort() Sort {
-	return s.sort
-}
-
 func (s ActualSort) TypeCheck(sa SortAttr, parent Sort) Sort {
 	must(sa).termOf(s.sort, parent)
 	return s.sort
@@ -37,10 +33,6 @@ func ListParseBeta(parse ParseFunc, list List) AlmostSort {
 type Beta struct {
 	Cmd AlmostSort
 	Arg AlmostSort
-}
-
-func (f Beta) MustSort() Sort {
-	return nil
 }
 
 func (f Beta) TypeCheck(sa SortAttr, parent Sort) Sort {
@@ -64,16 +56,34 @@ type Lambda struct {
 	Body  AlmostSort
 }
 
-func (l Lambda) MustSort() Sort {
-	return nil
-}
-
 func (l Lambda) TypeCheck(sa SortAttr, parent Sort) Sort {
 	//TODO implement me
 	panic("implement me")
 }
 
+type LetBinding struct {
+	Name  Name
+	Value AlmostSort
+}
 type Let struct {
+	Bindings []LetBinding
+	Final    AlmostSort
+}
+
+func (l Let) TypeCheck(sa SortAttr, parent Sort) Sort {
+	panic("implement me")
+}
+
+type MatchCase struct {
+	Pattern Form
+	Value   AlmostSort
 }
 type Match struct {
+	Cond  AlmostSort
+	Cases []MatchCase
+	Final AlmostSort
+}
+
+func (m Match) TypeCheck(sa SortAttr, parent Sort) Sort {
+	panic("implement me")
 }
