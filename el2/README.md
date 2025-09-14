@@ -54,9 +54,9 @@ EL2 extends the original EL language with improved type checking, better error h
 ```el
 (match cond pattern1 value1 ... patternN valueN final)
 ```
-- Exact pattern matching with `(exact expr)`
+- Currently supports exact pattern matching with `(exact expr)`
 - Type-safe pattern binding
-- Exhaustiveness checking
+- Structural pattern matching planned for future implementation
 
 **Inhabitants**:
 ```el
@@ -70,8 +70,7 @@ EL2 extends the original EL language with improved type checking, better error h
 ```el
 (type value)
 ```
-- Explicit type annotations
-- Type validation
+- get type of an object
 
 #### 3. Compilation System
 
@@ -123,24 +122,24 @@ go build -o ./bin/el2 ./cmd/el2
 **Pattern Matching**:
 ```el
 (let
-    Bool U_1 undef
-    True Bool undef
-    False Bool undef
+    Bool (inh Any_2)
+    True (inh Bool)
+    False (inh Bool)
     
-    is_zero {Nat -> Bool} (lambda n Nat (match n
-        (exact n0) True
-        False
+    is_two (lambda x Nat (match x
+        (exact n2)   True
+                    False
     ))
     
-    (is_zero n0)
+    (is_two n2)
 )
 ```
 
 **Sum and Product Types**:
 ```el
 (let
-    x {Nat ⊕ Bool} (inh {Nat ⊕ Bool})
-    y {Nat ⊗ Bool} (inh {Nat ⊗ Bool})
+    x {n1 ⊕ n2 ⊕ n3}
+    x {n1 ⊗ n2 ⊗ n3 ⊗ n4}
     x
 )
 ```
