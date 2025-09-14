@@ -35,10 +35,9 @@ func (b Beta) attrAlmostSort(ctx Context) attrAlmostSort {
 }
 
 func (b Beta) TypeCheck(ctx Context, parent ActualSort) ActualSort {
-	//TODO implement me
-	ctx.NewTerm(form.Name(fmt.Sprintf("(%s, %s)")), parent)
-
-	panic("implement me")
+	// TODO implement me
+	// type check all pass for now
+	return ctx.NewTerm(Form(ctx, b), parent)
 }
 
 func ListCompileLambda(Head form.Name) ListCompileFunc {
@@ -150,7 +149,9 @@ func (l Let) attrAlmostSort(ctx Context) attrAlmostSort {
 	}
 }
 func (l Let) TypeCheck(ctx Context, parent ActualSort) ActualSort {
-	panic("implement me")
+	// TODO implement me
+	// type check all pass for now
+	return ctx.NewTerm(Form(ctx, l), parent)
 }
 
 func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
@@ -236,5 +237,7 @@ func (m Match) attrAlmostSort(ctx Context) attrAlmostSort {
 	}
 }
 func (m Match) TypeCheck(ctx Context, parent ActualSort) ActualSort {
-	panic("implement me")
+	// TODO implement me
+	// type check all pass for now
+	return ctx.NewTerm(Form(ctx, m), parent)
 }
