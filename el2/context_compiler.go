@@ -25,7 +25,7 @@ func logCompile(ctx Context, node form.Form, sort el_sorts.Sort) {
 		return fmt.Sprintf("(%s:%s:%d)", f, t, l)
 	}
 
-	log.Printf("compiled %s from %s", sortToString(sort), toString(node))
+	log.Printf("compiled %s from %s\n", sortToString(sort), toString(node))
 }
 
 func (ctx Context) Compile(node form.Form) el_sorts.Sort {

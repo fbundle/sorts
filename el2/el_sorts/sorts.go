@@ -2,6 +2,7 @@ package el_sorts
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
@@ -60,15 +61,16 @@ func ListCompileLambda(Head form.Name) ListCompileFunc {
 		}
 
 		params := make([]LambdaParam, 0)
-		for i := 2; i < len(list)-1; i += 2 {
+		for i := 1; i < len(list)-1; i += 2 {
 			paramForm, paramTypeForm := list[i], list[i+1]
 			param, ok := paramForm.(form.Name)
 			if !ok {
 				panic(TypeErr)
 			}
+			paramType := ctx.Compile(paramTypeForm)
 			params = append(params, LambdaParam{
 				Name: param,
-				Type: ctx.Compile(paramTypeForm),
+				Type: paramType,
 			})
 		}
 
@@ -160,6 +162,7 @@ func ListCompileLet(Head form.Name) ListCompileFunc {
 					Head: v.Head,
 					Name: name,
 				}
+				log.Printf("rename %s -> %s\n", v.Name, name)
 			}
 
 			bindings = append(bindings, LetBinding{
