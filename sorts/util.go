@@ -3,26 +3,35 @@ package sorts
 import "github.com/fbundle/sorts/form"
 
 func LeastUpperBound(a SortAttr, H form.Name, sorts ...Sort) Sort {
-	removeAny := func() int {
-		for i := 0; i < len(sorts); i++ {
-			for j := 0; j < len(sorts); j++ {
-				if i == j {
+	ss := make(map[int]Sort)
+	for i, s := range sorts {
+		ss[i] = s
+	}
+
+	removeAny := func(ss map[int]Sort) int {
+		for i1, s1 := range ss {
+			for i2, s2 := range ss {
+				if i1 == i2 {
 					continue
 				}
-				if a.LessEqual(sorts[i], sorts[j]) {
-					return i
+				if a.LessEqual(s1, s2) {
+					return i1
 				}
 			}
 		}
 		return -1
 	}
 	for {
-		i := removeAny()
+		i := removeAny(ss)
 		if i < 0 {
 			break
 		}
-		sorts[i] = sorts[len(sorts)-1]
-		sorts = sorts[:len(sorts)-1]
+		delete(ss, i)
+	}
+
+	sorts = make([]Sort, 0, len(ss))
+	for _, s := range ss {
+		sorts = append(sorts, s)
 	}
 
 	output := sorts[0]

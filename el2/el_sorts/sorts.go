@@ -250,10 +250,11 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 			final := ctx.Compile(finalForm)
 
 			// find the weakest type / largest type of return values
-			typeList := []Sort{ctx.Parent(final)}
+			typeList := make([]Sort, 0, len(cases)+1)
 			for _, c := range cases {
 				typeList = append(typeList, ctx.Parent(c.Value))
 			}
+			typeList = append(typeList, ctx.Parent(final))
 
 			returnType := sorts.LeastUpperBound(ctx, "⊕", typeList...)
 
