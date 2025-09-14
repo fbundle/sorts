@@ -1,30 +1,31 @@
-package el2
+package sort_universe
 
 import (
 	"strconv"
 	"strings"
 
+	"github.com/fbundle/sorts/el2"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
 )
 
 type sortUniverse struct {
-	initialHeader  Name
-	terminalHeader Name
-	nameLessEqual  ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
+	initialHeader  el2.Name
+	terminalHeader el2.Name
+	nameLessEqual  ordered_map.Map[el2.rule] // use Map since rule is not of cmp.Ordered
 
 }
 
 func (u sortUniverse) mustSortAttr() sortUniverse {
 	if u.initialHeader == u.terminalHeader {
-		panic(TypeErr)
+		panic(el2.TypeErr)
 	}
 	return u
 }
 
-func (u sortUniverse) parseConstant(key Name) (Sort, bool) {
+func (u sortUniverse) parseConstant(key el2.Name) (el2.Sort, bool) {
 	// parse builtin: initial, terminal
-	builtin := map[Name]func(level int) Sort{
+	builtin := map[el2.Name]func(level int) el2.Sort{
 		u.initialHeader:  u.Initial,
 		u.terminalHeader: u.Terminal,
 	}
@@ -43,27 +44,27 @@ func (u sortUniverse) parseConstant(key Name) (Sort, bool) {
 	return nil, false
 }
 
-func (u sortUniverse) NewNameLessEqualRule(src Name, dst Name) sortUniverse {
-	u.nameLessEqual = u.nameLessEqual.Set(rule{src, dst})
+func (u sortUniverse) NewNameLessEqualRule(src el2.Name, dst el2.Name) sortUniverse {
+	u.nameLessEqual = u.nameLessEqual.Set(el2.rule{src, dst})
 	return u
 }
 
-func (u sortUniverse) newTerm(name Name, parent Sort) Sort {
-	return NewAtomTerm(u, name, parent)
+func (u sortUniverse) newTerm(name el2.Name, parent el2.Sort) el2.Sort {
+	return el2.NewAtomTerm(u, name, parent)
 }
 
 // Terminal - T_0 T_1 ... T_n
-func (u sortUniverse) Terminal(level int) Sort {
-	return NewAtomChain(level, func(level int) Name {
-		levelStr := Name(strconv.Itoa(level))
+func (u sortUniverse) Terminal(level int) el2.Sort {
+	return el2.NewAtomChain(level, func(level int) el2.Name {
+		levelStr := el2.Name(strconv.Itoa(level))
 		return u.terminalHeader + "_" + levelStr
 	})
 }
 
 // Initial - I_0 I_1 ... I_n
-func (u sortUniverse) Initial(level int) Sort {
-	return NewAtomChain(level, func(level int) Name {
-		levelStr := Name(strconv.Itoa(level))
+func (u sortUniverse) Initial(level int) el2.Sort {
+	return el2.NewAtomChain(level, func(level int) el2.Name {
+		levelStr := el2.Name(strconv.Itoa(level))
 		return u.initialHeader + "_" + levelStr
 	})
 }
@@ -92,7 +93,7 @@ func (u sortUniverse) NameLessEqual(src sorts.Name, dst sorts.Name) bool {
 	if src == dst {
 		return true
 	}
-	if _, ok := u.nameLessEqual.Get(rule{src, dst}); ok {
+	if _, ok := u.nameLessEqual.Get(el2.rule{src, dst}); ok {
 		return true
 	}
 	return false
