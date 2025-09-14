@@ -2,13 +2,15 @@ package el2
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/fbundle/sorts/el2/el_sorts"
 	"github.com/fbundle/sorts/form"
 )
 
-func logCompile(node form.Form, sort el_sorts.Sort) {
+func logCompile(ctx Context, node form.Form, sort el_sorts.Sort) {
 	toString := func(o any) string {
 		b, err := json.Marshal(o)
 		if err != nil {
@@ -16,14 +18,21 @@ func logCompile(node form.Form, sort el_sorts.Sort) {
 		}
 		return string(b)
 	}
-	log.Printf("compiled %s -> %s", toString(node), toString(sort))
+	sortToString := func(s el_sorts.Sort) string {
+		f := strings.Join(ctx.Form(sort).Marshal("(", ")"), " ")
+		t := strings.Join(ctx.Form(ctx.Parent(sort)).Marshal("(", ")"), " ")
+		l := ctx.Level(sort)
+		return fmt.Sprintf("(%s:%s:%d)", f, t, l)
+	}
+
+	log.Printf("compiled %s from %s", sortToString(sort), toString(node))
 }
 
 func (ctx Context) Compile(node form.Form) el_sorts.Sort {
 	switch node := node.(type) {
 	case form.Name:
 		sort := ctx.Get(node)
-		logCompile(node, sort)
+		logCompile(ctx, node, sort)
 		return sort
 	case form.List:
 		if len(node) == 0 {
@@ -32,13 +41,13 @@ func (ctx Context) Compile(node form.Form) el_sorts.Sort {
 		if head, ok := node[0].(form.Name); ok {
 			if listParser, ok := ctx.listCompiler.Get(head); ok {
 				sort := listParser(ctx, node)
-				logCompile(node, sort)
+				logCompile(ctx, node, sort)
 				return sort
 			}
 		}
 		// use default
 		sort := ctx.defaultListCompiler(ctx, node)
-		logCompile(node, sort)
+		logCompile(ctx, node, sort)
 		return sort
 	default:
 		panic("parse_error")
