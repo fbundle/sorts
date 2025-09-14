@@ -43,11 +43,11 @@ func newParser(r Runtime) el_parser.Parser {
 	}
 
 	p = p.
-		NewListParser("->", toListParser(sorts.ListParseArrow("->"))).
-		NewListParser("⊕", toListParser(sorts.ListParseSum("⊕"))).
-		NewListParser("⊗", toListParser(sorts.ListParseProd("⊗"))).
-		NewListParser("=>", el_almost_sort.ListParseLambda("=>")).
-		NewListParser("let", el_almost_sort.ListParseLet("let"))
+		NewListParser("->", toAlmostSortListParser(sorts.ListParseArrow)).
+		NewListParser("⊕", toAlmostSortListParser(sorts.ListParseSum)).
+		NewListParser("⊗", toAlmostSortListParser(sorts.ListParseProd)).
+		NewListParser("=>", el_almost_sort.ListParseLambda).
+		NewListParser("let", el_almost_sort.ListParseLet)
 
 	return p
 }
