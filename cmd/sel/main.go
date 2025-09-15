@@ -39,7 +39,7 @@ func mustRun(tokens []form.Token) {
 				panic(err)
 			}
 			letBindings = append(letBindings, [3]form.Form{
-				form.Name("_"), form.Name(":="), form.List{
+				form.Name(":="), form.Name("_"), form.List{
 					form.Name("inspect"), node2,
 				},
 			})
@@ -54,7 +54,7 @@ func mustRun(tokens []form.Token) {
 			panic(err)
 		}
 		letBindings = append(letBindings, [3]form.Form{
-			node1, node2, node3,
+			node2, node1, node3,
 		})
 	}
 
