@@ -11,8 +11,8 @@ func (s Inhabited) sortAttr(a SortAttr) sortAttr {
 	return s.Sort.sortAttr(a)
 }
 
-// Dependent - represent a type B(x) depends on Sort x
-type Dependent struct {
-	Repr  Form
-	Apply func(Sort) Sort // take x, return B(x)
+// Dept - represent a type B(x) depends on Sort x
+type Dept[T any] struct {
+	Form  Form
+	Apply func(T) Sort // take x, return B(x)
 }
