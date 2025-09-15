@@ -1,20 +1,16 @@
-package el_sorts
+package sorts
 
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/el/el_flags"
 	"github.com/fbundle/sorts/form"
-	"github.com/fbundle/sorts/sorts"
 )
 
 var TypeCheckErr = fmt.Errorf("type_check")
 
-type ListCompileFunc = func(r Context, list form.List) Sort
-
 type ReducibleSort interface {
 	Sort
-	Reduce() Sort
+	Reduce(ctx Context) Sort
 }
 
 // Beta - beta reduction
@@ -24,8 +20,8 @@ type Beta struct {
 	Arg Sort
 }
 
-func (b Beta) Reduce() Sort {
-	if el_flags.GetMode() != el_flags.ModeEval {
+func (b Beta) Reduce(ctx Context) Sort {
+	if ctx.Mode() != ModeEval {
 		return b
 	}
 
@@ -35,7 +31,7 @@ func (b Beta) Reduce() Sort {
 
 func ListCompileBeta(ctx Context, list form.List) Sort {
 	err := fmt.Errorf("beta must be (cmd arg)")
-	if not(len(list) == 2) {
+	if len(list) != 2 {
 		panic(err)
 	}
 
@@ -43,7 +39,7 @@ func ListCompileBeta(ctx Context, list form.List) Sort {
 	arg := ctx.Compile(list[1])
 
 	// type check
-	arrow, ok := ctx.Parent(cmd).(sorts.Arrow)
+	arrow, ok := ctx.Parent(cmd).(Arrow)
 	if !ok {
 		panic(err)
 	}
@@ -58,7 +54,7 @@ func ListCompileBeta(ctx Context, list form.List) Sort {
 		Atom: atom,
 		Cmd:  cmd,
 		Arg:  arg,
-	}).Reduce()
+	}).Reduce(ctx)
 }
 
 // Lambda - lambda abstraction
@@ -84,7 +80,7 @@ func ListCompileLambda(TypeAnnot form.Name) func(Head form.Name) ListCompileFunc
 			bodyForm := list[len(list)-1]
 			body := ctx.Compile(bodyForm)
 
-			atom := ctx.NewTerm(list, sorts.Arrow{
+			atom := ctx.NewTerm(list, Arrow{
 				A: param.Type,
 				B: ctx.Parent(body),
 			})
@@ -117,7 +113,7 @@ func ListCompileInhabitant(Head form.Name) ListCompileFunc {
 		parentForm := list[1]
 		parent := ctx.Compile(parentForm)
 
-		name := form.Name(fmt.Sprintf("%s_%d", Head, nextValue()))
+		name := form.Name(fmt.Sprintf("%s_%d", Head, nextCount()))
 		atom := ctx.NewTerm(name, parent)
 		return Inhabitant{
 			Atom: atom,
@@ -134,8 +130,8 @@ type Let struct {
 	Final    Sort
 }
 
-func (l Let) Reduce() Sort {
-	if el_flags.GetMode() != el_flags.ModeEval {
+func (l Let) Reduce(ctx Context) Sort {
+	if ctx.Mode() != ModeEval {
 		return l
 	}
 
@@ -184,8 +180,8 @@ type Match struct {
 	Cases []MatchCase
 }
 
-func (m Match) Reduce() Sort {
-	if el_flags.GetMode() != el_flags.ModeEval {
+func (m Match) Reduce(ctx Context) Sort {
+	if ctx.Mode() != ModeEval {
 		return m
 	}
 
@@ -218,7 +214,7 @@ func ListCompileMatch(Arrow form.Name, DefaultConstr form.Name) func(Head form.N
 				typeList = append(typeList, ctx.Parent(c.Value))
 			}
 
-			returnType := sorts.LeastUpperBound(ctx, "⊕", typeList...)
+			returnType := LeastUpperBound(ctx, "⊕", typeList...)
 
 			atom := ctx.NewTerm(list, returnType)
 

@@ -1,6 +1,10 @@
 package sorts
 
-import "github.com/fbundle/sorts/form"
+import (
+	"sync/atomic"
+
+	"github.com/fbundle/sorts/form"
+)
 
 func LeastUpperBound(a SortAttr, H form.Name, sorts ...Sort) Sort {
 	ss := make(map[int]Sort)
@@ -63,4 +67,10 @@ func (m mustSortAttr) termOf(x Sort, X Sort) {
 	if !m.a.LessEqual(m.a.Parent(x), X) {
 		panic(TypeErr)
 	}
+}
+
+var count uint64
+
+func nextCount() uint64 {
+	return atomic.AddUint64(&count, 1)
 }

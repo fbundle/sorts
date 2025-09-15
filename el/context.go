@@ -3,7 +3,6 @@ package el
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/el/el_sorts"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
@@ -12,33 +11,35 @@ import (
 
 var TypeErr = fmt.Errorf("type_error")
 
-var _ el_sorts.Context = Context{}
+var _ sorts.Context = Context{}
 
 type Context struct {
-	frame               ordered_map.OrderedMap[form.Name, el_sorts.Sort]
+	frame               ordered_map.OrderedMap[form.Name, sorts.Sort]
 	universe            universe.SortUniverse
-	listCompiler        ordered_map.OrderedMap[form.Name, el_sorts.ListCompileFunc]
-	defaultListCompiler el_sorts.ListCompileFunc
+	listCompiler        ordered_map.OrderedMap[form.Name, sorts.ListCompileFunc]
+	defaultListCompiler sorts.ListCompileFunc
+	mode                sorts.Mode
 }
 
 func (ctx Context) Reset() Context {
 	return Context{
-		frame: ordered_map.OrderedMap[form.Name, el_sorts.Sort]{},
+		frame: ordered_map.OrderedMap[form.Name, sorts.Sort]{},
 		universe: universe.SortUniverse{
 			InitialTypeName:  "Unit",
 			TerminalTypeName: "Any",
 		},
-		listCompiler:        ordered_map.OrderedMap[form.Name, el_sorts.ListCompileFunc]{},
-		defaultListCompiler: el_sorts.ListCompileBeta,
+		listCompiler:        ordered_map.OrderedMap[form.Name, sorts.ListCompileFunc]{},
+		defaultListCompiler: sorts.ListCompileBeta,
+		mode:                sorts.ModeComp,
 	}.
-		WithListCompiler("->", sortCompilerToAlmostSortCompiler(sorts.ListCompileArrow)).
-		WithListCompiler("⊕", sortCompilerToAlmostSortCompiler(sorts.ListCompileSum)).
-		WithListCompiler("⊗", sortCompilerToAlmostSortCompiler(sorts.ListCompileProd)).
-		WithListCompiler("=>", el_sorts.ListCompileLambda(":")).
-		WithListCompiler("inh", el_sorts.ListCompileInhabitant).
-		WithListCompiler("let", el_sorts.ListCompileLet(":=")).
-		WithListCompiler("match", el_sorts.ListCompileMatch("=>", "_")).
-		WithListCompiler("inspect", el_sorts.ListCompileInspect).
+		WithListCompiler("->", sorts.ListCompileArrow).
+		WithListCompiler("⊕", sorts.ListCompileSum).
+		WithListCompiler("⊗", sorts.ListCompileProd).
+		WithListCompiler("=>", sorts.ListCompileLambda(":")).
+		WithListCompiler("inh", sorts.ListCompileInhabitant).
+		WithListCompiler("let", sorts.ListCompileLet(":=")).
+		WithListCompiler("match", sorts.ListCompileMatch("=>", "_")).
+		WithListCompiler("inspect", sorts.ListCompileInspect).
 		finalize()
 }
 

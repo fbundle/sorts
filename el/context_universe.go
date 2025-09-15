@@ -1,7 +1,6 @@
 package el
 
 import (
-	"github.com/fbundle/sorts/el/el_sorts"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
 )
@@ -26,13 +25,13 @@ func (ctx Context) LessEqualBasic(x sorts.Sort, y sorts.Sort) bool {
 	return ctx.universe.LessEqualBasic(x, y)
 }
 
-func (ctx Context) NewTerm(name form.Form, parent el_sorts.Sort) el_sorts.Atom {
+func (ctx Context) NewTerm(name form.Form, parent sorts.Sort) sorts.Atom {
 	return ctx.universe.NewTerm(name, parent)
 }
-func (ctx Context) Initial(level int) el_sorts.Sort {
+func (ctx Context) Initial(level int) sorts.Sort {
 	return ctx.universe.Initial(level)
 }
 
-func (ctx Context) Terminal(level int) el_sorts.Sort {
+func (ctx Context) Terminal(level int) sorts.Sort {
 	return ctx.universe.Terminal(level)
 }

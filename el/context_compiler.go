@@ -6,9 +6,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/fbundle/sorts/el/el_flags"
-	"github.com/fbundle/sorts/el/el_sorts"
 	"github.com/fbundle/sorts/form"
+	"github.com/fbundle/sorts/sorts"
 )
 
 func (ctx Context) ToString(o any) string {
@@ -17,12 +16,12 @@ func (ctx Context) ToString(o any) string {
 		return v
 	case form.Form:
 		return strings.Join(v.Marshal("(", ")"), " ")
-	case el_sorts.Sort:
+	case sorts.Sort:
 		f := ctx.ToString(ctx.Form(v))
 		t := strings.Join(ctx.Form(ctx.Parent(v)).Marshal("(", ")"), " ")
 		l := ctx.Level(v)
 
-		if el_flags.GetMode() == el_flags.ModeComp {
+		if ctx.Mode() == sorts.ModeComp {
 			return fmt.Sprintf("(type %s - level %d)", t, l)
 		} else {
 			return fmt.Sprintf("(form %s - type %s - level %d)", f, t, l)
@@ -33,13 +32,13 @@ func (ctx Context) ToString(o any) string {
 	}
 }
 
-func logCompile(ctx Context, node form.Form, sort el_sorts.Sort) {
-	if el_flags.GetMode() == el_flags.ModeDebug {
+func logCompile(ctx Context, node form.Form, sort sorts.Sort) {
+	if ctx.Mode() == sorts.ModeDebug {
 		log.Printf("DEBUG: compiled %s from %s\n", ctx.ToString(sort), ctx.ToString(node))
 	}
 }
 
-func (ctx Context) Compile(node form.Form) el_sorts.Sort {
+func (ctx Context) Compile(node form.Form) sorts.Sort {
 	switch node := node.(type) {
 	case form.Name:
 		sort := ctx.Get(node)
@@ -65,7 +64,7 @@ func (ctx Context) Compile(node form.Form) el_sorts.Sort {
 	}
 }
 
-func (ctx Context) WithListCompiler(name form.Name, compileFunc func(form.Name) el_sorts.ListCompileFunc) Context {
+func (ctx Context) WithListCompiler(name form.Name, compileFunc func(form.Name) sorts.ListCompileFunc) Context {
 	ctx.listCompiler = ctx.listCompiler.Set(name, compileFunc(name))
 	return ctx
 }

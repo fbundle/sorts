@@ -1,12 +1,16 @@
-package el_sorts
+package sorts
 
 import (
 	"github.com/fbundle/sorts/form"
-	"github.com/fbundle/sorts/sorts"
 )
 
-type Sort = sorts.Sort
-type Atom = sorts.Atom
+type Mode string
+
+const (
+	ModeComp  Mode = "COMP"  // type checking
+	ModeEval  Mode = "EVAL"  // type checking and evaluation
+	ModeDebug Mode = "DEBUG" // type checking and print everything
+)
 
 // Compiler - recursive compilation
 type Compiler interface {
@@ -22,7 +26,7 @@ type Frame interface {
 
 // Universe - type/el_sorts universe
 type Universe interface {
-	sorts.SortAttr
+	SortAttr
 	Initial(level int) Sort
 	Terminal(level int) Sort
 	NewTerm(form form.Form, parent Sort) Atom
@@ -32,5 +36,7 @@ type Context interface {
 	Universe
 	Compiler
 	Frame
+	Mode() Mode
 	ToString(o any) string
 }
+type ListCompileFunc = func(r Context, list form.List) Sort
