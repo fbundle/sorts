@@ -18,7 +18,7 @@ must_pos_type = lambda (x: Nat)
 	 | n0        => Nil
 
 in this example must_pos is of type Π_{x: Nat} must_pos_type(x)
-from type checking, we know that this is a subtype of Nat -> (Nat + Nil)
+from current type checking, we know that this is a subtype of Nat -> (Nat + Nil)
 
 */
 
