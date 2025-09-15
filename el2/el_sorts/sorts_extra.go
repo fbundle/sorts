@@ -82,9 +82,9 @@ func ParseNameBinding(Head form.Name) func(ctx Context, list form.List) NameBind
 }
 
 type MathCase struct {
-	Constr   form.Name
-	Variable form.Name
-	Value    Sort
+	Constr form.Name
+	Vars   []form.Name
+	Value  Sort
 }
 
 func ParseMatchCase(Head form.Name, CondType Sort) func(ctx Context, list form.List) MathCase {
@@ -95,14 +95,19 @@ func ParseMatchCase(Head form.Name, CondType Sort) func(ctx Context, list form.L
 			panic(err)
 		}
 		patternList := mustList(err, list[1])
-		if len(patternList) != 2 {
+		if len(patternList) == 0 {
 			panic(err)
 		}
 
+		vars := make([]form.Name, 0)
+		for i := 1; i < len(patternList); i++ {
+			vars = append(vars, mustName(patternList[i]))
+		}
+
 		return MathCase{
-			Constr:   mustName(err, patternList[0]),
-			Variable: mustName(err, patternList[1]),
-			Value:    ctx.Compile(list[2]),
+			Constr: mustName(err, patternList[0]),
+			Vars:   vars,
+			Value:  ctx.Compile(list[2]),
 		}
 	}
 }

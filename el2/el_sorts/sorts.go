@@ -155,6 +155,8 @@ type Match struct {
 func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 	return func(Head form.Name) ListCompileFunc {
 		return func(ctx Context, list form.List) Sort {
+			err := fmt.Errorf("match must be (%s cond (pattern1 value1) ... patternN valueN final)", Head)
+
 			mustMatchHead(Head, list)
 			if len(list) < 3 || not(len(list)%2 == 1) {
 				panic(fmt.Errorf("match must be (%s cond pattern1 value1 ... patternN valueN final)", Head))
