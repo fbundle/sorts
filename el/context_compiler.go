@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/fbundle/sorts/el/el_flags"
 	"github.com/fbundle/sorts/el/el_sorts"
 	"github.com/fbundle/sorts/form"
 )
@@ -20,7 +21,12 @@ func (ctx Context) ToString(o any) string {
 		f := ctx.ToString(ctx.Form(v))
 		t := strings.Join(ctx.Form(ctx.Parent(v)).Marshal("(", ")"), " ")
 		l := ctx.Level(v)
-		return fmt.Sprintf("(form %s - type %s - level %d)", f, t, l)
+
+		if el_flags.GetMode() == el_flags.ModeComp {
+			return fmt.Sprintf("(type %s - level %d)", t, l)
+		} else {
+			return fmt.Sprintf("(form %s - type %s - level %d)", f, t, l)
+		}
 	default:
 		b, _ := json.Marshal(v)
 		return string(b)
