@@ -88,9 +88,9 @@ type MatchCase struct {
 	Value    Sort
 }
 
-func ParseMatchCase(Head form.Name, CondType Sort) func(ctx Context, list form.List) MatchCase {
+func ParseMatchCase(Head form.Name, DefaultConstr form.Name, CondType Sort) func(ctx Context, list form.List) MatchCase {
 	return func(ctx Context, list form.List) MatchCase {
-		err := fmt.Errorf("match_lambda must be (%s (constr variable) value)", Head)
+		err := fmt.Errorf("match_lambda must be (%s (constr variable...) value)", Head)
 		mustMatchHead(err, Head, list)
 		if len(list) != 3 {
 			panic(err)
@@ -98,6 +98,11 @@ func ParseMatchCase(Head form.Name, CondType Sort) func(ctx Context, list form.L
 		patternList := mustList(err, list[1])
 		if len(patternList) == 0 {
 			panic(err)
+		}
+
+		constr := mustName(err, patternList[0])
+		if constr == DefaultConstr && len(patternList) != 1 {
+			panic(fmt.Errorf("default_constructor must be (%s %s)", Head, DefaultConstr))
 		}
 
 		vars := make([]form.Name, 0)
@@ -109,7 +114,7 @@ func ParseMatchCase(Head form.Name, CondType Sort) func(ctx Context, list form.L
 		// maybe add a destruction function so that it can work like a lambda
 		return MatchCase{
 			CondType: CondType,
-			Constr:   mustName(err, patternList[0]),
+			Constr:   constr,
 			Vars:     vars,
 			Value:    ctx.Compile(list[2]),
 		}

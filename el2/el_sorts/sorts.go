@@ -158,37 +158,32 @@ type Match struct {
 	Head  form.Name
 	Cond  Sort
 	Cases []MatchCase
-	Final Sort
 }
 
-func ListCompileMatch(Arrow form.Name) func(H form.Name) ListCompileFunc {
+func ListCompileMatch(Arrow form.Name, DefaultConstr form.Name) func(H form.Name) ListCompileFunc {
 	return func(Head form.Name) ListCompileFunc {
 		return func(ctx Context, list form.List) Sort {
-			err := fmt.Errorf("match must be (%s cond (%s pattern1 value1) ... (%s patternN valueN) final)", Head, Arrow, Arrow)
+			err := fmt.Errorf("match must be (%s cond (%s pattern1 value1) ... (%s patternN valueN))", Head, Arrow, Arrow)
 			mustMatchHead(err, Head, list)
 
-			if len(list) < 3 {
+			if len(list) < 2 {
 				panic(err)
 			}
 			condForm := list[1]
 			cond := ctx.Compile(condForm)
 
 			cases := make([]MatchCase, 0)
-			for i := 2; i < len(list)-1; i++ {
-				cases = append(cases, ParseMatchCase(Arrow, ctx.Parent(cond))(
+			for i := 2; i < len(list); i++ {
+				cases = append(cases, ParseMatchCase(Arrow, DefaultConstr, ctx.Parent(cond))(
 					ctx, mustList(err, list[i]),
 				))
 			}
 
-			finalForm := list[len(list)-1]
-			final := ctx.Compile(finalForm)
-
 			// find the weakest type / largest type of return values
-			typeList := make([]Sort, 0, len(cases)+1)
+			typeList := make([]Sort, 0, len(cases))
 			for _, c := range cases {
 				typeList = append(typeList, ctx.Parent(c.Value))
 			}
-			typeList = append(typeList, ctx.Parent(final))
 
 			returnType := sorts.LeastUpperBound(ctx, "⊕", typeList...)
 
@@ -199,7 +194,6 @@ func ListCompileMatch(Arrow form.Name) func(H form.Name) ListCompileFunc {
 				Head:  Head,
 				Cond:  cond,
 				Cases: cases,
-				Final: final,
 			}
 		}
 	}
