@@ -19,7 +19,7 @@ func mustReadSource(filename string) string {
 func mustRun(tokens []form.Token) {
 	ctx := el.Context{}.Reset()
 
-	var letExpr [][3]form.Form
+	var letBindings [][3]form.Form
 
 	var node1, node2, node3 form.Form
 	var err error
@@ -37,7 +37,7 @@ func mustRun(tokens []form.Token) {
 			if err != nil {
 				panic(err)
 			}
-			letExpr = append(letExpr, [3]form.Form{
+			letBindings = append(letBindings, [3]form.Form{
 				form.Name("_"), form.Name(":="), form.List{
 					form.Name("inspect"), node2,
 				},
@@ -52,12 +52,17 @@ func mustRun(tokens []form.Token) {
 		if err != nil {
 			panic(err)
 		}
-		letExpr = append(letExpr, [3]form.Form{
+		letBindings = append(letBindings, [3]form.Form{
 			node1, node2, node3,
 		})
 	}
 
-	
+	let := form.List{form.Name("let")}
+	for _, binding := range letBindings {
+		let = append(let, form.List(binding[:]))
+	}
+	let = append(let, form.Name("Unit_0"))
+
 }
 
 func main() {
