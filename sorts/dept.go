@@ -9,6 +9,7 @@ type Inductive interface {
 */
 
 // Dept - represent a type B(x) depends on Sort x
+// Dept is not a type/sort, it is a family of types indexed by A
 type Dept any // Lambda, Match (if we consider match is kinda function) match (x: A) | case ...
 
 /*
