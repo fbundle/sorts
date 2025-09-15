@@ -16,7 +16,7 @@ The vision is to iteratively extend this core into a dependable, minimal kernel 
 
 ```bash
 cat example.el | go run cmd/el/main.go
-python cmd/elt/elt.py example.py | go run cmd/el/main.go
+python cmd/elt/elt.py example.elt | go run cmd/el/main.go
 ```
 
 ## Project layout
