@@ -20,14 +20,24 @@ func mustReadSource(filename string) string {
 func mustRun(tokens []form.Token) {
 	ctx := el.Context{}.Reset()
 
-	var node form.Form
+	var letExpr [][3]form.Form
+
+	var node1, node2, node3 form.Form
 	var err error
 	for len(tokens) > 0 {
-		tokens, node, err = form_processor.Parse(tokens)
+		tokens, node1, err = form_processor.Parse(tokens)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(ctx.ToString(node))
+		name, ok := node1.(form.Name)
+		if !ok {
+			panic("node1 must be name")
+		}
+		if name == "@inspect" {
+			continue
+		}
+
+		fmt.Println(ctx.ToString(node1))
 	}
 }
 

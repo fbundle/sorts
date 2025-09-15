@@ -32,4 +32,5 @@ type Context interface {
 	Universe
 	Compiler
 	Frame
+	ToString(o any) string
 }

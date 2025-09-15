@@ -160,7 +160,7 @@ type Match struct {
 	Cases []MatchCase
 }
 
-func ListCompileMatch(Arrow form.Name, DefaultConstr form.Name) func(H form.Name) ListCompileFunc {
+func ListCompileMatch(Arrow form.Name, DefaultConstr form.Name) func(Head form.Name) ListCompileFunc {
 	return func(Head form.Name) ListCompileFunc {
 		return func(ctx Context, list form.List) Sort {
 			err := fmt.Errorf("match must be (%s cond (%s pattern1 value1) ... (%s patternN valueN))", Head, Arrow, Arrow)
@@ -196,5 +196,34 @@ func ListCompileMatch(Arrow form.Name, DefaultConstr form.Name) func(H form.Name
 				Cases: cases,
 			}
 		}
+	}
+}
+
+type Inspect struct {
+	Atom
+	Head  form.Name
+	Value Sort
+}
+
+func ListCompileInspect(Head form.Name) ListCompileFunc {
+	return func(ctx Context, list form.List) Sort {
+		err := fmt.Errorf("inspect must be (%s value)")
+		mustMatchHead(err, Head, list)
+		if len(list) != 2 {
+			panic(err)
+		}
+
+		value := ctx.Compile(list[1])
+
+		// do inspect
+		fmt.Println("inspect", ctx.ToString(value))
+
+		atom := ctx.NewTerm(list, ctx.Parent(value))
+		return Inspect{
+			Atom:  atom,
+			Head:  Head,
+			Value: value,
+		}
+
 	}
 }
