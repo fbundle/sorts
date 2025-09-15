@@ -1,5 +1,7 @@
 package sorts
 
+import "github.com/fbundle/sorts/form"
+
 // Inhabited - represents a Sort with at least one child
 // (true theorems have proofs)
 type Inhabited struct {
@@ -20,4 +22,5 @@ type Dept[T any] struct {
 // Inductive - inductive type
 type Inductive interface {
 	Sort
+	Iter(yield func(name form.Name, constr func([]Sort) Inductive) bool)
 }
