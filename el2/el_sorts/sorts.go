@@ -7,6 +7,8 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
+var TypeCheckErr = fmt.Errorf("type_check")
+
 type ListCompileFunc = func(r Context, list form.List) Sort
 
 // Beta - beta reduction
@@ -30,7 +32,11 @@ func ListCompileBeta(ctx Context, list form.List) Sort {
 	if !ok {
 		panic(err)
 	}
-	mustTermOf(ctx, arg, arrow.A)
+
+	if !ctx.LessEqual(ctx.Parent(arg), arrow.A) {
+		panic(TypeCheckErr)
+	}
+
 	atom := ctx.NewTerm(list, arrow.B)
 
 	return Beta{

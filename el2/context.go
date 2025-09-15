@@ -34,10 +34,10 @@ func (ctx Context) Reset() Context {
 		WithListCompiler("->", sortCompilerToAlmostSortCompiler(sorts.ListCompileArrow)).
 		WithListCompiler("⊕", sortCompilerToAlmostSortCompiler(sorts.ListCompileSum)).
 		WithListCompiler("⊗", sortCompilerToAlmostSortCompiler(sorts.ListCompileProd)).
-		WithListCompiler("lambda", el_sorts.ListCompileLambda).
+		WithListCompiler("=>", el_sorts.ListCompileLambda(":")).
 		WithListCompiler("inh", el_sorts.ListCompileInhabitant).
-		WithListCompiler("let", el_sorts.ListCompileLet).
-		WithListCompiler("match", el_sorts.ListCompileMatch("exact")).
+		WithListCompiler("let", el_sorts.ListCompileLet(":=")).
+		WithListCompiler("match", el_sorts.ListCompileMatch("=>")).
 		finalize()
 }
 
