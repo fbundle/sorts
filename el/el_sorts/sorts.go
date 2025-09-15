@@ -3,6 +3,7 @@ package el_sorts
 import (
 	"fmt"
 
+	"github.com/fbundle/sorts/el/el_flags"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
 )
@@ -21,6 +22,15 @@ type Beta struct {
 	Atom
 	Cmd Sort
 	Arg Sort
+}
+
+func (b Beta) Reduce() Sort {
+	if el_flags.GetMode() != el_flags.ModeEval{
+		return b
+	}
+	
+	// TODO
+	return b
 }
 
 func ListCompileBeta(ctx Context, list form.List) Sort {
@@ -44,11 +54,11 @@ func ListCompileBeta(ctx Context, list form.List) Sort {
 
 	atom := ctx.NewTerm(list, arrow.B)
 
-	return Beta{
+	return (Beta{
 		Atom: atom,
 		Cmd:  cmd,
 		Arg:  arg,
-	}
+	}).Reduce()
 }
 
 // Lambda - lambda abstraction
