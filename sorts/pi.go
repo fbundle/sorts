@@ -8,7 +8,7 @@ type Pi struct {
 }
 
 func (s Pi) sortAttr(a SortAttr) sortAttr {
-	x := A // TODO - some term of A
+	x := s.A // TODO - some term of A
 
 	return sortAttr{
 		form:  List{s.H, a.Form(x), a.Form(s.B)},

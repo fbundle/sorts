@@ -16,3 +16,8 @@ type Dept[T any] struct {
 	Form  Form
 	Apply func(T) Sort // take x, return B(x)
 }
+
+// Inductive - inductive type
+type Inductive interface {
+	Sort
+}
