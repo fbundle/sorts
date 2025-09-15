@@ -1,7 +1,7 @@
-package el2
+package el
 
 import (
-	"github.com/fbundle/sorts/el2/el_sorts"
+	"github.com/fbundle/sorts/el/el_sorts"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
 )

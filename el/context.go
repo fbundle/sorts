@@ -1,10 +1,10 @@
-package el2
+package el
 
 import (
 	"fmt"
 
-	"github.com/fbundle/sorts/el2/el_sorts"
-	"github.com/fbundle/sorts/el2/universe"
+	"github.com/fbundle/sorts/el/el_sorts"
+	"github.com/fbundle/sorts/el/universe"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
