@@ -117,7 +117,7 @@ func ListCompileLet(Assign form.Name) func(Head form.Name) ListCompileFunc {
 		return func(ctx Context, list form.List) Sort {
 			err := fmt.Errorf("let must be (%s (%s name1 value1) ... (%s nameN valueN) final)", Head, Assign, Assign)
 			mustMatchHead(err, Head, list)
-			if len(list) < 2 || not(len(list)%2 == 0) {
+			if len(list) < 2 {
 				panic(err)
 			}
 
@@ -148,46 +148,25 @@ type Match struct {
 	Atom
 	Head  form.Name
 	Cond  Sort
-	Cases []MathCase
+	Cases []MatchCase
 	Final Sort
 }
 
-func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
+func ListCompileMatch(Arrow form.Name) func(H form.Name) ListCompileFunc {
 	return func(Head form.Name) ListCompileFunc {
 		return func(ctx Context, list form.List) Sort {
-			err := fmt.Errorf("match must be (%s cond (pattern1 value1) ... patternN valueN final)", Head)
+			err := fmt.Errorf("match must be (%s cond (%s pattern1 value1) ... (%s patternN valueN) final)", Head, Arrow, Arrow)
+			mustMatchHead(err, Head, list)
 
-			mustMatchHead(Head, list)
-			if len(list) < 3 || not(len(list)%2 == 1) {
-				panic(fmt.Errorf("match must be (%s cond pattern1 value1 ... patternN valueN final)", Head))
+			if len(list) < 3 {
+				panic(err)
 			}
 			condForm := list[1]
 			cond := ctx.Compile(condForm)
 
-			cases := make([]MathCase, 0)
-			for i := 2; i < len(list)-1; i += 2 {
-				patternForm, valueForm := list[i], list[i+1]
-
-				var pattern any
-				var value Sort
-				if patternForm, ok := patternForm.(form.List); ok && patternForm[0] == Exact {
-					if len(patternForm) != 2 {
-						panic(fmt.Errorf("exact match must be (%s form)", Exact))
-					}
-					// exact match
-					pattern = ctx.Compile(patternForm[1])
-					value = ctx.Compile(valueForm)
-				} else {
-					// pattern match
-					pattern = patternForm[1]
-					// suppose the pattern is (succ z) - how to set z into nextCtx to compile valueForm?
-					panic(fmt.Errorf("pattern matching is not implemented for now"))
-				}
-
-				cases = append(cases, MathCase{
-					Pattern: pattern,
-					Value:   value,
-				})
+			cases := make([]MatchCase, 0)
+			for i := 2; i < len(list)-1; i++ {
+				cases = append(cases, ParseMatchCase(Arrow, ctx.Parent(cond))())
 			}
 
 			finalForm := list[len(list)-1]

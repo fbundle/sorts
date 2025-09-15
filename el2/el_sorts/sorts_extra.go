@@ -81,14 +81,15 @@ func ParseNameBinding(Head form.Name) func(ctx Context, list form.List) NameBind
 	}
 }
 
-type MathCase struct {
-	Constr form.Name
-	Vars   []form.Name
-	Value  Sort
+type MatchCase struct {
+	CondType Sort
+	Constr   form.Name
+	Vars     []form.Name
+	Value    Sort
 }
 
-func ParseMatchCase(Head form.Name, CondType Sort) func(ctx Context, list form.List) MathCase {
-	return func(ctx Context, list form.List) MathCase {
+func ParseMatchCase(Head form.Name, CondType Sort) func(ctx Context, list form.List) MatchCase {
+	return func(ctx Context, list form.List) MatchCase {
 		err := fmt.Errorf("match_lambda must be (%s (constr variable) value)", Head)
 		mustMatchHead(err, Head, list)
 		if len(list) != 3 {
@@ -101,13 +102,16 @@ func ParseMatchCase(Head form.Name, CondType Sort) func(ctx Context, list form.L
 
 		vars := make([]form.Name, 0)
 		for i := 1; i < len(patternList); i++ {
-			vars = append(vars, mustName(patternList[i]))
+			vars = append(vars, mustName(err, patternList[i]))
 		}
 
-		return MathCase{
-			Constr: mustName(err, patternList[0]),
-			Vars:   vars,
-			Value:  ctx.Compile(list[2]),
+		// TODO - check if CondType is inductive and can be destructed into pattern
+		// maybe add a destruction function so that it can work like a lambda
+		return MatchCase{
+			CondType: CondType,
+			Constr:   mustName(err, patternList[0]),
+			Vars:     vars,
+			Value:    ctx.Compile(list[2]),
 		}
 	}
 }
