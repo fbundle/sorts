@@ -11,6 +11,11 @@ var TypeCheckErr = fmt.Errorf("type_check")
 
 type ListCompileFunc = func(r Context, list form.List) Sort
 
+type ReducibleSort interface {
+	Sort
+	Reduce() Sort
+}
+
 // Beta - beta reduction
 type Beta struct {
 	Atom
