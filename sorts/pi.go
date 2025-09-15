@@ -3,13 +3,15 @@ package sorts
 // Pi - dependent function type Π_{x: A} B(x)
 type Pi struct {
 	H Name
-	X Sort       // some (x:A)
+	A Sort
 	B Dept[Sort] // must have the same level for every x: A
 }
 
 func (s Pi) sortAttr(a SortAttr) sortAttr {
+	x := A // TODO - some term of A
+
 	return sortAttr{
-		form:  List{s.H, a.Form(s.X), a.Form(s.B)},
-		level: max(a.Level(a.Parent(s.X)), a.Level(s.B.Apply(s.X))),
+		form:  List{s.H, a.Form(x), a.Form(s.B)},
+		level: max(a.Level(a.Parent(x)), a.Level(s.B.Apply(x))),
 	}
 }
