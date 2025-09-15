@@ -1,4 +1,5 @@
 # simplified syntax using parser trick
+# @inspect is a macro
 
 Nil := (inh Any_2)
 nil := (inh Nil)
