@@ -1,3 +1,5 @@
+# simplified syntax using parser trick
+
 Nil := (inh Any_2)
 nil := (inh Nil)
 Bool := (inh Any_2)
@@ -19,12 +21,12 @@ x := {n1 ⊗ n2 ⊗ n3 ⊗ n4}
 is_pos := {{x: Nat} => (match x
    {(succ z)   => True}
    {n0         => False}
-}
+)}
 
 must_pos := {{x: Nat} => (match x
    {(succ z)   => x}
    {n0         => nil}
-}
+)}
 
 @inspect is_pos                    # resolved type as Nat -> Bool
 @inspect must_pos                  # resolved type as Nat -> (Nat + Nil)
