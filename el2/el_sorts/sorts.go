@@ -17,8 +17,9 @@ type Beta struct {
 }
 
 func ListCompileBeta(ctx Context, list form.List) Sort {
+	err := fmt.Errorf("beta must be (cmd arg)")
 	if not(len(list) == 2) {
-		panic(fmt.Errorf("beta must be (cmd arg)"))
+		panic(err)
 	}
 
 	cmd := ctx.Compile(list[0])
@@ -27,7 +28,7 @@ func ListCompileBeta(ctx Context, list form.List) Sort {
 	// type check
 	arrow, ok := ctx.Parent(cmd).(sorts.Arrow)
 	if !ok {
-		panic(TypeErr)
+		panic(err)
 	}
 	mustTermOf(ctx, arg, arrow.A)
 	atom := ctx.NewTerm(list, arrow.B)
