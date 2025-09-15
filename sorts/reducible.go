@@ -256,3 +256,28 @@ func ListCompileInspect(Head form.Name) ListCompileFunc {
 
 	}
 }
+
+type Type struct {
+	Sort
+	Head  form.Name
+	Value Sort
+}
+
+func ListCompileType(Head form.Name) ListCompileFunc {
+	return func(ctx Context, list form.List) Sort {
+		err := fmt.Errorf("type must be (%s value)", Head)
+		mustMatchHead(err, Head, list)
+		if len(list) != 2 {
+			panic(err)
+		}
+
+		value := ctx.Compile(list[1])
+
+		return Type{
+			Sort:  ctx.Parent(value),
+			Head:  Head,
+			Value: value,
+		}
+
+	}
+}

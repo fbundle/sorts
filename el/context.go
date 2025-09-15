@@ -45,6 +45,7 @@ func (ctx Context) Reset() Context {
 		WithListCompiler("let", sorts.ListCompileLet(":=")).
 		WithListCompiler("match", sorts.ListCompileMatch("=>", "_")).
 		WithListCompiler("inspect", sorts.ListCompileInspect).
+		WithListCompiler("type", sorts.ListCompileType).
 		finalize()
 }
 
