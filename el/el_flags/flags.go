@@ -5,9 +5,9 @@ import "os"
 type Mode string
 
 const (
-	ModeComp  Mode = "COMP"
-	ModeEval  Mode = "EVAL"
-	ModeDebug Mode = "DEBUG"
+	ModeComp  Mode = "COMP"  // type checking
+	ModeEval  Mode = "EVAL"  // type checking and evaluation
+	ModeDebug Mode = "DEBUG" // type checking and print everything
 )
 
 func GetMode() Mode {
