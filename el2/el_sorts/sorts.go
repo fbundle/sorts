@@ -43,56 +43,43 @@ func ListCompileBeta(ctx Context, list form.List) Sort {
 // Lambda - lambda abstraction
 type Lambda struct {
 	Atom
-	Head   form.Name
-	Params []LambdaParam
-	Body   Sort
+	Head  form.Name
+	Param TypeAnnot
+	Body  Sort
 }
 
-func ListCompileLambda(Head form.Name) ListCompileFunc {
-	return func(ctx Context, list form.List) Sort {
-		mustMatchHead(Head, list)
-		if len(list) < 2 {
-			panic(fmt.Errorf("lambda must be (%s param1 type1 ... paramN typeN body)", Head))
-		}
+func ListCompileLambda(TypeAnnot form.Name) func(Head form.Name) ListCompileFunc {
+	return func(Head form.Name) ListCompileFunc {
+		return func(ctx Context, list form.List) Sort {
+			err := fmt.Errorf("lambda must be (%s (%s param type) body)", Head, TypeAnnot)
+			mustMatchHead(err, Head, list)
+			if len(list) != 3 {
+				panic(err)
+			}
 
-		params := make([]LambdaParam, 0)
-		for i := 1; i < len(list)-1; i += 2 {
-			paramForm, paramTypeForm := list[i], list[i+1]
-			param, ok := paramForm.(form.Name)
+			typeAnnoteList, ok := list[1].(form.List)
 			if !ok {
-				panic(TypeErr)
+				panic(err)
 			}
-			paramType := ctx.Compile(paramTypeForm)
-			params = append(params, LambdaParam{
-				Name: param,
-				Type: paramType,
-			})
-		}
+			param := ListParseTypeAnnot(TypeAnnot)(ctx, typeAnnoteList)
 
-		// suppose params is of the correct type, compile body
-		for _, param := range params {
 			ctx = ctx.Set(param.Name, ctx.NewTerm(param.Name, param.Type))
-		}
+			bodyForm := list[len(list)-1]
+			body := ctx.Compile(bodyForm)
 
-		bodyForm := list[len(list)-1]
-		body := ctx.Compile(bodyForm)
+			atom := ctx.NewTerm(list, sorts.Arrow{
+				A: param.Type,
+				B: ctx.Parent(body),
+			})
 
-		arrow := ctx.Parent(body)
-		for i := len(params) - 1; i >= 0; i-- {
-			arrow = sorts.Arrow{
-				A: params[i].Type,
-				B: arrow,
+			return Lambda{
+				Atom:  atom,
+				Head:  Head,
+				Param: param,
+				Body:  body,
 			}
-		}
-		atom := ctx.NewTerm(list, arrow)
 
-		return Lambda{
-			Atom:   atom,
-			Head:   Head,
-			Params: params,
-			Body:   body,
 		}
-
 	}
 }
 
@@ -105,9 +92,10 @@ type Inhabitant struct {
 
 func ListCompileInhabitant(Head form.Name) ListCompileFunc {
 	return func(ctx Context, list form.List) Sort {
-		mustMatchHead(Head, list)
+		err := fmt.Errorf("inhabitant must be (%s type)", Head)
+		mustMatchHead(err, Head, list)
 		if len(list) < 2 {
-			panic(fmt.Errorf("inhabitant must be (%s type)", Head))
+			panic(err)
 		}
 		parentForm := list[1]
 		parent := ctx.Compile(parentForm)
@@ -131,9 +119,10 @@ type Let struct {
 
 func ListCompileLet(Head form.Name) ListCompileFunc {
 	return func(ctx Context, list form.List) Sort {
-		mustMatchHead(Head, list)
+		err := fmt.Errorf("let must be (%s name1 value1 ... nameN valueN final)", Head)
+		mustMatchHead(err, Head, list)
 		if len(list) < 2 || not(len(list)%2 == 0) {
-			panic(fmt.Errorf("let must be (%s name1 value1 ... nameN valueN final)", Head))
+			panic(err)
 		}
 
 		bindings := make([]LetBinding, 0)
