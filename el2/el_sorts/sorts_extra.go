@@ -2,6 +2,15 @@ package el_sorts
 
 import "github.com/fbundle/sorts/form"
 
+type TypeAnnot struct {
+	Name form.Name
+	Type Sort
+}
+
+func ListParseTypeAnnot(ctx Context, args form.List) TypeAnnot {
+
+}
+
 type LambdaParam struct {
 	Name form.Name
 	Type Sort
