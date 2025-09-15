@@ -33,3 +33,5 @@ let
 
    print is_pos                    # resolved type as Nat -> Bool
    print must_pos                  # resolved type as Nat -> (Nat + Nil)
+
+   Unit_0
