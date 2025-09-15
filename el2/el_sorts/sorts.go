@@ -123,7 +123,9 @@ func ListCompileLet(Assign form.Name) func(Head form.Name) ListCompileFunc {
 
 			bindings := make([]NameBinding, 0)
 			for i := 1; i < len(list)-1; i++ {
-				binding := ParseNameBinding(Assign)(ctx, mustList(err, list[i]))
+				binding := ParseNameBinding(Assign)(
+					ctx, mustList(err, list[i]),
+				)
 				bindings = append(bindings, binding)
 
 				// binding
@@ -166,7 +168,9 @@ func ListCompileMatch(Arrow form.Name) func(H form.Name) ListCompileFunc {
 
 			cases := make([]MatchCase, 0)
 			for i := 2; i < len(list)-1; i++ {
-				cases = append(cases, ParseMatchCase(Arrow, ctx.Parent(cond))())
+				cases = append(cases, ParseMatchCase(Arrow, ctx.Parent(cond))(
+					ctx, mustList(err, list[i]),
+				))
 			}
 
 			finalForm := list[len(list)-1]
