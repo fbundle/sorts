@@ -1,21 +1,25 @@
 (let
-    Nil (inh Any_2)
-    nil (inh Nil)
-    Bool (inh Any_2)
-    True (inh Bool)
-    False (inh Bool)
+    {Nil := (inh Any_2)}
+    {nil := (inh Nil)}
+    {Bool := (inh Any_2)}
+    {True := (inh Bool)}
+    {False := (inh Bool)}
 
-    Nat (inh Any_2)
-    n0 (inh Nat)
-    succ (inh {Nat -> Nat})
+    {Nat := (inh Any_2)}
+    {n0 := (inh Nat)}
+    {succ := (inh {Nat -> Nat})}
 
-    n1 (succ n0)
-    n2 (succ n1)
-    n3 (succ n2)
-    n4 (succ n3)
+    {n1 := (succ n0)}
+    {n2 := (succ n1)}
+    {n3 := (succ n2)}
+    {n4 := (succ n3)}
 
-    x {n1 ⊕ n2 ⊕ n3}
-    x {n1 ⊗ n2 ⊗ n3 ⊗ n4}
+    {x := {n1 ⊕ n2 ⊕ n3}}
+    {x := {n1 ⊗ n2 ⊗ n3 ⊗ n4}}
+
+    is_two {{x: Nat} => (match x
+        
+    )}
 
     is_two (lambda x Nat (match x
         (exact n2)   True
