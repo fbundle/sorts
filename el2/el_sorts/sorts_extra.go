@@ -14,6 +14,13 @@ func mustName(err error, node form.Form) form.Name {
 	}
 	return name
 }
+func mustList(err error, node form.Form) form.List {
+	list, ok := node.(form.List)
+	if !ok {
+		panic(err)
+	}
+	return list
+}
 
 func mustMatchHead(err error, Head form.Name, list form.List) {
 	if len(list) == 0 || Head != list[0] {
@@ -74,29 +81,28 @@ func ParseNameBinding(Head form.Name) func(ctx Context, list form.List) NameBind
 	}
 }
 
-type MatchLambda struct {
-	Pattern any // Union[form.Form, Sort] - pattern matching vs exact matching
-	Value   Sort
+type MathCase struct {
+	Constr   form.Name
+	Variable form.Name
+	Value    Sort
 }
 
-func ParseMatchLambda(Head form.Name, CondType Sort) func(ctx Context, list form.List) MatchLambda {
-	return func(ctx Context, list form.List) MatchLambda {
-		err := fmt.Errorf("match_lambda must be (%s (constr var) value)", Head)
+func ParseMatchCase(Head form.Name, CondType Sort) func(ctx Context, list form.List) MathCase {
+	return func(ctx Context, list form.List) MathCase {
+		err := fmt.Errorf("match_lambda must be (%s (constr variable) value)", Head)
 		mustMatchHead(err, Head, list)
 		if len(list) != 3 {
 			panic(err)
 		}
+		patternList := mustList(err, list[1])
+		if len(patternList) != 2 {
+			panic(err)
+		}
 
-	}
-}
-
-func (mc MatchLambda) form(ctx Context) (form.Form, form.Form) {
-	switch pattern := mc.Pattern.(type) {
-	case form.Form: // pattern matching
-		return pattern, ctx.Form(mc.Value)
-	case Sort: // exact matching
-		return ctx.Form(pattern), ctx.Form(mc.Value)
-	default:
-		panic(TypeErr)
+		return MathCase{
+			Constr:   mustName(err, patternList[0]),
+			Variable: mustName(err, patternList[1]),
+			Value:    ctx.Compile(list[2]),
+		}
 	}
 }

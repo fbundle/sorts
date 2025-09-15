@@ -56,11 +56,7 @@ func ListCompileLambda(TypeAnnot form.Name) func(Head form.Name) ListCompileFunc
 				panic(err)
 			}
 
-			typeAnnoteList, ok := list[1].(form.List)
-			if !ok {
-				panic(err)
-			}
-			param := ListParseTypeAnnot(TypeAnnot)(ctx, typeAnnoteList)
+			param := ListParseTypeAnnot(TypeAnnot)(ctx, mustList(err, list[1]))
 
 			ctx = ctx.Set(param.Name, ctx.NewTerm(param.Name, param.Type))
 			bodyForm := list[len(list)-1]
@@ -127,11 +123,7 @@ func ListCompileLet(Assign form.Name) func(Head form.Name) ListCompileFunc {
 
 			bindings := make([]NameBinding, 0)
 			for i := 1; i < len(list)-1; i++ {
-				nameBindingList, ok := list[i].(form.List)
-				if !ok {
-					panic(err)
-				}
-				binding := ParseNameBinding(Assign)(ctx, nameBindingList)
+				binding := ParseNameBinding(Assign)(ctx, mustList(err, list[i]))
 				bindings = append(bindings, binding)
 
 				// binding
@@ -156,7 +148,7 @@ type Match struct {
 	Atom
 	Head  form.Name
 	Cond  Sort
-	Cases []MatchLambda
+	Cases []MathCase
 	Final Sort
 }
 
@@ -170,7 +162,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 			condForm := list[1]
 			cond := ctx.Compile(condForm)
 
-			cases := make([]MatchLambda, 0)
+			cases := make([]MathCase, 0)
 			for i := 2; i < len(list)-1; i += 2 {
 				patternForm, valueForm := list[i], list[i+1]
 
@@ -190,7 +182,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 					panic(fmt.Errorf("pattern matching is not implemented for now"))
 				}
 
-				cases = append(cases, MatchLambda{
+				cases = append(cases, MathCase{
 					Pattern: pattern,
 					Value:   value,
 				})
