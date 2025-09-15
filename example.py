@@ -27,7 +27,7 @@ let
 
    must_pos = lambda (x: Nat)
       match x with
-         | succ z    => True
+         | succ z    => x
          | n0        => nil
 
 

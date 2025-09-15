@@ -7,6 +7,22 @@ type Dept struct {
 }
 
 /*
+must_pos = lambda (x: Nat)
+  match x with
+	 | succ z    => x
+	 | n0        => nil
+
+must_pos_type = lambda (x: Nat)
+	match x with
+	 | succ z    => Nat
+	 | n0        => Nil
+
+in this example must_pos is of type Π_{x: Nat} must_pos_type(x)
+from type checking, we know that this is a subtype of Nat -> (Nat + Nil)
+
+*/
+
+/*
 // Inductive - inductive type
 type Inductive interface {
 	Sort
