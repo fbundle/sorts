@@ -2,7 +2,6 @@ package el_sorts
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/sorts"
@@ -113,54 +112,42 @@ func ListCompileInhabitant(Head form.Name) ListCompileFunc {
 type Let struct {
 	Atom
 	Head     form.Name
-	Bindings []LetBinding
+	Bindings []NameBinding
 	Final    Sort
 }
 
-func ListCompileLet(Head form.Name) ListCompileFunc {
-	return func(ctx Context, list form.List) Sort {
-		err := fmt.Errorf("let must be (%s name1 value1 ... nameN valueN final)", Head)
-		mustMatchHead(err, Head, list)
-		if len(list) < 2 || not(len(list)%2 == 0) {
-			panic(err)
-		}
-
-		bindings := make([]LetBinding, 0)
-		for i := 1; i < len(list)-1; i += 2 {
-			nameForm, valueForm := list[i], list[i+1]
-
-			name, ok := nameForm.(form.Name)
-			if !ok {
-				panic(TypeErr)
+func ListCompileLet(Assign form.Name) func(Head form.Name) ListCompileFunc {
+	return func(Head form.Name) ListCompileFunc {
+		return func(ctx Context, list form.List) Sort {
+			err := fmt.Errorf("let must be (%s (%s name1 value1) ... (%s nameN valueN) final)", Head, Assign, Assign)
+			mustMatchHead(err, Head, list)
+			if len(list) < 2 || not(len(list)%2 == 0) {
+				panic(err)
 			}
-			value := ctx.Compile(valueForm)
-			if v, ok := value.(Inhabitant); ok {
-				// rename inhabitant
-				value = Inhabitant{
-					Atom: ctx.NewTerm(name, ctx.Parent(v.Atom)),
-					Head: v.Head,
-					Name: name,
+
+			bindings := make([]NameBinding, 0)
+			for i := 1; i < len(list)-1; i++ {
+				nameBindingList, ok := list[i].(form.List)
+				if !ok {
+					panic(err)
 				}
-				log.Printf("rename inhabitant %s -> %s\n", v.Name, name)
+				binding := ParseNameBinding(Assign)(ctx, nameBindingList)
+				bindings = append(bindings, binding)
+
+				// binding
+				ctx = ctx.Set(binding.Name, binding.Value)
 			}
 
-			bindings = append(bindings, LetBinding{
-				Name:  name,
-				Value: value,
-			})
+			finalForm := list[len(list)-1]
+			final := ctx.Compile(finalForm)
+			atom := ctx.NewTerm(list, ctx.Parent(final))
 
-			ctx = ctx.Set(name, value) // binding
-		}
-
-		finalForm := list[len(list)-1]
-		final := ctx.Compile(finalForm)
-		atom := ctx.NewTerm(list, ctx.Parent(final))
-
-		return Let{
-			Atom:     atom,
-			Head:     Head,
-			Bindings: bindings,
-			Final:    final,
+			return Let{
+				Atom:     atom,
+				Head:     Head,
+				Bindings: bindings,
+				Final:    final,
+			}
 		}
 	}
 }
@@ -169,7 +156,7 @@ type Match struct {
 	Atom
 	Head  form.Name
 	Cond  Sort
-	Cases []MatchCase
+	Cases []MatchLambda
 	Final Sort
 }
 
@@ -183,7 +170,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 			condForm := list[1]
 			cond := ctx.Compile(condForm)
 
-			cases := make([]MatchCase, 0)
+			cases := make([]MatchLambda, 0)
 			for i := 2; i < len(list)-1; i += 2 {
 				patternForm, valueForm := list[i], list[i+1]
 
@@ -203,7 +190,7 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 					panic(fmt.Errorf("pattern matching is not implemented for now"))
 				}
 
-				cases = append(cases, MatchCase{
+				cases = append(cases, MatchLambda{
 					Pattern: pattern,
 					Value:   value,
 				})
