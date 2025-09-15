@@ -45,15 +45,16 @@ func (s Pi) sortAttr(a SortAttr) sortAttr {
 /*
 must_pos = lambda (x: Nat)
   match x with
-	 | succ z    => (x ⊕ x)
-	 | n0        => (x ⊕ nil)
+	 | succ z    => (x ⊗ x)
+	 | n0        => (x ⊗ nil)
 
 must_pos_type = lambda (x: Nat)
 	match x with
-	 | succ z    => (Nat ⊕ Nat)
-	 | n0        => (Nat ⊕ Nil)
+	 | succ z    => (Nat ⊗ Nat)
+	 | n0        => (Nat ⊗ Nil)
 
 in this example, must_pos is of type Σ_{x: Nat} must_pos_type(x)
+from type checking we know that this is a subtype of (Nat ⊗ (Nat ⊕ Nil))
 */
 
 // Sigma - dependent pair type Σ_{x: A} B(x)
