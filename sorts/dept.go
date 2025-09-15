@@ -23,6 +23,6 @@ type Pi struct {
 
 func (s Pi) sortAttr(a SortAttr) sortAttr {
 	return sortAttr{
-		form: List{s.H, a.Form(x), a.Form(s.B)},
+		form: List{s.H, a.Form(s.A), a.Form(s.B)},
 	}
 }
