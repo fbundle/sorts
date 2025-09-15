@@ -207,7 +207,7 @@ type Inspect struct {
 
 func ListCompileInspect(Head form.Name) ListCompileFunc {
 	return func(ctx Context, list form.List) Sort {
-		err := fmt.Errorf("inspect must be (%s value)")
+		err := fmt.Errorf("inspect must be (%s value)", Head)
 		mustMatchHead(err, Head, list)
 		if len(list) != 2 {
 			panic(err)
