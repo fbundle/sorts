@@ -6,6 +6,10 @@ import (
 	"github.com/fbundle/sorts/form"
 )
 
+type Form = form.Form
+type List = form.List
+type Name = form.Name
+
 func LeastUpperBound(a SortAttr, H form.Name, sorts ...Sort) Sort {
 	ss := make(map[int]Sort)
 	for i, s := range sorts {

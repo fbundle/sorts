@@ -31,7 +31,8 @@ let
          | n0        => nil
 
 
-   print is_pos                    # resolved type as Nat -> Bool
-   print must_pos                  # resolved type as Nat -> (Nat + Nil)
+   print is_pos                     # resolved type as       Nat -> Bool
+   print must_pos                   # resolved type as       Nat -> (Nat ⊕ Nil)
+                                    # better to resolve as   Π_{x: Nat} B(x) where B(x) = (type (must_pos x))
 
    Unit_0
