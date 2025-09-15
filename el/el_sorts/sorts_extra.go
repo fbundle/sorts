@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/fbundle/sorts/el/el_flags"
 	"github.com/fbundle/sorts/form"
 )
 
@@ -75,7 +76,9 @@ func ParseNameBinding(Head form.Name) func(ctx Context, list form.List) NameBind
 				Head: v.Head,
 				Name: binding.Name,
 			}
-			log.Printf("rename inhabitant %s -> %s\n", v.Name, binding.Name)
+			if el_flags.GetMode() == el_flags.ModeDebug {
+				log.Printf("rename inhabitant %s -> %s\n", v.Name, binding.Name)
+			}
 		}
 		return binding
 	}
