@@ -17,25 +17,18 @@
     {x := {n1 ⊕ n2 ⊕ n3}}
     {x := {n1 ⊗ n2 ⊗ n3 ⊗ n4}}
 
-    is_two {{x: Nat} => (match x
-        
-    )}
+    {is_pos := {{x: Nat} => (match x
+        {(succ z)   => True}
+        {n0         => False}
+    )}}
 
-    is_two (lambda x Nat (match x
-        (exact n2)   True
-                    False
-    ))
+    {must_pos := {{x: Nat} => (match x
+        {(succ z)   => x}
+        {n0         => nil}
+    )}}
 
-    must_two (lambda x Nat (match x         # TODO we can get away with compiling function by setting x to be Unit type
-        (exact n2)   n2
-                     nil
-    ))
-
-
-
-    # (is_two n2)
-    # is_two                  # resolved type as Nat -> Bool
-    must_two                  # resolved type as Nat -> (Nat + Nil)
+    # is_pos                  # resolved type as Nat -> Bool
+    must_pos                  # resolved type as Nat -> (Nat + Nil)
 )
 
 

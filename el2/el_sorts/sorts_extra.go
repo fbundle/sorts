@@ -95,6 +95,8 @@ func ParseMatchCase(Head form.Name, DefaultConstr form.Name, CondType Sort) func
 		if len(list) != 3 {
 			panic(err)
 		}
+
+		// TODO -  allow more sophisicated pattern, like (succ (succ x))
 		patternList := mustList(err, list[1])
 		if len(patternList) == 0 {
 			panic(err)
