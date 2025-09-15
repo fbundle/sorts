@@ -31,8 +31,6 @@ func GetForm(a SortAttr, s any) Form {
 	switch s := s.(type) {
 	case Sort:
 		return s.sortAttr(a).form
-	case Dept[Sort]:
-		return s.Form
 	default:
 		panic(TypeErr)
 	}
