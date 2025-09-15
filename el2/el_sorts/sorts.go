@@ -40,11 +40,6 @@ func ListCompileBeta(ctx Context, list form.List) Sort {
 	}
 }
 
-type LambdaParam struct {
-	Name form.Name
-	Type Sort
-}
-
 // Lambda - lambda abstraction
 type Lambda struct {
 	Atom
@@ -127,11 +122,6 @@ func ListCompileInhabitant(Head form.Name) ListCompileFunc {
 	}
 }
 
-type LetBinding struct {
-	Name  form.Name
-	Value Sort
-}
-
 type Let struct {
 	Atom
 	Head     form.Name
@@ -183,22 +173,6 @@ func ListCompileLet(Head form.Name) ListCompileFunc {
 			Bindings: bindings,
 			Final:    final,
 		}
-	}
-}
-
-type MatchCase struct {
-	Pattern any // Union[form.Form, Sort] - pattern matching vs exact matching
-	Value   Sort
-}
-
-func (mc MatchCase) form(ctx Context) (form.Form, form.Form) {
-	switch pattern := mc.Pattern.(type) {
-	case form.Form: // pattern matching
-		return pattern, ctx.Form(mc.Value)
-	case Sort: // exact matching
-		return ctx.Form(pattern), ctx.Form(mc.Value)
-	default:
-		panic(TypeErr)
 	}
 }
 
@@ -267,30 +241,6 @@ func ListCompileMatch(Exact form.Name) func(H form.Name) ListCompileFunc {
 				Cases: cases,
 				Final: final,
 			}
-		}
-	}
-}
-
-type Type struct {
-	Sort
-	Head  form.Name
-	Value Sort
-}
-
-func ListCompileType(Head form.Name) ListCompileFunc {
-	return func(ctx Context, list form.List) Sort {
-		mustMatchHead(Head, list)
-
-		if not(len(list) == 2) {
-			panic(fmt.Errorf("type must be (%s value)", Head))
-		}
-
-		value := ctx.Compile(list[1])
-		sort := ctx.Parent(value)
-		return Type{
-			Sort:  sort,
-			Head:  Head,
-			Value: value,
 		}
 	}
 }
