@@ -34,7 +34,9 @@ func (ctx Context) ToString(o any) string {
 }
 
 func logCompile(ctx Context, node form.Form, sort el_sorts.Sort) {
-	log.Printf("compiled %s from %s\n", ctx.ToString(sort), ctx.ToString(node))
+	if el_flags.GetMode() == el_flags.ModeDebug {
+		log.Printf("DEBUG: compiled %s from %s\n", ctx.ToString(sort), ctx.ToString(node))
+	}
 }
 
 func (ctx Context) Compile(node form.Form) el_sorts.Sort {
