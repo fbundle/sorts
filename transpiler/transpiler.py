@@ -24,6 +24,7 @@ def prepare(source: str) -> list[IndentedLine]:
     indented_lines: list[IndentedLine] = []
     for line in lines:
         line = line.split("#")[0] # remove comment
+        line = line.rstrip()
         if len(line.strip()) == 0:
             continue
 
@@ -60,6 +61,8 @@ def find_start_of_block(line: list[Token]) -> int | None:
     return None
 
 def parse(indentation_stack: list[int], code: list[Token], indented_lines: list[IndentedLine]) -> tuple[list[Token], list[IndentedLine]]:
+    print(f"call: {indentation_stack} {code} {indented_lines}")
+
     if len(indented_lines) == 0:
         code.append("_CLOSE_BLOCK")
         return code, indented_lines
@@ -80,7 +83,13 @@ def parse(indentation_stack: list[int], code: list[Token], indented_lines: list[
 
     curr_ind = indentation_stack[-1]
     next_ind = indented_lines[1].indentation
-    assert curr_ind == indented_lines[0].indentation, f"{indentation_stack} {indented_lines[0]} {code}"
+    assert curr_ind >= indented_lines[0].indentation
+    if curr_ind < indented_lines[0].indentation:
+        return parse(
+            indentation_stack=indentation_stack[:-1],
+            code=code,
+            indented_lines=indented_lines,
+        )
     
     
     if curr_ind == next_ind:
@@ -89,6 +98,15 @@ def parse(indentation_stack: list[int], code: list[Token], indented_lines: list[
 
         return parse(
             indentation_stack=indentation_stack,
+            code=code,
+            indented_lines=indented_lines[1:],
+        )
+    elif curr_ind > next_ind:
+        code.append("_LINE_BREAK")
+        code.extend(line)
+        code.append("_CLOSE_BLOCK")
+        return parse(
+            indentation_stack=indentation_stack[:-1],
             code=code,
             indented_lines=indented_lines[1:],
         )
@@ -117,15 +135,6 @@ def parse(indentation_stack: list[int], code: list[Token], indented_lines: list[
             code=code,
             indented_lines=indented_lines,
         )
-
-    elif curr_ind > next_ind:
-        code.append("_CLOSE_BLOCK")
-        return parse(
-            indentation_stack=indentation_stack[:-1],
-            code=code,
-            indented_lines=indented_lines,
-        )
-
     else:
         raise RuntimeError("unreachable")
 

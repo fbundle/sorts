@@ -300,7 +300,7 @@ class PythonToElispTranspiler:
 def main():
     """Main function to run the transpiler"""
     if len(sys.argv) != 3:
-        print("Usage: python transpiler_new.py input.py output.el")
+        print("Usage: python transpiler_fixed.py input.py output.el")
         sys.exit(1)
     
     input_file = sys.argv[1]
