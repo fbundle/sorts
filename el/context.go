@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/fbundle/sorts/el/el_sorts"
-	"github.com/fbundle/sorts/el/universe"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
+	"github.com/fbundle/sorts/universe"
 )
 
 var TypeErr = fmt.Errorf("type_error")
