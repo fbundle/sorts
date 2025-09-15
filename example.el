@@ -21,14 +21,14 @@
         {n0       => False}
     )}}
 
-    (:= must_pos (=> (: x Nat) (match x
-        (=> (succ z)   x)
-        (=> n0         nil)
-    )))
+    {must_pos := {{x : Nat} => (match x
+        {(succ z) => x}
+        {n0       => nil}
+    )}}
 
 
-    (:= _ (inspect is_pos))                    # resolved type as       Nat -> Bool
-    (:= _ (inspect must_pos))                  # resolved type as       Nat -> (Nat ⊕ Nil)
+    {_ := (inspect is_pos)}                    # resolved type as       Nat -> Bool
+    {_ := (inspect must_pos)}                  # resolved type as       Nat -> (Nat ⊕ Nil)
                                                # better to resolve as   Π_{x: Nat} B(x) where B(x) = (type (must_pos x))
 
     Unit_0
