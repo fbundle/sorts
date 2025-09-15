@@ -34,3 +34,4 @@ go.work.sum
 # user-defined
 *.txt
 *.swp
+ai_generated
