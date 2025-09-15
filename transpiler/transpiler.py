@@ -2,7 +2,7 @@ class IndentedLine(pydantic.BaseModel):
     indentation: int
     line: list[str]
 
-def main(source: str):
+def prepare(source: str) -> list[IndentedLine]:
     lines: list[str] = source.split("\n")
 
     indented_lines: list[IndentedLine] = []
@@ -20,7 +20,13 @@ def main(source: str):
             line=line.split(),
         ))
     
-    print(indented_lines)
+    return indented_lines
+
+
+
+
+def main(source: str):
+    indented_lines = prepare(source)
 
 
 
