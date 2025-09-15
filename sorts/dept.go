@@ -9,10 +9,7 @@ type Inductive interface {
 */
 
 // Dept - represent a type B(x) depends on Sort x
-type Dept struct {
-	Form   Form
-	Lambda Lambda
-}
+type Dept = Lambda
 
 /*
 must_pos = lambda (x: Nat)
