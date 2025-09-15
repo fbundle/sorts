@@ -21,6 +21,11 @@ type Context struct {
 	mode                sorts.Mode
 }
 
+func (ctx Context) WithMode(mode sorts.Mode) Context {
+	ctx.mode = mode
+	return ctx
+}
+
 func (ctx Context) Reset() Context {
 	return Context{
 		frame: ordered_map.OrderedMap[form.Name, sorts.Sort]{},

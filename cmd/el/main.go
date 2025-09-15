@@ -8,6 +8,7 @@ import (
 	"github.com/fbundle/sorts/el"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
+	"github.com/fbundle/sorts/sorts"
 )
 
 func mustReadSource() string {
@@ -19,7 +20,7 @@ func mustReadSource() string {
 }
 
 func mustRun(tokens []form.Token) {
-	ctx := el.Context{}.Reset()
+	ctx := el.Context{}.Reset().WithMode(sorts.ModeComp)
 
 	var node form.Form
 	var err error
