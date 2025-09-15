@@ -2,54 +2,45 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
-	"strings"
 
 	"github.com/fbundle/sorts/el"
 	"github.com/fbundle/sorts/form"
-	"github.com/fbundle/sorts/sorts"
+	"github.com/fbundle/sorts/form_processor"
 )
 
-func main() {
-	data, err := io.ReadAll(os.Stdin)
+func mustReadSource(filename string) string {
+	b, err := os.ReadFile(filename)
 	if err != nil {
-		fmt.Printf("Error reading stdin: %v\n", err)
-		os.Exit(1)
+		panic(err)
 	}
+	return string(b)
+}
 
-	input := string(data)
+func mustRun(tokens []form.Token) {
+	ctx := el.Context{}.Reset()
 
-	tokens := form.Tokenize(input)
-
-	frame := el.Frame{}
-
+	var node form.Form
+	var err error
 	for len(tokens) > 0 {
-		var formExpr form.Form
-		formExpr, tokens, err = form.Parse(tokens)
+		tokens, node, err = form_processor.Parse(tokens)
 		if err != nil {
-			fmt.Printf("Error parsing form: %v\n", err)
-			fmt.Println(tokens)
-			os.Exit(1)
+			panic(err)
 		}
-
-		expr, err := el.ParseForm(formExpr)
-		if err != nil {
-			fmt.Printf("Error parsing  expression: %v\n", err)
-			fmt.Printf("Next: %s\n", strings.Join(formExpr.Marshal(), " "))
-			os.Exit(1)
-		}
-
-		fmt.Println("expr\t", el.String(expr))
-
-		var sort sorts.Sort
-		var value el.Expr
-		frame, sort, value, err = expr.Resolve(frame)
-		if err != nil {
-			fmt.Printf("Error evaluating expression: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Println("sort\t", sorts.Name(sort))
-		fmt.Println("value\t", el.String(value))
+		sort := ctx.Compile(node)
+		fmt.Println(ctx.ToString(sort))
 	}
+}
+
+func main() {
+	args := os.Args[1:]
+	if len(args) == 0 {
+		panic("REPL mode not implemented")
+	}
+	if len(args) != 1 {
+		panic("usage: el2 <filename>")
+	}
+
+	tokens := form_processor.Tokenize(mustReadSource(args[0]))
+	mustRun(tokens)
 }

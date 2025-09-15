@@ -1,4 +1,4 @@
-package form
+package form_processor
 
 import (
 	"sort"
@@ -7,12 +7,12 @@ import (
 )
 
 // getSplitTokens returns the sorted list of split tokens
-func (parser Parser) getSplitTokens() []Token {
+func (p Processor) getSplitTokens() []Token {
 	splitTokenSet := make(map[Token]struct{})
-	for _, tok := range parser.Split {
+	for _, tok := range p.Split {
 		splitTokenSet[tok] = struct{}{}
 	}
-	for beg, block := range parser.Blocks {
+	for beg, block := range p.Blocks {
 		splitTokenSet[beg] = struct{}{}
 		splitTokenSet[block.End] = struct{}{}
 	}
@@ -60,9 +60,13 @@ const (
 	CharStringEscape Token = "\\"
 )
 
-func tokenize(str string, splitTokens []string, pList ...Preprocessor) []Token {
+func tokenize(str string,
+	splitTokens []string,
+	preProcessorList []Preprocessor,
+	postProcessorList []PostProcessor,
+) []Token {
 	// preprocess
-	for _, p := range pList {
+	for _, p := range preProcessorList {
 		str = p(str)
 	}
 
@@ -127,5 +131,10 @@ func tokenize(str string, splitTokens []string, pList ...Preprocessor) []Token {
 	}
 
 	flushBuffer()
+
+	for _, p := range postProcessorList {
+		tokens = p(tokens)
+	}
+
 	return tokens
 }

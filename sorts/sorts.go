@@ -1,52 +1,51 @@
 package sorts
 
-const (
-	defaultName  = "type"
-	InitialName  = "unit" // initial object
-	TerminalName = "any"  // terminal object
+import (
+	"fmt"
 )
 
-func Name(s any) string {
-	if s == nil {
-		return "nil"
-	}
-	switch s := s.(type) {
-	case Sort:
-		return s.sortAttr().name
-	case Dependent:
-		return s.Name
-	default:
-		panic("type_error")
-	}
-}
+var TypeErr = fmt.Errorf("type_err") // cannot recover
 
-func Level(s Sort) int {
-	return s.sortAttr().level
-}
-
-func Parent(s Sort) Sort {
-	return s.sortAttr().parent
-}
-
-func SubTypeOf(x Sort, y Sort) bool {
-	if Level(x) == Level(y) && (Name(x) == InitialName || Name(y) == TerminalName) {
-		return true
-	}
-
-	return x.sortAttr().lessEqual(y)
-}
-func TermOf(x Sort, X Sort) bool {
-	X1 := Parent(x)
-	return SubTypeOf(X1, X)
-}
-
-type Sort interface {
-	sortAttr() sortAttr
-}
+type ListCompileFunc = func(compile func(form Form) Sort, list List) Sort
 
 type sortAttr struct {
-	name      string              // every Sort is identified with a Name (string)
+	form      Form                // every Sort is identified with a Form
 	level     int                 // universe Level
 	parent    Sort                // (or Type) every Sort must have a Parent
 	lessEqual func(dst Sort) bool // a partial order on sorts (subtype)
+}
+
+type Sort interface {
+	sortAttr(a SortAttr) sortAttr
+}
+
+// SortAttr - an almost_sort that can provide sort information
+type SortAttr interface {
+	Form(s any) Form
+	Level(s Sort) int
+	Parent(s Sort) Sort
+	LessEqual(x Sort, y Sort) bool
+
+	LessEqualBasic(x Sort, y Sort) bool
+}
+
+func GetForm(a SortAttr, s any) Form {
+	switch s := s.(type) {
+	case Sort:
+		return s.sortAttr(a).form
+	case Dependent:
+		return s.Repr
+	default:
+		panic(TypeErr)
+	}
+}
+
+func GetLevel(a SortAttr, s Sort) int {
+	return s.sortAttr(a).level
+}
+func GetParent(a SortAttr, s Sort) Sort {
+	return s.sortAttr(a).parent
+}
+func GetLessEqual(a SortAttr, x Sort, y Sort) bool {
+	return x.sortAttr(a).lessEqual(y)
 }

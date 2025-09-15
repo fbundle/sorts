@@ -1,29 +1,42 @@
 package sorts
 
-import "fmt"
+import (
+	"fmt"
+)
 
-// Arrow - (A -> B)
+func ListCompileArrow(H Name) ListCompileFunc {
+	return func(compile func(form Form) Sort, list List) Sort {
+		if len(list) != 3 {
+			panic(fmt.Errorf("arrow must be %s domain codomain", H))
+		}
+		if list[0] != H {
+			panic(fmt.Errorf("arrow must be %s domain codomain", H))
+		}
+		return Arrow{H: H, A: compile(list[1]), B: compile(list[2])}
+	}
+}
+
 type Arrow struct {
+	H Name
 	A Sort
 	B Sort
 }
 
-func (s Arrow) sortAttr() sortAttr {
-	level := max(Level(s.A), Level(s.B))
+func (s Arrow) sortAttr(a SortAttr) sortAttr {
 	return sortAttr{
-		name:   fmt.Sprintf("%s -> %s", Name(s.A), Name(s.B)),
-		level:  level,
-		parent: Arrow{A: Parent(s.A), B: Parent(s.B)},
+		form:   List{s.H, a.Form(s.A), a.Form(s.B)},
+		level:  max(a.Level(s.A), a.Level(s.B)),
+		parent: Arrow{H: s.H, A: a.Parent(s.A), B: a.Parent(s.B)},
 		lessEqual: func(dst Sort) bool {
 			switch d := dst.(type) {
 			case Arrow:
 				// tricky: subtyping for Arrow is contravariant in domain, covariant in codomain
 				// {any -> unit} can be cast into {int -> unit}
 				// because {int} can be cast into {any}
-				if !SubTypeOf(d.A, s.A) {
+				if !a.LessEqual(d.A, s.A) {
 					return false
 				}
-				return SubTypeOf(s.B, d.B)
+				return a.LessEqual(s.B, d.B)
 			default:
 				return false
 			}
@@ -32,19 +45,23 @@ func (s Arrow) sortAttr() sortAttr {
 }
 
 // Elim - take (f: A -> B) (a: A) give (b: B) - Modus Ponens
-func (s Arrow) Elim(arrow Sort, a Sort) Sort {
-	mustTermOf(arrow, s)
-	mustTermOf(a, s.A)
-	return NewTerm(s.B, fmt.Sprintf("(%s %s)", Name(arrow), Name(a)))
+func (s Arrow) Elim(sa SortAttr, f Sort, a Sort) Sort {
+	must(sa).termOf(f, s)
+	must(sa).termOf(a, s.A)
+
+	// TODO - not hard code this
+	return NewAtomTerm(sa, List{Name("elim"), sa.Form(f), sa.Form(a)}, s.B)
 }
 
-// Intro - take a func that maps (a: A) into (b: B)  give (x: A -> B)
-func (s Arrow) Intro(name string, arrow func(Sort) Sort) Sort {
+// Intro - take a func that maps (a: A) into (b: B)  give (f: A -> B)
+func (s Arrow) Intro(sa SortAttr, name Name, f func(Sort) Sort) Sort {
 	// verify
-	a := NewTerm(s.A, "a")
-	b := arrow(a)
-	mustTermOf(b, s.B)
+	a := NewAtomTerm(sa, Name("a"), s.A)
+	b := f(a)
+
+	must(sa).termOf(b, s.B)
 
 	// verify ok
-	return NewTerm(s, name)
+
+	return NewAtomTerm(sa, name, s)
 }

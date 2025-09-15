@@ -3,16 +3,16 @@ package sorts
 // Inhabited - represents a Sort with at least one child
 // (true theorems have proofs)
 type Inhabited struct {
-	Sort  Sort // underlying sort
+	Sort  Sort // underlying el_sorts
 	Child Sort
 }
 
-func (s Inhabited) sortAttr(a SortAttr) sortAttr {
-	return s.Sort.sortAttr(a)
+func (s Inhabited) sortAttr() sortAttr {
+	return s.Sort.sortAttr()
 }
 
 // Dependent - represent a type B(x) depends on Sort x
 type Dependent struct {
-	Repr  Form
+	Name  string
 	Apply func(Sort) Sort // take x, return B(x)
 }

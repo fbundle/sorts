@@ -1,44 +1,29 @@
 package form
 
-import "strings"
-
 type Token = string
 
+// Form - Union[Name, List]
 type Form interface {
-	Marshal() []Token
+	Marshal(blockBeg Token, blockEnd Token) []Token
 	formAttr()
 }
+type Name string
+type List []Form
 
-type Term string
-
-func (t Term) Marshal() []Token {
+func (t Name) Marshal(blockBeg Token, blockEnd Token) []Token {
 	return []Token{Token(t)}
 }
 
-func (t Term) formAttr() {}
+func (t Name) formAttr() {}
 
-type List []Form
-
-const (
-	BlockBeg Token = "("
-	BlockEnd Token = ")"
-)
-
-func (n List) Marshal() []Token {
+func (n List) Marshal(blockBeg Token, blockEnd Token) []Token {
 	var output []Token
-	output = append(output, BlockBeg)
+	output = append(output, blockBeg)
 	for _, arg := range n {
-		output = append(output, arg.Marshal()...)
+		output = append(output, arg.Marshal(blockBeg, blockEnd)...)
 	}
-	output = append(output, BlockEnd)
+	output = append(output, blockEnd)
 	return output
 }
 
 func (n List) formAttr() {}
-
-func String(form Form) string {
-	s := strings.Join(form.Marshal(), " ")
-	s = strings.ReplaceAll(s, "( ", "(")
-	s = strings.ReplaceAll(s, " )", ")")
-	return s
-}

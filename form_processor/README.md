@@ -12,7 +12,7 @@ It supports both prefix lists, delimited by `(` `)`, and a lightweight infix blo
 ### Install
 
 ```bash
-go get github.com/fbundle/sorts/form
+go get github.com/fbundle/el_sorts/form_processor
 ```
 
 ---
@@ -72,7 +72,7 @@ API surface:
 // Tokenization
 func Tokenize(s string) []Token
 
-// Parsing one form from the front of a token slice
+// Parsing one form_processor from the front of a token slice
 func Parse(tokenList []Token) (Form, []Token, error)
 
 // AST nodes implement:

@@ -8,7 +8,7 @@ type Comparable[T any] interface {
 	Cmp(T) int
 }
 
-// implement persistent ordered map using weight balanced tree
+// implement persistent ordered map using weight balanced sorts.ind
 
 type node[T Comparable[T]] struct {
 	weight uint64
@@ -157,7 +157,7 @@ func del[T Comparable[T]](n *node[T], entryIn T) *node[T] {
 
 func getMinEntry[T Comparable[T]](n *node[T]) T {
 	if n == nil {
-		panic("min of nil tree")
+		panic("min of nil sorts.ind")
 	}
 	if n.left == nil {
 		return n.entry
@@ -167,7 +167,7 @@ func getMinEntry[T Comparable[T]](n *node[T]) T {
 
 func getMaxEntry[T Comparable[T]](n *node[T]) T {
 	if n == nil {
-		panic("max of nil tree")
+		panic("max of nil sorts.ind")
 	}
 	if n.right == nil {
 		return n.entry
