@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/fbundle/sorts/el"
@@ -9,8 +10,8 @@ import (
 	"github.com/fbundle/sorts/form_processor"
 )
 
-func mustReadSource(filename string) string {
-	b, err := os.ReadFile(filename)
+func mustReadSource() string {
+	b, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		panic(err)
 	}
@@ -33,14 +34,6 @@ func mustRun(tokens []form.Token) {
 }
 
 func main() {
-	args := os.Args[1:]
-	if len(args) == 0 {
-		panic("REPL mode not implemented")
-	}
-	if len(args) != 1 {
-		panic("usage: el2 <filename>")
-	}
-
-	tokens := form_processor.Tokenize(mustReadSource(args[0]))
+	tokens := form_processor.Tokenize(mustReadSource())
 	mustRun(tokens)
 }

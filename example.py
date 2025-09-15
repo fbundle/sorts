@@ -1,5 +1,5 @@
 # python-like syntax using transpiler
-# start of block patterns: let, match, (name:type) =>, (
+# start of block patterns: let, match, lambda, and (
 
 let
    Nil = inh Any_2
