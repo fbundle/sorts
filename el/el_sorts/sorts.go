@@ -25,10 +25,10 @@ type Beta struct {
 }
 
 func (b Beta) Reduce() Sort {
-	if el_flags.GetMode() != el_flags.ModeEval{
+	if el_flags.GetMode() != el_flags.ModeEval {
 		return b
 	}
-	
+
 	// TODO
 	return b
 }
@@ -134,6 +134,15 @@ type Let struct {
 	Final    Sort
 }
 
+func (l Let) Reduce() Sort {
+	if el_flags.GetMode() != el_flags.ModeEval {
+		return l
+	}
+
+	// TODO
+	return l
+}
+
 func ListCompileLet(Assign form.Name) func(Head form.Name) ListCompileFunc {
 	return func(Head form.Name) ListCompileFunc {
 		return func(ctx Context, list form.List) Sort {
@@ -173,6 +182,15 @@ type Match struct {
 	Head  form.Name
 	Cond  Sort
 	Cases []MatchCase
+}
+
+func (m Match) Reduce() Sort {
+	if el_flags.GetMode() != el_flags.ModeEval {
+		return m
+	}
+
+	// TODO
+	return m
 }
 
 func ListCompileMatch(Arrow form.Name, DefaultConstr form.Name) func(Head form.Name) ListCompileFunc {
