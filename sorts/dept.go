@@ -9,7 +9,7 @@ type Inductive interface {
 */
 
 // Dept - represent a type B(x) depends on Sort x
-type Dept = Lambda
+type Dept any // Lambda, Match (if we consider match is kinda function)
 
 /*
 must_pos = lambda (x: Nat)
