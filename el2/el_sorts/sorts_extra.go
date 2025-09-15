@@ -97,19 +97,19 @@ func ParseMatchCase(Head form.Name, DefaultConstr form.Name, CondType Sort) func
 		}
 
 		// TODO -  allow more sophisicated pattern, like (succ (succ x))
-		patternList := mustList(err, list[1])
-		if len(patternList) == 0 {
-			panic(err)
-		}
 
-		constr := mustName(err, patternList[0])
-		if constr == DefaultConstr && len(patternList) != 1 {
-			panic(fmt.Errorf("default_constructor must be (%s %s)", Head, DefaultConstr))
-		}
-
-		vars := make([]form.Name, 0)
-		for i := 1; i < len(patternList); i++ {
-			vars = append(vars, mustName(err, patternList[i]))
+		var constr form.Name
+		var vars []form.Name
+		switch pattern := list[1].(type) {
+		case form.Name:
+			constr = pattern
+		case form.List:
+			constr = mustName(err, pattern[0])
+			for i := 1; i < len(pattern); i++ {
+				vars = append(vars, mustName(err, pattern[i]))
+			}
+		default:
+			panic("unreachable")
 		}
 
 		// TODO - check if CondType is inductive and can be destructed into pattern
