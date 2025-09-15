@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/fbundle/sorts/el"
@@ -63,6 +64,8 @@ func mustRun(tokens []form.Token) {
 	}
 	let = append(let, form.Name("Unit_0"))
 
+	sort := ctx.Compile(let)
+	fmt.Println(ctx.ToString(sort))
 }
 
 func main() {

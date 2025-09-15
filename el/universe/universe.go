@@ -56,6 +56,8 @@ func (u SortUniverse) NewTerm(name form.Form, parent sorts.Sort) sorts.Atom {
 	return sorts.NewAtomTerm(u, name, parent)
 }
 
+// TODO - make Unit, Any a function that maps integer into type
+
 // Initial - I_0 I_1 ... I_n
 func (u SortUniverse) Initial(level int) sorts.Sort {
 	return sorts.NewAtomChain(level, func(level int) form.Name {
