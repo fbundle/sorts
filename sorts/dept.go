@@ -10,7 +10,7 @@ type Inductive interface {
 
 // Dept - represent a type B(x) depends on Sort x
 // Dept is not a type/sort, it is a family of types indexed by A
-type Dept any // Lambda, Match (if we consider match is kinda function) match (x: A) | case ...
+type Dept func(Sort) Sort // Lambda, Match (if we consider match is kinda function) match (x: A) | case ...
 
 /*
 must_pos = lambda (x: Nat)
