@@ -29,7 +29,7 @@ func (b Beta) Reduce() Sort {
 		return b
 	}
 
-	// TODO
+	// TODO - implement evaluation
 	return b
 }
 
@@ -139,7 +139,7 @@ func (l Let) Reduce() Sort {
 		return l
 	}
 
-	// TODO
+	// TODO - implement evaluation
 	return l
 }
 
@@ -189,7 +189,7 @@ func (m Match) Reduce() Sort {
 		return m
 	}
 
-	// TODO
+	// TODO - implement evaluation
 	return m
 }
 
