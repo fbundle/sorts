@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/fbundle/sorts/el"
@@ -34,11 +33,31 @@ func mustRun(tokens []form.Token) {
 			panic("node1 must be name")
 		}
 		if name == "@inspect" {
+			tokens, node2, err = form_processor.Parse(tokens)
+			if err != nil {
+				panic(err)
+			}
+			letExpr = append(letExpr, [3]form.Form{
+				form.Name("_"), form.Name(":="), form.List{
+					form.Name("inspect"), node2,
+				},
+			})
 			continue
 		}
-
-		fmt.Println(ctx.ToString(node1))
+		tokens, node2, err = form_processor.Parse(tokens)
+		if err != nil {
+			panic(err)
+		}
+		tokens, node3, err = form_processor.Parse(tokens)
+		if err != nil {
+			panic(err)
+		}
+		letExpr = append(letExpr, [3]form.Form{
+			node1, node2, node3,
+		})
 	}
+
+	
 }
 
 func main() {
