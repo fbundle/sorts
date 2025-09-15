@@ -1,5 +1,4 @@
 # python-like syntax using transpiler
-
 # start of block patterns: let, match, (name:type) =>, (
 
 let
@@ -21,13 +20,15 @@ let
    x = n1 ⊕ n2 ⊕ n3
    x = n1 ⊗ n2 ⊗ n3 ⊗ n4
 
-   is_pos = (x: Nat) => match x with
-      | succ z    => True
-      | n0        => False
+   is_pos = lambda (x: Nat)
+      match x with
+         | succ z    => True
+         | n0        => False
 
-   must_pos = (x: Nat) => match x with
-      | succ z    => True
-      | n0        => nil
+   must_pos = lambda (x: Nat)
+      match x with
+         | succ z    => True
+         | n0        => nil
 
 
    print is_pos                    # resolved type as Nat -> Bool
