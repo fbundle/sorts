@@ -31,7 +31,7 @@
     {_ := (inspect must_pos)}                  # resolved type as       Nat -> (Nat ⊕ Nil)
                                                # better to resolve as   Π_{x: Nat} B(x) where B(x) = (type (must_pos x))
 
-    Unit_0
+    (type Unit_0)
 )
 
 
