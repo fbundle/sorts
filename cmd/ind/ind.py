@@ -24,7 +24,7 @@ class Inductive:
         for name, arrow in self.constructor.items():
             constructor = constructor_template.format(
                 name=name,
-                arrow="->".join(map(lambda t: t.type_sig(), arrow)),
+                arrow=": " + "->".join(map(lambda t: t.type_sig(), arrow)),
             )
             constructor_list.append(constructor)
 
@@ -52,7 +52,7 @@ inductive {type_sig}
 {constructor_list}
 """
 
-constructor_template = "  | {name}: {arrow}"
+constructor_template = "  | {name} {arrow}"
 
 go_template = """
 /*
