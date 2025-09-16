@@ -113,9 +113,9 @@ type {type_def} interface {{
 """
 
 go_constructor_template = """
-type {type_def} struct {
+type {type_def} struct {{
     {field_list}
-}
+}}
 
 func (o {type_call}) attr{itype_name}() {{
 }}
