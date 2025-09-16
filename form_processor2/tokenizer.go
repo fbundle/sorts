@@ -1,6 +1,7 @@
 package form_processor2
 
 import (
+	"fmt"
 	"slices"
 	"sort"
 	"strings"
@@ -34,6 +35,8 @@ func NewTokenizer(splitTokens []string) Tokenizer {
 		// Otherwise, normal lexicographic order
 		return s1 < s2
 	})
+
+	fmt.Println(s)
 
 	return Tokenizer{
 		sortedSplitTokens: s,
