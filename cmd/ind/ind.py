@@ -64,7 +64,7 @@ class Inductive:
             field_list = []
             for i in range(len(arrow)-1):
                 param = arrow[i]
-                field = field_template.format(
+                field = go_field_template.format(
                     field_num=i,
                     field_type=param.go_type()[1],
                 )
@@ -92,7 +92,6 @@ repr_template = """
 inductive {type_sig}
 {constructor_list}
 """
-
 constructor_template = "  | {name} {arrow}"
 
 go_template = """
@@ -119,7 +118,9 @@ type {type_def} struct {{
 func (o {type_call}) attr{itype_name}() {{}}
 """
 
-field_template = "  Field_{field_num} {field_type}"
+go_field_template = "  Field_{field_num} {field_type}"
+
+
 
 
 
