@@ -16,7 +16,7 @@ type Tokenizer struct {
 	sortedSplitTokens []string
 }
 
-func (t Tokenizer) withSortedSplitTokens() Tokenizer {
+func (t Tokenizer) Init() Tokenizer {
 	if len(t.SplitTokens) == len(t.sortedSplitTokens) {
 		return t
 	}
@@ -53,7 +53,6 @@ func (t Tokenizer) withSortedSplitTokens() Tokenizer {
 }
 
 func (t Tokenizer) matchTok(s string) (int, string, bool) {
-	t = t.withSortedSplitTokens()
 	matchIdx := len(s)
 	matchTok := ""
 

@@ -59,7 +59,7 @@ func main() {
 		SplitTokens: []string{
 			"(", ")", "=", "=>",
 		},
-	}
+	}.Init()
 	line := t.Tokenize(s)
 	fmt.Println(line)
 }
