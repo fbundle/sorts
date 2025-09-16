@@ -1,7 +1,5 @@
 package form2_processor
 
-import "fmt"
-
 type Parser struct {
 	OpenBlockTokens []string
 	CloseBlockToken string
@@ -16,7 +14,6 @@ func (p Parser) Parse(lines []Line) []string {
 }
 
 func (p Parser) parse(code []string, indentStack []int, lines []Line) []string {
-	fmt.Printf("parse: indent %v line %v\n", indentStack, lines)
 
 	if len(lines) == 0 {
 		for range indentStack {
@@ -27,10 +24,6 @@ func (p Parser) parse(code []string, indentStack []int, lines []Line) []string {
 
 	if indentStack[len(indentStack)-1] != lines[0].Indentation {
 		panic("unreachable")
-	}
-
-	for _, field := range lines[0].Fields {
-		code = append(code, field)
 	}
 
 	if len(lines) == 1 {
@@ -46,16 +39,37 @@ func (p Parser) parse(code []string, indentStack []int, lines []Line) []string {
 
 	switch {
 	case nextInd == currInd: // same block - add new line
+		for _, field := range lines[0].Fields {
+			code = append(code, field)
+		}
 		code = append(code, p.NewLineToken)
-	case nextInd < currInd: // open new block - do not add newline
+		return p.parse(
+			code,
+			indentStack,
+			lines[1:],
+		)
+
+	case nextInd > currInd: // open new block - do not add newline
+		for _, field := range lines[0].Fields {
+			code = append(code, field)
+		}
 		indentStack = append(indentStack, nextInd)
-	case nextInd > currInd: // close block - add close block
+		return p.parse(
+			code,
+			indentStack,
+			lines[1:],
+		)
+	case nextInd < currInd: // close block - add close block
 		for nextInd < indentStack[len(indentStack)-1] {
 			code = append(code, p.CloseBlockToken)
 			indentStack = indentStack[:len(indentStack)-1]
 		}
+		return p.parse(
+			code,
+			indentStack,
+			lines[1:],
+		)
 	default:
 		panic("unreachable")
 	}
-	return p.parse(code, indentStack, lines[1:])
 }
