@@ -22,9 +22,13 @@ class Inductive:
     def repr(self) -> str:
         constructor_list: List[str] = []
         for name, arrow in self.constructor.items():
+            if len(arrow) == 0:
+                arrow_str = ""
+            else:
+                arrow_str = ": " + " -> ".join(map(lambda t: t.type_sig(), arrow))
             constructor = constructor_template.format(
                 name=name,
-                arrow=": " + "->".join(map(lambda t: t.type_sig(), arrow)),
+                arrow=arrow_str,
             )
             constructor_list.append(constructor)
 
