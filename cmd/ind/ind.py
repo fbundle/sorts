@@ -13,6 +13,9 @@ class Inductive:
     Type: Type
     Constructor: Dict[str, Arrow]
 
+    def generate_go(self) -> str:
+        ...
+
 if __name__ == "__main__":
     ind = Inductive(
         Type=Type(Name="List", Param="T"),
