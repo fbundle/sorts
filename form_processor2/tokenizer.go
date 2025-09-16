@@ -35,9 +35,6 @@ func NewTokenizer(splitTokens []string) Tokenizer {
 		// Otherwise, normal lexicographic order
 		return s1 < s2
 	})
-
-	fmt.Println(s)
-
 	return Tokenizer{
 		sortedSplitTokens: s,
 	}
@@ -45,6 +42,21 @@ func NewTokenizer(splitTokens []string) Tokenizer {
 
 type Tokenizer struct {
 	sortedSplitTokens []string
+}
+
+func (t Tokenizer) matchTok(s string) (int, string, bool) {
+	matchIdx := len(s)
+	matchTok := ""
+
+	for _, tok := range t.sortedSplitTokens {
+		i := strings.Index(s, tok)
+		if i >= 0 {
+			if i < matchIdx {
+				matchIdx, matchTok = i, tok
+			}
+		}
+	}
+	return matchIdx, matchTok, matchIdx < len(s)
 }
 
 func (t Tokenizer) Tokenize(line string) (indentation int, fields []string) {
@@ -64,21 +76,15 @@ func (t Tokenizer) Tokenize(line string) (indentation int, fields []string) {
 
 	for _, field := range unSplitfields {
 		for len(field) > 0 {
-			matchIdx := -1
-			matchTok := ""
-			for _, tok := range t.sortedSplitTokens {
-				index := strings.Index(field, tok)
-				if index >= 0 {
-					matchIdx, matchTok = index, tok
-					break
-				}
-			}
-			if matchIdx < 0 {
-				fields, field = append(fields, field), ""
-			} else {
-				beg, end := matchIdx, matchIdx+len(matchTok)
+			if i, tok, ok := t.matchTok(field); ok {
+				fmt.Printf("field \"%s\", match \"%s\" at %d\n", field, tok, i)
+				beg, end := i, i+len(tok)
 				fields, field = append(fields, field[:beg], field[beg:end]), field[end:]
+				continue
 			}
+			fmt.Printf("field \"%s\", match nothing\n", field)
+			fields, field = append(fields, field), ""
+
 		}
 	}
 
