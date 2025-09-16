@@ -17,6 +17,6 @@ func main() {
 	t := form_processor2.NewTokenizer([]string{
 		"(", ")", "=", "=>",
 	})
-	indt, toks := t.Tokenize(s)
-	fmt.Println(indt, toString(toks))
+	line := t.Tokenize(s)
+	fmt.Println(line)
 }

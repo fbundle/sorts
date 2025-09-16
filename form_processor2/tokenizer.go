@@ -1,7 +1,6 @@
 package form_processor2
 
 import (
-	"fmt"
 	"slices"
 	"sort"
 	"strings"
@@ -40,6 +39,11 @@ func NewTokenizer(splitTokens []string) Tokenizer {
 	}
 }
 
+type Line struct {
+	Indentation int
+	Fields      []string
+}
+
 type Tokenizer struct {
 	sortedSplitTokens []string
 }
@@ -59,8 +63,8 @@ func (t Tokenizer) matchTok(s string) (int, string, bool) {
 	return matchIdx, matchTok, matchIdx < len(s)
 }
 
-func (t Tokenizer) Tokenize(line string) (indentation int, fields []string) {
-	indentation = 0
+func (t Tokenizer) Tokenize(line string) Line {
+	indentation := 0
 	for _, r := range line {
 		if unicode.IsSpace(r) && r != ' ' {
 			panic("only space indentation allowed")
@@ -72,7 +76,7 @@ func (t Tokenizer) Tokenize(line string) (indentation int, fields []string) {
 	}
 
 	unSplitfields := strings.Fields(line[indentation:])
-	fields = nil
+	fields := make([]string, len(unSplitfields))
 
 	consume := func(field string, length int) string {
 		if length > 0 {
@@ -84,15 +88,18 @@ func (t Tokenizer) Tokenize(line string) (indentation int, fields []string) {
 	for _, field := range unSplitfields {
 		for len(field) > 0 {
 			if i, tok, ok := t.matchTok(field); ok {
-				fmt.Printf("field \"%s\", match \"%s\" at %d\n", field, tok, i)
+				//fmt.Printf("field \"%s\", match \"%s\" at %d\n", field, tok, i)
 				field = consume(field, i)
 				field = consume(field, len(tok))
 				continue
 			} else {
-				fmt.Printf("field \"%s\", match nothing\n", field)
+				//fmt.Printf("field \"%s\", match nothing\n", field)
 				field = consume(field, len(field))
 			}
 		}
 	}
-	return indentation, fields
+	return Line{
+		Indentation: indentation,
+		Fields:      fields,
+	}
 }
