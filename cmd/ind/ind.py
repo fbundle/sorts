@@ -46,15 +46,47 @@ class Inductive:
         )
 
     def generate_go(self) -> str:
+        generic = self.itype.param is not None
+
         package_name = self.itype.go_package()
-        type_name = self.itype.type_name()
-        type_def, type_call = self.itype.go_type()
+        itype_name = self.itype.type_name()
+        itype_def, itype_call = self.itype.go_type()
+
+        constructor_list = []
+        for name, arrow in self.constructor.items():
+            type_def = name 
+            if generic:
+                type_def += f"[{self.itype.param} any]"
+            type_call = name
+            if generic:
+                type_call += f"[{self.itype.param}]"
+            
+            field_list = []
+            for i in range(len(arrow)-1):
+                param = arrow[i]
+                field = field_template.format(
+                    field_num=i,
+                    field_type=param.go_type()[1],
+                )
+                field_list.append(field)
+            field_list = "\n".join(field_list)
+            
+            print(type_def, type_call, itype_name, field_list)
+
+            constructor = go_constructor_template.format(
+                type_def=type_def,
+                field_list=field_list,
+                type_call=type_call,
+                itype_name=itype_name,
+            )
+
         
         return go_template.format(
             repr=self.repr(),
             package_name=package_name,
-            type_def=type_def,
-            type_name=type_name,
+            type_def=itype_def,
+            type_name=itype_name,
+            constructor_list=constructor_list,
         )
 
 repr_template = """
@@ -76,16 +108,20 @@ type {type_def} interface {{
     attr{type_name}()
 }}
 
+{constructor_list}
+
 """
 
 go_constructor_template = """
-
 type {type_def} struct {
-
+    {field_list}
 }
 
-func (o {type_call})
+func (o {type_call}) attr{itype_name}() {{
+}}
 """
+
+field_template = "  Field_{field_num} {field_type}"
 
 
 
