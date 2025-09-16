@@ -11,6 +11,17 @@ class Type:
         else:
             return f"{self.name} {self.param}"
 
+    def type_name(self) -> str:
+        return self.name
+    
+    def go_type(self) -> Tuple[str, str]:
+        if self.param is None:
+            return self.name, self.name
+        else:
+            return f"{self.name}[{self.param} any]", f"{self.name}[{self.param}]"
+
+    def go_package(self) -> str:
+        return self.name.lower()
 
 Arrow = List[Type]
 
@@ -35,11 +46,9 @@ class Inductive:
         )
 
     def generate_go(self) -> str:
-        package_name=self.itype.name.lower()
-        type_name = self.itype.name
-        type_def = self.itype.name
-        if self.itype.param is not None:
-            type_def += f"[{self.itype.param} any]"
+        package_name = self.itype.go_package()
+        type_name = self.itype.type_name()
+        type_def, type_call = self.itype.go_type()
         
         return go_template.format(
             repr=self.repr(),
@@ -61,12 +70,21 @@ auto generated code from
 {repr}
 */
 
-
 package {package_name}
 
 type {type_def} interface {{
     attr{type_name}()
 }}
+
+"""
+
+go_constructor_template = """
+
+type {type_def} struct {
+
+}
+
+func (o {type_call})
 """
 
 
