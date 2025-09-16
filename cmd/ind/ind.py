@@ -22,10 +22,7 @@ class Inductive:
     def repr(self) -> str:
         constructor_list: List[str] = []
         for name, arrow in self.constructor.items():
-            if len(arrow) == 0:
-                arrow_str = ""
-            else:
-                arrow_str = ": " + " -> ".join(map(lambda t: t.type_sig(), arrow))
+            arrow_str = ": " + " -> ".join(map(lambda t: t.type_sig(), arrow))
             constructor = constructor_template.format(
                 name=name,
                 arrow=arrow_str,
@@ -78,7 +75,7 @@ if __name__ == "__main__":
     s = Inductive(
         itype=Type(name="List", param="T"),
         constructor={
-            "Nil": [],
+            "Nil": [Type(name="List", param="T")],
             "Cons": [Type(name="T"), Type(name="List", param="T"), Type(name="List", param="T")],
         },
     ).generate_go()
@@ -87,7 +84,7 @@ if __name__ == "__main__":
     s = Inductive(
         itype=Type(name="Nat"),
         constructor={
-            "Zero": [],
+            "Zero": [Type(name="Nat")],
             "Succ": [Type(name="Nat"), Type(name="Nat")],
         },
     ).generate_go()
