@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/fbundle/sorts/form_processor2"
+	"github.com/fbundle/sorts/form2_processor"
 )
 
 var source string = `
@@ -55,11 +55,11 @@ func toString(o any) string {
 
 func main() {
 
-	t := form_processor2.Tokenizer{
+	t := form2_processor.Tokenizer{
 		LineCommentBegin: "#",
 		SplitTokens:      []string{"+", "*", "$", "⊕", "⊗", "Π", "Σ", "=>", "->", ":", ",", "=", ":="},
 	}
-	p := form_processor2.Parser{
+	p := form2_processor.Parser{
 		OpenBlockTokens: []string{"let", "match", "lambda"},
 		CloseBlockToken: "end",
 		NewLineToken:    "__newline__",

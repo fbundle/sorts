@@ -1,4 +1,4 @@
-package form_processor2
+package form2_processor
 
 import "fmt"
 

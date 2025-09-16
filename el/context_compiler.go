@@ -65,6 +65,9 @@ func (ctx Context) Compile(node form.Form) sorts.Sort {
 }
 
 func (ctx Context) WithListCompiler(name form.Name, compileFunc func(form.Name) sorts.ListCompileFunc) Context {
+	// TODO - instead of assuming list starts with name
+	// how about we have
+
 	ctx.listCompiler = ctx.listCompiler.Set(name, compileFunc(name))
 	return ctx
 }
