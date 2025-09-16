@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/fbundle/sorts/form2_processor"
 )
@@ -57,7 +58,7 @@ func main() {
 
 	t := form2_processor.Tokenizer{
 		LineCommentBegin: "#",
-		SplitTokens:      []string{"+", "*", "$", "⊕", "⊗", "Π", "Σ", "=>", "->", ":", ",", "=", ":="},
+		SplitTokens:      []string{"(", ")", "+", "*", "$", "⊕", "⊗", "Π", "Σ", "=>", "->", ":", ",", "=", ":="},
 	}
 	p := form2_processor.Parser{
 		OpenBlockTokens: []string{"let", "match", "lambda"},
@@ -65,7 +66,8 @@ func main() {
 		NewLineToken:    "__newline__",
 	}
 
+	source = "(abcd)"
 	lines := t.Tokenize(source)
-	toks := p.Parse(lines)
-	fmt.Println(toks)
+	tokens := p.Parse(lines)
+	fmt.Println(strings.Join(tokens, "|"))
 }

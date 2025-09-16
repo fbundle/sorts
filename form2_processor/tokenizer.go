@@ -17,7 +17,7 @@ type Tokenizer struct {
 	sortedSplitTokens []string
 }
 
-func (t Tokenizer) Init() Tokenizer {
+func (t Tokenizer) init() Tokenizer {
 	if len(t.SplitTokens) == len(t.sortedSplitTokens) {
 		return t
 	}
@@ -67,6 +67,7 @@ func (t Tokenizer) matchTok(s string) (int, string, bool) {
 }
 
 func (t Tokenizer) Tokenize(source string) []Line {
+	t = t.init()
 	var lines []Line
 	for _, line := range strings.Split(source, "\n") {
 		// preprocess

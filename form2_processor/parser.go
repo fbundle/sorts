@@ -27,6 +27,9 @@ func (p Parser) parse(code []string, indentStack []int, lines []Line) []string {
 	}
 
 	if len(lines) == 1 {
+		for _, field := range lines[0].Fields {
+			code = append(code, field)
+		}
 		for range indentStack {
 			code = append(code, p.CloseBlockToken)
 		}
