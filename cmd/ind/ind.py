@@ -69,16 +69,15 @@ class Inductive:
                     field_type=param.go_type()[1],
                 )
                 field_list.append(field)
-            field_list = "\n".join(field_list)
-            
-            print(type_def, type_call, itype_name, field_list)
 
             constructor = go_constructor_template.format(
                 type_def=type_def,
-                field_list=field_list,
+                field_list="\n".join(field_list),
                 type_call=type_call,
                 itype_name=itype_name,
             )
+
+            constructor_list.append(constructor)
 
         
         return go_template.format(
@@ -86,7 +85,7 @@ class Inductive:
             package_name=package_name,
             type_def=itype_def,
             type_name=itype_name,
-            constructor_list=constructor_list,
+            constructor_list="\n".join(constructor_list),
         )
 
 repr_template = """
@@ -114,11 +113,10 @@ type {type_def} interface {{
 
 go_constructor_template = """
 type {type_def} struct {{
-    {field_list}
+{field_list}
 }}
 
-func (o {type_call}) attr{itype_name}() {{
-}}
+func (o {type_call}) attr{itype_name}() {{}}
 """
 
 field_template = "  Field_{field_num} {field_type}"
