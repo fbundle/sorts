@@ -74,19 +74,25 @@ func (t Tokenizer) Tokenize(line string) (indentation int, fields []string) {
 	unSplitfields := strings.Fields(line[indentation:])
 	fields = nil
 
+	consume := func(field string, length int) string {
+		if length > 0 {
+			fields = append(fields, field[:length])
+		}
+		return field[length:]
+	}
+
 	for _, field := range unSplitfields {
 		for len(field) > 0 {
 			if i, tok, ok := t.matchTok(field); ok {
 				fmt.Printf("field \"%s\", match \"%s\" at %d\n", field, tok, i)
-				beg, end := i, i+len(tok)
-				fields, field = append(fields, field[:beg], field[beg:end]), field[end:]
+				field = consume(field, i)
+				field = consume(field, len(tok))
 				continue
+			} else {
+				fmt.Printf("field \"%s\", match nothing\n", field)
+				field = consume(field, len(field))
 			}
-			fmt.Printf("field \"%s\", match nothing\n", field)
-			fields, field = append(fields, field), ""
-
 		}
 	}
-
 	return indentation, fields
 }
