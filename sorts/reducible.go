@@ -24,8 +24,18 @@ func (b Beta) Reduce(ctx Context) Sort {
 	if ctx.Mode() != ModeEval {
 		return b
 	}
-
-	// TODO - implement evaluation
+	if cmd, ok := b.Cmd.(ReducibleSort); ok {
+		b.Cmd = cmd.Reduce(ctx)
+	}
+	if arg, ok := b.Arg.(ReducibleSort); ok {
+		b.Arg = arg.Reduce(ctx)
+	}
+	if lam, ok := b.Cmd.(Lambda); ok {
+		if body, ok := lam.Body.(ReducibleSort); ok {
+			ctx = ctx.Set(lam.Param.Name, b.Arg)
+			return body.Reduce(ctx)
+		}
+	}
 	return b
 }
 
@@ -185,6 +195,9 @@ func (m Match) Reduce(ctx Context) Sort {
 		return m
 	}
 
+	if cond, ok := m.Cond.(ReducibleSort); ok {
+		m.Cond = cond.Reduce(ctx)
+	}
 	// TODO - implement evaluation
 	return m
 }
