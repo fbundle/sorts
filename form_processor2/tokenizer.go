@@ -1,15 +1,27 @@
 package form_processor2
 
 import (
-	"slices"
 	"sort"
 	"strings"
 	"unicode"
 )
 
-func NewTokenizer(splitTokens []string) Tokenizer {
-	s := slices.Clone(splitTokens)
+type Line struct {
+	Indentation int
+	Fields      []string
+}
 
+type Tokenizer struct {
+	SplitTokens       []string
+	sortedSplitTokens []string
+}
+
+func (t Tokenizer) withSortedSplitTokens() Tokenizer {
+	if len(t.SplitTokens) == len(t.sortedSplitTokens) {
+		return t
+	}
+
+	s := t.SplitTokens
 	for _, tok := range s {
 		if len(tok) == 0 {
 			panic("empty token")
@@ -35,20 +47,13 @@ func NewTokenizer(splitTokens []string) Tokenizer {
 		return s1 < s2
 	})
 	return Tokenizer{
+		SplitTokens:       s,
 		sortedSplitTokens: s,
 	}
 }
 
-type Line struct {
-	Indentation int
-	Fields      []string
-}
-
-type Tokenizer struct {
-	sortedSplitTokens []string
-}
-
 func (t Tokenizer) matchTok(s string) (int, string, bool) {
+	t = t.withSortedSplitTokens()
 	matchIdx := len(s)
 	matchTok := ""
 
@@ -88,12 +93,10 @@ func (t Tokenizer) Tokenize(line string) Line {
 	for _, field := range unSplitfields {
 		for len(field) > 0 {
 			if i, tok, ok := t.matchTok(field); ok {
-				//fmt.Printf("field \"%s\", match \"%s\" at %d\n", field, tok, i)
 				field = consume(field, i)
 				field = consume(field, len(tok))
 				continue
 			} else {
-				//fmt.Printf("field \"%s\", match nothing\n", field)
 				field = consume(field, len(field))
 			}
 		}
