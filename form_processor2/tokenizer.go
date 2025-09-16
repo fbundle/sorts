@@ -99,7 +99,7 @@ func (t Tokenizer) tokenizeLine(line string) Line {
 	}
 
 	unSplitfields := strings.Fields(line[indentation:])
-	fields := make([]string, len(unSplitfields))
+	fields := make([]string, 0, len(unSplitfields))
 
 	consume := func(field string, length int) string {
 		if length > 0 {

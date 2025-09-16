@@ -16,7 +16,7 @@ func (p Parser) Parse(lines []Line) []string {
 }
 
 func (p Parser) parse(code []string, indentStack []int, lines []Line) []string {
-	fmt.Printf("parse: code %v indent %v line %v\n", code, indentStack, lines)
+	fmt.Printf("parse: indent %v line %v\n", indentStack, lines)
 
 	if len(lines) == 0 {
 		for range indentStack {
@@ -45,13 +45,15 @@ func (p Parser) parse(code []string, indentStack []int, lines []Line) []string {
 	nextInd := lines[1].Indentation
 
 	switch {
-	case currInd == nextInd: // same block - add new line
+	case nextInd == currInd: // same block - add new line
 		code = append(code, p.NewLineToken)
-	case currInd < nextInd: // open new block - do not add newline
+	case nextInd < currInd: // open new block - do not add newline
 		indentStack = append(indentStack, nextInd)
-	case currInd > nextInd: // close block - add close block
-		code = append(code, p.CloseBlockToken)
-		indentStack = indentStack[:len(indentStack)-1]
+	case nextInd > currInd: // close block - add close block
+		for nextInd < indentStack[len(indentStack)-1] {
+			code = append(code, p.CloseBlockToken)
+			indentStack = indentStack[:len(indentStack)-1]
+		}
 	default:
 		panic("unreachable")
 	}

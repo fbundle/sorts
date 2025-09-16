@@ -66,8 +66,6 @@ func main() {
 	}
 
 	lines := t.Tokenize(source)
-	fmt.Println(lines)
-	return
 	toks := p.Parse(lines)
 	fmt.Println(toks)
 }
