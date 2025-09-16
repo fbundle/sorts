@@ -1,36 +1,22 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
-	"os"
-	"strings"
 
-	"github.com/fbundle/sorts/form"
-	"github.com/fbundle/sorts/form_processor"
+	"github.com/fbundle/sorts/form_processor2"
 )
 
+func toString(o any) string {
+	b, _ := json.Marshal(o)
+	return string(b)
+}
+
 func main() {
-	data, err := io.ReadAll(os.Stdin)
-	if err != nil {
-		fmt.Printf("Error reading stdin: %v\n", err)
-		os.Exit(1)
-	}
-
-	input := string(data)
-
-	tokens := form_processor.Tokenize(input)
-
-	var e form.Form
-	for len(tokens) > 0 {
-		e, tokens, err = form_processor.Parse(tokens)
-		if err != nil {
-			fmt.Printf("Error parsing input: %v\n", err)
-			fmt.Println(tokens)
-			os.Exit(1)
-		}
-
-		fmt.Println(strings.Join(e.Marshal("(", ")"), " "))
-	}
-
+	s := "   (hello=>x haha=y)"
+	t := form_processor2.NewTokenizer([]string{
+		"(", ")", "=", "=>",
+	})
+	indt, toks := t.Tokenize(s)
+	fmt.Println(indt, toString(toks))
 }
