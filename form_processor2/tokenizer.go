@@ -12,6 +12,7 @@ type Line struct {
 }
 
 type Tokenizer struct {
+	LineCommentBegin  string
 	SplitTokens       []string
 	sortedSplitTokens []string
 }
@@ -46,10 +47,8 @@ func (t Tokenizer) Init() Tokenizer {
 		// Otherwise, normal lexicographic order
 		return s1 < s2
 	})
-	return Tokenizer{
-		SplitTokens:       s,
-		sortedSplitTokens: s,
-	}
+	t.sortedSplitTokens = s
+	return t
 }
 
 func (t Tokenizer) matchTok(s string) (int, string, bool) {
@@ -67,7 +66,27 @@ func (t Tokenizer) matchTok(s string) (int, string, bool) {
 	return matchIdx, matchTok, matchIdx < len(s)
 }
 
-func (t Tokenizer) Tokenize(line string) Line {
+func (t Tokenizer) Tokenize(source string) []Line {
+	var lines []Line
+	for _, line := range strings.Split(source, "\n") {
+		// preprocess
+		if len(t.LineCommentBegin) > 0 {
+			i := strings.Index(line, t.LineCommentBegin)
+			if i >= 0 {
+				line = line[:i]
+			}
+		}
+		if len(strings.TrimSpace(line)) == 0 {
+			continue
+		}
+		//
+
+		lines = append(lines, t.tokenizeLine(line))
+	}
+	return lines
+}
+
+func (t Tokenizer) tokenizeLine(line string) Line {
 	indentation := 0
 	for _, r := range line {
 		if unicode.IsSpace(r) && r != ' ' {

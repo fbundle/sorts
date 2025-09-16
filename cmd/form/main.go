@@ -54,12 +54,20 @@ func toString(o any) string {
 }
 
 func main() {
-	s := "   (hello=>x haha=y)"
+
 	t := form_processor2.Tokenizer{
-		SplitTokens: []string{
-			"(", ")", "=", "=>",
-		},
-	}.Init()
-	line := t.Tokenize(s)
-	fmt.Println(line)
+		LineCommentBegin: "#",
+		SplitTokens:      []string{"+", "*", "$", "⊕", "⊗", "Π", "Σ", "=>", "->", ":", ",", "=", ":="},
+	}
+	p := form_processor2.Parser{
+		OpenBlockTokens: []string{"let", "match", "lambda"},
+		CloseBlockToken: "end",
+		NewLineToken:    "__newline__",
+	}
+
+	lines := t.Tokenize(source)
+	fmt.Println(lines)
+	return
+	toks := p.Parse(lines)
+	fmt.Println(toks)
 }
