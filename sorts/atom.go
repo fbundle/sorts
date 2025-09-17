@@ -1,4 +1,4 @@
-package sorts5
+package sorts
 
 func NewChain(name Name, level int) Atom {
 	return Atom{

@@ -1,4 +1,4 @@
-package sorts5
+package sorts
 
 import "github.com/fbundle/sorts/form"
 
@@ -15,9 +15,8 @@ type Sort interface {
 }
 
 type Frame interface {
-	Get(name string) Sort
-	Set(name string, sort Sort) Context
-	Del(name string) Context
+	Get(name Name) Sort
+	Set(name Name, sort Sort) Context
 }
 
 type ListParser struct {
@@ -26,7 +25,7 @@ type ListParser struct {
 }
 
 type Parser interface {
-	Parse(form Form) Sort
+	Parse(form Form) (Context, Sort)
 	AddListParser(listParser ListParser) Context
 }
 

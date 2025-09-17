@@ -5,9 +5,9 @@ import (
 	"io"
 	"os"
 
-	"github.com/fbundle/sorts/el"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
+	"github.com/fbundle/sorts/obsolete/el"
 	"github.com/fbundle/sorts/sorts"
 )
 

@@ -1,4 +1,4 @@
-package sorts5
+package sorts
 
 type Beta struct {
 	Cmd  Sort
