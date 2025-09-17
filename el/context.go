@@ -39,11 +39,11 @@ func (ctx Context) Set(name Name, sort sorts.Sort) sorts.Context {
 	return ctx
 }
 
-func (ctx Context) Parse(node Form) (sorts.Context, sorts.Sort) {
+func (ctx Context) Parse(node Form) (sorts.Sort, []sorts.Binding) {
 	switch node := node.(type) {
 	case Name:
 		if sort, ok := ctx.frame.Get(node); ok {
-			return ctx, sort
+			return sort, nil
 		}
 		// parse builtin
 		for _, name := range []Name{InitialName, TerminalName, DefaultName} {
@@ -52,12 +52,12 @@ func (ctx Context) Parse(node Form) (sorts.Context, sorts.Sort) {
 				levelStr := strings.TrimPrefix(string(node), string(prefix))
 				if level, err := strconv.Atoi(levelStr); err == nil {
 					parent := sorts.NewChain(DefaultName, level+1)
-					return ctx, sorts.NewTerm(
+					return sorts.NewTerm(
 						node,
 						func(ctx sorts.Context) sorts.Sort {
 							return parent
 						},
-					)
+					), nil
 				}
 			}
 		}
