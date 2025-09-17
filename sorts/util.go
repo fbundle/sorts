@@ -1,8 +1,10 @@
 package sorts
 
-func mustMatchHead(err error, head Name, list List) {
-	if len(list) >= 1 && list[0] == head {
-		return
+func serialize(s Sort) []Sort {
+	if s, ok := s.(Arrow); ok {
+		body := serialize(s.B)
+		return append([]Sort{s.A}, body...)
+	} else {
+		return []Sort{s}
 	}
-	panic(err)
 }
