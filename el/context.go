@@ -76,6 +76,8 @@ func (ctx Context) Parse(node Form) (sorts.Context, sorts.Sort) {
 }
 
 func (ctx Context) AddListParser(listParser sorts.ListParser) sorts.Context {
+	ctx.listParsers.Set(listParser.Command, listParser)
+
 	//TODO implement me
 	panic("implement me")
 }

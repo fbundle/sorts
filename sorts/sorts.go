@@ -19,9 +19,10 @@ type Frame interface {
 	Set(name Name, sort Sort) Context
 }
 
+type ListParseFunc = func(ctx Context, list List) (Context, Sort)
 type ListParser struct {
 	Command   Name
-	ListParse func(ctx Context, list List) (Context, Sort)
+	ListParse ListParseFunc
 }
 
 type Parser interface {
