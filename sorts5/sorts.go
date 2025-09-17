@@ -5,16 +5,14 @@ import (
 )
 
 type Form = form.Form
+type Name = form.Name
+type List = form.List
 
-type Sort struct {
-	Form Form
-	Attr SortAttr
-}
-
-type SortAttr interface {
+type Sort interface {
+	Form() Form
 	Level() int
-	Parent() SortAttr
-	LessEqual(dst SortAttr) bool
+	Parent() Sort
+	LessEqual(dst Sort) bool
 }
 
 type Mode string
