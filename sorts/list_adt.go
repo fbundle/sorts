@@ -5,17 +5,15 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[ArrowCmd] = func(ctx Context, list List) (Context, Sort) {
+	ListParseFuncMap[ArrowCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(ArrowCmd, []string{"type1", "type2"})
 
 		if len(list) != 2 {
 			panic(err)
 		}
-		ctx, a := ctx.Parse(list[0])
-		ctx, b := ctx.Parse(list[1])
-		return ctx, Arrow{
-			A: a,
-			B: b,
+		return Arrow{
+			A: ctx.Parse(list[0]),
+			B: ctx.Parse(list[1]),
 		}
 	}
 }
@@ -64,16 +62,14 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[ProdCmd] = func(ctx Context, list List) (Context, Sort) {
+	ListParseFuncMap[ProdCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(ProdCmd, []string{"type1", "type2"})
 		if len(list) != 2 {
 			panic(err)
 		}
-		ctx, a := ctx.Parse(list[0])
-		ctx, b := ctx.Parse(list[1])
-		return ctx, Prod{
-			A: a,
-			B: b,
+		return Prod{
+			A: ctx.Parse(list[0]),
+			B: ctx.Parse(list[1]),
 		}
 	}
 }
@@ -121,16 +117,14 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[SumCmd] = func(ctx Context, list List) (Context, Sort) {
+	ListParseFuncMap[SumCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(SumCmd, []string{"type1", "type2"})
 		if len(list) != 2 {
 			panic(err)
 		}
-		ctx, a := ctx.Parse(list[0])
-		ctx, b := ctx.Parse(list[1])
-		return ctx, Sum{
-			A: a,
-			B: b,
+		return Sum{
+			A: ctx.Parse(list[0]),
+			B: ctx.Parse(list[1]),
 		}
 	}
 }

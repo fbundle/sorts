@@ -32,10 +32,10 @@ type Frame interface {
 	Get(name Name) Sort
 	Set(name Name, sort Sort) Context
 }
-type ListParseFunc = func(ctx Context, list List) (Sort, []Binding)
+type ListParseFunc = func(ctx Context, list List) Sort
 
 type Parser interface {
-	Parse(form Form) (Sort, []Binding)
+	Parse(form Form) Sort
 }
 
 type Universe interface {
