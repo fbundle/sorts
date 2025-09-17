@@ -7,10 +7,14 @@ import (
 type Form = form.Form
 
 type Sort struct {
-	Form      Form
-	Level     func() int
-	Parent    func() Sort
-	LessEqual func(dst Sort) bool
+	Form Form
+	Attr SortAttr
+}
+
+type SortAttr interface {
+	Level() int
+	Parent() SortAttr
+	LessEqual(dst SortAttr) bool
 }
 
 type Mode string
@@ -23,13 +27,13 @@ const (
 
 // Compiler - recursive compilation
 type Compiler interface {
-	Compile(form Form) Sort
+	Compile(form Form) SortAttr
 }
 
 // Frame - name binding
 type Frame interface {
-	Get(name string) Sort
-	Set(name string, sort Sort) Context
+	Get(name string) SortAttr
+	Set(name string, sort SortAttr) Context
 	Del(name string) Context
 }
 type Context struct {
