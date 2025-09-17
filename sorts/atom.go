@@ -12,13 +12,15 @@ func NewChain(name Name, level int) Atom {
 	}
 }
 
-func NewTerm(form Form, parent func(ctx Context) Sort) Atom {
+func NewTerm(form Form, parent Sort) Atom {
 	return Atom{
 		form: form,
 		level: func(ctx Context) int {
-			return parent(ctx).Level(ctx) - 1
+			return parent.Level(ctx) - 1
 		},
-		parent: parent,
+		parent: func(ctx Context) Sort {
+			return parent
+		},
 	}
 }
 

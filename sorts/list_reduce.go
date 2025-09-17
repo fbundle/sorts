@@ -146,8 +146,55 @@ func (l Lambda) Reduce(ctx Context) Sort {
 var _ Sort = Lambda{}
 
 const (
-	InhabitedCmd = "inh"
+	InhabitedCmd Name = "inh"
 )
 
-type Inhabited struct {
+func init() {
+	ListParseFuncMap[InhabitedCmd] = func(ctx Context, list List) Sort {
+		err := parseErr(InhabitedCmd, []string{"type"})
+		if len(list) != 1 {
+			panic(err)
+		}
+		t := ctx.Parse(list[0])
+		return Inhabited{
+			Atom: NewTerm(List{InhabitedCmd, t.Form()}, t),
+			Type: t,
+		}
+	}
 }
+
+type Inhabited struct {
+	Atom Atom
+	Type Sort
+}
+
+func (s Inhabited) Form() Form {
+	return List{InhabitedCmd, s.Type.Form()}
+}
+
+func (s Inhabited) Compile(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Inhabited) Level(ctx Context) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Inhabited) Parent(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Inhabited) LessEqual(ctx Context, d Sort) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Inhabited) Reduce(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+var _ Sort = Inhabited{}

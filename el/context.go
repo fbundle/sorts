@@ -52,12 +52,7 @@ func (ctx Context) Parse(node Form) sorts.Sort {
 				levelStr := strings.TrimPrefix(string(node), string(prefix))
 				if level, err := strconv.Atoi(levelStr); err == nil {
 					parent := sorts.NewChain(DefaultName, level+1)
-					return sorts.NewTerm(
-						node,
-						func(ctx sorts.Context) sorts.Sort {
-							return parent
-						},
-					)
+					return sorts.NewTerm(node, parent)
 				}
 			}
 		}
