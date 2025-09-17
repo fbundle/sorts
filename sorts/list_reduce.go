@@ -1,12 +1,8 @@
 package sorts
 
-const (
-	BetaCmd Name = "β"
-)
-
 func init() {
-	ListParseFuncMap[BetaCmd] = func(ctx Context, list List) Sort {
-		err := parseErr(BetaCmd, []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
+	DefaultParseFunc = func(ctx Context, list List) Sort {
+		err := parseErr("", []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
 		if len(list) < 1 {
 			panic(err)
 		}
@@ -41,7 +37,7 @@ type Beta struct {
 }
 
 func (s Beta) Form() Form {
-	return List{BetaCmd, s.Cmd.Form(), s.Arg.Form()}
+	return List{s.Cmd.Form(), s.Arg.Form()}
 }
 
 func (s Beta) Compile(ctx Context) Sort {
@@ -71,7 +67,7 @@ func (s Beta) Reduce(ctx Context) Sort {
 var _ Sort = Beta{}
 
 const (
-	LambdaCmd Name = "λ"
+	LambdaCmd Name = "=>"
 )
 
 func init() {
@@ -269,6 +265,6 @@ func (s Inductive) Reduce(ctx Context) Sort {
 var _ Sort = Inductive{}
 
 type Match struct {
-	Cond  Sort
+	Cond  Inductive
 	Cases []Case
 }

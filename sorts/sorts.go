@@ -47,4 +47,6 @@ type Context interface {
 	Universe
 }
 
+var DefaultParseFunc ListParseFunc
+
 var ListParseFuncMap = map[Name]ListParseFunc{}

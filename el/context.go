@@ -42,6 +42,7 @@ func (ctx Context) Set(name Name, sort sorts.Sort) sorts.Context {
 func (ctx Context) Parse(node Form) sorts.Sort {
 	switch node := node.(type) {
 	case Name:
+		// all names should be either builtin or linked to a Sort
 		if sort, ok := ctx.frame.Get(node); ok {
 			return sort
 		}
@@ -66,7 +67,7 @@ func (ctx Context) Parse(node Form) sorts.Sort {
 				return listParse(ctx, node[1:])
 			}
 		}
-		panic(fmt.Errorf("parse_error: %v", node))
+		sorts.DefaultParseFunc(ctx, node)
 	default:
 		panic(fmt.Errorf("parse_error: %v", node))
 	}
