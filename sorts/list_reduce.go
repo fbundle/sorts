@@ -219,10 +219,6 @@ func init() {
 		mks := make([]Annot, 0, len(list)-1)
 		for i := 1; i < len(list); i++ {
 			mk := mustType[Annot](err, subCtx.Parse(list[i]))
-			arrow := serialize(mk)
-			if arrow[len(arrow)-1] != nil {
-				panic("constructor must end with inductive type")
-			}
 			mks = append(mks, mk)
 		}
 

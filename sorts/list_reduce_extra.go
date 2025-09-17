@@ -12,7 +12,7 @@ func init() {
 		}
 
 		return Annot{
-			Name: mustName(err, list[0]),
+			Name: mustType[Name](err, list[0]),
 			Type: ctx.Parse(list[1]),
 		}
 	}
