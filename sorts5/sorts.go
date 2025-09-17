@@ -14,8 +14,6 @@ type Frame interface {
 }
 
 type Universe interface {
-	Initial() Name
-	Terminal() Name
 	WithLessEqual(src Form, dst Form) Context
 	LessEqual(src Form, dst Form) bool
 }
