@@ -12,8 +12,12 @@ stage 2 (compiling):	Sort -> Sort
 stage 3 (reducing):		Sort -> Sort
 */
 
-type Sort interface {
+type Code interface {
 	Form() Form
+}
+
+type Sort interface {
+	Code
 
 	Compile(ctx Context) Sort
 	Level(ctx Context) int

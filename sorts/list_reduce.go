@@ -105,7 +105,7 @@ func init() {
 }
 
 type Lambda struct {
-	Param Name
+	Param Annot
 	Body  Sort
 }
 
@@ -140,7 +140,9 @@ func (l Lambda) Reduce(ctx Context) Sort {
 
 var _ Sort = Lambda{}
 
-type Inductive struct {
-	Name  Name
-	Makes []Annot
+const (
+	InhabitedCmd = "inh"
+)
+
+type Inhabited struct {
 }
