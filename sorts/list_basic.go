@@ -8,9 +8,8 @@ const (
 	ArrowCommand Name = "->"
 )
 
-var ArrowListParser = ListParser{
-	Command: ArrowCommand,
-	ListParse: func(ctx Context, list List) (Context, Sort) {
+func init() {
+	ListParseFuncMap[ArrowCommand] = func(ctx Context, list List) (Context, Sort) {
 		err := fmt.Errorf("arrow must be (%s type1 type2)", ArrowCommand)
 		if len(list) != 2 {
 			panic(err)
@@ -21,7 +20,7 @@ var ArrowListParser = ListParser{
 			A: a,
 			B: b,
 		}
-	},
+	}
 }
 
 type Arrow struct {

@@ -89,16 +89,6 @@ func (ctx Context) Parse(node Form) (sorts.Context, sorts.Sort) {
 	}
 }
 
-func (ctx Context) AddListParser(listParser sorts.ListParser) sorts.Context {
-	ctx.listParsers = ctx.listParsers.Set(listParser.Command, listParser.ListParse)
-	return ctx
-}
-
-func (ctx Context) AddLessEqualRule(src Name, dst Name) sorts.Context {
-	ctx.nameRule = ctx.nameRule.Set(rule{src, dst})
-	return ctx
-}
-
 func (ctx Context) LessEqual(src Form, dst Form) bool {
 	s, ok1 := src.(Name)
 	d, ok2 := dst.(Name)
@@ -117,3 +107,20 @@ func (ctx Context) LessEqual(src Form, dst Form) bool {
 }
 
 var _ sorts.Context = Context{}
+
+func (ctx Context) AddListParseFunc(cmd Name, listParse sorts.ListParseFunc) Context {
+	ctx.listParsers = ctx.listParsers.Set(cmd, listParse)
+	return ctx
+}
+
+func (ctx Context) AddLessEqualRule(src Name, dst Name) Context {
+	ctx.nameRule = ctx.nameRule.Set(rule{src, dst})
+	return ctx
+}
+
+func (ctx Context) Init() Context {
+	for cmd, listParseFunc := range sorts.ListParseFuncMap {
+		ctx = ctx.AddListParseFunc(cmd, listParseFunc)
+	}
+	return ctx
+}
