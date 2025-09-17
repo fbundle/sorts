@@ -66,4 +66,43 @@ const (
 )
 
 type Lambda struct {
+	Params []Name
+	Body   Sort
 }
+
+func (l Lambda) Form() Form {
+	form := List{}
+	form = append(form, LambdaCmd)
+	for _, param := range l.Params {
+		form = append(form, param)
+	}
+	form = append(form, l.Body.Form())
+	return form
+}
+
+func (l Lambda) Compile(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (l Lambda) Level(ctx Context) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (l Lambda) Parent(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (l Lambda) LessEqual(ctx Context, d Sort) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (l Lambda) Reduce(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+var _ Sort = Lambda{}
