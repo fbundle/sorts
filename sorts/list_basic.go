@@ -111,3 +111,53 @@ func (s Prod) LessEqual(ctx Context, d Sort) bool {
 }
 
 var _ Sort = Prod{}
+
+const (
+	SumCmd Name = "⊕"
+)
+
+func init() {
+	ListParseFuncMap[SumCmd] = func(ctx Context, list List) (Context, Sort) {
+		err := fmt.Errorf("sum must be (%s type1 type2)", SumCmd)
+		if len(list) != 2 {
+			panic(err)
+		}
+		ctx, a := ctx.Parse(list[0])
+		ctx, b := ctx.Parse(list[1])
+		return ctx, Sum{
+			A: a,
+			B: b,
+		}
+	}
+}
+
+type Sum struct {
+	A Sort
+	B Sort
+}
+
+func (s Sum) Compile(ctx Context) Sort {
+	s.A = s.A.Compile(ctx)
+	s.B = s.B.Compile(ctx)
+	return s
+}
+
+func (s Sum) Form() Form {
+	return List{SumCmd, s.A.Form(), s.B.Form()}
+}
+
+func (s Sum) Level(ctx Context) int {
+	return max(s.A.Level(ctx), s.B.Level(ctx))
+}
+
+func (s Sum) Parent(ctx Context) Sort {
+	return Sum{
+		A: s.A.Parent(ctx),
+		B: s.B.Parent(ctx),
+	}
+}
+
+func (s Sum) LessEqual(ctx Context, d Sort) bool {
+	//TODO implement me
+	panic("implement me")
+}
