@@ -22,24 +22,24 @@ const (
 )
 
 type Context struct {
-	frame       ordered_map.OrderedMap[Name, sorts.Sort1]
+	frame       ordered_map.OrderedMap[Name, sorts.Sort]
 	listParsers ordered_map.OrderedMap[Name, sorts.ListParseFunc]
 	nameRule    ordered_map.Map[rule]
 }
 
-func (ctx Context) Get(name Name) sorts.Sort1 {
+func (ctx Context) Get(name Name) sorts.Sort {
 	if sort, ok := ctx.frame.Get(name); ok {
 		return sort
 	}
 	panic(fmt.Errorf("name_not_found: %s", name))
 }
 
-func (ctx Context) Set(name Name, sort sorts.Sort1) sorts.Context {
+func (ctx Context) Set(name Name, sort sorts.Sort) sorts.Context {
 	ctx.frame = ctx.frame.Set(name, sort)
 	return ctx
 }
 
-func (ctx Context) Parse(node Form) (sorts.Context, sorts.Sort1) {
+func (ctx Context) Parse(node Form) (sorts.Context, sorts.Sort) {
 	switch node := node.(type) {
 	case Name:
 		if sort, ok := ctx.frame.Get(node); ok {
@@ -54,7 +54,7 @@ func (ctx Context) Parse(node Form) (sorts.Context, sorts.Sort1) {
 					parent := sorts.NewChain(DefaultName, level+1)
 					return ctx, sorts.NewTerm(
 						node,
-						func(ctx sorts.Context) sorts.Sort1 {
+						func(ctx sorts.Context) sorts.Sort {
 							return parent
 						},
 					)

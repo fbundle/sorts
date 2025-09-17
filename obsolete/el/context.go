@@ -14,7 +14,7 @@ var TypeErr = fmt.Errorf("type_error")
 var _ sorts.Context = Context{}
 
 type Context struct {
-	frame               ordered_map.OrderedMap[form.Name, sorts.Sort1]
+	frame               ordered_map.OrderedMap[form.Name, sorts.Sort]
 	universe            universe.SortUniverse
 	listCompiler        ordered_map.OrderedMap[form.Name, sorts.ListCompileFunc]
 	defaultListCompiler sorts.ListCompileFunc
@@ -28,7 +28,7 @@ func (ctx Context) WithMode(mode sorts.Mode) Context {
 
 func (ctx Context) Reset() Context {
 	return Context{
-		frame: ordered_map.OrderedMap[form.Name, sorts.Sort1]{},
+		frame: ordered_map.OrderedMap[form.Name, sorts.Sort]{},
 		universe: universe.SortUniverse{
 			InitialTypeName:  "Unit",
 			TerminalTypeName: "Any",

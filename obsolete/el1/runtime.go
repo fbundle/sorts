@@ -10,7 +10,7 @@ import (
 )
 
 type Object struct {
-	Sort   sorts.Sort1 // can be nil for partial objects
+	Sort   sorts.Sort // can be nil for partial objects
 	Next   Expr
 	parent *Object
 }
@@ -37,14 +37,14 @@ type Frame struct {
 	dict ordered_map.OrderedMap[Term, Object]
 }
 
-func (frame Frame) Set(key Term, sort sorts.Sort1, next Expr) (Frame, error) {
+func (frame Frame) Set(key Term, sort sorts.Sort, next Expr) (Frame, error) {
 	if sort == nil || next == nil {
 		return frame, fmt.Errorf("cannot set nil sort or next: %v, %v, %v", key, sort, next)
 	}
 	return Frame{dict: frame.dict.Set(key, Object{Sort: sort, Next: next})}, nil
 }
 
-func (frame Frame) Get(key Term) (sort sorts.Sort1, next Expr, err error) {
+func (frame Frame) Get(key Term) (sort sorts.Sort, next Expr, err error) {
 	notFoundErr := fmt.Errorf("variable not found: %s", key)
 	if value, ok := frame.dict.Get(key); ok {
 		return value.Sort, value.Next, nil
@@ -58,7 +58,7 @@ func (frame Frame) Get(key Term) (sort sorts.Sort1, next Expr, err error) {
 
 var intType = sorts.NewAtom(1, "int", nil)
 
-func builtinValue(key Term) (sort sorts.Sort1, next Expr, ok bool) {
+func builtinValue(key Term) (sort sorts.Sort, next Expr, ok bool) {
 	keyStr := string(key)
 	if _, err := strconv.Atoi(keyStr); err == nil {
 		sort := sorts.NewTerm(intType, keyStr)

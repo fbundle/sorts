@@ -26,9 +26,9 @@ func (u SortUniverse) MustSortUniverse() SortUniverse {
 	return u
 }
 
-func (u SortUniverse) GetBuiltin(key form.Name) (sorts.Sort1, bool) {
+func (u SortUniverse) GetBuiltin(key form.Name) (sorts.Sort, bool) {
 	// parse builtin: initial, terminal
-	builtin := map[form.Name]func(level int) sorts.Sort1{
+	builtin := map[form.Name]func(level int) sorts.Sort{
 		u.InitialTypeName:  u.Initial,
 		u.TerminalTypeName: u.Terminal,
 	}
@@ -52,21 +52,21 @@ func (u SortUniverse) WithRule(src form.Name, dst form.Name) SortUniverse {
 	return u
 }
 
-func (u SortUniverse) NewTerm(name form.Form, parent sorts.Sort1) sorts.Atom {
+func (u SortUniverse) NewTerm(name form.Form, parent sorts.Sort) sorts.Atom {
 	return sorts.NewAtomTerm(u, name, parent)
 }
 
 // TODO - make Unit, Any a function that maps integer into type
 
 // Initial - I_0 I_1 ... I_n
-func (u SortUniverse) Initial(level int) sorts.Sort1 {
+func (u SortUniverse) Initial(level int) sorts.Sort {
 	return sorts.NewAtomChain(level, func(level int) form.Name {
 		return setBuiltinLevel(u.InitialTypeName, level)
 	})
 }
 
 // Terminal - T_0 T_1 ... T_n
-func (u SortUniverse) Terminal(level int) sorts.Sort1 {
+func (u SortUniverse) Terminal(level int) sorts.Sort {
 	return sorts.NewAtomChain(level, func(level int) form.Name {
 		return setBuiltinLevel(u.TerminalTypeName, level)
 	})
@@ -76,13 +76,13 @@ func (u SortUniverse) Form(s any) sorts.Form {
 	return sorts.GetForm(u, s)
 }
 
-func (u SortUniverse) Level(s sorts.Sort1) int {
+func (u SortUniverse) Level(s sorts.Sort) int {
 	return sorts.GetLevel(u, s)
 }
-func (u SortUniverse) Parent(s sorts.Sort1) sorts.Sort1 {
+func (u SortUniverse) Parent(s sorts.Sort) sorts.Sort {
 	return sorts.GetParent(u, s)
 }
-func (u SortUniverse) LessEqual(x sorts.Sort1, y sorts.Sort1) bool {
+func (u SortUniverse) LessEqual(x sorts.Sort, y sorts.Sort) bool {
 	if sorts.GetLevel(u, x) > sorts.GetLevel(u, y) {
 		return false
 	}
@@ -96,7 +96,7 @@ func (u SortUniverse) LessEqual(x sorts.Sort1, y sorts.Sort1) bool {
 	return true
 }
 
-func (u SortUniverse) checkLessEqualBuiltin(x sorts.Sort1, y sorts.Sort1) bool {
+func (u SortUniverse) checkLessEqualBuiltin(x sorts.Sort, y sorts.Sort) bool {
 	if xName, ok := sorts.GetForm(u, x).(form.Name); ok {
 		if _, ok := getBuiltinLevel(u.InitialTypeName, xName); ok {
 			return true
@@ -110,7 +110,7 @@ func (u SortUniverse) checkLessEqualBuiltin(x sorts.Sort1, y sorts.Sort1) bool {
 	return false
 }
 
-func (u SortUniverse) LessEqualBasic(x sorts.Sort1, y sorts.Sort1) bool {
+func (u SortUniverse) LessEqualBasic(x sorts.Sort, y sorts.Sort) bool {
 	if sorts.GetLevel(u, x) > sorts.GetLevel(u, y) {
 		return false
 	}
@@ -130,7 +130,7 @@ func (u SortUniverse) LessEqualBasic(x sorts.Sort1, y sorts.Sort1) bool {
 	}
 	return false
 }
-func (u SortUniverse) TermOf(x sorts.Sort1, X sorts.Sort1) bool {
+func (u SortUniverse) TermOf(x sorts.Sort, X sorts.Sort) bool {
 	return u.LessEqual(u.Parent(x), X)
 }
 
