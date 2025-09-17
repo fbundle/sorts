@@ -3,20 +3,20 @@ package sorts5
 func NewChain(name Name, level int) Atom {
 	return Atom{
 		form: name,
-		level: func(frame Frame) int {
+		level: func(ctx Context) int {
 			return level
 		},
-		parent: func(frame Frame) Sort {
+		parent: func(ctx Context) Sort {
 			return NewChain(name, level+1)
 		},
 	}
 }
 
-func NewTerm(form Form, parent func(frame Frame) Sort) Atom {
+func NewTerm(form Form, parent func(ctx Context) Sort) Atom {
 	return Atom{
 		form: form,
-		level: func(frame Frame) int {
-			return parent(frame).Level(frame) - 1
+		level: func(ctx Context) int {
+			return parent(ctx).Level(ctx) - 1
 		},
 		parent: parent,
 	}
@@ -24,28 +24,28 @@ func NewTerm(form Form, parent func(frame Frame) Sort) Atom {
 
 type Atom struct {
 	form   Form
-	level  func(frame Frame) int
-	parent func(frame Frame) Sort
+	level  func(ctx Context) int
+	parent func(ctx Context) Sort
 }
 
 func (s Atom) Form() Form {
 	return s.form
 }
 
-func (s Atom) Compile(frame Frame) Sort {
+func (s Atom) Compile(ctx Context) Sort {
 	// atom is created not compiled from
 	return s
 }
 
-func (s Atom) Level(frame Frame) int {
-	return s.level(frame)
+func (s Atom) Level(ctx Context) int {
+	return s.level(ctx)
 }
 
-func (s Atom) Parent(frame Frame) Sort {
-	return s.parent(frame)
+func (s Atom) Parent(ctx Context) Sort {
+	return s.parent(ctx)
 }
 
-func (s Atom) LessEqual(frame Frame, d Sort) bool {
+func (s Atom) LessEqual(ctx Context, d Sort) bool {
 	return FallbackLessEqual(s.Form(), d.Form())
 }
 

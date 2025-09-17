@@ -5,7 +5,7 @@ type Beta struct {
 	Args []Sort
 }
 
-func (b Beta) Compile(frame Frame) Sort {
+func (b Beta) Compile(ctx Context) Sort {
 	//TODO implement me
 	panic("implement me")
 }
@@ -15,17 +15,17 @@ func (b Beta) Form() Form {
 	panic("implement me")
 }
 
-func (b Beta) Level(frame Frame) int {
+func (b Beta) Level(ctx Context) int {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (b Beta) Parent(frame Frame) Sort {
+func (b Beta) Parent(ctx Context) Sort {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (b Beta) LessEqual(frame Frame, d Sort) bool {
+func (b Beta) LessEqual(ctx Context, d Sort) bool {
 	//TODO implement me
 	panic("implement me")
 }
