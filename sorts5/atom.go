@@ -1,9 +1,41 @@
 package sorts5
 
+import (
+	"strconv"
+	"strings"
+)
+
 const (
 	initialName  = "Unit"
 	terminalName = "Any"
 )
+
+func parseBuiltin(name Name) (Sort, bool) {
+	nameStr := string(name)
+	// parse builtin name such as Unit and Any
+	for _, builtinName := range []string{initialName, terminalName} {
+		prefix := builtinName + "_"
+		if strings.HasPrefix(nameStr, prefix) {
+			levelStr := strings.TrimPrefix(nameStr, prefix)
+			if level, err := strconv.Atoi(levelStr); err == nil {
+				return newChain(Name(builtinName), level), true
+			}
+		}
+	}
+	return nil, false
+}
+
+func newChain(name Name, level int) Atom {
+	return Atom{
+		form: name,
+		level: func() int {
+			return level
+		},
+		parent: func() Sort {
+			return newChain(name, level+1)
+		},
+	}
+}
 
 type Atom struct {
 	form   Form
