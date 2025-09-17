@@ -54,7 +54,7 @@ func (s Arrow) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Arrow) Reduce(ctx Context) Sort {
-	return s
+	panic("implement me")
 }
 
 var _ Sort = Arrow{}
@@ -111,7 +111,7 @@ func (s Prod) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Prod) Reduce(ctx Context) Sort {
-	return s
+	panic("implement me")
 }
 
 var _ Sort = Prod{}
@@ -165,4 +165,8 @@ func (s Sum) LessEqual(ctx Context, d Sort) bool {
 	// interesting - (A + B) is the least upper bound of A and B
 	// hence (A + B) <= C iff A <= C and B <= C
 	return s.A.LessEqual(ctx, d) && s.B.LessEqual(ctx, d)
+}
+
+func (s Sum) Reduce(ctx Context) Sort {
+	panic("implement me")
 }

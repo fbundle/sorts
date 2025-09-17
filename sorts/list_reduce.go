@@ -55,7 +55,11 @@ func (b Beta) LessEqual(ctx Context, d Sort) bool {
 	panic("implement me")
 }
 
-var _ Sort3 = Beta{}
+func (b Beta) Reduce(ctx Context) Sort {
+	panic("implement me")
+}
+
+var _ Sort = Beta{}
 
 const (
 	LambdaCmd Name = "λ"
