@@ -80,9 +80,9 @@ func init() {
 		if len(list) < 1 {
 			panic(err)
 		}
-		params := make([]Name, 0, len(list)-1)
+		params := make([]Annot, 0, len(list)-1)
 		for i := 0; i < len(list)-1; i++ {
-			params = append(params, mustName(err, list[i]))
+			params = append(params, mustType[Annot](err, ctx.Parse(list[i])))
 		}
 		body := ctx.Parse(list[len(list)-1])
 		if len(params) == 0 {
@@ -110,7 +110,7 @@ type Lambda struct {
 }
 
 func (l Lambda) Form() Form {
-	return List{LambdaCmd, l.Param, l.Body.Form()}
+	return List{LambdaCmd, l.Param.Form(), l.Body.Form()}
 }
 
 func (l Lambda) Compile(ctx Context) Sort {
