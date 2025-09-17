@@ -46,7 +46,7 @@ func (s Atom) Parent(ctx Context) Sort {
 }
 
 func (s Atom) LessEqual(ctx Context, d Sort) bool {
-	return FallbackLessEqual(s.Form(), d.Form())
+	return ctx.LessEqual(s.Form(), d.Form())
 }
 
 var _ Sort = Atom{}
