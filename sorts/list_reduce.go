@@ -65,6 +65,17 @@ const (
 	LambdaCmd Name = "λ"
 )
 
+func init() {
+	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) (Context, Sort) {
+		err := parseErr(LambdaCmd, []string{"cmd", "param1", "...", "paramN", "body"}, "where N >= 1")
+		if len(list) < 3 {
+			panic(err)
+		}
+
+	}
+
+}
+
 type Lambda struct {
 	Params []Name
 	Body   Sort
