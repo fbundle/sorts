@@ -6,6 +6,12 @@ type Name = form.Name
 type List = form.List
 type Form = form.Form
 
+/*
+stage 1 (parsing):		Form -> Sort1
+stage 2 (compiling):	Sort1 -> Sort2
+stage 3 (reducing):		Sort2 -> Sort3
+*/
+
 type Sort1 interface {
 	Compile(ctx Context) Sort2
 	Form() Form
