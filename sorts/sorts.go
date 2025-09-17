@@ -23,13 +23,19 @@ type Sort interface {
 	Reduce(ctx Context) Sort
 }
 
+type Binding struct {
+	Name Name
+	Sort Sort
+}
+
 type Frame interface {
 	Get(name Name) Sort
 	Set(name Name, sort Sort) Context
 }
+type ListParseFunc = func(ctx Context, list List) (Sort, []Binding)
 
 type Parser interface {
-	Parse(form Form) (Context, Sort)
+	Parse(form Form) (Sort, []Binding)
 }
 
 type Universe interface {
@@ -41,7 +47,5 @@ type Context interface {
 	Parser
 	Universe
 }
-
-type ListParseFunc = func(ctx Context, list List) (Context, Sort)
 
 var ListParseFuncMap = map[Name]ListParseFunc{}
