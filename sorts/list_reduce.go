@@ -1,14 +1,12 @@
 package sorts
 
-import "fmt"
-
 const (
 	BetaCmd Name = "β"
 )
 
 func init() {
 	ListParseFuncMap[BetaCmd] = func(ctx Context, list List) (Context, Sort) {
-		err := fmt.Errorf("%s must be (%s cmd arg1 ... argN) where N >= 1", BetaCmd, BetaCmd)
+		err := parseErr(BetaCmd, []string{"cmd", "arg1", "...", "argN"}, "where N >= 1")
 		if len(list) < 2 {
 			panic(err)
 		}

@@ -1,6 +1,9 @@
 package sorts
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // serialize - turn type Arrow(a, Arrow(b, c)) into []Sort{a, b, c}
 func serialize(s Sort) []Sort {
@@ -24,6 +27,8 @@ func deserialize(s []Sort) Sort {
 	return output
 }
 
-func parseErr(cmd Name, args string) error {
-	return fmt.Errorf("%s must be (%s %s)", cmd, cmd, args)
+func parseErr(cmd Name, args []string, suffices ...string) error {
+	argStr := strings.Join(args, " ")
+	suffixStr := strings.Join(suffices, " ")
+	return fmt.Errorf("%s must be (%s %s) %s", cmd, cmd, argStr, suffixStr)
 }
