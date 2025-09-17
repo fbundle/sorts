@@ -94,6 +94,11 @@ func (ctx Context) AddListParser(listParser sorts.ListParser) sorts.Context {
 	return ctx
 }
 
+func (ctx Context) AddLessEqualRule(src Name, dst Name) sorts.Context {
+	ctx.nameRule = ctx.nameRule.Set(rule{src, dst})
+	return ctx
+}
+
 func (ctx Context) LessEqual(src Form, dst Form) bool {
 	s, ok1 := src.(Name)
 	d, ok2 := dst.(Name)
@@ -103,7 +108,12 @@ func (ctx Context) LessEqual(src Form, dst Form) bool {
 	if ok2 && d == TerminalName {
 		return true
 	}
-
+	if ok1 && ok2 {
+		if _, ok := ctx.nameRule.Get(rule{s, d}); ok {
+			return true
+		}
+	}
+	return false
 }
 
 var _ sorts.Context = Context{}
