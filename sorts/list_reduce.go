@@ -79,7 +79,7 @@ func init() {
 		err := parseErr(LambdaCmd, []string{
 			makeForm(AnnotCmd, "param1", "type1"),
 			"...",
-			"paramN",
+			makeForm(AnnotCmd, "paramN", "typeN"),
 			"body",
 		}, "where N >= 0")
 		if len(list) < 1 {
