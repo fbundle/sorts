@@ -20,11 +20,13 @@ type Universe interface {
 
 type Context interface {
 	Frame
+	Universe
 }
 
 type Sort interface {
 	Compile(ctx Context) Sort
+	Form() Form
 	Level(ctx Context) int
 	Parent(ctx Context) Sort
-	LessEqual(ctx Context, dst Sort) bool
+	LessEqual(ctx Context, d Sort) bool
 }
