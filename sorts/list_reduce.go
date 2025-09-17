@@ -39,32 +39,31 @@ type Beta struct {
 	Arg Sort
 }
 
-func (b Beta) Compile(ctx Context) Sort {
+func (s Beta) Form() Form {
+	return List{BetaCmd, s.Cmd.Form(), s.Arg.Form()}
+}
+
+func (s Beta) Compile(ctx Context) Sort {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (b Beta) Form() Form {
+func (s Beta) Level(ctx Context) int {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (b Beta) Level(ctx Context) int {
+func (s Beta) Parent(ctx Context) Sort {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (b Beta) Parent(ctx Context) Sort {
+func (s Beta) LessEqual(ctx Context, d Sort) bool {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (b Beta) LessEqual(ctx Context, d Sort) bool {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (b Beta) Reduce(ctx Context) Sort {
+func (s Beta) Reduce(ctx Context) Sort {
 	panic("implement me")
 }
 
@@ -91,18 +90,12 @@ func init() {
 }
 
 type Lambda struct {
-	Params []Name
-	Body   Sort
+	Param Name
+	Body  Sort
 }
 
 func (l Lambda) Form() Form {
-	form := List{}
-	form = append(form, LambdaCmd)
-	for _, param := range l.Params {
-		form = append(form, param)
-	}
-	form = append(form, l.Body.Form())
-	return form
+	return List{LambdaCmd, l.Param, l.Body.Form()}
 }
 
 func (l Lambda) Compile(ctx Context) Sort {
