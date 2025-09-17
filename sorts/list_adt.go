@@ -25,14 +25,14 @@ type Arrow struct {
 	B Sort
 }
 
+func (s Arrow) Form() Form {
+	return List{ArrowCmd, s.A.Form(), s.B.Form()}
+}
+
 func (s Arrow) Compile(ctx Context) Sort {
 	s.A = s.A.Compile(ctx)
 	s.B = s.B.Compile(ctx)
 	return s
-}
-
-func (s Arrow) Form() Form {
-	return List{ArrowCmd, s.A.Form(), s.B.Form()}
 }
 
 func (s Arrow) Level(ctx Context) int {
@@ -51,6 +51,10 @@ func (s Arrow) LessEqual(ctx Context, d Sort) bool {
 		return d.A.LessEqual(ctx, s.A) && s.B.LessEqual(ctx, d.B)
 	}
 	return ctx.LessEqual(s.Form(), d.Form())
+}
+
+func (s Arrow) Reduce(ctx Context) Sort {
+	return s
 }
 
 var _ Sort = Arrow{}
@@ -79,14 +83,13 @@ type Prod struct {
 	B Sort
 }
 
+func (s Prod) Form() Form {
+	return List{ProdCmd, s.A.Form(), s.B.Form()}
+}
 func (s Prod) Compile(ctx Context) Sort {
 	s.A = s.A.Compile(ctx)
 	s.B = s.B.Compile(ctx)
 	return s
-}
-
-func (s Prod) Form() Form {
-	return List{ProdCmd, s.A.Form(), s.B.Form()}
 }
 
 func (s Prod) Level(ctx Context) int {
@@ -105,6 +108,10 @@ func (s Prod) LessEqual(ctx Context, d Sort) bool {
 		return s.A.LessEqual(ctx, d.A) && s.B.LessEqual(ctx, d.B)
 	}
 	return ctx.LessEqual(s.Form(), d.Form())
+}
+
+func (s Prod) Reduce(ctx Context) Sort {
+	return s
 }
 
 var _ Sort = Prod{}

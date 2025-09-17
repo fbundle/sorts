@@ -20,7 +20,7 @@ type Sort interface {
 	Parent(ctx Context) Sort
 	LessEqual(ctx Context, d Sort) bool
 
-	Reduce(ctx Context)
+	Reduce(ctx Context) Sort
 }
 
 type Frame interface {
