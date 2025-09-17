@@ -2,6 +2,7 @@ package sorts
 
 import "fmt"
 
+// serialize - turn type Arrow(a, Arrow(b, c)) into []Sort{a, b, c}
 func serialize(s Sort) []Sort {
 	if s, ok := s.(Arrow); ok {
 		body := serialize(s.B)
@@ -11,6 +12,7 @@ func serialize(s Sort) []Sort {
 	}
 }
 
+// deserialize - turn []Sort{a, b, c} into Arrow(a, Arrow(b, c))
 func deserialize(s []Sort) Sort {
 	if len(s) == 0 {
 		panic(fmt.Errorf("empty sort array"))
