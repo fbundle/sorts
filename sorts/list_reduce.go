@@ -198,3 +198,77 @@ func (s Inhabited) Reduce(ctx Context) Sort {
 }
 
 var _ Sort = Inhabited{}
+
+const (
+	InductiveCmd = "inductive"
+)
+
+func init() {
+	ListParseFuncMap[InductiveCmd] = func(ctx Context, list List) Sort {
+		err := parseErr(InductiveCmd, []string{
+			"name",
+			makeForm(AnnotCmd, "constructor1", "type1"),
+			"...",
+			makeForm(AnnotCmd, "constructorN", "typeN"),
+		}, "where N >= 1")
+		if len(list) < 2 {
+			panic(err)
+		}
+		name := mustType[Name](err, list[0])
+		subCtx := ctx.Set(name, nil)
+		mks := make([]Annot, 0, len(list)-1)
+		for i := 1; i < len(list); i++ {
+			mk := mustType[Annot](err, subCtx.Parse(list[i]))
+			arrow := serialize(mk)
+			if arrow[len(arrow)-1] != nil {
+				panic("constructor must end with inductive type")
+			}
+			mks = append(mks, mk)
+		}
+
+		return Inductive{
+			Name: name,
+			Mks:  mks,
+		}
+	}
+}
+
+type Inductive struct {
+	Name Name
+	Mks  []Annot
+}
+
+func (s Inductive) Form() Form {
+	form := List{InhabitedCmd, s.Name}
+	for _, mk := range s.Mks {
+		form = append(form, mk.Form())
+	}
+	return form
+}
+
+func (s Inductive) Compile(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Inductive) Level(ctx Context) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Inductive) Parent(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Inductive) LessEqual(ctx Context, d Sort) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Inductive) Reduce(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+var _ Sort = Inductive{}
