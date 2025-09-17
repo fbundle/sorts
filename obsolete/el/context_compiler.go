@@ -16,7 +16,7 @@ func (ctx Context) ToString(o any) string {
 		return v
 	case form.Form:
 		return strings.Join(v.Marshal("(", ")"), " ")
-	case sorts.Sort:
+	case sorts.Sort1:
 		f := ctx.ToString(ctx.Form(v))
 		t := strings.Join(ctx.Form(ctx.Parent(v)).Marshal("(", ")"), " ")
 		l := ctx.Level(v)
@@ -32,13 +32,13 @@ func (ctx Context) ToString(o any) string {
 	}
 }
 
-func logCompile(ctx Context, node form.Form, sort sorts.Sort) {
+func logCompile(ctx Context, node form.Form, sort sorts.Sort1) {
 	if ctx.Mode() == sorts.ModeDebug {
 		log.Printf("DEBUG: compiled %s from %s\n", ctx.ToString(sort), ctx.ToString(node))
 	}
 }
 
-func (ctx Context) Compile(node form.Form) sorts.Sort {
+func (ctx Context) Compile(node form.Form) sorts.Sort1 {
 	switch node := node.(type) {
 	case form.Name:
 		sort := ctx.Get(node)

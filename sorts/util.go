@@ -5,18 +5,18 @@ import (
 	"strings"
 )
 
-// serialize - turn type Arrow(a, Arrow(b, c)) into []Sort{a, b, c}
-func serialize(s Sort) []Sort {
+// serialize - turn type Arrow(a, Arrow(b, c)) into []Sort1{a, b, c}
+func serialize(s Sort1) []Sort1 {
 	if s, ok := s.(Arrow); ok {
 		body := serialize(s.B)
-		return append([]Sort{s.A}, body...)
+		return append([]Sort1{s.A}, body...)
 	} else {
-		return []Sort{s}
+		return []Sort1{s}
 	}
 }
 
-// deserialize - turn []Sort{a, b, c} into Arrow(a, Arrow(b, c))
-func deserialize(s []Sort) Sort {
+// deserialize - turn []Sort1{a, b, c} into Arrow(a, Arrow(b, c))
+func deserialize(s []Sort1) Sort1 {
 	if len(s) == 0 {
 		panic(fmt.Errorf("empty sort array"))
 	}

@@ -5,7 +5,7 @@ import (
 )
 
 // typeCheckFunctionCall - check if the function call is valid - (cmdSort argSort)
-func (frame Frame) typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort) (sorts.Sort, bool) {
+func (frame Frame) typeCheckFunctionCall(cmdSort sorts.Sort1, argSort sorts.Sort1) (sorts.Sort1, bool) {
 	arrow, ok := sorts.Parent(cmdSort).(sorts.Arrow)
 	if !ok {
 		return nil, false
@@ -17,7 +17,7 @@ func (frame Frame) typeCheckFunctionCall(cmdSort sorts.Sort, argSort sorts.Sort)
 }
 
 // typeCheckBinding - check if the binding is valid - (name: parentSort = expr)
-func (frame Frame) typeCheckBinding(parentSort sorts.Sort, name Term, expr Expr) bool {
+func (frame Frame) typeCheckBinding(parentSort sorts.Sort1, name Term, expr Expr) bool {
 	if expr == Undef {
 		return true
 	}

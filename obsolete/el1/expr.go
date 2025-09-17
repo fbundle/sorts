@@ -14,7 +14,7 @@ func String(e Expr) string {
 
 type Expr interface {
 	Marshal() form.Form
-	Resolve(frame Frame) (Frame, sorts.Sort, Expr, error)
+	Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error)
 	mustExpr()
 }
 
@@ -26,7 +26,7 @@ func (t Term) Marshal() form.Form {
 	return form.Term(t)
 }
 
-func (t Term) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (t Term) Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error) {
 	sort, next, err := frame.Get(t)
 	if err != nil {
 		return frame, nil, nil, err
@@ -52,7 +52,7 @@ func (f FunctionCall) Marshal() form.Form {
 		f.Arg.Marshal(),
 	}
 }
-func (f FunctionCall) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (f FunctionCall) Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error) {
 	frame, argSort, argValue, err := f.Arg.Resolve(frame)
 	if err != nil {
 		return frame, nil, nil, err

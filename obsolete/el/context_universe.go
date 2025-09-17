@@ -9,29 +9,29 @@ func (ctx Context) Form(s any) sorts.Form {
 	return ctx.universe.Form(s)
 }
 
-func (ctx Context) Level(s sorts.Sort) int {
+func (ctx Context) Level(s sorts.Sort1) int {
 	return ctx.universe.Level(s)
 }
 
-func (ctx Context) Parent(s sorts.Sort) sorts.Sort {
+func (ctx Context) Parent(s sorts.Sort1) sorts.Sort1 {
 	return ctx.universe.Parent(s)
 }
 
-func (ctx Context) LessEqual(x sorts.Sort, y sorts.Sort) bool {
+func (ctx Context) LessEqual(x sorts.Sort1, y sorts.Sort1) bool {
 	return ctx.universe.LessEqual(x, y)
 }
 
-func (ctx Context) LessEqualBasic(x sorts.Sort, y sorts.Sort) bool {
+func (ctx Context) LessEqualBasic(x sorts.Sort1, y sorts.Sort1) bool {
 	return ctx.universe.LessEqualBasic(x, y)
 }
 
-func (ctx Context) NewTerm(name form.Form, parent sorts.Sort) sorts.Atom {
+func (ctx Context) NewTerm(name form.Form, parent sorts.Sort1) sorts.Atom {
 	return ctx.universe.NewTerm(name, parent)
 }
-func (ctx Context) Initial(level int) sorts.Sort {
+func (ctx Context) Initial(level int) sorts.Sort1 {
 	return ctx.universe.Initial(level)
 }
 
-func (ctx Context) Terminal(level int) sorts.Sort {
+func (ctx Context) Terminal(level int) sorts.Sort1 {
 	return ctx.universe.Terminal(level)
 }

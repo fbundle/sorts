@@ -6,26 +6,32 @@ type Name = form.Name
 type List = form.List
 type Form = form.Form
 
-type Sort interface {
-	Compile(ctx Context) Sort
+type Sort1 interface {
+	Compile(ctx Context) Sort2
 	Form() Form
-	Level(ctx Context) int
-	Parent(ctx Context) Sort
-	LessEqual(ctx Context, d Sort) bool
 }
 
-type Reducible interface {
-	Sort
-	Reduce(ctx Context) Sort
+type Sort2 interface {
+	Sort1
+	Reduce(ctx Context) Sort3
+
+	Level(ctx Context) int
+	Parent(ctx Context) Sort1
+	LessEqual(ctx Context, d Sort1) bool
+}
+
+type Sort3 interface {
+	Sort1
+	Sort2
 }
 
 type Frame interface {
-	Get(name Name) Sort
-	Set(name Name, sort Sort) Context
+	Get(name Name) Sort1
+	Set(name Name, sort Sort1) Context
 }
 
 type Parser interface {
-	Parse(form Form) (Context, Sort)
+	Parse(form Form) (Context, Sort1)
 }
 
 type Universe interface {
@@ -38,6 +44,6 @@ type Context interface {
 	Universe
 }
 
-type ListParseFunc = func(ctx Context, list List) (Context, Sort)
+type ListParseFunc = func(ctx Context, list List) (Context, Sort1)
 
 var ListParseFuncMap = map[Name]ListParseFunc{}

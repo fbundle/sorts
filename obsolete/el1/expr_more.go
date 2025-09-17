@@ -29,7 +29,7 @@ func (l Lambda) Marshal() form.Form {
 	}
 }
 
-func (l Lambda) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (l Lambda) Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error) {
 	return frame, nil, l, nil
 }
 
@@ -79,12 +79,12 @@ func (l Let) Marshal() form.Form {
 	return form.List(forms)
 }
 
-func (l Let) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (l Let) Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error) {
 	for _, binding := range l.Bindings {
 		typ, name, value := binding.Type, binding.Name, binding.Value
 
 		var err error
-		var parentSort sorts.Sort
+		var parentSort sorts.Sort1
 		frame, parentSort, _, err = typ.Resolve(frame)
 		if err != nil {
 			return frame, nil, nil, err
@@ -168,7 +168,7 @@ func (m Match) Marshal() form.Form {
 	return form.List(forms)
 }
 
-func (m Match) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (m Match) Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error) {
 	frame, condSort, condValue, err := m.Cond.Resolve(frame)
 	if err != nil {
 		return frame, nil, nil, err
@@ -246,7 +246,7 @@ func (a Arrow) Marshal() form.Form {
 	}
 }
 
-func (a Arrow) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (a Arrow) Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error) {
 	frame, aSort, _, err := a.A.Resolve(frame)
 	if err != nil {
 		return frame, nil, nil, err
@@ -295,7 +295,7 @@ func (s Sum) Marshal() form.Form {
 		s.B.Marshal(),
 	}
 }
-func (s Sum) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (s Sum) Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error) {
 	frame, aSort, _, err := s.A.Resolve(frame)
 	if err != nil {
 		return frame, nil, nil, err
@@ -345,7 +345,7 @@ func (p Prod) Marshal() form.Form {
 	}
 }
 
-func (p Prod) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (p Prod) Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error) {
 	frame, aSort, _, err := p.A.Resolve(frame)
 	if err != nil {
 		return frame, nil, nil, err
@@ -392,7 +392,7 @@ func (e Exact) Marshal() form.Form {
 	}
 }
 
-func (e Exact) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (e Exact) Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error) {
 	return frame, nil, e, nil
 }
 
@@ -423,7 +423,7 @@ func (i IntAdd) Marshal() form.Form {
 	}
 }
 
-func (i IntAdd) Resolve(frame Frame) (Frame, sorts.Sort, Expr, error) {
+func (i IntAdd) Resolve(frame Frame) (Frame, sorts.Sort1, Expr, error) {
 	frame, _, aExpr, err := i.A.Resolve(frame)
 	if err != nil {
 		return frame, nil, nil, err
