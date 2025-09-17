@@ -158,5 +158,7 @@ func (s Sum) Parent(ctx Context) Sort {
 }
 
 func (s Sum) LessEqual(ctx Context, d Sort) bool {
+	// interesting - (A + B) is the least upper bound of A and B
+	// hence (A + B) <= C iff A <= C and B <= C
 	return s.A.LessEqual(ctx, d) && s.B.LessEqual(ctx, d)
 }
