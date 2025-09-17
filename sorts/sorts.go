@@ -6,6 +6,10 @@ type Name = form.Name
 type List = form.List
 type Form = form.Form
 
+type Code interface {
+	Form() Form
+}
+
 /*
 stage 1 (parsing):		Form -> Sort
 stage 2 (compiling):	Sort -> Sort

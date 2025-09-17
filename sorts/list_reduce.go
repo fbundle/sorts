@@ -87,7 +87,7 @@ func init() {
 		}
 		params := make([]Annot, 0, len(list)-1)
 		for i := 0; i < len(list)-1; i++ {
-			params = append(params, mustType[Annot](err, ctx.Parse(list[i])))
+			params = append(params, parseAnnot(ctx, list[i]))
 		}
 		body := ctx.Parse(list[len(list)-1])
 		if len(params) == 0 {
@@ -218,8 +218,7 @@ func init() {
 		subCtx := ctx.Set(name, nil)
 		mks := make([]Annot, 0, len(list)-1)
 		for i := 1; i < len(list); i++ {
-			mk := mustType[Annot](err, subCtx.Parse(list[i]))
-			mks = append(mks, mk)
+			mks = append(mks, parseAnnot(subCtx, list[i]))
 		}
 
 		return Inductive{
@@ -268,3 +267,8 @@ func (s Inductive) Reduce(ctx Context) Sort {
 }
 
 var _ Sort = Inductive{}
+
+type Match struct {
+	Cond  Sort
+	Cases []Case
+}
