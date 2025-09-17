@@ -83,28 +83,31 @@ type Prod struct {
 }
 
 func (s Prod) Compile(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	s.A = s.A.Compile(ctx)
+	s.B = s.B.Compile(ctx)
+	return s
 }
 
 func (s Prod) Form() Form {
-	//TODO implement me
-	panic("implement me")
+	return List{ProdCmd, s.A.Form(), s.B.Form()}
 }
 
 func (s Prod) Level(ctx Context) int {
-	//TODO implement me
-	panic("implement me")
+	return max(s.A.Level(ctx), s.B.Level(ctx))
 }
 
 func (s Prod) Parent(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	return Prod{
+		A: s.A.Parent(ctx),
+		B: s.B.Parent(ctx),
+	}
 }
 
 func (s Prod) LessEqual(ctx Context, d Sort) bool {
-	//TODO implement me
-	panic("implement me")
+	if d, ok := d.(Prod); ok {
+		return s.A.LessEqual(ctx, d.A) && s.B.LessEqual(ctx, d.B)
+	}
+	return ctx.LessEqual(s.Form(), d.Form())
 }
 
 var _ Sort = Prod{}
