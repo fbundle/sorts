@@ -168,7 +168,7 @@ func TypeOf(ctx *Context, f Form) (Form, error) {
 			return nil, fmt.Errorf("lambda parameter %s is not a type: %s", t.Var, t.A)
 		}
 
-		// Body under x:A
+		// Args under x:A
 		ctx2 := ctx.Push(t.Var, t.A)
 		bodyTy, err := TypeOf(ctx2, t.Body)
 		if err != nil {

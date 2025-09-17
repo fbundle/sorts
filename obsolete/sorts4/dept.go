@@ -4,7 +4,7 @@ package sorts
 // Inductive - inductive type
 type Inductive interface {
 	Sort
-	Iter(yield func(name form.Name, constr func([]Sort) Inductive) bool)
+	Iter(yield func(name form.Cmd, constr func([]Sort) Inductive) bool)
 }
 */
 

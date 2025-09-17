@@ -2,25 +2,30 @@ package form
 
 type Token = string
 
-// Form - Union[Name, List]
+const (
+	blockBeg Token = "("
+	blockEnd Token = ")"
+)
+
+// Form - Union[Cmd, List]
 type Form interface {
-	Marshal(blockBeg Token, blockEnd Token) []Token
+	Marshal() []Token
 	formAttr()
 }
 type Name string
 type List []Form
 
-func (t Name) Marshal(blockBeg Token, blockEnd Token) []Token {
+func (t Name) Marshal() []Token {
 	return []Token{Token(t)}
 }
 
 func (t Name) formAttr() {}
 
-func (n List) Marshal(blockBeg Token, blockEnd Token) []Token {
+func (n List) Marshal() []Token {
 	var output []Token
 	output = append(output, blockBeg)
 	for _, arg := range n {
-		output = append(output, arg.Marshal(blockBeg, blockEnd)...)
+		output = append(output, arg.Marshal()...)
 	}
 	output = append(output, blockEnd)
 	return output
