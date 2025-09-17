@@ -1,15 +1,19 @@
 package sorts5
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const (
 	ArrowCmd Name = "->"
 )
 
-func ParseArrow(list List) Arrow {
-	err := fmt.Errorf("arrow must be (%s type1 type2)", ArrowCmd)
-	mustMatchHead(err, ArrowCmd, list)
+func init() {
+	AddListParseFunc(ArrowCmd, func(list List) Sort {
+		err := fmt.Errorf("arrow must be (%s type1 type2)", ArrowCmd)
+		mustMatchHead(err, ArrowCmd, list)
 
+	})
 }
 
 type Arrow struct {

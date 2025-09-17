@@ -1,10 +1,14 @@
 package sorts5
 
-import "github.com/fbundle/sorts/form"
+import (
+	"strconv"
+	"strings"
+)
 
 const (
 	InitialName  Name = "Unit"
 	TerminalName Name = "Any"
+	DefaultName  Name = "Type"
 )
 
 var ruleMap = map[[2]Name]struct{}{}
@@ -30,10 +34,37 @@ func FallbackLessEqual(src Form, dst Form) bool {
 	return false
 }
 
-type ListParseFunc = func(form.List) Sort
+type ListParseFunc = func(List) Sort
 
 var listParseFuncMap = map[Name]ListParseFunc{}
 
 func AddListParseFunc(name Name, fn ListParseFunc) {
 	listParseFuncMap[name] = fn
+}
+
+func Parse(frame Frame, form Form) Sort {
+	switch form := form.(type) {
+	case Name:
+		for _, builtinName := range []Name{InitialName, TerminalName} {
+			prefix := string(builtinName + "_")
+			if strings.HasPrefix(string(form), prefix) {
+				levelStr := string(form[len(prefix):])
+				if level, err := strconv.Atoi(levelStr); err == nil {
+					return Atom{
+						form: form,
+						level: func(ctx Frame) int {
+							return level
+						},
+						parent: func(ctx Frame) Sort {
+							return NewChain(DefaultName, level+1)
+						},
+					}
+				}
+
+			}
+		}
+
+	case List:
+	}
+
 }
