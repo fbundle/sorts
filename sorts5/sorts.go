@@ -1,27 +1,10 @@
 package sorts5
 
-import (
-	"github.com/fbundle/sorts/form"
-)
+import "github.com/fbundle/sorts/form"
 
-type Form = form.Form
 type Name = form.Name
 type List = form.List
-
-type Sort interface {
-	Form() Form
-	Level() int
-	Parent() Sort
-	LessEqual(dst Sort) bool
-}
-
-type Mode string
-
-const (
-	ModeComp  Mode = "COMP"  // type checking
-	ModeEval  Mode = "EVAL"  // type checking and evaluation
-	ModeDebug Mode = "DEBUG" // type checking and print everything
-)
+type Form = form.Form
 
 // Frame -
 type Frame interface {
@@ -30,6 +13,20 @@ type Frame interface {
 	Del(name string) Context
 }
 
+type Universe interface {
+	Initial() Name
+	Terminal() Name
+	WithLessEqual(src Form, dst Form) Context
+	LessEqual(src Form, dst Form) bool
+}
+
 type Context interface {
 	Frame
+}
+
+type Sort interface {
+	Compile(ctx Context) Sort
+	Level(ctx Context) int
+	Parent(ctx Context) Sort
+	LessEqual(ctx Context, dst Sort) bool
 }
