@@ -14,6 +14,11 @@ type Sort interface {
 	LessEqual(ctx Context, d Sort) bool
 }
 
+type Reducible interface {
+	Sort
+	Reduce(ctx Context) Sort
+}
+
 type Frame interface {
 	Get(name Name) Sort
 	Set(name Name, sort Sort) Context
