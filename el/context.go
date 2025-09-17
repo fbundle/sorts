@@ -13,9 +13,6 @@ import (
 type Name = form.Name
 type List = form.List
 type Form = form.Form
-type Sort = sorts.Sort
-type ListParser = sorts.ListParser
-type Context = sorts.Context
 
 const (
 	InitialName  = "Unit"
@@ -23,24 +20,24 @@ const (
 	DefaultName  = "Type"
 )
 
-type EL struct {
-	frame       ordered_map.OrderedMap[Name, Sort]
-	listParsers ordered_map.OrderedMap[Name, ListParser]
+type Context struct {
+	frame       ordered_map.OrderedMap[Name, sorts.Sort]
+	listParsers ordered_map.OrderedMap[Name, sorts.ListParser]
 }
 
-func (ctx EL) Get(name Name) Sort {
+func (ctx Context) Get(name Name) sorts.Sort {
 	if sort, ok := ctx.frame.Get(name); ok {
 		return sort
 	}
 	panic(fmt.Errorf("name_not_found: %s", name))
 }
 
-func (ctx EL) Set(name Name, sort Sort) Context {
+func (ctx Context) Set(name Name, sort sorts.Sort) sorts.Context {
 	ctx.frame = ctx.frame.Set(name, sort)
 	return ctx
 }
 
-func (ctx EL) Parse(node Form) (Context, Sort) {
+func (ctx Context) Parse(node Form) (sorts.Context, sorts.Sort) {
 	switch node := node.(type) {
 	case Name:
 		if sort, ok := ctx.frame.Get(node); ok {
@@ -71,23 +68,21 @@ func (ctx EL) Parse(node Form) (Context, Sort) {
 			if listParse, ok := ctx.listParsers.Get(head); ok {
 				return listParse.ListParse(ctx, node[1:])
 			}
-
 		}
 		panic(fmt.Errorf("parse_error: %v", node))
+	default:
+		panic(fmt.Errorf("parse_error: %v", node))
 	}
+}
 
+func (ctx Context) AddListParser(listParser sorts.ListParser) sorts.Context {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (ctx EL) AddListParser(listParser sorts.ListParser) sorts.Context {
+func (ctx Context) LessEqual(src Form, dst Form) bool {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (ctx EL) LessEqual(src Form, dst Form) bool {
-	//TODO implement me
-	panic("implement me")
-}
-
-var _ sorts.Context = EL{}
+var _ sorts.Context = Context{}
