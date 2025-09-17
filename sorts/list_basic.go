@@ -158,6 +158,5 @@ func (s Sum) Parent(ctx Context) Sort {
 }
 
 func (s Sum) LessEqual(ctx Context, d Sort) bool {
-	//TODO implement me
-	panic("implement me")
+	return s.A.LessEqual(ctx, d) && s.B.LessEqual(ctx, d)
 }
