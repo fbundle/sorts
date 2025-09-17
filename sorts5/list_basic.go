@@ -8,12 +8,10 @@ const (
 	ArrowCmd Name = "->"
 )
 
-func init() {
-	AddListParseFunc(ArrowCmd, func(list List) Sort {
-		err := fmt.Errorf("arrow must be (%s type1 type2)", ArrowCmd)
-		mustMatchHead(err, ArrowCmd, list)
+var ArrowListParseFunc ListParseFunc[Context] = func(ctx Context, list List) (Context, Sort) {
+	err := fmt.Errorf("arrow must be (%s type1 type2)", ArrowCmd)
+	mustMatchHead(err, ArrowCmd, list)
 
-	})
 }
 
 type Arrow struct {
