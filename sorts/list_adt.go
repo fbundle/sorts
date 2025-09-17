@@ -1,16 +1,13 @@
 package sorts
 
-import (
-	"fmt"
-)
-
 const (
 	ArrowCmd Name = "->"
 )
 
 func init() {
 	ListParseFuncMap[ArrowCmd] = func(ctx Context, list List) (Context, Sort) {
-		err := fmt.Errorf("arrow must be (%s type1 type2)", ArrowCmd)
+		err := parseErr(ArrowCmd, "type1 type2")
+
 		if len(list) != 2 {
 			panic(err)
 		}
@@ -64,7 +61,7 @@ const (
 
 func init() {
 	ListParseFuncMap[ProdCmd] = func(ctx Context, list List) (Context, Sort) {
-		err := fmt.Errorf("prod must be (%s type1 type2)", ProdCmd)
+		err := parseErr(ProdCmd, "type1 type2")
 		if len(list) != 2 {
 			panic(err)
 		}
@@ -118,7 +115,7 @@ const (
 
 func init() {
 	ListParseFuncMap[SumCmd] = func(ctx Context, list List) (Context, Sort) {
-		err := fmt.Errorf("sum must be (%s type1 type2)", SumCmd)
+		err := parseErr(SumCmd, "type1 type2")
 		if len(list) != 2 {
 			panic(err)
 		}

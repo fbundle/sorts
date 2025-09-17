@@ -23,3 +23,7 @@ func deserialize(s []Sort) Sort {
 	}
 	return output
 }
+
+func parseErr(cmd Name, args string) error {
+	return fmt.Errorf("%s must be (%s %s)", cmd, cmd, args)
+}
