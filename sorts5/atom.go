@@ -12,6 +12,14 @@ func NewChain(name Name, level int) Atom {
 	}
 }
 
+func NewAtom(form Form, level func(ctx Context) int, parent func(ctx Context) Sort) Atom {
+	return Atom{
+		form:   form,
+		level:  level,
+		parent: parent,
+	}
+}
+
 type Atom struct {
 	form   Form
 	level  func(ctx Context) int
