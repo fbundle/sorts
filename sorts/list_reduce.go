@@ -18,16 +18,25 @@ func init() {
 			ctx, arg = ctx.Parse(list[i])
 			args = append(args, arg)
 		}
-		return ctx, Beta{
-			Cmd:  cmd,
-			Args: args,
+
+		output := Beta{
+			Cmd: cmd,
+			Arg: args[0],
 		}
+		for i := 1; i < len(args); i++ {
+			output = Beta{
+				Cmd: output,
+				Arg: args[i],
+			}
+		}
+
+		return ctx, output
 	}
 }
 
 type Beta struct {
-	Cmd  Sort
-	Args []Sort
+	Cmd Sort
+	Arg Sort
 }
 
 func (b Beta) Compile(ctx Context) Sort {
@@ -67,9 +76,14 @@ const (
 
 func init() {
 	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) (Context, Sort) {
-		err := parseErr(LambdaCmd, []string{"cmd", "param1", "...", "paramN", "body"}, "where N >= 1")
-		if len(list) < 3 {
+		err := parseErr(LambdaCmd, []string{"param1", "...", "paramN", "body"}, "where N >= 1")
+		if len(list) < 2 {
 			panic(err)
+		}
+		params := make([]Sort, 0, len(list)-1)
+		for i := 0; i < len(list)-1; i++ {
+			var param Sort
+
 		}
 
 	}
