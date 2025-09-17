@@ -77,7 +77,7 @@ const (
 func init() {
 	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(LambdaCmd, []string{
-			"param1",
+			makeForm(AnnotCmd, "param1", "type1"),
 			"...",
 			"paramN",
 			"body",
