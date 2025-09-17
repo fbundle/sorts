@@ -67,7 +67,7 @@ func (ctx Context) Parse(node Form) sorts.Sort {
 				return listParse(ctx, node[1:])
 			}
 		}
-		sorts.DefaultParseFunc(ctx, node)
+		return sorts.DefaultParseFunc(ctx, node)
 	default:
 		panic(fmt.Errorf("parse_error: %v", node))
 	}
