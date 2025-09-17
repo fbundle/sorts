@@ -1,7 +1,19 @@
 package sorts5
 
+func NewChain(name Name, level int) Atom {
+	return Atom{
+		form: name,
+		level: func(ctx Context) int {
+			return level
+		},
+		parent: func(ctx Context) Sort {
+			return NewChain(name, level+1)
+		},
+	}
+}
+
 type Atom struct {
-	form   Name
+	form   Form
 	level  func(ctx Context) int
 	parent func(ctx Context) Sort
 }
