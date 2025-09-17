@@ -1,5 +1,17 @@
 package sorts
 
+import "fmt"
+
+const (
+	BetaCmd Name = "beta"
+)
+
+func init() {
+	ListParseFuncMap[BetaCmd] = func(ctx Context, list List) (Context, Sort) {
+		err := fmt.Errorf("beta must be (%s cmd arg1 ... argN)")
+	}
+}
+
 type Beta struct {
 	Cmd  Sort
 	Args []Sort
