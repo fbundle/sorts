@@ -5,21 +5,19 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[BetaCmd] = func(ctx Context, list List) (Context, Sort) {
+	ListParseFuncMap[BetaCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(BetaCmd, []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
 		if len(list) < 1 {
 			panic(err)
 		}
 
-		ctx, cmd := ctx.Parse(list[0])
+		cmd := ctx.Parse(list[0])
 		args := make([]Sort, 0, len(list)-1)
 		for i := 1; i < len(list); i++ {
-			var arg Sort
-			ctx, arg = ctx.Parse(list[i])
-			args = append(args, arg)
+			args = append(args, ctx.Parse(list[i]))
 		}
 		if len(args) == 0 {
-			return ctx, cmd
+			return cmd
 		}
 
 		output := Beta{
@@ -33,7 +31,7 @@ func init() {
 			}
 		}
 
-		return ctx, output
+		return output
 	}
 }
 
@@ -77,7 +75,7 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) (Context, Sort) {
+	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(LambdaCmd, []string{"param1", "...", "paramN", "body"}, "where N >= 0")
 		if len(list) < 1 {
 			panic(err)
@@ -86,9 +84,9 @@ func init() {
 		for i := 0; i < len(list)-1; i++ {
 			params = append(params, mustName(err, list[i]))
 		}
-		ctx, body := ctx.Parse(list[len(list)-1])
+		body := ctx.Parse(list[len(list)-1])
 		if len(params) == 0 {
-			return ctx, body
+			return body
 		}
 
 		output := Lambda{
@@ -101,7 +99,7 @@ func init() {
 				Body:  output,
 			}
 		}
-		return ctx, output
+		return output
 	}
 
 }
