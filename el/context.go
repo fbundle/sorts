@@ -21,18 +21,6 @@ const (
 	DefaultName  = "Type"
 )
 
-type rule struct {
-	src Name
-	dst Name
-}
-
-func (r rule) Cmp(s rule) int {
-	if c := cmp.Compare(r.src, s.src); c != 0 {
-		return c
-	}
-	return cmp.Compare(r.dst, s.dst)
-}
-
 type Context struct {
 	frame       ordered_map.OrderedMap[Name, sorts.Sort]
 	listParsers ordered_map.OrderedMap[Name, sorts.ListParseFunc]
@@ -108,6 +96,12 @@ func (ctx Context) LessEqual(src Form, dst Form) bool {
 
 var _ sorts.Context = Context{}
 
+func (ctx Context) Init() Context {
+	for cmd, listParseFunc := range sorts.ListParseFuncMap {
+		ctx = ctx.AddListParseFunc(cmd, listParseFunc)
+	}
+	return ctx
+}
 func (ctx Context) AddListParseFunc(cmd Name, listParse sorts.ListParseFunc) Context {
 	ctx.listParsers = ctx.listParsers.Set(cmd, listParse)
 	return ctx
@@ -118,9 +112,14 @@ func (ctx Context) AddLessEqualRule(src Name, dst Name) Context {
 	return ctx
 }
 
-func (ctx Context) Init() Context {
-	for cmd, listParseFunc := range sorts.ListParseFuncMap {
-		ctx = ctx.AddListParseFunc(cmd, listParseFunc)
+type rule struct {
+	src Name
+	dst Name
+}
+
+func (r rule) Cmp(s rule) int {
+	if c := cmp.Compare(r.src, s.src); c != 0 {
+		return c
 	}
-	return ctx
+	return cmp.Compare(r.dst, s.dst)
 }
