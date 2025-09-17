@@ -6,27 +6,16 @@ type Name = form.Name
 type List = form.List
 type Form = form.Form
 
-// Frame -
 type Frame interface {
 	Get(name string) Sort
-	Set(name string, sort Sort) Context
-	Del(name string) Context
-}
-
-type Universe interface {
-	WithLessEqual(src Form, dst Form) Context
-	LessEqual(src Form, dst Form) bool
-}
-
-type Context interface {
-	Frame
-	Universe
+	Set(name string, sort Sort) Frame
+	Del(name string) Frame
 }
 
 type Sort interface {
-	Compile(ctx Context) Sort
+	Compile(frame Frame) Sort
 	Form() Form
-	Level(ctx Context) int
-	Parent(ctx Context) Sort
-	LessEqual(ctx Context, d Sort) bool
+	Level(frame Frame) int
+	Parent(frame Frame) Sort
+	LessEqual(frame Frame, d Sort) bool
 }
