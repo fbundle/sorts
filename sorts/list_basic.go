@@ -12,7 +12,15 @@ var ArrowListParser = ListParser{
 	Command: ArrowCommand,
 	ListParse: func(ctx Context, list List) (Context, Sort) {
 		err := fmt.Errorf("arrow must be (%s type1 type2)", ArrowCommand)
-
+		if len(list) != 2 {
+			panic(err)
+		}
+		ctx, a := ctx.Parse(list[0])
+		ctx, b := ctx.Parse(list[1])
+		return ctx, Arrow{
+			A: a,
+			B: b,
+		}
 	},
 }
 
