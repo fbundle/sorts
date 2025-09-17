@@ -76,7 +76,12 @@ const (
 
 func init() {
 	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
-		err := parseErr(LambdaCmd, []string{"param1", "...", "paramN", "body"}, "where N >= 0")
+		err := parseErr(LambdaCmd, []string{
+			"param1",
+			"...",
+			"paramN",
+			"body",
+		}, "where N >= 0")
 		if len(list) < 1 {
 			panic(err)
 		}
