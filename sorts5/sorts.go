@@ -25,16 +25,13 @@ const (
 	ModeDebug Mode = "DEBUG" // type checking and print everything
 )
 
-// Compiler - recursive compilation
-type Compiler interface {
-	Compile(form Form) SortAttr
-}
-
-// Frame - name binding
+// Frame -
 type Frame interface {
-	Get(name string) SortAttr
-	Set(name string, sort SortAttr) Context
+	Get(name string) Sort
+	Set(name string, sort Sort) Context
 	Del(name string) Context
 }
-type Context struct {
+
+type Context interface {
+	Frame
 }
