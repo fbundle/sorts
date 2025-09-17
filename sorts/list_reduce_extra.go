@@ -26,9 +26,14 @@ func (s Annot) Form() Form {
 	return List{AnnotCmd, s.Name, s.Type.Form()}
 }
 
+var _ Code = Annot{}
+
 const (
 	CaseCmd Name = "=>"
 )
 
 type Case struct {
+	MkName Name
+	MkArgs []Name
+	Value  Sort
 }
