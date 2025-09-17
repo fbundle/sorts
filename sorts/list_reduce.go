@@ -139,3 +139,8 @@ func (l Lambda) Reduce(ctx Context) Sort {
 }
 
 var _ Sort = Lambda{}
+
+type Inductive struct {
+	Name  Name
+	Makes []Annot
+}
