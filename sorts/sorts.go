@@ -23,11 +23,6 @@ type Sort interface {
 	Reduce(ctx Context) Sort
 }
 
-type Binding struct {
-	Name Name
-	Sort Sort
-}
-
 type Frame interface {
 	Get(name Name) Sort
 	Set(name Name, sort Sort) Context
