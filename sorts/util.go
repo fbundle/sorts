@@ -51,3 +51,9 @@ func slicesReverse[T any](input []T) []T {
 	}
 	return output
 }
+
+func slicesForEach[T any](input []T, f func(T)) {
+	for _, v := range input {
+		f(v)
+	}
+}

@@ -231,7 +231,8 @@ func (s Inductive) Form() Form {
 }
 
 func (s Inductive) TypeCheck(ctx Context) Sort {
-	return Inductive{
+
+	s = Inductive{
 		Name: s.Name,
 		Mks: slicesMap(s.Mks, func(mk Annot) Annot {
 			t := mk.Type.TypeCheck(ctx)
@@ -245,6 +246,15 @@ func (s Inductive) TypeCheck(ctx Context) Sort {
 			}
 		}),
 	}
+	cNameSet := make(map[Name]struct{})
+	slicesForEach(s.Mks, func(mk Annot) {
+		cNameSet[mk.Name] = struct{}{}
+	})
+	if len(cNameSet) != len(s.Mks) {
+		panic(TypeErr)
+	}
+
+	return s
 }
 
 func (s Inductive) Level(ctx Context) int {
@@ -287,6 +297,11 @@ func (m Match) Form() Form {
 }
 
 func (m Match) TypeCheck(ctx Context) Sort {
+	cNameSet := make(map[Name]struct{})
+	slicesForEach(m.Cond.Mks, func(mk Annot) {
+		cNameSet[mk.Name] = struct{}{}
+	})
+
 	//TODO implement me
 	panic("implement me")
 }
