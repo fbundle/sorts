@@ -43,3 +43,11 @@ func slicesReduce[T1 any, T2 any](input []T1, init T2, f func(T2, T1) T2) T2 {
 	}
 	return output
 }
+
+func slicesReverse[T any](input []T) []T {
+	output := make([]T, len(input))
+	for i, v := range input {
+		output[len(input)-1-i] = v
+	}
+	return output
+}

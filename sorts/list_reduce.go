@@ -1,5 +1,6 @@
 package sorts
 
+import "slices"
 
 func init() {
 	DefaultCompileFunc = func(ctx Context, list List) Sort {
@@ -88,26 +89,13 @@ func init() {
 		})
 		body := ctx.Compile(list[len(list)-1]).TypeCheck(ctx)
 
-
-
-
-		if len(params) == 0 {
-			return body
-		}
-
-		output := (Lambda{
-			Param: params[len(params)-1],
-			Body:  body,
-		}).TypeCheck(ctx)
-		for i := len(params) - 2; i >= 0; i-- {
-			output = (Lambda{
-				Param: params[i],
+		return slicesReduce(slicesReverse(params), body, func(output Sort, param Annot)Sort {
+			return (Lambda{
+				Param: param,
 				Body:  output,
 			}).TypeCheck(ctx)
-		}
-		return output
+		})
 	}
-
 }
 
 type Lambda struct {
