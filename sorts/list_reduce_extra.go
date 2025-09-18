@@ -4,7 +4,7 @@ const (
 	AnnotCmd Name = ":"
 )
 
-func parseAnnot(ctx Context, form Form) Annot {
+func compileAnnot(ctx Context, form Form) Annot {
 	err := compileErr(AnnotCmd, []string{"name", "type"})
 	list := mustType[List](err, form)
 	if len(list) != 2 {
@@ -27,11 +27,35 @@ func (s Annot) Form() Form {
 }
 
 const (
-	CaseCmd Name = "case"
+	CaseCmd Name = "=>"
 )
 
 type Case struct {
 	MkName Name
 	MkArgs []Name
 	Value  Sort
+}
+
+func compileCase(ctx Context, form Form) Case {
+	err := compileErr(CaseCmd, []string{
+		makeForm("constructor", "arg1", "...", "argN"),
+		"value",
+	})
+	list := mustType[List](err, form)
+	if len(list) != 2 {
+		panic(err)
+	}
+	value := ctx.Compile(list[1]).TypeCheck(ctx)
+
+	cList := mustType[List](err, list[0])
+
+	mkName := mustType[Name](err, cList[0])
+	mkArgs := slicesMap(cList[1:], func(form Form) Name {
+		return mustType[Name](err, form)
+	})
+	return Case{
+		MkName: mkName,
+		MkArgs: mkArgs,
+		Value:  value,
+	}
 }

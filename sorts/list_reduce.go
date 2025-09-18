@@ -83,7 +83,7 @@ func init() {
 		}
 
 		params := slicesMap(list[:len(list)-1], func(form Form) Annot {
-			return parseAnnot(ctx, form)
+			return compileAnnot(ctx, form)
 		})
 		body := ctx.Compile(list[len(list)-1]).TypeCheck(ctx)
 
@@ -209,7 +209,7 @@ func init() {
 		subCtx := ctx.Set(name, nil)
 
 		mks := slicesMap(list[1:], func(form Form) Annot {
-			return parseAnnot(subCtx, form)
+			return compileAnnot(subCtx, form)
 		})
 
 		return Inductive{
