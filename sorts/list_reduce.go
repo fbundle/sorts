@@ -1,7 +1,7 @@
 package sorts
 
 func init() {
-	DefaultParseFunc = func(ctx Context, list List) Sort {
+	DefaultCompileFunc = func(ctx Context, list List) Sort {
 		err := parseErr("", []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
 		if len(list) < 1 {
 			panic(err)
@@ -71,7 +71,7 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
+	ListCompileFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(LambdaCmd, []string{
 			makeForm(AnnotCmd, "param1", "type1"),
 			"...",
@@ -146,7 +146,7 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[InhabitedCmd] = func(ctx Context, list List) Sort {
+	ListCompileFuncMap[InhabitedCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(InhabitedCmd, []string{"type"})
 		if len(list) != 1 {
 			panic(err)
@@ -200,7 +200,7 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[InductiveCmd] = func(ctx Context, list List) Sort {
+	ListCompileFuncMap[InductiveCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(InductiveCmd, []string{
 			"name",
 			makeForm(AnnotCmd, "constructor1", "type1"),

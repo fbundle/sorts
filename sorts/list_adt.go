@@ -5,7 +5,7 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[ArrowCmd] = func(ctx Context, list List) Sort {
+	ListCompileFuncMap[ArrowCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(ArrowCmd, []string{"type1", "type2"})
 
 		if len(list) != 2 {
@@ -62,7 +62,7 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[ProdCmd] = func(ctx Context, list List) Sort {
+	ListCompileFuncMap[ProdCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(ProdCmd, []string{"type1", "type2"})
 		if len(list) != 2 {
 			panic(err)
@@ -117,7 +117,7 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[SumCmd] = func(ctx Context, list List) Sort {
+	ListCompileFuncMap[SumCmd] = func(ctx Context, list List) Sort {
 		err := parseErr(SumCmd, []string{"type1", "type2"})
 		if len(list) != 2 {
 			panic(err)

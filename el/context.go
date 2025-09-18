@@ -23,7 +23,7 @@ const (
 
 type Context struct {
 	frame       ordered_map.OrderedMap[Name, sorts.Sort]
-	listParsers ordered_map.OrderedMap[Name, sorts.ListParseFunc]
+	listParsers ordered_map.OrderedMap[Name, sorts.ListCompileFunc]
 	nameRule    ordered_map.Map[rule]
 }
 
@@ -67,7 +67,7 @@ func (ctx Context) Parse(node Form) sorts.Sort {
 				return listParse(ctx, node[1:])
 			}
 		}
-		return sorts.DefaultParseFunc(ctx, node)
+		return sorts.DefaultCompileFunc(ctx, node)
 	default:
 		panic(fmt.Errorf("parse_error: %v", node))
 	}
@@ -93,12 +93,12 @@ func (ctx Context) LessEqual(src Form, dst Form) bool {
 var _ sorts.Context = Context{}
 
 func (ctx Context) Init() Context {
-	for cmd, listParseFunc := range sorts.ListParseFuncMap {
+	for cmd, listParseFunc := range sorts.ListCompileFuncMap {
 		ctx = ctx.AddListParseFunc(cmd, listParseFunc)
 	}
 	return ctx
 }
-func (ctx Context) AddListParseFunc(cmd Name, listParse sorts.ListParseFunc) Context {
+func (ctx Context) AddListParseFunc(cmd Name, listParse sorts.ListCompileFunc) Context {
 	ctx.listParsers = ctx.listParsers.Set(cmd, listParse)
 	return ctx
 }
