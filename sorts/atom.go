@@ -33,6 +33,10 @@ type Atom struct {
 func (s Atom) Form() Form {
 	return s.form
 }
+func (s Atom) TypeCheck(ctx Context) Sort {
+	// we don't do type-check for atom
+	return s
+}
 
 func (s Atom) Level(ctx Context) int {
 	return s.level(ctx)
