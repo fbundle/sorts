@@ -45,17 +45,13 @@ func compileCase(ctx Context, form Form) Case {
 	if len(list) != 2 {
 		panic(err)
 	}
-	value := ctx.Compile(list[1]).TypeCheck(ctx)
 
 	cList := mustType[List](err, list[0])
-
-	mkName := mustType[Name](err, cList[0])
-	mkArgs := slicesMap(cList[1:], func(form Form) Name {
-		return mustType[Name](err, form)
-	})
 	return Case{
-		MkName: mkName,
-		MkArgs: mkArgs,
-		Value:  value,
+		MkName: mustType[Name](err, cList[0]),
+		MkArgs: slicesMap(cList[1:], func(form Form) Name {
+			return mustType[Name](err, form)
+		}),
+		Value: ctx.Compile(list[1]).TypeCheck(ctx),
 	}
 }
