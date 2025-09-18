@@ -293,39 +293,56 @@ type Match struct {
 	Cases []Case
 }
 
-func (m Match) Form() Form {
+func (s Match) Form() Form {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m Match) TypeCheck(ctx Context) Sort {
-	condConstructors := m.Cond.constructors()
-	slicesForEach(m.Cases, func(c Case) {
-		if c.MkName != CaseFinal {
-
-		}
+func (s Match) TypeCheck(ctx Context) Sort {
+	condConstructors := s.Cond.constructors()
+	caseConstructors := make(map[Name]Case)
+	slicesForEach(s.Cases, func(c Case) {
+		caseConstructors[c.MkName] = c
 	})
+	if len(caseConstructors) != len(s.Cases) {
+		panic(TypeErr)
+	}
+	for cname, c := range caseConstructors {
+		constr, ok := condConstructors[cname]
+		if !ok {
+			panic(TypeErr)
+		}
 
+		if len(serialize(constr)) != len(c.MkArgs)+1 {
+			panic(TypeErr)
+		}
+	}
+	// must match all cases
+	if _, ok := caseConstructors[CaseFinal]; !ok {
+		// don't have final case
+		if len(caseConstructors) != len(condConstructors) {
+			panic(TypeErr)
+		}
+	}
+	return s
+}
+
+func (s Match) Level(ctx Context) int {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m Match) Level(ctx Context) int {
+func (s Match) Parent(ctx Context) Sort {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m Match) Parent(ctx Context) Sort {
+func (s Match) LessEqual(ctx Context, d Sort) bool {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m Match) LessEqual(ctx Context, d Sort) bool {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (m Match) Reduce(ctx Context) Sort {
+func (s Match) Reduce(ctx Context) Sort {
 	//TODO implement me
 	panic("implement me")
 }
