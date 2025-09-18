@@ -13,7 +13,7 @@ func parseAnnot(ctx Context, form Form) Annot {
 
 	return Annot{
 		Name: mustType[Name](err, list[0]),
-		Type: ctx.Compile(list[1]),
+		Type: ctx.Compile(list[1]).TypeCheck(ctx),
 	}
 }
 
@@ -25,8 +25,6 @@ type Annot struct {
 func (s Annot) Form() Form {
 	return List{AnnotCmd, s.Name, s.Type.Form()}
 }
-
-var _ Code = Annot{}
 
 const (
 	CaseCmd Name = "case"

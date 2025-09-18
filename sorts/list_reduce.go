@@ -209,10 +209,10 @@ func init() {
 		}
 		name := mustType[Name](err, list[0])
 		subCtx := ctx.Set(name, nil)
-		mks := make([]Annot, 0, len(list)-1)
-		for i := 1; i < len(list); i++ {
-			mks = append(mks, parseAnnot(subCtx, list[i]))
-		}
+
+		mks := slicesMap(list[1:], func(form Form) Annot {
+			return parseAnnot(subCtx, form)
+		})
 
 		return Inductive{
 			Name: name,
