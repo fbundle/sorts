@@ -1,7 +1,5 @@
 package sorts
 
-import "slices"
-
 func init() {
 	DefaultCompileFunc = func(ctx Context, list List) Sort {
 		err := compileErr("", []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
@@ -233,16 +231,20 @@ func (s Inductive) Form() Form {
 }
 
 func (s Inductive) TypeCheck(ctx Context) Sort {
-	s = Inductive{
+	return Inductive{
 		Name: s.Name,
 		Mks: slicesMap(s.Mks, func(mk Annot) Annot {
+			t := mk.Type.TypeCheck(ctx)
+			arrow := serialize(t)
+			if arrow[len(arrow)-1].Form() != s.Name {
+				panic(TypeErr)
+			}
 			return Annot{
 				Name: mk.Name,
-				Type: mk.Type,
+				Type: t,
 			}
 		}),
 	}
-
 }
 
 func (s Inductive) Level(ctx Context) int {
