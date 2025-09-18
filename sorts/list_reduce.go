@@ -40,6 +40,11 @@ func (s Beta) Form() Form {
 	return List{s.Cmd.Form(), s.Arg.Form()}
 }
 
+func (s Beta) TypeCheck(ctx Context) Sort {
+
+	panic("implement me")
+}
+
 func (s Beta) Level(ctx Context) int {
 	//TODO implement me
 	panic("implement me")
