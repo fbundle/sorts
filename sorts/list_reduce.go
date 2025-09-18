@@ -14,7 +14,7 @@ func init() {
 			return ctx.Compile(form).TypeCheck(ctx)
 		})
 
-		return slicesReduce(args, cmd, func(output Sort, arg Sort) Sort{
+		return slicesReduce(args, cmd, func(output Sort, arg Sort) Sort {
 			return (Beta{
 				Cmd: output,
 				Arg: arg,
@@ -89,7 +89,7 @@ func init() {
 		})
 		body := ctx.Compile(list[len(list)-1]).TypeCheck(ctx)
 
-		return slicesReduce(slicesReverse(params), body, func(output Sort, param Annot)Sort {
+		return slicesReduce(slicesReverse(params), body, func(output Sort, param Annot) Sort {
 			return (Lambda{
 				Param: param,
 				Body:  output,
@@ -235,9 +235,13 @@ func (s Inductive) Form() Form {
 func (s Inductive) TypeCheck(ctx Context) Sort {
 	s = Inductive{
 		Name: s.Name,
-		Mks:  ,
+		Mks: slicesMap(s.Mks, func(mk Annot) Annot {
+			return Annot{
+				Name: mk.Name,
+				Type: mk.Type,
+			}
+		}),
 	}
-
 
 }
 
