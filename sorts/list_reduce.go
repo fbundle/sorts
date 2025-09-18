@@ -41,8 +41,18 @@ func (s Beta) Form() Form {
 }
 
 func (s Beta) TypeCheck(ctx Context) Sort {
+	s = Beta{
+		Cmd: s.Cmd.TypeCheck(ctx),
+		Arg: s.Arg.TypeCheck(ctx),
+	}
 
-	panic("implement me")
+	arrow := mustType[Arrow](TypeErr, s.Cmd.Parent(ctx))
+	A := s.Arg.Parent(ctx)
+
+	if !A.LessEqual(ctx, arrow.A) {
+		panic(TypeErr)
+	}
+	return s
 }
 
 func (s Beta) Level(ctx Context) int {

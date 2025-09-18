@@ -1,14 +1,16 @@
 package sorts
 
-import "github.com/fbundle/sorts/form"
+import (
+	"errors"
+
+	"github.com/fbundle/sorts/form"
+)
 
 type Name = form.Name
 type List = form.List
 type Form = form.Form
 
-type Code interface {
-	Form() Form
-}
+var TypeErr = errors.New("type_error")
 
 /*
 stage 1 (parsing):		Form -> Sort
