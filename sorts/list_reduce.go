@@ -100,15 +100,15 @@ func init() {
 			return body
 		}
 
-		output := Lambda{
+		output := (Lambda{
 			Param: params[len(params)-1],
 			Body:  body,
-		}
+		}).TypeCheck(ctx)
 		for i := len(params) - 2; i >= 0; i-- {
-			output = Lambda{
+			output = (Lambda{
 				Param: params[i],
 				Body:  output,
-			}
+			}).TypeCheck(ctx)
 		}
 		return output
 	}
@@ -122,6 +122,13 @@ type Lambda struct {
 
 func (l Lambda) Form() Form {
 	return List{LambdaCmd, l.Param.Form(), l.Body.Form()}
+}
+
+func (l Lambda) TypeCheck(ctx Context) Sort {
+	return Lambda{
+		Param: l.Param,
+		Body:  l.Body.TypeCheck(ctx),
+	}
 }
 
 func (l Lambda) Level(ctx Context) int {
