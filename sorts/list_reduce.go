@@ -16,15 +16,15 @@ func init() {
 			return cmd
 		}
 
-		output := Beta{
+		output := (Beta{
 			Cmd: cmd,
 			Arg: args[0],
-		}
+		}).TypeCheck(ctx)
 		for i := 1; i < len(args); i++ {
-			output = Beta{
+			output = (Beta{
 				Cmd: output,
 				Arg: args[i],
-			}
+			}).TypeCheck(ctx)
 		}
 
 		return output
