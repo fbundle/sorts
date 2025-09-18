@@ -272,6 +272,7 @@ var _ Sort = Inductive{}
 func init() {
 	ListCompileFuncMap[CaseCmd] = func(ctx Context, list List) Sort {
 		// TODO
+		panic("implement me")
 	}
 }
 
