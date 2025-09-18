@@ -1,5 +1,7 @@
 package sorts
 
+import "slices"
+
 func init() {
 	DefaultCompileFunc = func(ctx Context, list List) Sort {
 		err := compileErr("", []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
@@ -165,19 +167,26 @@ func init() {
 		}
 		t := ctx.Compile(list[0])
 		return Inhabited{
-			Atom: NewTerm(List{InhabitedCmd, t.Form()}, t),
+			Sort: NewTerm(List{InhabitedCmd, t.Form()}, t),
 			Type: t,
 		}
 	}
 }
 
 type Inhabited struct {
-	Atom Atom
+	Sort Sort
 	Type Sort
 }
 
 func (s Inhabited) Form() Form {
 	return List{InhabitedCmd, s.Type.Form()}
+}
+
+func (s Inhabited) TypeCheck(ctx Context) Sort {
+	return Inhabited{
+		Sort: s.Sort.TypeCheck(ctx),
+		Type: s.Type.TypeCheck(ctx),
+	}
 }
 
 func (s Inhabited) Level(ctx Context) int {
@@ -242,6 +251,15 @@ func (s Inductive) Form() Form {
 		form = append(form, mk.Form())
 	}
 	return form
+}
+
+func (s Inductive) TypeCheck(ctx Context) Sort {
+	s = Inductive{
+		Name: s.Name,
+		Mks:  ,
+	}
+
+
 }
 
 func (s Inductive) Level(ctx Context) int {
