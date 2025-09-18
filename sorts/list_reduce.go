@@ -61,8 +61,8 @@ func (s Beta) Level(ctx Context) int {
 }
 
 func (s Beta) Parent(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	arrow := mustType[Arrow](TypeErr, s.Cmd.Parent(ctx))
+	return arrow.B
 }
 
 func (s Beta) LessEqual(ctx Context, d Sort) bool {
