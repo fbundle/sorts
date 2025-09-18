@@ -224,6 +224,14 @@ type Inductive struct {
 	Mks  []Annot
 }
 
+func (s Inductive) constructors() map[Name]Sort {
+	c := make(map[Name]Sort)
+	for _, mk := range s.Mks {
+		c[mk.Name] = mk.Type
+	}
+	return c
+}
+
 func (s Inductive) Form() Form {
 	return append(List{InhabitedCmd, s.Name}, slicesMap(s.Mks, func(mk Annot) Form {
 		return mk.Form()
@@ -231,7 +239,6 @@ func (s Inductive) Form() Form {
 }
 
 func (s Inductive) TypeCheck(ctx Context) Sort {
-
 	s = Inductive{
 		Name: s.Name,
 		Mks: slicesMap(s.Mks, func(mk Annot) Annot {
@@ -246,14 +253,9 @@ func (s Inductive) TypeCheck(ctx Context) Sort {
 			}
 		}),
 	}
-	cNameSet := make(map[Name]struct{})
-	slicesForEach(s.Mks, func(mk Annot) {
-		cNameSet[mk.Name] = struct{}{}
-	})
-	if len(cNameSet) != len(s.Mks) {
+	if len(s.constructors()) != len(s.Mks) {
 		panic(TypeErr)
 	}
-
 	return s
 }
 
@@ -297,9 +299,11 @@ func (m Match) Form() Form {
 }
 
 func (m Match) TypeCheck(ctx Context) Sort {
-	cNameSet := make(map[Name]struct{})
-	slicesForEach(m.Cond.Mks, func(mk Annot) {
-		cNameSet[mk.Name] = struct{}{}
+	condConstructors := m.Cond.constructors()
+	slicesForEach(m.Cases, func(c Case) {
+		if c.MkName != CaseFinal {
+
+		}
 	})
 
 	//TODO implement me
