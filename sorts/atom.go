@@ -34,11 +34,6 @@ func (s Atom) Form() Form {
 	return s.form
 }
 
-func (s Atom) Compile(ctx Context) Sort {
-	// atom is created not compiled from
-	return s
-}
-
 func (s Atom) Level(ctx Context) int {
 	return s.level(ctx)
 }

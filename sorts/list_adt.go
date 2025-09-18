@@ -27,12 +27,6 @@ func (s Arrow) Form() Form {
 	return List{ArrowCmd, s.A.Form(), s.B.Form()}
 }
 
-func (s Arrow) Compile(ctx Context) Sort {
-	s.A = s.A.Compile(ctx)
-	s.B = s.B.Compile(ctx)
-	return s
-}
-
 func (s Arrow) Level(ctx Context) int {
 	return max(s.A.Level(ctx), s.B.Level(ctx))
 }
@@ -82,12 +76,6 @@ type Prod struct {
 func (s Prod) Form() Form {
 	return List{ProdCmd, s.A.Form(), s.B.Form()}
 }
-func (s Prod) Compile(ctx Context) Sort {
-	s.A = s.A.Compile(ctx)
-	s.B = s.B.Compile(ctx)
-	return s
-}
-
 func (s Prod) Level(ctx Context) int {
 	return max(s.A.Level(ctx), s.B.Level(ctx))
 }
@@ -132,12 +120,6 @@ func init() {
 type Sum struct {
 	A Sort
 	B Sort
-}
-
-func (s Sum) Compile(ctx Context) Sort {
-	s.A = s.A.Compile(ctx)
-	s.B = s.B.Compile(ctx)
-	return s
 }
 
 func (s Sum) Form() Form {

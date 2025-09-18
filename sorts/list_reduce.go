@@ -40,11 +40,6 @@ func (s Beta) Form() Form {
 	return List{s.Cmd.Form(), s.Arg.Form()}
 }
 
-func (s Beta) Compile(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (s Beta) Level(ctx Context) int {
 	//TODO implement me
 	panic("implement me")
@@ -114,11 +109,6 @@ func (l Lambda) Form() Form {
 	return List{LambdaCmd, l.Param.Form(), l.Body.Form()}
 }
 
-func (l Lambda) Compile(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (l Lambda) Level(ctx Context) int {
 	//TODO implement me
 	panic("implement me")
@@ -166,11 +156,6 @@ type Inhabited struct {
 
 func (s Inhabited) Form() Form {
 	return List{InhabitedCmd, s.Type.Form()}
-}
-
-func (s Inhabited) Compile(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (s Inhabited) Level(ctx Context) int {
@@ -235,11 +220,6 @@ func (s Inductive) Form() Form {
 		form = append(form, mk.Form())
 	}
 	return form
-}
-
-func (s Inductive) Compile(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (s Inductive) Level(ctx Context) int {

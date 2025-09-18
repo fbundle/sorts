@@ -19,7 +19,6 @@ stage 3 (reducing):		Sort -> Sort
 type Sort interface {
 	Form() Form
 
-	Compile(ctx Context) Sort
 	Level(ctx Context) int
 	Parent(ctx Context) Sort
 	LessEqual(ctx Context, d Sort) bool
