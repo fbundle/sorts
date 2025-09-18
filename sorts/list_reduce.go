@@ -1,6 +1,5 @@
 package sorts
 
-import "slices"
 
 func init() {
 	DefaultCompileFunc = func(ctx Context, list List) Sort {
@@ -9,26 +8,17 @@ func init() {
 			panic(err)
 		}
 
-		cmd := ctx.Compile(list[0])
+		cmd := ctx.Compile(list[0]).TypeCheck(ctx)
 		args := slicesMap(list[1:], func(form Form) Sort {
-			return ctx.Compile(form)
+			return ctx.Compile(form).TypeCheck(ctx)
 		})
-		if len(args) == 0 {
-			return cmd
-		}
 
-		output := (Beta{
-			Cmd: cmd,
-			Arg: args[0],
-		}).TypeCheck(ctx)
-		for i := 1; i < len(args); i++ {
-			output = (Beta{
+		return slicesReduce(args, cmd, func(output Sort, arg Sort) Sort{
+			return (Beta{
 				Cmd: output,
-				Arg: args[i],
+				Arg: arg,
 			}).TypeCheck(ctx)
-		}
-
-		return output
+		})
 	}
 }
 
@@ -92,11 +82,15 @@ func init() {
 		if len(list) < 1 {
 			panic(err)
 		}
-		params := make([]Annot, 0, len(list)-1)
-		for i := 0; i < len(list)-1; i++ {
-			params = append(params, parseAnnot(ctx, list[i]))
-		}
-		body := ctx.Compile(list[len(list)-1])
+
+		params := slicesMap(list[:len(list)-1], func(form Form) Annot {
+			return parseAnnot(ctx, form)
+		})
+		body := ctx.Compile(list[len(list)-1]).TypeCheck(ctx)
+
+
+
+
 		if len(params) == 0 {
 			return body
 		}

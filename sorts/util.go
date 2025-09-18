@@ -35,3 +35,11 @@ func slicesMap[T1 any, T2 any](input []T1, f func(T1) T2) []T2 {
 	}
 	return output
 }
+
+func slicesReduce[T1 any, T2 any](input []T1, init T2, f func(T2, T1) T2) T2 {
+	output := init
+	for _, v := range input {
+		output = f(output, v)
+	}
+	return output
+}
