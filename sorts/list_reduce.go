@@ -227,11 +227,9 @@ type Inductive struct {
 }
 
 func (s Inductive) Form() Form {
-	form := List{InhabitedCmd, s.Name}
-	for _, mk := range s.Mks {
-		form = append(form, mk.Form())
-	}
-	return form
+	return append(List{InhabitedCmd, s.Name}, slicesMap(s.Mks, func(mk Annot) Form {
+		return mk.Form()
+	})...)
 }
 
 func (s Inductive) TypeCheck(ctx Context) Sort {
