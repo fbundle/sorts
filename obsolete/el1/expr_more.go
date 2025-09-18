@@ -194,7 +194,7 @@ func init() {
 		if err != nil {
 			return nil, err
 		}
-		// Parse cases - they come in pairs (comp, value)
+		// Compile cases - they come in pairs (comp, value)
 		cases := make([]Case, 0)
 		remainingArgs := list[1:]
 		// Check if we have an odd number of remaining arguments (final case)
@@ -208,7 +208,7 @@ func init() {
 			return nil, err
 		}
 		remainingArgs = remainingArgs[:len(remainingArgs)-1]
-		// Parse case pairs
+		// Compile case pairs
 		for i := 0; i < len(remainingArgs); i += 2 {
 			comp, err := parseFunc(remainingArgs[i])
 			if err != nil {

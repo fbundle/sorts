@@ -32,8 +32,8 @@ type Frame interface {
 }
 type ListCompileFunc = func(ctx Context, list List) Sort
 
-type Parser interface {
-	Parse(form Form) Sort
+type Compiler interface {
+	Compile(form Form) Sort
 }
 
 type Universe interface {
@@ -42,7 +42,7 @@ type Universe interface {
 
 type Context interface {
 	Frame
-	Parser
+	Compiler
 	Universe
 }
 

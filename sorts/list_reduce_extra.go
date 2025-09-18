@@ -5,7 +5,7 @@ const (
 )
 
 func parseAnnot(ctx Context, form Form) Annot {
-	err := parseErr(AnnotCmd, []string{"name", "type"})
+	err := compileErr(AnnotCmd, []string{"name", "type"})
 	list := mustType[List](err, form)
 	if len(list) != 2 {
 		panic(err)
@@ -13,7 +13,7 @@ func parseAnnot(ctx Context, form Form) Annot {
 
 	return Annot{
 		Name: mustType[Name](err, list[0]),
-		Type: ctx.Parse(list[1]),
+		Type: ctx.Compile(list[1]),
 	}
 }
 

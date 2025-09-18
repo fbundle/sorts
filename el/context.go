@@ -39,7 +39,7 @@ func (ctx Context) Set(name Name, sort sorts.Sort) sorts.Context {
 	return ctx
 }
 
-func (ctx Context) Parse(node Form) sorts.Sort {
+func (ctx Context) Compile(node Form) sorts.Sort {
 	switch node := node.(type) {
 	case Name:
 		// all names should be either builtin or linked to a Sort

@@ -2,15 +2,15 @@ package sorts
 
 func init() {
 	DefaultCompileFunc = func(ctx Context, list List) Sort {
-		err := parseErr("", []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
+		err := compileErr("", []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
 		if len(list) < 1 {
 			panic(err)
 		}
 
-		cmd := ctx.Parse(list[0])
+		cmd := ctx.Compile(list[0])
 		args := make([]Sort, 0, len(list)-1)
 		for i := 1; i < len(list); i++ {
-			args = append(args, ctx.Parse(list[i]))
+			args = append(args, ctx.Compile(list[i]))
 		}
 		if len(args) == 0 {
 			return cmd
@@ -67,7 +67,7 @@ const (
 
 func init() {
 	ListCompileFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
-		err := parseErr(LambdaCmd, []string{
+		err := compileErr(LambdaCmd, []string{
 			makeForm(AnnotCmd, "param1", "type1"),
 			"...",
 			makeForm(AnnotCmd, "paramN", "typeN"),
@@ -80,7 +80,7 @@ func init() {
 		for i := 0; i < len(list)-1; i++ {
 			params = append(params, parseAnnot(ctx, list[i]))
 		}
-		body := ctx.Parse(list[len(list)-1])
+		body := ctx.Compile(list[len(list)-1])
 		if len(params) == 0 {
 			return body
 		}
@@ -137,11 +137,11 @@ const (
 
 func init() {
 	ListCompileFuncMap[InhabitedCmd] = func(ctx Context, list List) Sort {
-		err := parseErr(InhabitedCmd, []string{"type"})
+		err := compileErr(InhabitedCmd, []string{"type"})
 		if len(list) != 1 {
 			panic(err)
 		}
-		t := ctx.Parse(list[0])
+		t := ctx.Compile(list[0])
 		return Inhabited{
 			Atom: NewTerm(List{InhabitedCmd, t.Form()}, t),
 			Type: t,
@@ -186,7 +186,7 @@ const (
 
 func init() {
 	ListCompileFuncMap[InductiveCmd] = func(ctx Context, list List) Sort {
-		err := parseErr(InductiveCmd, []string{
+		err := compileErr(InductiveCmd, []string{
 			"name",
 			makeForm(AnnotCmd, "constructor1", "type1"),
 			"...",
