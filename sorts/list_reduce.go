@@ -273,3 +273,37 @@ type Match struct {
 	Cond  Inductive
 	Cases []Case
 }
+
+func (m Match) Form() Form {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m Match) TypeCheck(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m Match) Level(ctx Context) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m Match) Parent(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m Match) LessEqual(ctx Context, d Sort) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m Match) Reduce(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+var _ Sort = Match{}
+
+type Let struct{}
