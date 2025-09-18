@@ -269,6 +269,12 @@ func (s Inductive) Reduce(ctx Context) Sort {
 
 var _ Sort = Inductive{}
 
+func init() {
+	ListCompileFuncMap[CaseCmd] = func(ctx Context, list List) Sort {
+		// TODO
+	}
+}
+
 type Match struct {
 	Cond  Inductive
 	Cases []Case
