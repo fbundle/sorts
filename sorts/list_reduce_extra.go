@@ -27,8 +27,8 @@ func (s Annot) Form() Form {
 }
 
 const (
-	CaseCmd     Name = "=>"
-	CaseDefault Name = "_"
+	CaseCmd   Name = "=>"
+	CaseFinal Name = "_"
 )
 
 type Case struct {
