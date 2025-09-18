@@ -10,10 +10,9 @@ func init() {
 		}
 
 		cmd := ctx.Compile(list[0])
-		args := make([]Sort, 0, len(list)-1)
-		for i := 1; i < len(list); i++ {
-			args = append(args, ctx.Compile(list[i]))
-		}
+		args := slicesMap(list[1:], func(form Form) Sort {
+			return ctx.Compile(form)
+		})
 		if len(args) == 0 {
 			return cmd
 		}

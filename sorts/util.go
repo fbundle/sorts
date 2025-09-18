@@ -25,5 +25,13 @@ func serialize(s Sort) []Sort {
 	if s, ok := s.(Arrow); ok {
 		return append([]Sort{s.A}, serialize(s.B)...)
 	}
-	return s
+	return []Sort{s}
+}
+
+func slicesMap[T1 any, T2 any](input []T1, f func(T1) T2) []T2 {
+	output := make([]T2, len(input))
+	for i, v := range input {
+		output[i] = f(v)
+	}
+	return output
 }
