@@ -209,7 +209,7 @@ func init() {
 			panic(err)
 		}
 
-		itype := compileAnnot(ctx, mustType[List](err, list[0]))
+		itype := compileAnnot(ctx, mustType[List](err, list[0])[1:])
 
 		subCtx := ctx.Set(itype.Name, nil)
 

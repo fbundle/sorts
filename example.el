@@ -5,11 +5,10 @@
     {True  := (inh True Bool)}
     {False := (inh False Bool)}
 
-
-
-    {Nat   := (inh Nat Any_2)}
-    {n0    := (inh n0 Nat)}
-    {succ  := (inh succ {Nat -> Nat})}
+    {Nat   := (inductive {Nat : Any_2}
+        {n0 : Nat}
+        {succ : {Nat -> Nat}}
+    )}
 
     {n1 := (succ n0)}
     {n2 := (succ n1)}
