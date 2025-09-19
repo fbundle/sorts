@@ -154,8 +154,11 @@ func init() {
 
 type Inhabited struct {
 	Name Name
-	Sort Sort
 	Type Sort
+}
+
+func (s Inhabited) sort() Sort {
+	return NewTerm(s.Name, s.Type)
 }
 
 func (s Inhabited) Form() Form {
@@ -164,7 +167,7 @@ func (s Inhabited) Form() Form {
 
 func (s Inhabited) TypeCheck(ctx Context) Sort {
 	return Inhabited{
-		Sort: s.Sort.TypeCheck(ctx),
+		Name: s.Name,
 		Type: s.Type.TypeCheck(ctx),
 	}
 }
@@ -179,7 +182,7 @@ func (s Inhabited) Parent(ctx Context) Sort {
 }
 
 func (s Inhabited) LessEqual(ctx Context, d Sort) bool {
-	return false
+	return s.sort().LessEqual(ctx, d)
 }
 
 func (s Inhabited) Reduce(ctx Context) Sort {
