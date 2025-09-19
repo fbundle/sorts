@@ -213,7 +213,10 @@ func init() {
 
 		itype := compileAnnot(ctx, mustType[List](err, list[0])[1:])
 
-		subCtx := ctx.Set(itype.Name, nil)
+		subCtx := ctx.Set(itype.Name, Inhabited{
+			Name: itype.Name,
+			Type: itype.Type,
+		})
 
 		mks := slicesMap(list[1:], func(form Form) Annot {
 			return compileAnnot(subCtx, mustType[List](err, form)[1:])
