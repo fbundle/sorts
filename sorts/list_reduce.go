@@ -399,7 +399,7 @@ func init() {
 		slicesForEach(list[:len(list)-1], func(form Form) {
 			binding := compileBinding(ctx, mustType[List](err, form)[1:])
 			ctx = ctx.Set(binding.Name, binding.Value)
-			log.Printf("setting binding value %v into name %s\n", binding.Value, binding.Name)
+			log.Printf("setting name %s with binding value %v\n", binding.Name, binding.Value.Form())
 
 			if ind, ok := binding.Value.(Inductive); ok {
 				// special for inductive type

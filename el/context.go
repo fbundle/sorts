@@ -3,6 +3,7 @@ package el
 import (
 	"cmp"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -40,6 +41,13 @@ func (ctx Context) Set(name Name, sort sorts.Sort) sorts.Context {
 }
 
 func (ctx Context) Compile(node Form) sorts.Sort {
+	keys := make([]Name, 0, ctx.frame.Len())
+	for k := range ctx.frame.Repr() {
+		keys = append(keys, k)
+	}
+
+	log.Printf("compiling %s with context %v", strings.Join(node.Marshal(), " "), keys)
+
 	switch node := node.(type) {
 	case Name:
 		// all names should be either builtin or linked to a Sort
