@@ -283,6 +283,13 @@ var _ Sort = Inductive{}
 
 func init() {
 	ListCompileFuncMap[CaseCmd] = func(ctx Context, list List) Sort {
+		err := compileErr(list, CaseCmd, []string{
+			"cond",
+			makeForm(CaseCmd, makeForm("constructor1", "arg11", "...", "arg1N"), "value1"),
+			"...",
+			makeForm(CaseCmd, makeForm("constructorM", "argM1", "...", "argMN"), "valueM"),
+		})
+
 		// TODO
 		panic("implement me")
 	}
