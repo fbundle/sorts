@@ -84,7 +84,7 @@ func init() {
 		}
 
 		params := slicesMap(list[:len(list)-1], func(form Form) Annot {
-			return compileAnnot(ctx, form)
+			return compileAnnot(ctx, mustType[List](err, form)[1:])
 		})
 		body := ctx.Compile(list[len(list)-1]).TypeCheck(ctx)
 
@@ -162,7 +162,7 @@ func (s Inhabited) sort() Sort {
 }
 
 func (s Inhabited) Form() Form {
-	return List{Name(InhabitedCmd), s.Type.Form()}
+	return s.Name
 }
 
 func (s Inhabited) TypeCheck(ctx Context) Sort {
@@ -212,7 +212,7 @@ func init() {
 		subCtx := ctx.Set(name, nil)
 
 		mks := slicesMap(list[1:], func(form Form) Annot {
-			return compileAnnot(subCtx, form)
+			return compileAnnot(subCtx, mustType[List](err, form)[1:])
 		})
 
 		return Inductive{

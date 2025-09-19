@@ -83,6 +83,9 @@ func (ctx Context) LessEqual(src Form, dst Form) bool {
 		return true
 	}
 	if ok1 && ok2 {
+		if s == d {
+			return true
+		}
 		if _, ok := ctx.nameRule.Get(rule{s, d}); ok {
 			return true
 		}
