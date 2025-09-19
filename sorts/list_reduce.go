@@ -141,21 +141,19 @@ const (
 
 func init() {
 	ListCompileFuncMap[InhabitedCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, []string{InhabitedCmd, "type"})
-		if len(list) != 1 {
+		err := compileErr(list, []string{InhabitedCmd, "name", "type"})
+		if len(list) != 2 {
 			panic(err)
 		}
-		t := ctx.Compile(list[0])
 		return Inhabited{
-			Sort: NewTerm(Inhabited{
-				Type: t,
-			}.Form(), t),
-			Type: t,
+			Name: mustType[Name](err, list[0]),
+			Type: ctx.Compile(list[1]).TypeCheck(ctx),
 		}
 	}
 }
 
 type Inhabited struct {
+	Name Name
 	Sort Sort
 	Type Sort
 }
