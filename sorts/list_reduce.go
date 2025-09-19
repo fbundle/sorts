@@ -1,6 +1,9 @@
 package sorts
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 func init() {
 	DefaultCompileFunc = func(ctx Context, list List) Sort {
@@ -307,6 +310,9 @@ func init() {
 		if len(list) < 1 {
 			panic(err)
 		}
+
+		t := ctx.Compile(list[0])
+		fmt.Printf("%T", t)
 
 		return Match{
 			Cond: mustType[Inductive](err, ctx.Compile(list[0]).TypeCheck(ctx)),

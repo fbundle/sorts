@@ -41,12 +41,8 @@ func (ctx Context) Set(name Name, sort sorts.Sort) sorts.Context {
 }
 
 func (ctx Context) Compile(node Form) sorts.Sort {
-	keys := make([]Name, 0, ctx.frame.Len())
-	for k := range ctx.frame.Repr() {
-		keys = append(keys, k)
-	}
 
-	log.Printf("compiling %s with context %v", strings.Join(node.Marshal(), " "), keys)
+	log.Printf("compiling %s with context %v", strings.Join(node.Marshal(), " "), ctx.frame.Repr())
 
 	switch node := node.(type) {
 	case Name:
