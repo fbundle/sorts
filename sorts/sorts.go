@@ -52,4 +52,4 @@ type Context interface {
 
 var DefaultCompileFunc ListCompileFunc
 
-var ListCompileFuncMap = map[Name]ListCompileFunc{}
+var ListCompileFuncMap = map[string]ListCompileFunc{}

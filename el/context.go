@@ -101,7 +101,7 @@ var _ sorts.Context = Context{}
 
 func (ctx Context) Init() Context {
 	for cmd, listParseFunc := range sorts.ListCompileFuncMap {
-		ctx = ctx.AddListParseFunc(cmd, listParseFunc)
+		ctx = ctx.AddListParseFunc(Name(cmd), listParseFunc)
 	}
 	return ctx
 }
