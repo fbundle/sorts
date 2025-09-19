@@ -1,7 +1,5 @@
 package sorts
 
-import "fmt"
-
 func init() {
 	DefaultCompileFunc = func(ctx Context, list List) Sort {
 		err := compileErr(list, []string{"beta", "arg1", "...", "argN"}, "where N >= 0")
@@ -42,8 +40,6 @@ func (s Beta) TypeCheck(ctx Context) Sort {
 	A := s.Arg.Parent(ctx)
 
 	if !A.LessEqual(ctx, arrow.A) {
-		fmt.Println("A", arrow.A.Form())
-		fmt.Println("a", A.Form())
 		panic(TypeErr)
 	}
 	return s
