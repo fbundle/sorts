@@ -177,13 +177,11 @@ func (s Inhabited) Level(ctx Context) int {
 }
 
 func (s Inhabited) Parent(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	return s.Type
 }
 
 func (s Inhabited) LessEqual(ctx Context, d Sort) bool {
-	//TODO implement me
-	panic("implement me")
+	return false
 }
 
 func (s Inhabited) Reduce(ctx Context) Sort {
@@ -306,7 +304,7 @@ func init() {
 		return Match{
 			Cond: mustType[Inductive](err, ctx.Compile(list[0]).TypeCheck(ctx)),
 			Cases: slicesMap(list[1:], func(form Form) Case {
-				return compileCase(ctx, form)
+				return compileCase(ctx, mustType[List](err, form)[1:])
 			}),
 		}
 	}
@@ -392,7 +390,9 @@ func init() {
 
 		return Let{
 			Bindings: slicesMap(list[:len(list)-1], func(form Form) Binding {
-				return compileBinding(ctx, form)
+				binding := compileBinding(ctx, mustType[List](err, form)[1:])
+				ctx = ctx.Set(binding.Name, binding.Value)
+				return binding
 			}),
 			Final: ctx.Compile(list[len(list)-1]).TypeCheck(ctx),
 		}

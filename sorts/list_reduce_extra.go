@@ -37,13 +37,12 @@ type Case struct {
 	Value  Sort
 }
 
-func compileCase(ctx Context, form Form) Case {
-	err := compileErr(form, []string{
+func compileCase(ctx Context, list List) Case {
+	err := compileErr(list, []string{
 		CaseCmd,
 		makeForm("constructor", "arg1", "...", "argN"),
 		"value",
 	})
-	list := mustType[List](err, form)
 	if len(list) != 2 {
 		panic(err)
 	}
@@ -73,10 +72,9 @@ type Binding struct {
 	Value Sort
 }
 
-func compileBinding(ctx Context, form Form) Binding {
-	err := compileErr(form, []string{BindingCmd, "name", "value"})
-	list := mustType[List](err, form)
-	if len(list) != 3 {
+func compileBinding(ctx Context, list List) Binding {
+	err := compileErr(list, []string{BindingCmd, "name", "value"})
+	if len(list) != 2 {
 		panic(err)
 	}
 	return Binding{
