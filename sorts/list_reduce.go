@@ -1,7 +1,6 @@
 package sorts
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -311,12 +310,12 @@ func init() {
 			panic(err)
 		}
 
-		t := ctx.Compile(list[0])
-		fmt.Printf("%T", t)
-		t2 := t.TypeCheck(ctx)
+		cond := ctx.Compile(list[0]).TypeCheck(ctx)
+
+		mustType[Inductive](err, cond.Parent(ctx))
 
 		return Match{
-			Cond: mustType[Inductive](err, t2),
+			Cond: cond,
 			Cases: slicesMap(list[1:], func(form Form) Case {
 				return compileCase(ctx, mustType[List](err, form)[1:])
 			}),
@@ -325,17 +324,18 @@ func init() {
 }
 
 type Match struct {
-	Cond  Inductive
+	Cond  Sort
 	Cases []Case
 }
 
 func (s Match) Form() Form {
-	//TODO implement me
-	panic("implement me")
+	return append(List{Name(MatchCmd), s.Cond.Form()}, slicesMap(s.Cases, func(c Case) Form {
+		return c.Form()
+	})...)
 }
 
 func (s Match) TypeCheck(ctx Context) Sort {
-	condConstructors := s.Cond.constructors()
+	condConstructors := mustType[Inductive](TypeErr, s.Cond.Parent(ctx)).constructors()
 	caseConstructors := make(map[Name]Case)
 	slicesForEach(s.Cases, func(c Case) {
 		caseConstructors[c.MkName] = c
