@@ -19,7 +19,7 @@ func mustReadSource() string {
 }
 
 func mustRun(tokens []form.Token) {
-	ctx := el.Context{}
+	ctx := el.Context{}.Init()
 
 	var node form.Form
 	var err error
