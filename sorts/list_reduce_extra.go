@@ -62,3 +62,24 @@ func compileCase(ctx Context, form Form) Case {
 
 	return c
 }
+
+const (
+	BindingCmd Name = ":="
+)
+
+type Binding struct {
+	Name  Name
+	Value Sort
+}
+
+func compileBinding(ctx Context, form Form) Binding {
+	err := compileErr(BindingCmd, []string{"name", "value"})
+	list := mustType[List](err, form)
+	if len(list) != 2 {
+		panic(err)
+	}
+	return Binding{
+		Name:  mustType[Name](err, list[0]),
+		Value: ctx.Compile(list[1]).TypeCheck(ctx),
+	}
+}

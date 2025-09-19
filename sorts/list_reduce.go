@@ -349,4 +349,64 @@ func (s Match) Reduce(ctx Context) Sort {
 
 var _ Sort = Match{}
 
-type Let struct{}
+const (
+	LetCmd Name = "let"
+)
+
+func init() {
+	ListCompileFuncMap[LetCmd] = func(ctx Context, list List) Sort {
+		err := compileErr(LetCmd, []string{
+			makeForm(BindingCmd, "name1", "value1"),
+			"...",
+			makeForm(BindingCmd, "nameN", "valueN"),
+			"final",
+		}, "where N >= 0")
+		if len(list) < 1 {
+			panic(err)
+		}
+
+		return Let{
+			Bindings: slicesMap(list[:len(list)-1], func(form Form) Binding {
+				return compileBinding(ctx, form)
+			}),
+			Final: ctx.Compile(list[len(list)-1]).TypeCheck(ctx),
+		}
+	}
+}
+
+type Let struct {
+	Bindings []Binding
+	Final    Sort
+}
+
+func (l Let) Form() Form {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (l Let) TypeCheck(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (l Let) Level(ctx Context) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (l Let) Parent(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (l Let) LessEqual(ctx Context, d Sort) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (l Let) Reduce(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+var _ Sort = Let{}
