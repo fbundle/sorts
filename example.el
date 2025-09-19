@@ -1,13 +1,13 @@
 (let
-    {Nil   := (inh Any_2)}
-    {nil   := (inh Nil)}
-    {Bool  := (inh Any_2)}
-    {True  := (inh Bool)}
-    {False := (inh Bool)}
+    {Nil   := (inh Nil Any_2)}
+    {nil   := (inh nil Nil)}
+    {Bool  := (inh Bool Any_2)}
+    {True  := (inh True Bool)}
+    {False := (inh False Bool)}
 
-    {Nat   := (inh Any_2)}
-    {n0    := (inh Nat)}
-    {succ  := (inh {Nat -> Nat})}
+    {Nat   := (inh Nat Any_2)}
+    {n0    := (inh n0 Nat)}
+    {succ  := (inh succ {Nat -> Nat})}
 
     {n1 := (succ n0)}
     {n2 := (succ n1)}
