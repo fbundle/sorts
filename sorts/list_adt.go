@@ -1,12 +1,12 @@
 package sorts
 
 const (
-	ArrowCmd Name = "->"
+	ArrowCmd = "->"
 )
 
 func init() {
 	ListCompileFuncMap[ArrowCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, ArrowCmd, []string{"type1", "type2"})
+		err := compileErr(list, []string{ArrowCmd, "type1", "type2"})
 
 		if len(list) != 2 {
 			panic(err)
@@ -24,7 +24,7 @@ type Arrow struct {
 }
 
 func (s Arrow) Form() Form {
-	return List{ArrowCmd, s.A.Form(), s.B.Form()}
+	return List{Name(ArrowCmd), s.A.Form(), s.B.Form()}
 }
 
 func (s Arrow) TypeCheck(ctx Context) Sort {
@@ -59,12 +59,12 @@ func (s Arrow) Reduce(ctx Context) Sort {
 var _ Sort = Arrow{}
 
 const (
-	ProdCmd Name = "⊗"
+	ProdCmd = "⊗"
 )
 
 func init() {
 	ListCompileFuncMap[ProdCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, ProdCmd, []string{"type1", "type2"})
+		err := compileErr(list, []string{ProdCmd, "type1", "type2"})
 		if len(list) != 2 {
 			panic(err)
 		}
@@ -81,7 +81,7 @@ type Prod struct {
 }
 
 func (s Prod) Form() Form {
-	return List{ProdCmd, s.A.Form(), s.B.Form()}
+	return List{Name(ProdCmd), s.A.Form(), s.B.Form()}
 }
 
 func (s Prod) TypeCheck(ctx Context) Sort {
@@ -116,12 +116,12 @@ func (s Prod) Reduce(ctx Context) Sort {
 var _ Sort = Prod{}
 
 const (
-	SumCmd Name = "⊕"
+	SumCmd = "⊕"
 )
 
 func init() {
 	ListCompileFuncMap[SumCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, SumCmd, []string{"type1", "type2"})
+		err := compileErr(list, []string{SumCmd, "type1", "type2"})
 		if len(list) != 2 {
 			panic(err)
 		}
@@ -138,7 +138,7 @@ type Sum struct {
 }
 
 func (s Sum) Form() Form {
-	return List{SumCmd, s.A.Form(), s.B.Form()}
+	return List{Name(SumCmd), s.A.Form(), s.B.Form()}
 }
 
 func (s Sum) TypeCheck(ctx Context) Sort {

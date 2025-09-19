@@ -1,11 +1,11 @@
 package sorts
 
 const (
-	AnnotCmd Name = ":"
+	AnnotCmd = ":"
 )
 
 func compileAnnot(ctx Context, form Form) Annot {
-	err := compileErr(form, AnnotCmd, []string{"name", "type"})
+	err := compileErr(form, []string{AnnotCmd, "name", "type"})
 	list := mustType[List](err, form)
 	if len(list) != 2 {
 		panic(err)
@@ -23,12 +23,12 @@ type Annot struct {
 }
 
 func (s Annot) Form() Form {
-	return List{AnnotCmd, s.Name, s.Type.Form()}
+	return List{Name(AnnotCmd), s.Name, s.Type.Form()}
 }
 
 const (
-	CaseCmd   Name = "=>"
-	CaseFinal Name = "_"
+	CaseCmd   = "=>"
+	CaseFinal = "_"
 )
 
 type Case struct {
@@ -38,7 +38,8 @@ type Case struct {
 }
 
 func compileCase(ctx Context, form Form) Case {
-	err := compileErr(form, CaseCmd, []string{
+	err := compileErr(form, []string{
+		CaseCmd,
 		makeForm("constructor", "arg1", "...", "argN"),
 		"value",
 	})
@@ -64,7 +65,7 @@ func compileCase(ctx Context, form Form) Case {
 }
 
 const (
-	BindingCmd Name = ":="
+	BindingCmd = ":="
 )
 
 type Binding struct {
@@ -73,7 +74,7 @@ type Binding struct {
 }
 
 func compileBinding(ctx Context, form Form) Binding {
-	err := compileErr(form, BindingCmd, []string{"name", "value"})
+	err := compileErr(form, []string{BindingCmd, "name", "value"})
 	list := mustType[List](err, form)
 	if len(list) != 2 {
 		panic(err)

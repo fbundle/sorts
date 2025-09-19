@@ -2,7 +2,7 @@ package sorts
 
 func init() {
 	DefaultCompileFunc = func(ctx Context, list List) Sort {
-		err := compileErr(list, "", []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
+		err := compileErr(list, []string{"beta", "arg1", "...", "argN"}, "where N >= 0")
 		if len(list) < 1 {
 			panic(err)
 		}
@@ -67,12 +67,13 @@ func (s Beta) Reduce(ctx Context) Sort {
 var _ Sort = Beta{}
 
 const (
-	LambdaCmd Name = "=>"
+	LambdaCmd = "=>"
 )
 
 func init() {
 	ListCompileFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, LambdaCmd, []string{
+		err := compileErr(list, []string{
+			LambdaCmd,
 			makeForm(AnnotCmd, "param1", "type1"),
 			"...",
 			makeForm(AnnotCmd, "paramN", "typeN"),
@@ -102,7 +103,7 @@ type Lambda struct {
 }
 
 func (l Lambda) Form() Form {
-	return List{LambdaCmd, l.Param.Form(), l.Body.Form()}
+	return List{Name(LambdaCmd), l.Param.Form(), l.Body.Form()}
 }
 
 func (l Lambda) TypeCheck(ctx Context) Sort {
@@ -135,18 +136,20 @@ func (l Lambda) Reduce(ctx Context) Sort {
 var _ Sort = Lambda{}
 
 const (
-	InhabitedCmd Name = "inh"
+	InhabitedCmd = "inh"
 )
 
 func init() {
 	ListCompileFuncMap[InhabitedCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, InhabitedCmd, []string{"type"})
+		err := compileErr(list, []string{InhabitedCmd, "type"})
 		if len(list) != 1 {
 			panic(err)
 		}
 		t := ctx.Compile(list[0])
 		return Inhabited{
-			Sort: NewTerm(List{InhabitedCmd, t.Form()}, t),
+			Sort: NewTerm(Inhabited{
+				Type: t,
+			}.Form(), t),
 			Type: t,
 		}
 	}
@@ -158,7 +161,7 @@ type Inhabited struct {
 }
 
 func (s Inhabited) Form() Form {
-	return List{InhabitedCmd, s.Type.Form()}
+	return List{Name(InhabitedCmd), s.Type.Form()}
 }
 
 func (s Inhabited) TypeCheck(ctx Context) Sort {
@@ -196,7 +199,8 @@ const (
 
 func init() {
 	ListCompileFuncMap[InductiveCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, InductiveCmd, []string{
+		err := compileErr(list, []string{
+			InductiveCmd,
 			"name",
 			makeForm(AnnotCmd, "constructor1", "type1"),
 			"...",
@@ -233,7 +237,7 @@ func (s Inductive) constructors() map[Name]Sort {
 }
 
 func (s Inductive) Form() Form {
-	return append(List{InhabitedCmd, s.Name}, slicesMap(s.Mks, func(mk Annot) Form {
+	return append(List{Name(InhabitedCmd), s.Name}, slicesMap(s.Mks, func(mk Annot) Form {
 		return mk.Form()
 	})...)
 }
@@ -281,9 +285,14 @@ func (s Inductive) Reduce(ctx Context) Sort {
 
 var _ Sort = Inductive{}
 
+const (
+	MatchCmd = "match"
+)
+
 func init() {
-	ListCompileFuncMap[CaseCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, CaseCmd, []string{
+	ListCompileFuncMap[MatchCmd] = func(ctx Context, list List) Sort {
+		err := compileErr(list, []string{
+			MatchCmd,
 			"cond",
 			makeForm(CaseCmd, makeForm("constructor1", "arg11", "...", "arg1N"), "value1"),
 			"...",
@@ -365,12 +374,13 @@ func (s Match) Reduce(ctx Context) Sort {
 var _ Sort = Match{}
 
 const (
-	LetCmd Name = "let"
+	LetCmd = "let"
 )
 
 func init() {
 	ListCompileFuncMap[LetCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, LetCmd, []string{
+		err := compileErr(list, []string{
+			LetCmd,
 			makeForm(BindingCmd, "name1", "value1"),
 			"...",
 			makeForm(BindingCmd, "nameN", "valueN"),
