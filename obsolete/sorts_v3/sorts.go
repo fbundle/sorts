@@ -47,6 +47,6 @@ type Sort interface {
 type sortAttr struct {
 	name      string              // every Sort is identified with a Name (string)
 	level     int                 // universe Level
-	parent    Sort                // (or Type) every Sort must have a Parent
+	parent    Sort                // (or IType) every Sort must have a Parent
 	lessEqual func(dst Sort) bool // a partial order on el_sorts (subtype)
 }

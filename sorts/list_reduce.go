@@ -223,15 +223,15 @@ func init() {
 		})
 
 		return Inductive{
-			Type: itype,
-			Mks:  mks,
+			IType: itype,
+			Mks:   mks,
 		}
 	}
 }
 
 type Inductive struct {
-	Type Annot
-	Mks  []Annot
+	IType Annot
+	Mks   []Annot
 }
 
 func (s Inductive) constructors() map[Name]Sort {
@@ -243,18 +243,18 @@ func (s Inductive) constructors() map[Name]Sort {
 }
 
 func (s Inductive) Form() Form {
-	return append(List{Name(InhabitedCmd), s.Type.Form()}, slicesMap(s.Mks, func(mk Annot) Form {
+	return append(List{Name(InhabitedCmd), s.IType.Form()}, slicesMap(s.Mks, func(mk Annot) Form {
 		return mk.Form()
 	})...)
 }
 
 func (s Inductive) TypeCheck(ctx Context) Sort {
 	s = Inductive{
-		Type: s.Type,
+		IType: s.IType,
 		Mks: slicesMap(s.Mks, func(mk Annot) Annot {
 			t := mk.Type.TypeCheck(ctx)
 			arrow := serialize(t)
-			if arrow[len(arrow)-1].Form() != s.Type.Name {
+			if arrow[len(arrow)-1].Form() != s.IType.Name {
 				panic(TypeErr)
 			}
 			return Annot{
@@ -275,8 +275,7 @@ func (s Inductive) Level(ctx Context) int {
 }
 
 func (s Inductive) Parent(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	return s.IType.Type
 }
 
 func (s Inductive) LessEqual(ctx Context, d Sort) bool {
@@ -401,6 +400,17 @@ func init() {
 			binding := compileBinding(ctx, mustType[List](err, form)[1:])
 			ctx = ctx.Set(binding.Name, binding.Value)
 			log.Printf("setting binding value %v into name %s\n", binding.Value, binding.Name)
+
+			if ind, ok := binding.Value.(Inductive); ok {
+				// special for inductive type
+				slicesForEach(ind.Mks, func(mk Annot) {
+					ctx = ctx.Set(mk.Name, Inhabited{
+						Name: mk.Name,
+						Type: mk.Type,
+					})
+				})
+			}
+
 			bindings = append(bindings, binding)
 		})
 

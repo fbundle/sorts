@@ -18,7 +18,7 @@ type Form = form.Form
 const (
 	InitialName  = "Unit"
 	TerminalName = "Any"
-	DefaultName  = "Type"
+	DefaultName  = "IType"
 )
 
 type Context struct {

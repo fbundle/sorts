@@ -60,7 +60,7 @@ func (p Pi) String() string {
 // Universe: Type0, Type1 etc (we'll only use Type0)
 type Univ struct{ Level int }
 
-func (u Univ) String() string { return fmt.Sprintf("Type%d", u.Level) }
+func (u Univ) String() string { return fmt.Sprintf("IType%d", u.Level) }
 
 // Nat constructors
 type Zero struct{}
@@ -72,7 +72,7 @@ type Succ struct{ N Term }
 func (s Succ) String() string { return fmt.Sprintf("(Succ %s)", s.N.String()) }
 
 // Nat elimination (dependent recursor)
-// NatRec P z_case s_case n  -- P : Nat -> Type, z_case : P Zero, s_case : forall (k : Nat). P k -> P (Succ k), n : Nat
+// NatRec P z_case s_case n  -- P : Nat -> IType, z_case : P Zero, s_case : forall (k : Nat). P k -> P (Succ k), n : Nat
 type NatRec struct {
 	P Term
 	Z Term
@@ -311,16 +311,16 @@ func typeCheck(ctx Env, venv Env, t Term) (Term, error) {
 		}
 		return Var{Name: "Nat"}, nil
 	case NatRec:
-		// Check P : Nat -> Type
+		// Check P : Nat -> IType
 		pType, err := typeCheck(ctx, venv, u.P)
 		if err != nil {
 			return nil, err
 		}
-		// expect pType to be Pi (k : Nat) -> Type
+		// expect pType to be Pi (k : Nat) -> IType
 		pTypeN := eval(venv, pType)
 		pi, ok := pTypeN.(Pi)
 		if !ok {
-			return nil, fmt.Errorf("P must be a Pi from Nat to Type; got %s", pTypeN.String())
+			return nil, fmt.Errorf("P must be a Pi from Nat to IType; got %s", pTypeN.String())
 		}
 		// check Z : P Zero
 		zExpected := subst(pi.Return, pi.Param, Zero{})
