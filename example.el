@@ -5,6 +5,8 @@
     {True  := (inh True Bool)}
     {False := (inh False Bool)}
 
+
+
     {Nat   := (inh Nat Any_2)}
     {n0    := (inh n0 Nat)}
     {succ  := (inh succ {Nat -> Nat})}

@@ -4,9 +4,8 @@ const (
 	AnnotCmd = ":"
 )
 
-func compileAnnot(ctx Context, form Form) Annot {
-	err := compileErr(form, []string{AnnotCmd, "name", "type"})
-	list := mustType[List](err, form)
+func compileAnnot(ctx Context, list List) Annot {
+	err := compileErr(list, []string{AnnotCmd, "name", "type"})
 	if len(list) != 2 {
 		panic(err)
 	}

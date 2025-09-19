@@ -200,7 +200,7 @@ func init() {
 	ListCompileFuncMap[InductiveCmd] = func(ctx Context, list List) Sort {
 		err := compileErr(list, []string{
 			InductiveCmd,
-			"name",
+			makeForm(AnnotCmd, "type", "univ"),
 			makeForm(AnnotCmd, "constructor1", "type1"),
 			"...",
 			makeForm(AnnotCmd, "constructorN", "typeN"),
@@ -208,22 +208,24 @@ func init() {
 		if len(list) < 2 {
 			panic(err)
 		}
-		name := mustType[Name](err, list[0])
-		subCtx := ctx.Set(name, nil)
+
+		itype := compileAnnot(ctx, mustType[List](err, list[0]))
+
+		subCtx := ctx.Set(itype.Name, nil)
 
 		mks := slicesMap(list[1:], func(form Form) Annot {
 			return compileAnnot(subCtx, mustType[List](err, form)[1:])
 		})
 
 		return Inductive{
-			Name: name,
+			Type: itype,
 			Mks:  mks,
 		}
 	}
 }
 
 type Inductive struct {
-	Name Name
+	Type Annot
 	Mks  []Annot
 }
 
@@ -236,18 +238,18 @@ func (s Inductive) constructors() map[Name]Sort {
 }
 
 func (s Inductive) Form() Form {
-	return append(List{Name(InhabitedCmd), s.Name}, slicesMap(s.Mks, func(mk Annot) Form {
+	return append(List{Name(InhabitedCmd), s.Type.Form()}, slicesMap(s.Mks, func(mk Annot) Form {
 		return mk.Form()
 	})...)
 }
 
 func (s Inductive) TypeCheck(ctx Context) Sort {
 	s = Inductive{
-		Name: s.Name,
+		Type: s.Type,
 		Mks: slicesMap(s.Mks, func(mk Annot) Annot {
 			t := mk.Type.TypeCheck(ctx)
 			arrow := serialize(t)
-			if arrow[len(arrow)-1].Form() != s.Name {
+			if arrow[len(arrow)-1].Form() != s.Type.Name {
 				panic(TypeErr)
 			}
 			return Annot{
