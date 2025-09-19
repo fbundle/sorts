@@ -1,5 +1,7 @@
 package sorts
 
+import "log"
+
 func init() {
 	DefaultCompileFunc = func(ctx Context, list List) Sort {
 		err := compileErr(list, []string{"beta", "arg1", "...", "argN"}, "where N >= 0")
@@ -395,6 +397,7 @@ func init() {
 		slicesForEach(list[:len(list)-1], func(form Form) {
 			binding := compileBinding(ctx, mustType[List](err, form)[1:])
 			ctx = ctx.Set(binding.Name, binding.Value)
+			log.Printf("setting binding value %v into name %s\n", binding.Value, binding.Name)
 			bindings = append(bindings, binding)
 		})
 
