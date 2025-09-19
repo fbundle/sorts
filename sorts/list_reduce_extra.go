@@ -25,6 +25,13 @@ func (s Annot) Form() Form {
 	return List{Name(AnnotCmd), s.Name, s.Type.Form()}
 }
 
+func (s Annot) inhabited() Inhabited {
+	return Inhabited{
+		Name: s.Name,
+		Type: s.Type,
+	}
+}
+
 const (
 	CaseCmd   = "=>"
 	CaseFinal = "_"

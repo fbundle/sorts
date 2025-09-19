@@ -91,6 +91,9 @@ func init() {
 		params := slicesMap(list[:len(list)-1], func(form Form) Annot {
 			return compileAnnot(ctx, mustType[List](err, form)[1:])
 		})
+		slicesForEach(params, func(param Annot) {
+			ctx = ctx.Set(param.Name, param.inhabited())
+		})
 		body := ctx.Compile(list[len(list)-1]).TypeCheck(ctx)
 
 		return slicesReduce(slicesReverse(params), body, func(output Sort, param Annot) Sort {
@@ -216,10 +219,7 @@ func init() {
 
 		itype := compileAnnot(ctx, mustType[List](err, list[0])[1:])
 
-		subCtx := ctx.Set(itype.Name, Inhabited{
-			Name: itype.Name,
-			Type: itype.Type,
-		})
+		subCtx := ctx.Set(itype.Name, itype.inhabited())
 
 		mks := slicesMap(list[1:], func(form Form) Annot {
 			return compileAnnot(subCtx, mustType[List](err, form)[1:])
@@ -313,9 +313,10 @@ func init() {
 
 		t := ctx.Compile(list[0])
 		fmt.Printf("%T", t)
+		t2 := t.TypeCheck(ctx)
 
 		return Match{
-			Cond: mustType[Inductive](err, ctx.Compile(list[0]).TypeCheck(ctx)),
+			Cond: mustType[Inductive](err, t2),
 			Cases: slicesMap(list[1:], func(form Form) Case {
 				return compileCase(ctx, mustType[List](err, form)[1:])
 			}),
@@ -410,10 +411,7 @@ func init() {
 			if ind, ok := binding.Value.(Inductive); ok {
 				// special for inductive type
 				slicesForEach(ind.Mks, func(mk Annot) {
-					ctx = ctx.Set(mk.Name, Inhabited{
-						Name: mk.Name,
-						Type: mk.Type,
-					})
+					ctx = ctx.Set(mk.Name, mk.inhabited())
 				})
 			}
 
