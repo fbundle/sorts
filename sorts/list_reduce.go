@@ -391,13 +391,17 @@ func init() {
 			panic(err)
 		}
 
+		bindings := make([]Binding, 0, len(list)-1)
+
+		slicesForEach(list[:len(list)-1], func(form Form) {
+			binding := compileBinding(ctx, mustType[List](err, form)[1:])
+			ctx = ctx.Set(binding.Name, binding.Value)
+			bindings = append(bindings, binding)
+		})
+
 		return Let{
-			Bindings: slicesMap(list[:len(list)-1], func(form Form) Binding {
-				binding := compileBinding(ctx, mustType[List](err, form)[1:])
-				ctx = ctx.Set(binding.Name, binding.Value)
-				return binding
-			}),
-			Final: ctx.Compile(list[len(list)-1]).TypeCheck(ctx),
+			Bindings: bindings,
+			Final:    ctx.Compile(list[len(list)-1]).TypeCheck(ctx),
 		}
 	}
 }
