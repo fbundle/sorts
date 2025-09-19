@@ -392,7 +392,6 @@ func init() {
 		}
 
 		bindings := make([]Binding, 0, len(list)-1)
-
 		slicesForEach(list[:len(list)-1], func(form Form) {
 			binding := compileBinding(ctx, mustType[List](err, form)[1:])
 			ctx = ctx.Set(binding.Name, binding.Value)
