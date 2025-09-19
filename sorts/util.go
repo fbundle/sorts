@@ -16,9 +16,9 @@ func makeForm(cmd Name, args ...string) string {
 	return fmt.Sprintf("(%s %s)", cmd, strings.Join(args, " "))
 }
 
-func compileErr(cmd Name, args []string, suffices ...string) error {
+func compileErr(actual Form, cmd Name, args []string, suffices ...string) error {
 	suffixStr := strings.Join(suffices, " ")
-	return fmt.Errorf("%s must be %s %s", cmd, makeForm(cmd, args...), suffixStr)
+	return fmt.Errorf("%s must be %s %s got %s", cmd, makeForm(cmd, args...), suffixStr, actual)
 }
 
 func serialize(s Sort) []Sort {

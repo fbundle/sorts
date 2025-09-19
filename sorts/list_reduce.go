@@ -2,7 +2,7 @@ package sorts
 
 func init() {
 	DefaultCompileFunc = func(ctx Context, list List) Sort {
-		err := compileErr("", []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
+		err := compileErr(list, "", []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
 		if len(list) < 1 {
 			panic(err)
 		}
@@ -72,7 +72,7 @@ const (
 
 func init() {
 	ListCompileFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(LambdaCmd, []string{
+		err := compileErr(list, LambdaCmd, []string{
 			makeForm(AnnotCmd, "param1", "type1"),
 			"...",
 			makeForm(AnnotCmd, "paramN", "typeN"),
@@ -140,7 +140,7 @@ const (
 
 func init() {
 	ListCompileFuncMap[InhabitedCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(InhabitedCmd, []string{"type"})
+		err := compileErr(list, InhabitedCmd, []string{"type"})
 		if len(list) != 1 {
 			panic(err)
 		}
@@ -196,7 +196,7 @@ const (
 
 func init() {
 	ListCompileFuncMap[InductiveCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(InductiveCmd, []string{
+		err := compileErr(list, InductiveCmd, []string{
 			"name",
 			makeForm(AnnotCmd, "constructor1", "type1"),
 			"...",
@@ -355,7 +355,7 @@ const (
 
 func init() {
 	ListCompileFuncMap[LetCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(LetCmd, []string{
+		err := compileErr(list, LetCmd, []string{
 			makeForm(BindingCmd, "name1", "value1"),
 			"...",
 			makeForm(BindingCmd, "nameN", "valueN"),

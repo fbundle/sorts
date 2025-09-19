@@ -6,7 +6,7 @@ const (
 
 func init() {
 	ListCompileFuncMap[ArrowCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(ArrowCmd, []string{"type1", "type2"})
+		err := compileErr(list, ArrowCmd, []string{"type1", "type2"})
 
 		if len(list) != 2 {
 			panic(err)
@@ -64,7 +64,7 @@ const (
 
 func init() {
 	ListCompileFuncMap[ProdCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(ProdCmd, []string{"type1", "type2"})
+		err := compileErr(list, ProdCmd, []string{"type1", "type2"})
 		if len(list) != 2 {
 			panic(err)
 		}
@@ -121,7 +121,7 @@ const (
 
 func init() {
 	ListCompileFuncMap[SumCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(SumCmd, []string{"type1", "type2"})
+		err := compileErr(list, SumCmd, []string{"type1", "type2"})
 		if len(list) != 2 {
 			panic(err)
 		}

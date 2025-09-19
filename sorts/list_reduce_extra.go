@@ -5,7 +5,7 @@ const (
 )
 
 func compileAnnot(ctx Context, form Form) Annot {
-	err := compileErr(AnnotCmd, []string{"name", "type"})
+	err := compileErr(form, AnnotCmd, []string{"name", "type"})
 	list := mustType[List](err, form)
 	if len(list) != 2 {
 		panic(err)
@@ -38,7 +38,7 @@ type Case struct {
 }
 
 func compileCase(ctx Context, form Form) Case {
-	err := compileErr(CaseCmd, []string{
+	err := compileErr(form, CaseCmd, []string{
 		makeForm("constructor", "arg1", "...", "argN"),
 		"value",
 	})
@@ -73,7 +73,7 @@ type Binding struct {
 }
 
 func compileBinding(ctx Context, form Form) Binding {
-	err := compileErr(BindingCmd, []string{"name", "value"})
+	err := compileErr(form, BindingCmd, []string{"name", "value"})
 	list := mustType[List](err, form)
 	if len(list) != 2 {
 		panic(err)
