@@ -290,8 +290,16 @@ func init() {
 			makeForm(CaseCmd, makeForm("constructorM", "argM1", "...", "argMN"), "valueM"),
 		})
 
-		// TODO
-		panic("implement me")
+		if len(list) < 1 {
+			panic(err)
+		}
+
+		return Match{
+			Cond: mustType[Inductive](err, ctx.Compile(list[0]).TypeCheck(ctx)),
+			Cases: slicesMap(list[1:], func(form Form) Case {
+				return compileCase(ctx, form)
+			}),
+		}
 	}
 }
 
