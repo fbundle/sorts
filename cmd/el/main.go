@@ -5,10 +5,9 @@ import (
 	"io"
 	"os"
 
+	"github.com/fbundle/sorts/el"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
-	"github.com/fbundle/sorts/obsolete/el"
-	"github.com/fbundle/sorts/sorts"
 )
 
 func mustReadSource() string {
@@ -20,7 +19,7 @@ func mustReadSource() string {
 }
 
 func mustRun(tokens []form.Token) {
-	ctx := el.Context{}.Reset().WithMode(sorts.ModeComp)
+	ctx := el.Context{}
 
 	var node form.Form
 	var err error
@@ -30,7 +29,7 @@ func mustRun(tokens []form.Token) {
 			panic(err)
 		}
 		sort := ctx.Compile(node)
-		fmt.Println(ctx.ToString(sort))
+		fmt.Println(sort.Form())
 	}
 }
 
