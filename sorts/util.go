@@ -16,11 +16,10 @@ func makeForm(cmd Name, args ...string) string {
 	return fmt.Sprintf("(%s %s)", cmd, strings.Join(args, " "))
 }
 
-// compileErr - TODO change function signature into compileErr(actual Form, suffices ...string)
-// TODO - suffices will contains command (from makeForm) and other suffices
-func compileErr(actual Form, cmd Name, args []string, suffices ...string) error {
+func compileErr(actual Form, cmd []string, suffices ...string) error {
 	suffixStr := strings.Join(suffices, " ")
-	return fmt.Errorf("%s must be %s %s got %s", cmd, makeForm(cmd, args...), suffixStr, actual)
+	cmdStr := makeForm(Name(cmd[0]), cmd[1:]...)
+	return fmt.Errorf("%s must be %s %s got %s", cmd, cmdStr, suffixStr, actual)
 }
 
 func serialize(s Sort) []Sort {
