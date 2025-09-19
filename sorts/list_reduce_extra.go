@@ -76,7 +76,7 @@ type Binding struct {
 func compileBinding(ctx Context, form Form) Binding {
 	err := compileErr(form, []string{BindingCmd, "name", "value"})
 	list := mustType[List](err, form)
-	if len(list) != 2 {
+	if len(list) != 3 {
 		panic(err)
 	}
 	return Binding{
