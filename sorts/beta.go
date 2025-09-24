@@ -18,16 +18,12 @@ func (s Beta) Level(ctx Context) int {
 	panic("not_implemented")
 }
 func (s Beta) Parent(ctx Context) Sort {
-	return Beta{
-		Param: s.Param,
-		Body: Type{
-			Body: s.Body,
-		}.Compile(ctx),
-	}
+	panic("not_implemented")
 }
 func (s Beta) LessEqual(ctx Context, d Sort) bool {
 	panic("not_implemented")
 }
 func (s Beta) Reduce(ctx Context) Sort {
-	return s
+	subCtx := ctx.Set(s.Cmd.Param.Name, s.Arg)
+	return s.Cmd.Body.Reduce(subCtx)
 }
