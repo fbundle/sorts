@@ -15,7 +15,7 @@ type context struct {
 }
 
 // LessEqual implements sorts.Context.
-func (c context) LessEqual(s sorts.Form, d sorts.Form) bool {
+func (c context) LessEqual(s form.Form, d form.Form) bool {
 	return s == d
 }
 
@@ -49,14 +49,14 @@ func (l succBody) Compile(ctx sorts.Context) sorts.Sort {
 	if !ok {
 		panic("x not set")
 	}
-	if arg.Parent(ctx).LessEqual(ctx, Nat) {
+	if !arg.Parent(ctx).LessEqual(ctx, Nat) {
 		panic("x not of subtype of Nat")
 	}
 	return sorts.NewTerm(form.List{form.Name("Succ"), arg.Form()}, Nat)
 }
 
 // Form implements sorts.Sort.
-func (l succBody) Form() sorts.Form {
+func (l succBody) Form() form.Form {
 	return form.List{form.Name("Succ"), form.Name("x")}
 }
 
@@ -82,9 +82,10 @@ func (l succBody) Reduce(ctx sorts.Context) sorts.Sort {
 	if !ok {
 		panic("x not set")
 	}
-	if arg.Parent(ctx).LessEqual(ctx, Nat) {
+	if !arg.Parent(ctx).LessEqual(ctx, Nat) {
 		panic("x not of subtype of Nat")
 	}
+	arg = arg.Reduce(ctx)
 
 	x, err := strconv.Atoi(strings.Join(slicesMap(arg.Form().Marshal(), func(tok form.Token) string {
 		return string(tok)

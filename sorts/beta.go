@@ -11,14 +11,13 @@ func (s Beta) Form() Form {
 
 func (s Beta) Compile(ctx Context) Sort {
 	subCtx := ctx.Set(s.Cmd.Param.Name, s.Arg)
-	_ = s.Cmd.Body.Compile(subCtx)
-	return s
+	return s.Cmd.Body.Compile(subCtx)
 }
 func (s Beta) Level(ctx Context) int {
 	panic("not_implemented")
 }
 func (s Beta) Parent(ctx Context) Sort {
-	panic("not_implemented")
+	return s.Compile(ctx).Parent(ctx)
 }
 func (s Beta) LessEqual(ctx Context, d Sort) bool {
 	panic("not_implemented")
