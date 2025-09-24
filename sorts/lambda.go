@@ -42,6 +42,6 @@ func (s Lambda) Parent(ctx Context) Sort {
 func (s Lambda) LessEqual(ctx Context, d Sort) bool {
 	panic("not_implemented")
 }
-func (s Lambda) Reduce(ctx Context) Sort {
+func (s Lambda) Eval(ctx Context) Sort {
 	return s
 }

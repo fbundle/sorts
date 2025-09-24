@@ -46,6 +46,6 @@ func (s Atom) LessEqual(ctx Context, d Sort) bool {
 	return ctx.LessEqual(s.Form(), d.Form())
 }
 
-func (s Atom) Reduce(ctx Context) Sort {
+func (s Atom) Eval(ctx Context) Sort {
 	return s
 }

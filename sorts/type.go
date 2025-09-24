@@ -35,6 +35,6 @@ func (s Type) LessEqual(ctx Context, d Sort) bool {
 	return s.Body.Parent(ctx).LessEqual(ctx, d)
 }
 
-func (s Type) Reduce(ctx Context) Sort {
+func (s Type) Eval(ctx Context) Sort {
 	return s.Body.Parent(ctx)
 }

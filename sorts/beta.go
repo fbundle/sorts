@@ -32,6 +32,6 @@ func (s Beta) Level(ctx Context) int {
 func (s Beta) LessEqual(ctx Context, d Sort) bool {
 	panic("not_implemented")
 }
-func (s Beta) Reduce(ctx Context) Sort {
-	return s.Cmd.Body.Reduce(ctx.Set(s.Cmd.Param.Name, s.Arg))
+func (s Beta) Eval(ctx Context) Sort {
+	return s.Cmd.Body.Eval(ctx.Set(s.Cmd.Param.Name, s.Arg))
 }

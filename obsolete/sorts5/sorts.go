@@ -19,12 +19,10 @@ stage 3 (reducing):		Sort -> Sort
 */
 
 type Sort interface {
-	// basic properties for sort - only available after TypeCheck
 	Level(ctx Context) int
 	Parent(ctx Context) Sort
 	LessEqual(ctx Context, d Sort) bool
 
-	// sort from code
 	Form() Form
 	TypeCheck(ctx Context) Sort
 	Reduce(ctx Context) Sort
