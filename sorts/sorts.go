@@ -15,13 +15,10 @@ var TypeErr = errors.New("type_error")
 type Sort interface {
 	Form() Form
 
-	// Compile - return an atom of the correct type
-	Compile(ctx Context) Sort // Level, Parent, LessEqual, Reduce only available after compilation is done
+	Parent(ctx Context) Sort // type checking
 	Level(ctx Context) int
-	Parent(ctx Context) Sort
 	LessEqual(ctx Context, d Sort) bool
 
-	// Reduce - return the actual output
 	Reduce(ctx Context) Sort
 }
 
