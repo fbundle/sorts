@@ -28,7 +28,7 @@ func (c context) Set(name sorts.Name, sort sorts.Sort) sorts.Context {
 
 var _ sorts.Context = context{}
 
-var Nat = sorts.NewTerm(form.Name("Nat"), sorts.NewChain("Type", 2))
+var Nat = sorts.NewTerm(form.Name("Nat"), sorts.NewChain("Parent", 2))
 
 var Zero = sorts.NewTerm(form.Name("0"), Nat)
 
@@ -83,7 +83,7 @@ func (l succBody) Reduce(ctx sorts.Context) sorts.Sort {
 	arg = arg.Reduce(ctx)
 
 	x, err := strconv.Atoi(strings.Join(slicesMap(arg.Form().Marshal(), func(tok form.Token) string {
-		return string(tok)
+		return tok
 	}), " "))
 	if err != nil {
 		panic(err)

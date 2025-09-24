@@ -9,7 +9,7 @@ var TypeErr = fmt.Errorf("type_err") // cannot recover
 type sortAttr struct {
 	form      Form                // every Sort is identified with a Form
 	level     int                 // universe Level
-	parent    Sort                // (or Type) every Sort must have a Parent
+	parent    Sort                // (or Type) every Sort must have a Type
 	lessEqual func(dst Sort) bool // a partial order on sorts (subtype)
 }
 
