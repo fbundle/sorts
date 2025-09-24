@@ -17,7 +17,6 @@ type Sort interface {
 
 	// Compile - Level, Parent, LessEqual only available after compilation is done
 	Compile(ctx Context) Sort
-
 	Level(ctx Context) int
 	Parent(ctx Context) Sort
 	LessEqual(ctx Context, d Sort) bool
