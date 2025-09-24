@@ -2,45 +2,82 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"os"
 
-	"github.com/fbundle/sorts/el"
 	"github.com/fbundle/sorts/form"
-	"github.com/fbundle/sorts/form_processor"
+	"github.com/fbundle/sorts/persistent/ordered_map"
+	"github.com/fbundle/sorts/sorts"
 )
 
-func mustReadSource() string {
-	file, err := os.Open(os.Args[1])
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	b, err := io.ReadAll(file)
-	if err != nil {
-		panic(err)
-	}
-	return string(b)
+type context struct {
+	dict ordered_map.OrderedMap[form.Name, sorts.Sort]
 }
 
-func mustRun(tokens []form.Token) {
-	ctx := el.Context{}.Init()
+// LessEqual implements sorts.Context.
+func (c context) LessEqual(s sorts.Form, d sorts.Form) bool {
+	return s == d
+}
 
-	var node form.Form
-	var err error
-	for len(tokens) > 0 {
-		tokens, node, err = form_processor.Parse(tokens)
-		if err != nil {
-			panic(err)
-		}
-		sort := ctx.Compile(node)
-		sort = sort.Reduce(ctx)
-		fmt.Println(sort.Form())
+// Set implements sorts.Context.
+func (c context) Set(name sorts.Name, sort sorts.Sort) sorts.Context {
+	return context{
+		dict: c.dict.Set(name, sort),
 	}
+}
+
+var _ sorts.Context = context{}
+
+var Nat = sorts.NewTerm(form.Name("Nat"), sorts.NewChain("Type", 2))
+
+var Zero = sorts.NewTerm(form.Name("0"), Nat)
+
+var Succ = sorts.Pi{
+	Param: sorts.Annot{
+		Name: "x",
+		Type: Nat,
+	},
+	Body: succBody{},
+}
+
+type succBody struct{}
+
+// Compile implements sorts.Sort.
+func (l succBody) Compile(ctx sorts.Context) sorts.Sort {
+	c := ctx.(context)
+	arg, ok := c.dict.Get("x")
+	if !ok {
+		panic("x not set")
+	}
+	if arg.Parent(ctx).LessEqual(ctx, Nat) {
+		panic("x not of subtype of Nat")
+	}
+	return sorts.NewTerm(form.List{form.Name("Succ"), arg.Form()}, Nat)
+}
+
+// Form implements sorts.Sort.
+func (l succBody) Form() sorts.Form {
+	return form.List{form.Name("Succ"), form.Name("x")}
+}
+
+// LessEqual implements sorts.Sort.
+func (l succBody) LessEqual(ctx sorts.Context, d sorts.Sort) bool {
+	panic("unimplemented")
+}
+
+// Level implements sorts.Sort.
+func (l succBody) Level(ctx sorts.Context) int {
+	panic("unimplemented")
+}
+
+// Parent implements sorts.Sort.
+func (l succBody) Parent(ctx sorts.Context) sorts.Sort {
+	panic("unimplemented")
+}
+
+// Reduce implements sorts.Sort.
+func (l succBody) Reduce(ctx sorts.Context) sorts.Sort {
+	return l.Compile(ctx)
 }
 
 func main() {
-	tokens := form_processor.Tokenize(mustReadSource())
-	mustRun(tokens)
+	fmt.Println(Nat.Form(), Zero.Form(), Succ.Form())
 }
