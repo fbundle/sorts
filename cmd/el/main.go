@@ -42,19 +42,6 @@ var Succ = sorts.Pi{
 
 type succBody struct{}
 
-// Compile implements sorts.Sort.
-func (l succBody) Compile(ctx sorts.Context) sorts.Sort {
-	c := ctx.(context)
-	arg, ok := c.dict.Get("x")
-	if !ok {
-		panic("x not set")
-	}
-	if !arg.Parent(ctx).LessEqual(ctx, Nat) {
-		panic("x not of subtype of Nat")
-	}
-	return sorts.NewTerm(form.List{form.Name("Succ"), arg.Form()}, Nat)
-}
-
 // Form implements sorts.Sort.
 func (l succBody) Form() form.Form {
 	return form.List{form.Name("Succ"), form.Name("x")}
@@ -72,7 +59,15 @@ func (l succBody) Level(ctx sorts.Context) int {
 
 // Parent implements sorts.Sort.
 func (l succBody) Parent(ctx sorts.Context) sorts.Sort {
-	panic("unimplemented")
+	c := ctx.(context)
+	arg, ok := c.dict.Get("x")
+	if !ok {
+		panic("x not set")
+	}
+	if !arg.Parent(ctx).LessEqual(ctx, Nat) {
+		panic("x not of subtype of Nat")
+	}
+	return Nat
 }
 
 // Reduce implements sorts.Sort.
@@ -111,8 +106,8 @@ func main() {
 		Cmd: Succ,
 		Arg: One,
 	}
-	fmt.Println(One.Compile(c).Form())
-	fmt.Println(Two.Compile(c).Form())
+	fmt.Println(One.Parent(c).Form())
+	fmt.Println(Two.Parent(c).Form())
 
 	fmt.Println(One.Reduce(c).Form())
 	fmt.Println(Two.Reduce(c).Form())
