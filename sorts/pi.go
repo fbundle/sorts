@@ -1,14 +1,14 @@
 package sorts
 
 func init() {
-	ListCompileFuncMap[PiCmd] = func(ctx Context, list List) Sort {
+	ListParseFuncMap[PiCmd] = func(ctx Context, list List) Sort {
 		err := compileErr(list, []string{string(PiCmd), "param", "body"})
 		if len(list) != 2 {
 			panic(err)
 		}
 		return Pi{
 			Param: compileAnnot(ctx, mustType[List](err, list[0])),
-			Body:  ctx.Compile(list[1]),
+			Body:  ctx.Parse(list[1]),
 		}
 	}
 }

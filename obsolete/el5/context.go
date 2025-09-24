@@ -24,7 +24,7 @@ const (
 
 type Context struct {
 	frame       ordered_map.OrderedMap[Name, sorts.Sort]
-	listParsers ordered_map.OrderedMap[Name, sorts.ListCompileFunc]
+	listParsers ordered_map.OrderedMap[Name, sorts.ListParseFunc]
 	nameRule    ordered_map.Map[rule]
 	mode        sorts.Mode
 }
@@ -45,7 +45,7 @@ func (ctx Context) Set(name Name, sort sorts.Sort) sorts.Context {
 	return ctx
 }
 
-func (ctx Context) Compile(node Form) sorts.Sort {
+func (ctx Context) Parse(node Form) sorts.Sort {
 	if ctx.Mode() == sorts.ModeDebug {
 		log.Printf("compiling %s with context %v", strings.Join(node.Marshal(), " "), ctx.frame.Repr())
 	}
@@ -76,7 +76,7 @@ func (ctx Context) Compile(node Form) sorts.Sort {
 				return listParse(ctx, node[1:])
 			}
 		}
-		return sorts.DefaultCompileFunc(ctx, node)
+		return sorts.DefaultParseFunc(ctx, node)
 	}
 	panic(fmt.Errorf("parse_error: %v", node))
 }
@@ -105,7 +105,7 @@ var _ sorts.Context = Context{}
 
 func (ctx Context) Init() Context {
 	ctx.mode = sorts.ModeComp
-	for cmd, listParseFunc := range sorts.ListCompileFuncMap {
+	for cmd, listParseFunc := range sorts.ListParseFuncMap {
 		ctx = ctx.WithListParseFunc(Name(cmd), listParseFunc)
 	}
 	return ctx
@@ -116,7 +116,7 @@ func (ctx Context) WithMode(mode sorts.Mode) Context {
 	return ctx
 }
 
-func (ctx Context) WithListParseFunc(cmd Name, listParse sorts.ListCompileFunc) Context {
+func (ctx Context) WithListParseFunc(cmd Name, listParse sorts.ListParseFunc) Context {
 	ctx.listParsers = ctx.listParsers.Set(cmd, listParse)
 	return ctx
 }

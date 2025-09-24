@@ -1,16 +1,16 @@
 package sorts
 
 func init() {
-	DefaultCompileFunc = func(ctx Context, list List) Sort {
+	DefaultParseFunc = func(ctx Context, list List) Sort {
 		err := compileErr(list, []string{"cmd", "arg"})
 		if len(list) != 2 {
 			panic(err)
 		}
-		cmd, ok := ctx.Compile(list[0]).(Pi)
+		cmd, ok := ctx.Parse(list[0]).(Pi)
 		if !ok {
 			panic(err)
 		}
-		arg := ctx.Compile(list[1])
+		arg := ctx.Parse(list[1])
 		return Beta{
 			Cmd: cmd,
 			Arg: arg,

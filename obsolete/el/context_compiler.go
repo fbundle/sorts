@@ -38,7 +38,7 @@ func logCompile(ctx Context, node form.Form, sort sorts.Sort) {
 	}
 }
 
-func (ctx Context) Compile(node form.Form) sorts.Sort {
+func (ctx Context) Parse(node form.Form) sorts.Sort {
 	switch node := node.(type) {
 	case form.Name:
 		sort := ctx.Get(node)
@@ -64,7 +64,7 @@ func (ctx Context) Compile(node form.Form) sorts.Sort {
 	}
 }
 
-func (ctx Context) WithListCompiler(name form.Name, compileFunc func(form.Name) sorts.ListCompileFunc) Context {
+func (ctx Context) WithListCompiler(name form.Name, compileFunc func(form.Name) sorts.ListParseFunc) Context {
 	// TODO - instead of assuming list starts with name
 	// how about we have
 

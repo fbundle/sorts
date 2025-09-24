@@ -29,10 +29,10 @@ var _ = []Sort{
 type Frame interface {
 	Set(name Name, sort Sort) Context
 }
-type ListCompileFunc = func(ctx Context, list List) Sort
+type ListParseFunc = func(ctx Context, list List) Sort
 
-type Compiler interface {
-	Compile(form Form) Sort
+type Parser interface {
+	Parse(form Form) Sort
 }
 
 type Universe interface {
@@ -49,11 +49,11 @@ const (
 
 type Context interface {
 	Frame
-	Compiler
+	Parser
 	Universe
 	Mode() Mode
 }
 
-var DefaultCompileFunc ListCompileFunc
+var DefaultParseFunc ListParseFunc
 
-var ListCompileFuncMap = map[Name]ListCompileFunc{}
+var ListParseFuncMap = map[Name]ListParseFunc{}

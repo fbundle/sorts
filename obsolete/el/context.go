@@ -16,8 +16,8 @@ var _ sorts.Context = Context{}
 type Context struct {
 	frame               ordered_map.OrderedMap[form.Name, sorts.Sort]
 	universe            universe.SortUniverse
-	listCompiler        ordered_map.OrderedMap[form.Name, sorts.ListCompileFunc]
-	defaultListCompiler sorts.ListCompileFunc
+	listCompiler        ordered_map.OrderedMap[form.Name, sorts.ListParseFunc]
+	defaultListCompiler sorts.ListParseFunc
 	mode                sorts.Mode
 }
 
@@ -33,7 +33,7 @@ func (ctx Context) Reset() Context {
 			InitialTypeName:  "Unit",
 			TerminalTypeName: "Any",
 		},
-		listCompiler:        ordered_map.OrderedMap[form.Name, sorts.ListCompileFunc]{},
+		listCompiler:        ordered_map.OrderedMap[form.Name, sorts.ListParseFunc]{},
 		defaultListCompiler: sorts.ListCompileBeta,
 		mode:                sorts.ModeComp,
 	}.

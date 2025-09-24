@@ -29,7 +29,7 @@ func compileAnnot(ctx Context, list List) Annot {
 	}
 	return Annot{
 		Name: mustType[Name](err, list[0]),
-		Type: ctx.Compile(list[1]),
+		Type: ctx.Parse(list[1]),
 	}
 }
 
