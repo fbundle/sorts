@@ -35,6 +35,7 @@ func mustRun(tokens []form.Token) {
 			panic(err)
 		}
 		sort := ctx.Compile(node)
+		sort = sort.Reduce(ctx)
 		fmt.Println(sort.Form())
 	}
 }
