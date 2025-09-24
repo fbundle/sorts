@@ -28,6 +28,7 @@ func init() {
 type Beta struct {
 	Cmd Sort
 	Arg Sort
+	Sort
 }
 
 func (s Beta) Form() Form {
@@ -46,22 +47,9 @@ func (s Beta) TypeCheck(ctx Context) Sort {
 	if !A.LessEqual(ctx, arrow.A) {
 		panic(TypeErr)
 	}
+
+	s.Sort = NewTerm(s.Form(), arrow.B)
 	return s
-}
-
-func (s Beta) Level(ctx Context) int {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s Beta) Parent(ctx Context) Sort {
-	arrow := mustType[Arrow](TypeErr, s.Cmd.Parent(ctx))
-	return arrow.B
-}
-
-func (s Beta) LessEqual(ctx Context, d Sort) bool {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (s Beta) Reduce(ctx Context) Sort {
@@ -113,6 +101,7 @@ func init() {
 type Lambda struct {
 	Param Annot
 	Body  Sort
+	Sort
 }
 
 func (l Lambda) Form() Form {
@@ -120,25 +109,11 @@ func (l Lambda) Form() Form {
 }
 
 func (l Lambda) TypeCheck(ctx Context) Sort {
-	return Lambda{
-		Param: l.Param,
-		Body:  l.Body.TypeCheck(ctx),
-	}
-}
-
-func (l Lambda) Level(ctx Context) int {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (l Lambda) Parent(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (l Lambda) LessEqual(ctx Context, d Sort) bool {
-	//TODO implement me
-	panic("implement me")
+	subCtx := ctx
+	subCtx = subCtx.Set(l.Param.Name, NewTerm(l.Param.Name, l.Param.Type))
+	body := l.Body.TypeCheck(subCtx)
+	l.Sort = body
+	return l
 }
 
 func (l Lambda) Reduce(ctx Context) Sort {
@@ -167,10 +142,7 @@ func init() {
 type Inhabited struct {
 	Name Name
 	Type Sort
-}
-
-func (s Inhabited) sort() Sort {
-	return NewTerm(s.Name, s.Type)
+	Sort
 }
 
 func (s Inhabited) Form() Form {
@@ -178,23 +150,9 @@ func (s Inhabited) Form() Form {
 }
 
 func (s Inhabited) TypeCheck(ctx Context) Sort {
-	return Inhabited{
-		Name: s.Name,
-		Type: s.Type.TypeCheck(ctx),
-	}
-}
-
-func (s Inhabited) Level(ctx Context) int {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s Inhabited) Parent(ctx Context) Sort {
-	return s.Type
-}
-
-func (s Inhabited) LessEqual(ctx Context, d Sort) bool {
-	return s.sort().LessEqual(ctx, d)
+	s.Type = s.Type.TypeCheck(ctx)
+	s.Sort = NewTerm(s.Name, s.Type)
+	return s
 }
 
 func (s Inhabited) Reduce(ctx Context) Sort {
@@ -238,6 +196,7 @@ func init() {
 type Inductive struct {
 	IType Annot
 	Mks   []Annot
+	Sort
 }
 
 func (s Inductive) constructors() map[Name]Sort {
@@ -255,38 +214,23 @@ func (s Inductive) Form() Form {
 }
 
 func (s Inductive) TypeCheck(ctx Context) Sort {
-	s = Inductive{
-		IType: s.IType,
-		Mks: slicesMap(s.Mks, func(mk Annot) Annot {
-			t := mk.Type.TypeCheck(ctx)
-			arrow := serialize(t)
-			if arrow[len(arrow)-1].Form() != s.IType.Name {
-				panic(TypeErr)
-			}
-			return Annot{
-				Name: mk.Name,
-				Type: t,
-			}
-		}),
-	}
+	s.IType.Type = s.IType.Type.TypeCheck(ctx)
+	s.Mks = slicesMap(s.Mks, func(mk Annot) Annot {
+		t := mk.Type.TypeCheck(ctx)
+		arrow := serialize(t)
+		if arrow[len(arrow)-1].Form() != s.IType.Name {
+			panic(TypeErr)
+		}
+		return Annot{
+			Name: mk.Name,
+			Type: t,
+		}
+	})
 	if len(s.constructors()) != len(s.Mks) {
 		panic(TypeErr)
 	}
+	s.Sort = NewTerm(s.IType.Name, s.IType.Type)
 	return s
-}
-
-func (s Inductive) Level(ctx Context) int {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s Inductive) Parent(ctx Context) Sort {
-	return s.IType.Type
-}
-
-func (s Inductive) LessEqual(ctx Context, d Sort) bool {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (s Inductive) Reduce(ctx Context) Sort {
@@ -329,6 +273,7 @@ func init() {
 type Match struct {
 	Cond  Sort
 	Cases []Case
+	Sort
 }
 
 func (s Match) Form() Form {
@@ -363,22 +308,9 @@ func (s Match) TypeCheck(ctx Context) Sort {
 			panic(TypeErr)
 		}
 	}
+
+	// TODO set s.Sort
 	return s
-}
-
-func (s Match) Level(ctx Context) int {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s Match) Parent(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s Match) LessEqual(ctx Context, d Sort) bool {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (s Match) Reduce(ctx Context) Sort {
