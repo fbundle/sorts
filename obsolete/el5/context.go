@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/fbundle/sorts/form"
+	"github.com/fbundle/sorts/obsolete/sorts5"
 	"github.com/fbundle/sorts/persistent/ordered_map"
-	"github.com/fbundle/sorts/sorts"
 )
 
 type Name = form.Name
