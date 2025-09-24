@@ -15,11 +15,12 @@ var TypeErr = errors.New("type_error")
 type Sort interface {
 	Form() Form
 
-	// Compile - Level, Parent, LessEqual only available after compilation is done
+	// Compile - Level, Parent, LessEqual, Reduce only available after compilation is done
 	Compile(ctx Context) Sort
 	Level(ctx Context) int
 	Parent(ctx Context) Sort
 	LessEqual(ctx Context, d Sort) bool
+	Reduce(ctx Context) Sort
 }
 
 type Context interface {
@@ -28,5 +29,5 @@ type Context interface {
 }
 
 var _ = []Sort{
-	Atom{}, Type{}, Pi{},
+	Atom{}, Type{}, Pi{}, Beta{},
 }

@@ -33,3 +33,6 @@ func (s Pi) Parent(ctx Context) Sort {
 func (s Pi) LessEqual(ctx Context, d Sort) bool {
 	panic("not_implemented")
 }
+func (s Pi) Reduce(ctx Context) Sort {
+	return s
+}
