@@ -23,6 +23,7 @@ type Sort interface {
 }
 
 type Context interface {
+	Set(name Name, sort Sort) Context
 	LessEqual(s Form, d Form) bool
 }
 
