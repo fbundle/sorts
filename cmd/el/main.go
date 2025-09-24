@@ -14,9 +14,21 @@ type context struct {
 	dict ordered_map.OrderedMap[form.Name, sorts.Sort]
 }
 
-func (c context) Compile(form sorts.Form) sorts.Sort {
-	//TODO implement me
-	panic("implement me")
+func (c context) Compile(f form.Form) sorts.Sort {
+	switch f := f.(type) {
+	case form.Name:
+		if s, ok := c.dict.Get(f); ok {
+			return s
+		}
+		panic(fmt.Errorf("name_not_found: %s", f))
+	case form.List:
+		if name, ok := f[0].(form.Name); ok {
+			return sorts.ListCompileFuncMap[name](c, f)
+		} else {
+			return sorts.DefaultCompileFunc(c, f)
+		}
+	}
+	panic(fmt.Errorf("parse_error: %v", f))
 }
 
 func (c context) Mode() sorts.Mode {

@@ -1,5 +1,17 @@
 package sorts
 
+func init() {
+	ListCompileFuncMap[TypeCmd] = func(ctx Context, list List) Sort {
+		err := compileErr(list, []string{string(TypeCmd), "value"})
+		if len(list) != 1 {
+			panic(err)
+		}
+		return Type{
+			Body: ctx.Compile(list[0]),
+		}
+	}
+}
+
 const (
 	TypeCmd Name = "&"
 )

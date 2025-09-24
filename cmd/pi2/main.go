@@ -366,7 +366,7 @@ func equalTerms(a Term, b Term) bool {
 	return aStr == bStr
 }
 
-// -------------------- Very Small Parser --------------------
+// -------------------- Very Small Compile --------------------
 
 // We implement just enough parsing for examples used in main. Not robust.
 
