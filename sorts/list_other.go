@@ -1,5 +1,7 @@
 package sorts
 
+import "fmt"
+
 const (
 	InspectCmd = "inspect"
 )
@@ -25,9 +27,11 @@ func (s Inspect) Form() Form {
 }
 
 func (s Inspect) TypeCheck(ctx Context) Sort {
-	return Inspect{
+	s = Inspect{
 		Value: s.Value.TypeCheck(ctx),
 	}
+	fmt.Println("inspect_type_check", s.Form())
+	return s
 }
 
 func (s Inspect) Level(ctx Context) int {
@@ -46,7 +50,9 @@ func (s Inspect) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Inspect) Reduce(ctx Context) Sort {
-	return s.Value
+	v := s.Value.Reduce(ctx)
+	fmt.Println("inspect_reduce", v.Form())
+	return v
 }
 
 const (
