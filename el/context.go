@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fbundle/sorts/debug"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
@@ -41,9 +42,9 @@ func (ctx Context) Set(name Name, sort sorts.Sort) sorts.Context {
 }
 
 func (ctx Context) Compile(node Form) sorts.Sort {
-
-	log.Printf("compiling %s with context %v", strings.Join(node.Marshal(), " "), ctx.frame.Repr())
-
+	if debug.Debug() {
+		log.Printf("compiling %s with context %v", strings.Join(node.Marshal(), " "), ctx.frame.Repr())
+	}
 	switch node := node.(type) {
 	case Name:
 		// all names should be either builtin or linked to a Sort
