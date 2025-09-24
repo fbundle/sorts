@@ -32,6 +32,9 @@
     {_ := (inspect must_pos)}                  # resolved type as       Nat -> (Nat ⊕ Nil)
                                                # better to resolve as   Π_{x: Nat} B(x) where B(x) = (type (must_pos x))
 
+    {_ := (inspect (is_pos n0))}
+    {_ := (inspect (is_pos n2))}
+
     (type Unit_0)
 )
 
