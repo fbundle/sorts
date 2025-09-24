@@ -44,10 +44,19 @@ type Universe interface {
 	LessEqual(src Form, dst Form) bool
 }
 
+type Mode string
+
+const (
+	ModeComp  Mode = "COMP"  // type checking
+	ModeEval  Mode = "EVAL"  // type checking and evaluation
+	ModeDebug Mode = "DEBUG" // type checking and print everything
+)
+
 type Context interface {
 	Frame
 	Compiler
 	Universe
+	Mode() Mode
 }
 
 var DefaultCompileFunc ListCompileFunc

@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fbundle/sorts/debug"
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
@@ -27,6 +26,11 @@ type Context struct {
 	frame       ordered_map.OrderedMap[Name, sorts.Sort]
 	listParsers ordered_map.OrderedMap[Name, sorts.ListCompileFunc]
 	nameRule    ordered_map.Map[rule]
+	mode        sorts.Mode
+}
+
+func (ctx Context) Mode() sorts.Mode {
+	return ctx.mode
 }
 
 func (ctx Context) Get(name Name) sorts.Sort {
@@ -42,7 +46,7 @@ func (ctx Context) Set(name Name, sort sorts.Sort) sorts.Context {
 }
 
 func (ctx Context) Compile(node Form) sorts.Sort {
-	if debug.Debug() {
+	if ctx.Mode() == sorts.ModeDebug {
 		log.Printf("compiling %s with context %v", strings.Join(node.Marshal(), " "), ctx.frame.Repr())
 	}
 	switch node := node.(type) {
@@ -73,9 +77,8 @@ func (ctx Context) Compile(node Form) sorts.Sort {
 			}
 		}
 		return sorts.DefaultCompileFunc(ctx, node)
-	default:
-		panic(fmt.Errorf("parse_error: %v", node))
 	}
+	panic(fmt.Errorf("parse_error: %v", node))
 }
 
 func (ctx Context) LessEqual(src Form, dst Form) bool {
@@ -101,17 +104,24 @@ func (ctx Context) LessEqual(src Form, dst Form) bool {
 var _ sorts.Context = Context{}
 
 func (ctx Context) Init() Context {
+	ctx.mode = sorts.ModeComp
 	for cmd, listParseFunc := range sorts.ListCompileFuncMap {
-		ctx = ctx.AddListParseFunc(Name(cmd), listParseFunc)
+		ctx = ctx.WithListParseFunc(Name(cmd), listParseFunc)
 	}
 	return ctx
 }
-func (ctx Context) AddListParseFunc(cmd Name, listParse sorts.ListCompileFunc) Context {
+
+func (ctx Context) WithMode(mode sorts.Mode) Context {
+	ctx.mode = mode
+	return ctx
+}
+
+func (ctx Context) WithListParseFunc(cmd Name, listParse sorts.ListCompileFunc) Context {
 	ctx.listParsers = ctx.listParsers.Set(cmd, listParse)
 	return ctx
 }
 
-func (ctx Context) AddLessEqualRule(src Name, dst Name) Context {
+func (ctx Context) WithLessEqualRule(src Name, dst Name) Context {
 	ctx.nameRule = ctx.nameRule.Set(rule{src, dst})
 	return ctx
 }
