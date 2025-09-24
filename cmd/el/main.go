@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
@@ -75,7 +77,23 @@ func (l succBody) Parent(ctx sorts.Context) sorts.Sort {
 
 // Reduce implements sorts.Sort.
 func (l succBody) Reduce(ctx sorts.Context) sorts.Sort {
-	return l.Compile(ctx)
+	c := ctx.(context)
+	arg, ok := c.dict.Get("x")
+	if !ok {
+		panic("x not set")
+	}
+	if arg.Parent(ctx).LessEqual(ctx, Nat) {
+		panic("x not of subtype of Nat")
+	}
+
+	x, err := strconv.Atoi(strings.Join(slicesMap(arg.Form().Marshal(), func(tok form.Token) string {
+		return string(tok)
+	}), " "))
+	if err != nil {
+		panic(err)
+	}
+	y := x + 1
+	return sorts.NewTerm(form.Name(strconv.Itoa(y)), Nat)
 }
 
 func main() {
@@ -92,4 +110,11 @@ func main() {
 	}
 	fmt.Println(One.Form())
 	fmt.Println(Two.Form())
+}
+func slicesMap[T1 any, T2 any](input []T1, f func(T1) T2) []T2 {
+	output := make([]T2, len(input))
+	for i, v := range input {
+		output[i] = f(v)
+	}
+	return output
 }
