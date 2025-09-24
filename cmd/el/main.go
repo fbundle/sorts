@@ -11,7 +11,13 @@ import (
 )
 
 func mustReadSource() string {
-	b, err := io.ReadAll(os.Stdin)
+	file, err := os.Open(os.Args[1])
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	b, err := io.ReadAll(file)
 	if err != nil {
 		panic(err)
 	}

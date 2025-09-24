@@ -431,9 +431,12 @@ type Let struct {
 }
 
 func (l Let) Form() Form {
-
-	//TODO implement me
-	panic("implement me")
+	form := List{Name(LetCmd)}
+	form = append(form, slicesMap(l.Bindings, func(b Binding) Form {
+		return b.Form()
+	})...)
+	form = append(form, l.Final.Form())
+	return form
 }
 
 func (l Let) TypeCheck(ctx Context) Sort {

@@ -99,6 +99,10 @@ type Binding struct {
 	Value Sort
 }
 
+func (b Binding) Form() Form {
+	return List{Name(BindingCmd), b.Name, b.Value.Form()}
+}
+
 func compileBinding(ctx Context, list List) Binding {
 	err := compileErr(list, []string{BindingCmd, "name", "value"})
 	if len(list) != 2 {
