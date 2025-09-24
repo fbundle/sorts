@@ -46,8 +46,7 @@ func (s Inspect) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Inspect) Reduce(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	return s.Value
 }
 
 const (

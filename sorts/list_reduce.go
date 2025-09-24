@@ -65,7 +65,13 @@ func (s Beta) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Beta) Reduce(ctx Context) Sort {
-	panic("implement me")
+	switch cmd := s.Cmd.(type) {
+	case Lambda:
+		subCtx := ctx
+		subCtx = subCtx.Set(cmd.Param.Name, s.Arg.Reduce(subCtx))
+		return cmd.Body.Reduce(subCtx)
+	}
+	return s
 }
 
 var _ Sort = Beta{}
@@ -136,8 +142,7 @@ func (l Lambda) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (l Lambda) Reduce(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	return l
 }
 
 var _ Sort = Lambda{}
@@ -193,8 +198,7 @@ func (s Inhabited) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Inhabited) Reduce(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	return s
 }
 
 var _ Sort = Inhabited{}
@@ -286,8 +290,7 @@ func (s Inductive) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Inductive) Reduce(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	return s
 }
 
 var _ Sort = Inductive{}
@@ -461,8 +464,11 @@ func (l Let) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (l Let) Reduce(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	subCtx := ctx
+	for _, binding := range l.Bindings {
+		subCtx = subCtx.Set(binding.Name, binding.Value.Reduce(subCtx))
+	}
+	return l.Final.Reduce(subCtx)
 }
 
 var _ Sort = Let{}

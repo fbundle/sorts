@@ -53,7 +53,10 @@ func (s Arrow) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Arrow) Reduce(ctx Context) Sort {
-	panic("implement me")
+	return Arrow{
+		A: s.A.Reduce(ctx),
+		B: s.B.Reduce(ctx),
+	}
 }
 
 var _ Sort = Arrow{}
@@ -110,7 +113,7 @@ func (s Prod) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Prod) Reduce(ctx Context) Sort {
-	panic("implement me")
+	return s
 }
 
 var _ Sort = Prod{}
@@ -166,5 +169,8 @@ func (s Sum) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Sum) Reduce(ctx Context) Sort {
-	panic("implement me")
+	return Sum{
+		A: s.A.Reduce(ctx),
+		B: s.B.Reduce(ctx),
+	}
 }
