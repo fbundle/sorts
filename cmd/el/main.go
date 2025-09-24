@@ -68,7 +68,7 @@ type succBody struct{}
 
 // Form implements sorts.Sort.
 func (l succBody) Form() form.Form {
-	return form.List{form.Name("Succ"), form.Name("x")}
+	return form.List{form.Name("succ"), form.Name("x")}
 }
 
 // LessEqual implements sorts.Sort.
