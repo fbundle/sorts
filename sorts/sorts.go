@@ -22,11 +22,38 @@ type Sort interface {
 	Reduce(ctx Context) Sort // evaluation
 }
 
-type Context interface {
-	Set(name Name, sort Sort) Context
-	LessEqual(s Form, d Form) bool
-}
-
 var _ = []Sort{
 	Atom{}, Pi{}, Beta{},
 }
+
+type Frame interface {
+	Set(name Name, sort Sort) Context
+}
+type ListCompileFunc = func(ctx Context, list List) Sort
+
+type Compiler interface {
+	Compile(form Form) Sort
+}
+
+type Universe interface {
+	LessEqual(src Form, dst Form) bool
+}
+
+type Mode string
+
+const (
+	ModeComp  Mode = "COMP"  // type checking
+	ModeEval  Mode = "EVAL"  // type checking and evaluation
+	ModeDebug Mode = "DEBUG" // type checking and print everything
+)
+
+type Context interface {
+	Frame
+	Compiler
+	Universe
+	Mode() Mode
+}
+
+var DefaultCompileFunc ListCompileFunc
+
+var ListCompileFuncMap = map[string]ListCompileFunc{}

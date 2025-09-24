@@ -14,6 +14,15 @@ type context struct {
 	dict ordered_map.OrderedMap[form.Name, sorts.Sort]
 }
 
+func (c context) Compile(form sorts.Form) sorts.Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c context) Mode() sorts.Mode {
+	return sorts.ModeDebug
+}
+
 // LessEqual implements sorts.Context.
 func (c context) LessEqual(s form.Form, d form.Form) bool {
 	return s == d
