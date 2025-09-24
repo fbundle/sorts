@@ -23,7 +23,7 @@ type Sort interface {
 }
 
 var _ = []Sort{
-	Atom{}, Pi{}, Beta{},
+	Atom{}, Lambda{}, Beta{},
 }
 
 type Frame interface {

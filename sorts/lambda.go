@@ -6,7 +6,7 @@ func init() {
 		if len(list) != 2 {
 			panic(err)
 		}
-		return Pi{
+		return Lambda{
 			Param: compileAnnot(ctx, mustType[List](err, list[0])),
 			Body:  ctx.Parse(list[1]),
 		}
@@ -14,34 +14,34 @@ func init() {
 }
 
 const (
-	PiCmd Name = "Π"
+	PiCmd Name = "=>"
 )
 
-// Pi - lambda abstraction
-type Pi struct {
+// Lambda - lambda abstraction (or Pi-type)
+type Lambda struct {
 	Param Annot
 	Body  Sort
 }
 
-func (s Pi) Form() Form {
+func (s Lambda) Form() Form {
 	return List{PiCmd, s.Param.Form(), s.Body.Form()}
 }
 
-func (s Pi) Level(ctx Context) int {
+func (s Lambda) Level(ctx Context) int {
 	panic("not_implemented")
 }
 
-func (s Pi) Parent(ctx Context) Sort {
-	return Pi{
+func (s Lambda) Parent(ctx Context) Sort {
+	return Lambda{
 		Param: s.Param,
 		Body: Type{
 			Body: s.Body,
 		},
 	}
 }
-func (s Pi) LessEqual(ctx Context, d Sort) bool {
+func (s Lambda) LessEqual(ctx Context, d Sort) bool {
 	panic("not_implemented")
 }
-func (s Pi) Reduce(ctx Context) Sort {
+func (s Lambda) Reduce(ctx Context) Sort {
 	return s
 }

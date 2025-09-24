@@ -2,24 +2,19 @@ package sorts
 
 func init() {
 	DefaultParseFunc = func(ctx Context, list List) Sort {
-		err := compileErr(list, []string{"cmd", "arg"})
+		err := compileErr(list, []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
 		if len(list) != 2 {
 			panic(err)
 		}
-		cmd, ok := ctx.Parse(list[0]).(Pi)
-		if !ok {
-			panic(err)
-		}
-		arg := ctx.Parse(list[1])
 		return Beta{
-			Cmd: cmd,
-			Arg: arg,
+			Cmd: mustType[Lambda](err, ctx.Parse(list[0])),
+			Arg: ctx.Parse(list[1]),
 		}
 	}
 }
 
 type Beta struct {
-	Cmd Pi
+	Cmd Lambda
 	Arg Sort
 }
 

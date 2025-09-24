@@ -22,26 +22,32 @@ func compileErr(actual Form, cmd []string, suffices ...string) error {
 	return fmt.Errorf("%s must be %s %s got %s", cmd, cmdStr, suffixStr, actual)
 }
 
-func compileAnnot(ctx Context, list List) Annot {
-	err := compileErr(list, []string{string(AnnotCmd), "name", "type"})
-	if len(list) != 2 {
-		panic(err)
+func slicesMap[T1 any, T2 any](input []T1, f func(T1) T2) []T2 {
+	output := make([]T2, len(input))
+	for i, v := range input {
+		output[i] = f(v)
 	}
-	return Annot{
-		Name: mustType[Name](err, list[0]),
-		Type: ctx.Parse(list[1]),
-	}
+	return output
 }
 
-const (
-	AnnotCmd Name = ":"
-)
-
-type Annot struct {
-	Name Name
-	Type Sort
+func slicesReduce[T1 any, T2 any](input []T1, init T2, f func(T2, T1) T2) T2 {
+	output := init
+	for _, v := range input {
+		output = f(output, v)
+	}
+	return output
 }
 
-func (a Annot) Form() Form {
-	return List{AnnotCmd, a.Name, a.Type.Form()}
+func slicesReverse[T any](input []T) []T {
+	output := make([]T, len(input))
+	for i, v := range input {
+		output[len(input)-1-i] = v
+	}
+	return output
+}
+
+func slicesForEach[T any](input []T, f func(T)) {
+	for _, v := range input {
+		f(v)
+	}
 }
