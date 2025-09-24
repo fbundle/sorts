@@ -33,7 +33,7 @@ type Atom struct {
 func (s Atom) Form() Form {
 	return s.form
 }
-func (s Atom) TypeCheck(ctx Context) Sort {
+func (s Atom) Compile(ctx Context) Sort {
 	return s
 }
 
