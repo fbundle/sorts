@@ -19,7 +19,7 @@ type Sort interface {
 	Level(ctx Context) int
 	LessEqual(ctx Context, d Sort) bool
 
-	Reduce(ctx Context) Sort
+	Reduce(ctx Context) Sort // evaluation
 }
 
 type Context interface {
