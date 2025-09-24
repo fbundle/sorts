@@ -33,9 +33,6 @@ type Atom struct {
 func (s Atom) Form() Form {
 	return s.form
 }
-func (s Atom) Compile(ctx Context) Sort {
-	return s
-}
 
 func (s Atom) Level(ctx Context) int {
 	return s.level(ctx)

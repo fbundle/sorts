@@ -15,7 +15,7 @@ var TypeErr = errors.New("type_error")
 type Sort interface {
 	Form() Form
 
-	Parent(ctx Context) Sort // type checking
+	Parent(ctx Context) Sort
 	Level(ctx Context) int
 	LessEqual(ctx Context, d Sort) bool
 
@@ -28,5 +28,5 @@ type Context interface {
 }
 
 var _ = []Sort{
-	Atom{}, Type{}, Pi{}, Beta{},
+	Atom{}, Pi{}, Beta{},
 }
