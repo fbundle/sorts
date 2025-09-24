@@ -80,4 +80,13 @@ func (l succBody) Reduce(ctx sorts.Context) sorts.Sort {
 
 func main() {
 	fmt.Println(Nat.Form(), Zero.Form(), Succ.Form())
+	One := sorts.Beta{
+		Cmd: Succ,
+		Arg: Zero,
+	}
+	Two := sorts.Beta{
+		Cmd: Succ,
+		Arg: One,
+	}
+	fmt.Println(One.Form(), Two.Form())
 }
