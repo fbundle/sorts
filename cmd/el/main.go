@@ -97,6 +97,8 @@ func (l succBody) Reduce(ctx sorts.Context) sorts.Sort {
 }
 
 func main() {
+	c := context{}
+
 	fmt.Println(Nat.Form())
 	fmt.Println(Zero.Form())
 	fmt.Println(Succ.Form())
@@ -108,8 +110,11 @@ func main() {
 		Cmd: Succ,
 		Arg: One,
 	}
-	fmt.Println(One.Form())
-	fmt.Println(Two.Form())
+	fmt.Println(One.Compile(c).Form())
+	fmt.Println(Two.Compile(c).Form())
+
+	fmt.Println(One.Reduce(c).Form())
+	fmt.Println(Two.Reduce(c).Form())
 }
 func slicesMap[T1 any, T2 any](input []T1, f func(T1) T2) []T2 {
 	output := make([]T2, len(input))
