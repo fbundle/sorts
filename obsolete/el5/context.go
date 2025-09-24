@@ -24,7 +24,7 @@ const (
 
 type Context struct {
 	frame       ordered_map.OrderedMap[Name, sorts.Sort]
-	listParsers ordered_map.OrderedMap[Name, sorts.ListParseFunc]
+	listParsers ordered_map.OrderedMap[Name, sorts.ListCompileFunc]
 	nameRule    ordered_map.Map[rule]
 	mode        sorts.Mode
 }
@@ -105,7 +105,7 @@ var _ sorts.Context = Context{}
 
 func (ctx Context) Init() Context {
 	ctx.mode = sorts.ModeComp
-	for cmd, listParseFunc := range sorts.ListParseFuncMap {
+	for cmd, listParseFunc := range sorts.ListCompileFuncMap {
 		ctx = ctx.WithListParseFunc(Name(cmd), listParseFunc)
 	}
 	return ctx
@@ -116,7 +116,7 @@ func (ctx Context) WithMode(mode sorts.Mode) Context {
 	return ctx
 }
 
-func (ctx Context) WithListParseFunc(cmd Name, listParse sorts.ListParseFunc) Context {
+func (ctx Context) WithListParseFunc(cmd Name, listParse sorts.ListCompileFunc) Context {
 	ctx.listParsers = ctx.listParsers.Set(cmd, listParse)
 	return ctx
 }

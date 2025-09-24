@@ -1,8 +1,8 @@
 package sorts
 
 func init() {
-	ListParseFuncMap[PiCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, []string{string(PiCmd), "param", "body"})
+	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
+		err := compileErr(list, []string{string(LambdaCmd), "param", "body"})
 		if len(list) != 2 {
 			panic(err)
 		}
@@ -14,7 +14,7 @@ func init() {
 }
 
 const (
-	PiCmd Name = "=>"
+	LambdaCmd Name = "=>"
 )
 
 // Lambda - lambda abstraction (or Pi-type)
@@ -24,7 +24,7 @@ type Lambda struct {
 }
 
 func (s Lambda) Form() Form {
-	return List{PiCmd, s.Param.Form(), s.Body.Form()}
+	return List{LambdaCmd, s.Param.Form(), s.Body.Form()}
 }
 
 func (s Lambda) Level(ctx Context) int {
