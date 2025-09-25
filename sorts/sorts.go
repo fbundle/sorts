@@ -36,7 +36,7 @@ var _ = []Code{
 }
 
 var _ = []Expr{
-	Let{}, // Match, etc
+	// Let, Match, etc
 }
 
 type Frame interface {
