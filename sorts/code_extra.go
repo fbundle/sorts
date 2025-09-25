@@ -17,7 +17,7 @@ func (c Let) Eval(ctx Context) Sort {
 	name, valueCode := c.Binding.Name, c.Binding.Value
 	var value Sort
 	if inh, ok := c.Binding.Value.(Inhabited); ok {
-		// if name binding an inhabited, then rename it
+		// if form binding an inhabited, then rename it
 		value = NewTerm(name, inh.Type.Eval(ctx))
 	} else {
 		value = valueCode.Eval(ctx)

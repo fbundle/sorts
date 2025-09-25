@@ -21,7 +21,7 @@ func Builtin(name Name, paramTypes []Sort, retType Sort, body func(args []Form) 
 		}
 	})
 	return Pi{
-		name:   name,
+		form:   name,
 		Params: params,
 		Body: builtinPiBody{
 			params:  params,
