@@ -26,11 +26,11 @@ type Code interface {
 }
 
 var _ = []Sort{
-	Atom{}, Pi{}, Beta{}, Type{}, Inhabited{}, // Inductive
+	Atom{}, Pi{}, Type{}, Inhabited{}, // Inductive
 }
 
 var _ = []Code{
-	// Let, Match, etc
+	Beta{}, // Let, Match, etc
 }
 
 type Frame interface {
