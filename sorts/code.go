@@ -6,6 +6,18 @@ import (
 	"github.com/fbundle/sorts/slices_util"
 )
 
+type Var struct {
+	Name Name
+}
+
+func (c Var) Form() Form {
+	return c.Name
+}
+
+func (c Var) Eval(ctx Context) Sort {
+	return ctx.Get(c.Name)
+}
+
 const (
 	TypeCmd Name = "&"
 )

@@ -31,10 +31,11 @@ var _ = []Sort{
 }
 
 var _ = []Code{
-	Inhabited{}, Type{}, Beta{}, Let{}, // Let, Match, etc
+	Var{}, Inhabited{}, Type{}, Beta{}, Let{}, // Let, Match, etc
 }
 
 type Frame interface {
+	Get(name Name) Sort
 	Set(name Name, sort Sort) Context
 }
 type ListParseFunc = func(ctx Context, list List) Code

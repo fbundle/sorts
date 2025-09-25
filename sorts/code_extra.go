@@ -1,6 +1,10 @@
 package sorts
 
-import "github.com/fbundle/sorts/slices_util"
+import (
+	"fmt"
+
+	"github.com/fbundle/sorts/slices_util"
+)
 
 const (
 	LetCmd Name = "let"
@@ -42,7 +46,10 @@ func (c Let) Form() Form {
 }
 
 func (c Let) Eval(ctx Context) Sort {
-	return c.Body.Eval(ctx.Set(c.Binding.Name, c.Binding.Value.Eval(ctx)))
+	value := c.Binding.Value.Eval(ctx)
+	ctx = ctx.Set(c.Binding.Name, value)
+	fmt.Println("setting", value, "into", c.Binding.Name)
+	return c.Body.Eval(ctx)
 }
 
 const (

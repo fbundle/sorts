@@ -26,10 +26,7 @@ type context struct {
 func (c context) Parse(f form.Form) sorts.Code {
 	switch f := f.(type) {
 	case form.Name:
-		if s, ok := c.dict.Get(f); ok {
-			return sortCode{s}
-		}
-		panic(fmt.Errorf("name_not_found: %s", f))
+		return sorts.Var{Name: f}
 	case form.List:
 		if name, ok := f[0].(form.Name); ok {
 			if parseFunc, ok := sorts.ListParseFuncMap[name]; ok {
@@ -41,12 +38,17 @@ func (c context) Parse(f form.Form) sorts.Code {
 	panic(fmt.Errorf("parse_error: %v", f))
 }
 
-// LessEqual implements sorts.Context.
 func (c context) LessEqual(s form.Form, d form.Form) bool {
 	return s == d
 }
 
-// Set implements sorts.Context.
+func (c context) Get(name sorts.Name) sorts.Sort {
+	if s, ok := c.dict.Get(name); ok {
+		return s
+	}
+	panic(fmt.Errorf("name_not_found: %s", name))
+}
+
 func (c context) Set(name sorts.Name, sort sorts.Sort) sorts.Context {
 	return context{
 		dict: c.dict.Set(name, sort),
