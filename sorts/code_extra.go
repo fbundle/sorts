@@ -14,9 +14,15 @@ func (c Let) Form() Form {
 }
 
 func (c Let) Eval(ctx Context) Sort {
-	value := c.Binding.Value.Eval(ctx)
-	ctx = ctx.Set(c.Binding.Name, value)
-	return c.Body.Eval(ctx)
+	name, valueCode := c.Binding.Name, c.Binding.Value
+	var value Sort
+	if inh, ok := c.Binding.Value.(Inhabited); ok {
+		// if name binding an inhabited, then rename it
+		value = NewTerm(name, inh.Type.Eval(ctx))
+	} else {
+		value = valueCode.Eval(ctx)
+	}
+	return c.Body.Eval(ctx.Set(name, value))
 }
 
 const (
