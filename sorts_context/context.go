@@ -5,6 +5,7 @@ import (
 
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
+	"github.com/fbundle/sorts/persistent/seq"
 	"github.com/fbundle/sorts/sorts"
 )
 
@@ -14,9 +15,14 @@ type List = form.List
 type Sort = sorts.Sort
 type Code = sorts.Code
 type Context struct {
-	builtin []func(Name) (sorts.Sort, bool)
+	builtin seq.Seq[func(Name) (sorts.Sort, bool)]
 	frame   ordered_map.OrderedMap[Name, Sort]
 	Univ
+}
+
+func (c Context) WithBuiltin(get func(Name) (sorts.Sort, bool)) Context {
+	c.builtin = c.builtin.PushBack(get)
+	return c
 }
 
 func (c Context) Get(name sorts.Name) sorts.Sort {
