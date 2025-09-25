@@ -17,6 +17,7 @@ func init() {
 		// e.g. if arrow is Nat -> Nat
 		// then its lambda is
 		// (x: Nat) => Nat
+		// or some mechanism to introduce arrow type from pi type
 		panic("not implemented")
 	}
 }
