@@ -12,11 +12,6 @@ func (p Parser) withListParseFunc(cmd Name, parseFunc ListParseFunc) Parser {
 }
 
 func (p Parser) finalize() Parser {
-	if p.BuiltinNameParseFunc == nil {
-		p.BuiltinNameParseFunc = func(name sorts.Name) (sorts.Code, bool) {
-			return nil, false
-		}
-	}
 	return p
 }
 

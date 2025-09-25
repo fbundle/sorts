@@ -16,8 +16,6 @@ type ListParseFunc = func(parse func(form sorts.Form) sorts.Code, list sorts.Lis
 type NameParseFunc = func(name sorts.Name) sorts.Code
 
 type Parser struct {
-	BuiltinNameParseFunc func(name sorts.Name) (sorts.Code, bool)
-
 	finalListParseFunc ListParseFunc
 	finalNameParseFunc NameParseFunc
 	listParseFuncMap   ordered_map.OrderedMap[sorts.Name, ListParseFunc]
@@ -26,9 +24,6 @@ type Parser struct {
 func (p Parser) Parse(form sorts.Form) sorts.Code {
 	switch f := form.(type) {
 	case sorts.Name:
-		if code, ok := p.BuiltinNameParseFunc(f); ok {
-			return code
-		}
 		return p.finalNameParseFunc(f)
 	case sorts.List:
 		if len(f) == 0 {
