@@ -23,21 +23,6 @@ type context struct {
 	dict ordered_map.OrderedMap[form.Name, sorts.Sort]
 }
 
-func (c context) Parse(f form.Form) sorts.Code {
-	switch f := f.(type) {
-	case form.Name:
-		return sorts.FinalNameParseFunc(c, f)
-	case form.List:
-		if name, ok := f[0].(form.Name); ok {
-			if parseFunc, ok := sorts.ListParseFuncMap[name]; ok {
-				return parseFunc(c, f[1:])
-			}
-		}
-		return sorts.FinalListParseFunc(c, f)
-	}
-	panic(fmt.Errorf("parse_error: %v", f))
-}
-
 func (c context) LessEqual(s form.Form, d form.Form) bool {
 	return s == d
 }
@@ -124,15 +109,17 @@ var source = `
 `
 
 func main() {
-	c := context{}.
+	ctx := context{}.
 		Set("Nat", Nat).
 		Set("0", Zero).
 		Set("succ", Succ)
 
+	parse := sorts.MakeParser(nil)
+
 	for f := range parseForm(source) {
-		s := c.Parse(f)
-		s1 := s.Eval(c) // evaluate
-		fmt.Println(s1.Form(), "<-", s.Form())
+		code := parse(f)
+		sort := code.Eval(ctx) // evaluate
+		fmt.Println(sort.Form(), "<-", code.Form())
 	}
 }
 func slicesMap[T1 any, T2 any](input []T1, f func(T1) T2) []T2 {

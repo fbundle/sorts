@@ -16,8 +16,10 @@ type parser struct {
 func (p parser) Parse(form Form) Code {
 	switch f := form.(type) {
 	case Name:
-		if code, ok := p.builtinNameParseFunc(f); ok {
-			return code
+		if p.builtinNameParseFunc != nil {
+			if code, ok := p.builtinNameParseFunc(f); ok {
+				return code
+			}
 		}
 		return p.finalNameParseFunc(f)
 	case List:
