@@ -12,33 +12,73 @@ import (
 	"github.com/fbundle/sorts/sorts_parser"
 )
 
-var ctx sorts.Context = sorts_context.Context{
-	Univ: sorts_context.Univ{
-		InitialTypeName:  "Unit",
-		TerminalTypeName: "Any",
-		DefaultTypeName:  "Type",
-	},
-}
-
-var parser = sorts_parser.Parser{}.Init()
-
-func parseForm(s string) <-chan sorts.Code {
-	ch := make(chan sorts.Code)
-	go func() {
-		defer close(ch)
-
-		tokens := form_processor.Tokenize(s)
-		var f form.Form
-		var err error
-		for len(tokens) > 0 {
-			tokens, f, err = form_processor.Parse(tokens)
+func el() (sorts.Context, func(form.Form) sorts.Code) {
+	ctx := sorts_context.Context{
+		Univ: sorts_context.Univ{
+			InitialTypeName:  "Unit",
+			TerminalTypeName: "Any",
+			DefaultTypeName:  "Type",
+		},
+	}
+	Type2 := ctx.Default(2)
+	Nat := sorts.MakeBuiltinSort(
+		"Nat",
+		Type2,
+		nil, nil,
+	)
+	ctx = ctx.Set("Nat", Nat).(sorts_context.Context)
+	ctx = ctx.Set("succ", sorts.MakeBuiltinSort(
+		"succ",
+		Nat,
+		[]sorts.Sort{Nat},
+		func(args []form.Form) form.Form {
+			if len(args) != 1 {
+				panic("internal")
+			}
+			x, err := strconv.Atoi(form.String(args[0]))
 			if err != nil {
 				panic(err)
 			}
-			ch <- parser.Parse(f)
-		}
-	}()
-	return ch
+			y := x + 1
+			ret := form.Name(strconv.Itoa(y))
+			return ret
+		},
+	)).(sorts_context.Context)
+	ctx.Set("add", sorts.MakeBuiltinSort(
+		"add",
+		Nat,
+		[]sorts.Sort{Nat, Nat},
+		func(args []form.Form) form.Form {
+			if len(args) != 2 {
+				panic("internal")
+			}
+			values := slices_util.Map(args, func(f form.Form) int {
+				v, err := strconv.Atoi(form.String(f))
+				if err != nil {
+					panic(err)
+				}
+				return v
+			})
+			output := values[0] + values[1]
+			ret := form.Name(strconv.Itoa(output))
+			return ret
+		},
+	))
+
+	ctx = ctx.
+		WithBuiltin(func(name form.Name) (sorts.Sort, bool) {
+			// add integer
+			_, err := strconv.Atoi(string(name))
+			if err != nil {
+				return nil, false
+			}
+			return sorts.MakeBuiltinSort(
+				name,
+				Nat,
+				nil, nil,
+			), true
+		})
+	return ctx, sorts_parser.Parser{}.Init().Parse
 }
 
 var source = `
@@ -67,76 +107,17 @@ var source = `
 `
 
 func main() {
-	Any2 := parser.Parse(form.Name("Any_2")).Eval(ctx)
+	ctx, parse := el()
 
-	Nat := sorts.MakeBuiltinSort(
-		"Nat",
-		Any2,
-		nil,
-		func(args []form.Form) form.Form {
-			if len(args) != 0 {
-				panic("internal")
-			}
-			return form.Name("Nat")
-		},
-	)
-	Zero := sorts.MakeBuiltinSort(
-		"0",
-		Nat,
-		nil,
-		func(args []form.Form) form.Form {
-			if len(args) != 0 {
-				panic("internal")
-			}
-			return form.Name("0")
-		},
-	)
-	Succ := sorts.MakeBuiltinSort(
-		"succ",
-		Nat,
-		[]sorts.Sort{Nat},
-		func(args []form.Form) form.Form {
-			if len(args) != 1 {
-				panic("internal")
-			}
-			x, err := strconv.Atoi(form.String(args[0]))
-			if err != nil {
-				panic(err)
-			}
-			y := x + 1
-			ret := form.Name(strconv.Itoa(y))
-			return ret
-		},
-	)
-
-	Add := sorts.MakeBuiltinSort(
-		"add",
-		Nat,
-		[]sorts.Sort{Nat, Nat},
-		func(args []form.Form) form.Form {
-			if len(args) != 2 {
-				panic("internal")
-			}
-			values := slices_util.Map(args, func(f form.Form) int {
-				v, err := strconv.Atoi(form.String(f))
-				if err != nil {
-					panic(err)
-				}
-				return v
-			})
-			output := values[0] + values[1]
-			ret := form.Name(strconv.Itoa(output))
-			return ret
-		},
-	)
-
-	ctx = ctx.
-		Set("Nat", Nat).
-		Set("0", Zero).
-		Set("succ", Succ).
-		Set("add", Add)
-
-	for code := range parseForm(source) {
+	tokens := form_processor.Tokenize(source)
+	var f form.Form
+	var err error
+	for len(tokens) > 0 {
+		tokens, f, err = form_processor.Parse(tokens)
+		if err != nil {
+			panic(err)
+		}
+		code := parse(f)
 		fmt.Println("evaluating", code.Form())
 		sort := code.Eval(ctx) // evaluate
 		fmt.Println("\t value:", sort.Form())

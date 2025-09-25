@@ -17,6 +17,23 @@ type Univ struct {
 	nameLessEqual    ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
 }
 
+func (u Univ) Default(level int) Sort {
+	return u.defaultSort(u.DefaultTypeName, level)
+}
+func (u Univ) Initial(level int) Sort {
+	return u.defaultSort(u.InitialTypeName, level)
+}
+func (u Univ) Terminal(level int) Sort {
+	return u.defaultSort(u.TerminalTypeName, level)
+}
+
+func (u Univ) defaultSort(name Name, level int) Sort {
+	return sorts.NewTerm(
+		setBuiltinLevel(name, level),
+		sorts.NewChain(u.DefaultTypeName, level+1),
+	)
+}
+
 func (u Univ) builtinNameGet(key Name) (Sort, bool) {
 	// parse builtin: initial, terminal
 	builtin := []Name{
@@ -32,10 +49,7 @@ func (u Univ) builtinNameGet(key Name) (Sort, bool) {
 			if err != nil {
 				continue
 			}
-			return sorts.NewTerm(
-				setBuiltinLevel(header, level),
-				sorts.NewChain(u.DefaultTypeName, level+1),
-			), true
+			return u.defaultSort(header, level), true
 		}
 	}
 	return nil, false
