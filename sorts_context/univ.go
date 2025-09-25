@@ -23,7 +23,7 @@ func (u Univ) Init() Univ {
 	return u
 }
 
-func (u Univ) BuiltinNameParse(key Name) (Sort, bool) {
+func (u Univ) builtinNameGet(key Name) (Sort, bool) {
 	// parse builtin: initial, terminal
 	builtin := []Name{
 		u.InitialTypeName,

@@ -3,12 +3,10 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
 	"github.com/fbundle/sorts/persistent/ordered_map"
-	"github.com/fbundle/sorts/slices_util"
 	"github.com/fbundle/sorts/sorts"
 	"github.com/fbundle/sorts/sorts_context"
 	"github.com/fbundle/sorts/sorts_parser"
@@ -23,6 +21,8 @@ var ctx sorts.Context = sorts_context.Context{
 	},
 }.Init()
 
+var parser = sorts_parser.Parser{}.Init()
+
 type sortCode struct {
 	sorts.Sort
 }
@@ -31,45 +31,11 @@ func (s sortCode) Eval(ctx sorts.Context) sorts.Sort {
 	return s.Sort
 }
 
-var Nat = sorts.NewTerm(form.Name("Nat"), sorts.NewChain("Parent", 2))
-
-var Zero = sorts.NewTerm(form.Name("0"), Nat)
-
-var Succ = sorts.Pi{
-	Params: []sorts.Annot{sorts.Annot{
-		Name: "x",
-		Type: sortCode{Nat},
-	}},
-	Body: succBody{},
-}
-
-type succBody struct{}
-
-func (l succBody) Form() form.Form {
-	return form.List{form.Name("succ"), form.Name("x")}
-}
-
-func (l succBody) Eval(ctx sorts.Context) sorts.Sort {
-	arg := ctx.Get("x")
-	if !arg.Parent(ctx).LessEqual(ctx, Nat) {
-		panic("x not of subtype of Nat")
-	}
-
-	x, err := strconv.Atoi(strings.Join(slices_util.Map(arg.Form().Marshal(), func(tok form.Token) string {
-		return tok
-	}), " "))
-	if err != nil {
-		panic(err)
-	}
-	y := x + 1
-	return sorts.NewTerm(form.Name(strconv.Itoa(y)), Nat)
-}
-
 func parseForm(s string) <-chan sorts.Code {
 	ch := make(chan sorts.Code)
 	go func() {
 		defer close(ch)
-		parse := sorts_parser.Parser{}.Init().Parse
+
 		tokens := form_processor.Tokenize(s)
 		var f form.Form
 		var err error
@@ -78,7 +44,7 @@ func parseForm(s string) <-chan sorts.Code {
 			if err != nil {
 				panic(err)
 			}
-			ch <- parse(f)
+			ch <- parser.Parse(f)
 		}
 	}()
 	return ch
@@ -105,6 +71,52 @@ var source = `
 `
 
 func main() {
+	Any2 := parser.Parse(form.Name("Any_2")).Eval(ctx)
+
+	Nat := sorts.Builtin(
+		"Nat",
+		nil,
+		Any2,
+		func(args []form.Form) form.Form {
+			if len(args) != 0 {
+				panic("internal")
+			}
+			return form.Name("Nat")
+		},
+	)
+	Zero := sorts.Builtin(
+		"0",
+		nil,
+		Nat,
+		func(args []form.Form) form.Form {
+			if len(args) != 0 {
+				panic("internal")
+			}
+			return form.Name("0")
+		},
+	)
+	Succ := sorts.Builtin(
+		"succ",
+		[]sorts.Sort{Nat},
+		Nat,
+		func(args []form.Form) form.Form {
+			if len(args) != 1 {
+				panic("internal")
+			}
+			arg, ok := args[0].(form.Name)
+			if !ok {
+				panic("internal")
+			}
+			x, err := strconv.Atoi(string(arg))
+			if err != nil {
+				panic(err)
+			}
+			y := x + 1
+			ret := form.Name(strconv.Itoa(y))
+			return ret
+		},
+	)
+
 	ctx = ctx.
 		Set("Nat", Nat).
 		Set("0", Zero).

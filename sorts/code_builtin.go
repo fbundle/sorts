@@ -7,9 +7,9 @@ import (
 	"github.com/fbundle/sorts/slices_util"
 )
 
-func Builtin(ctx Context, name Name, paramTypes []Sort, retType Sort, body func(args []Form) Form) Context {
+func Builtin(name Name, paramTypes []Sort, retType Sort, body func(args []Form) Form) Sort {
 	if len(paramTypes) == 0 {
-		return ctx.Set(name, NewTerm(body(nil), retType))
+		return NewTerm(body(nil), retType)
 	}
 	var count uint64
 	params := slices_util.Map(paramTypes, func(paramType Sort) Annot {
@@ -20,7 +20,7 @@ func Builtin(ctx Context, name Name, paramTypes []Sort, retType Sort, body func(
 			Type: sortCode{paramType},
 		}
 	})
-	sort := piWithName{
+	return piWithName{
 		name: name,
 		Pi: Pi{
 			Params: params,
@@ -31,7 +31,6 @@ func Builtin(ctx Context, name Name, paramTypes []Sort, retType Sort, body func(
 			},
 		},
 	}
-	return ctx.Set(name, sort)
 }
 
 type sortCode struct {
