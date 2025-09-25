@@ -81,8 +81,14 @@ func init() {
 		LambdaCmd Name = "=>"
 	)
 	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Code {
-		err := compileErr(list, []string{string(LambdaCmd), "param1", "...", "paramN", "body"}, "where N >= 0")
-		if len(list) != 2 {
+		err := compileErr(list, []string{
+			string(LambdaCmd),
+			makeForm(AnnotCmd, "name1", "type1"),
+			"...",
+			makeForm(AnnotCmd, "nameN", "typeN"),
+			"body",
+		}, "where N >= 0")
+		if len(list) < 1 {
 			panic(err)
 		}
 		params := slices_util.Map(list[:len(list)-1], func(form Form) Annot {
@@ -111,8 +117,13 @@ func init() {
 
 func init() {
 	DefaultParseFunc = func(ctx Context, list List) Code {
-		err := compileErr(list, []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
-		if len(list) != 2 {
+		err := compileErr(list, []string{
+			"cmd",
+			"arg1",
+			"...",
+			"argN",
+		}, "where N >= 0")
+		if len(list) < 1 {
 			panic(err)
 		}
 		output := ctx.Parse(list[0])

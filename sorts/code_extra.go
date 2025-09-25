@@ -4,6 +4,22 @@ const (
 	LetCmd Name = "let"
 )
 
+func init() {
+	ListParseFuncMap[LetCmd] = func(ctx Context, list List) Code {
+		err := compileErr(list, []string{
+			string(LetCmd),
+			makeForm(BindingCmd, "name1", "value1"),
+			"...",
+			makeForm(BindingCmd, "nameN", "valueN"),
+			"body",
+		}, "where N >= 0")
+		if len(list) < 1 {
+			panic(err)
+		}
+		
+	}
+}
+
 type Let struct {
 	Binding Binding
 	Body    Code
