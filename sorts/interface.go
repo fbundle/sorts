@@ -38,7 +38,6 @@ type Frame interface {
 	Get(name Name) Sort
 	Set(name Name, sort Sort) Context
 }
-type ListParseFunc = func(ctx Context, list List) Code
 
 type Parser interface {
 	Parse(form Form) Code
@@ -54,6 +53,10 @@ type Context interface {
 	Universe
 }
 
-var DefaultParseFunc ListParseFunc
+type ListParseFunc = func(ctx Context, list List) Code
+type NameParseFunc = func(ctx Context, name Name) Code
+
+var FinalListParseFunc ListParseFunc
+var FinalNameParseFunc NameParseFunc
 
 var ListParseFuncMap = map[Name]ListParseFunc{}

@@ -26,14 +26,14 @@ type context struct {
 func (c context) Parse(f form.Form) sorts.Code {
 	switch f := f.(type) {
 	case form.Name:
-		return sorts.Var{Name: f}
+		return sorts.FinalNameParseFunc(c, f)
 	case form.List:
 		if name, ok := f[0].(form.Name); ok {
 			if parseFunc, ok := sorts.ListParseFuncMap[name]; ok {
 				return parseFunc(c, f[1:])
 			}
 		}
-		return sorts.DefaultParseFunc(c, f)
+		return sorts.FinalListParseFunc(c, f)
 	}
 	panic(fmt.Errorf("parse_error: %v", f))
 }

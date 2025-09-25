@@ -6,6 +6,12 @@ import (
 	"github.com/fbundle/sorts/slices_util"
 )
 
+func init() {
+	FinalNameParseFunc = func(ctx Context, name Name) Code {
+		return Var{Name: name}
+	}
+}
+
 type Var struct {
 	Name Name
 }
@@ -128,7 +134,7 @@ func init() {
 }
 
 func init() {
-	DefaultParseFunc = func(ctx Context, list List) Code {
+	FinalListParseFunc = func(ctx Context, list List) Code {
 		err := compileErr(list, []string{
 			"cmd",
 			"arg1",
