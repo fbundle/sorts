@@ -70,7 +70,26 @@ func el() (sorts.Context, func(form.Form) sorts.Code) {
 			}
 			switch currentMode {
 			case modeComp:
-				return form.List{form.Name("add"), args[0], args[1]}
+				arg1, arg2 := args[0], args[1]
+				for {
+					switch a1 := arg1.(type) {
+					case form.Name:
+						if a1 != "0" {
+							panic("internal")
+						}
+						return arg2
+					case form.List:
+						if len(a1) != 2 {
+							panic("internal")
+						}
+						if a1[0] != form.Name("succ") {
+							panic("internal")
+						}
+						arg1, arg2 = a1[1], form.List{form.Name("succ"), arg2}
+					default:
+						panic("internal")
+					}
+				}
 			case modeEval:
 				values := slices_util.Map(args, func(f form.Form) int {
 					v, err := strconv.Atoi(form.String(f))
