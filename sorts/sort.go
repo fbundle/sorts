@@ -60,7 +60,7 @@ func (s Pi) Form() Form {
 }
 
 func (s Pi) Level(ctx Context) int {
-	// hard - probably need to include a "proof of level"
+	// TODO - hard - probably need to include a "proof of level"
 	panic("not_implemented")
 }
 
@@ -73,5 +73,10 @@ func (s Pi) Parent(ctx Context) Sort {
 	}
 }
 func (s Pi) LessEqual(ctx Context, d Sort) bool {
+	// TODO - probably use contravariant-covariant rules
 	panic("not_implemented")
+}
+
+type Sigma struct {
+	// TODO - probably similar to Pi
 }
