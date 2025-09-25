@@ -1,7 +1,82 @@
 package sorts
 
-import "github.com/fbundle/sorts/slices_util"
+import (
+	"strconv"
 
+	"github.com/fbundle/sorts/slices_util"
+)
+
+func init() {
+	ListParseFuncMap[TypeCmd] = func(ctx Context, list List) Sort {
+		err := compileErr(list, []string{string(TypeCmd), "value"})
+		if len(list) != 1 {
+			panic(err)
+		}
+		return Type{
+			Body: ctx.Parse(list[0]),
+		}
+	}
+}
+
+const (
+	TypeCmd Name = "&"
+)
+
+type Type struct {
+	code
+	Body Sort
+}
+
+func (s Type) Form() Form {
+	return List{TypeCmd, s.Body.Form()}
+}
+
+func (s Type) Eval(ctx Context) Sort {
+	return s.Body.Parent(ctx)
+}
+
+func init() {
+	ListParseFuncMap[InhabitCmd] = func(ctx Context, list List) Sort {
+		err := compileErr(list, []string{string(InhabitCmd), "type"})
+		if len(list) != 1 {
+			panic(err)
+		}
+		return Inhabited{
+			uuid: nextCount(),
+			Type: ctx.Parse(list[0]),
+		}
+	}
+}
+
+const (
+	InhabitCmd Name = "*"
+)
+
+type Inhabited struct {
+	code
+	uuid uint64
+	Type Sort
+}
+
+func (s Inhabited) Form() Form {
+	return List{InhabitCmd, s.Type.Form(), Name(strconv.Itoa(int(s.uuid)))}
+}
+
+func (s Inhabited) Eval(ctx Context) Sort {
+	t := s.Type.Eval(ctx)
+	switch t := t.(type) {
+	case Pi:
+		return Pi{
+			Param: t.Param,
+			Body: Inhabited{
+				uuid: nextCount(),
+				Type: t.Body,
+			}.Eval(ctx),
+		}
+	default:
+		return NewTerm(s.Form(), t)
+	}
+}
 func init() {
 	DefaultParseFunc = func(ctx Context, list List) Sort {
 		err := compileErr(list, []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
@@ -23,6 +98,7 @@ func init() {
 }
 
 type Beta struct {
+	code
 	Cmd Sort
 	Arg Sort
 }

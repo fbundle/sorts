@@ -28,3 +28,20 @@ var count uint64 = 0
 func nextCount() uint64 {
 	return atomic.AddUint64(&count, 1)
 }
+
+type code struct{}
+
+func (c code) Parent(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c code) Level(ctx Context) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c code) LessEqual(ctx Context, d Sort) bool {
+	//TODO implement me
+	panic("implement me")
+}

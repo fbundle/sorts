@@ -17,20 +17,20 @@ type Sort interface {
 	Parent(ctx Context) Sort
 	Level(ctx Context) int
 	LessEqual(ctx Context, d Sort) bool
-	Code
-}
 
-type Code interface {
-	Form() Form
 	Eval(ctx Context) Sort // evaluation
 }
 
+// Sort - these are real sorts
+// Sort implements all, eval returns itself
 var _ = []Sort{
-	Atom{}, Pi{}, Type{}, Inhabited{}, // Inductive
+	Atom{}, Pi{}, // Inductive
 }
 
-var _ = []Code{
-	Beta{}, // Let, Match, etc
+// Code - these can be evaluated into sort
+// Code implements Form and Eval
+var _ = []Sort{
+	Inhabited{}, Type{}, Beta{}, // Let, Match, etc
 }
 
 type Frame interface {
