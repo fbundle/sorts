@@ -8,12 +8,6 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
-type Form = form.Form
-type Name = form.Name
-type List = form.List
-type Sort = sorts.Sort
-type Code = sorts.Code
-
 func makeForm(cmd Name, args ...string) string {
 	return fmt.Sprintf("(%s %s)", cmd, strings.Join(args, " "))
 }

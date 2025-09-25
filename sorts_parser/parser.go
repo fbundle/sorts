@@ -1,9 +1,16 @@
 package sorts_parser
 
 import (
+	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
 )
+
+type Form = form.Form
+type Name = form.Name
+type List = form.List
+type Sort = sorts.Sort
+type Code = sorts.Code
 
 type ListParseFunc = func(parse func(form sorts.Form) sorts.Code, list sorts.List) sorts.Code
 type NameParseFunc = func(name sorts.Name) sorts.Code
