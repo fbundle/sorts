@@ -1,5 +1,7 @@
 package sorts
 
+import "github.com/fbundle/sorts/slices_util"
+
 const (
 	LetCmd Name = "let"
 )
@@ -16,7 +18,17 @@ func init() {
 		if len(list) < 1 {
 			panic(err)
 		}
-		
+		bindings := slices_util.Map(list[:len(list)-1], func(form Form) Binding {
+			return compileBinding(ctx, mustType[List](err, form))
+		})
+		output := ctx.Parse(list[len(list)-1])
+		slices_util.ForEach(slices_util.Reverse(bindings), func(binding Binding) {
+			output = Let{
+				Binding: binding,
+				Body:    output,
+			}
+		})
+		return output
 	}
 }
 
