@@ -29,6 +29,11 @@ func (c Context) Get(name sorts.Name) sorts.Sort {
 	if value, ok := c.frame.Get(name); ok {
 		return value
 	}
+	for _, builtin := range c.builtin.Iter {
+		if value, ok := builtin(name); ok {
+			return value
+		}
+	}
 	if value, ok := c.Univ.builtinNameGet(name); ok {
 		return value
 	}

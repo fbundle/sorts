@@ -44,7 +44,7 @@ func el() (sorts.Context, func(form.Form) sorts.Code) {
 			return ret
 		},
 	)).(sorts_context.Context)
-	ctx.Set("add", sorts.MakeBuiltinSort(
+	ctx = ctx.Set("add", sorts.MakeBuiltinSort(
 		"add",
 		Nat,
 		[]sorts.Sort{Nat, Nat},
@@ -63,7 +63,7 @@ func el() (sorts.Context, func(form.Form) sorts.Code) {
 			ret := form.Name(strconv.Itoa(output))
 			return ret
 		},
-	))
+	)).(sorts_context.Context)
 
 	ctx = ctx.
 		WithBuiltin(func(name form.Name) (sorts.Sort, bool) {
@@ -90,11 +90,7 @@ var source = `
 	x
 )
 
-(let
-	{1 := (succ 0)}
-	{2 := (succ 1)}
-	(add 1 2)
-)
+(add 101 202)
 
 (let
 	{Nat := (* Any_2)}
