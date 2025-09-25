@@ -48,7 +48,7 @@ func (u Univ) BuiltinNameParse(key Name) (Sort, bool) {
 }
 
 func (u Univ) LessEqual(s Form, d Form) bool {
-	if s == d {
+	if equalForm(s, d) {
 		return true
 	}
 	sName, ok1 := s.(Name)

@@ -32,6 +32,9 @@ func (c Context) Get(name sorts.Name) sorts.Sort {
 	if value, ok := c.Frame.Get(name); ok {
 		return value
 	}
+	if value, ok := c.Univ.BuiltinNameParse(name); ok {
+		return value
+	}
 	panic(fmt.Errorf("name_not_found: %s", name))
 
 }

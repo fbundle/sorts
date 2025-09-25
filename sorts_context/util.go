@@ -25,3 +25,26 @@ func setBuiltinLevel(builtinName form.Name, level int) form.Name {
 	prefix := string(builtinName) + "_"
 	return form.Name(prefix + strconv.Itoa(level))
 }
+
+func equalForm(s Form, d Form) bool {
+	sName, ok1 := s.(Name)
+	dName, ok2 := d.(Name)
+	if ok1 && ok2 {
+		return sName == dName
+	}
+	sList, ok1 := s.(List)
+	dList, ok2 := d.(List)
+	if ok1 && ok2 {
+		if len(sList) != len(dList) {
+			return false
+		}
+		for i := range sList {
+			sVal, dVal := sList[i], sList[i]
+			if !equalForm(sVal, dVal) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}

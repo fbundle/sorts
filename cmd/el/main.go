@@ -94,6 +94,7 @@ var source = `
 )
 
 (let
+{Nat := (* Any_2)}
 {0 := (* Nat)}
 {succ := (* {{x: Nat} => Nat})}
 
