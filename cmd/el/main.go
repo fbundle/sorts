@@ -56,7 +56,7 @@ var Nat = sorts.NewTerm(form.Name("Nat"), sorts.NewChain("Parent", 2))
 
 var Zero = sorts.NewTerm(form.Name("0"), Nat)
 
-var Succ = sorts.Pi{
+var Succ = sorts.Lambda{
 	Param: sorts.Annot{
 		Name: "x",
 		Type: Nat,

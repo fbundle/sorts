@@ -12,34 +12,35 @@ type Form = form.Form
 
 var TypeError = errors.New("type_error")
 
+// Sort - (or value)
 type Sort interface {
 	Form() Form
 	Parent(ctx Context) Sort
 	Level(ctx Context) int
 	LessEqual(ctx Context, d Sort) bool
-
-	Eval(ctx Context) Sort // evaluation
 }
 
-// Sort - these are real sorts
-// Sort implements all, eval returns itself
-var _ = []Sort{
-	Atom{}, Pi{}, // Inductive
+// Code - can be evaluated into Sort
+type Code interface {
+	Form() Form
+	Eval(ctx Context) Sort
 }
 
-// Code - these can be evaluated into sort
-// Code implements Form and Eval
 var _ = []Sort{
+	Atom{}, Lambda{}, // Inductive
+}
+
+var _ = []Code{
 	Inhabited{}, Type{}, Beta{}, // Let, Match, etc
 }
 
 type Frame interface {
 	Set(name Name, sort Sort) Context
 }
-type ListParseFunc = func(ctx Context, list List) Sort
+type ListParseFunc = func(ctx Context, list List) Code
 
 type Parser interface {
-	Parse(form Form) Sort
+	Parse(form Form) Code
 }
 
 type Universe interface {

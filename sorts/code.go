@@ -13,7 +13,7 @@ func init() {
 			panic(err)
 		}
 		return Type{
-			Body: ctx.Parse(list[0]),
+			Value: ctx.Parse(list[0]),
 		}
 	}
 }
@@ -23,16 +23,15 @@ const (
 )
 
 type Type struct {
-	code
-	Body Sort
+	Value Code
 }
 
 func (s Type) Form() Form {
-	return List{TypeCmd, s.Body.Form()}
+	return List{TypeCmd, s.Value.Form()}
 }
 
 func (s Type) Eval(ctx Context) Sort {
-	return s.Body.Parent(ctx)
+	return s.Value.Parent(ctx)
 }
 
 func init() {
@@ -65,8 +64,8 @@ func (s Inhabited) Form() Form {
 func (s Inhabited) Eval(ctx Context) Sort {
 	t := s.Type.Eval(ctx)
 	switch t := t.(type) {
-	case Pi:
-		return Pi{
+	case Lambda:
+		return Lambda{
 			Param: t.Param,
 			Body: Inhabited{
 				uuid: nextCount(),
@@ -77,6 +76,67 @@ func (s Inhabited) Eval(ctx Context) Sort {
 		return NewTerm(s.Form(), t)
 	}
 }
+
+func init() {
+	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
+		err := compileErr(list, []string{string(LambdaCmd), "param1", "...", "paramN", "body"}, "where N >= 0")
+		if len(list) != 2 {
+			panic(err)
+		}
+		params := slices_util.Map(list[:len(list)-1], func(form Form) Annot {
+			return compileAnnot(ctx, mustType[List](err, form))
+		})
+		output := ctx.Parse(list[len(list)-1])
+		slices_util.ForEach(slices_util.Reverse(params), func(param Annot) {
+			output = Lambda{
+				Param: param,
+				Body:  output,
+			}
+		})
+		return output
+	}
+	const ArrowCmd Name = "->"
+	ListParseFuncMap[ArrowCmd] = func(ctx Context, list List) Sort {
+		// make builtin like succ
+		// e.g. if arrow is Nat -> Nat
+		// then its lambda is
+		// (x: Nat) => Nat
+		// or some mechanism to introduce arrow type from pi type
+		// TODO - probably we don't need this anymore
+		panic("not implemented")
+	}
+}
+
+const (
+	LambdaCmd Name = "=>"
+)
+
+// Lambda - lambda abstraction (or Lambda-type)
+type Lambda struct {
+	Param Annot
+	Body  Sort
+}
+
+func (s Lambda) Form() Form {
+	return List{LambdaCmd, s.Param.Form(), s.Body.Form()}
+}
+
+func (s Lambda) Level(ctx Context) int {
+	panic("not_implemented")
+}
+
+func (s Lambda) Parent(ctx Context) Sort {
+	return Lambda{
+		Param: s.Param,
+		Body: Type{
+			Value: s.Body,
+		},
+	}
+}
+func (s Lambda) LessEqual(ctx Context, d Sort) bool {
+	panic("not_implemented")
+}
+
 func init() {
 	DefaultParseFunc = func(ctx Context, list List) Sort {
 		err := compileErr(list, []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
