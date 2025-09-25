@@ -22,7 +22,7 @@ func (p Parser) finalize() Parser {
 
 func (p Parser) Init() Parser {
 	p.finalNameParseFunc = func(name sorts.Name) sorts.Code {
-		return sorts.Var{Name: name}
+		return sorts.Symbol{Name: name}
 	}
 	p.finalListParseFunc = func(parse func(form sorts.Form) sorts.Code, list sorts.List) sorts.Code {
 		err := compileErr(list, []string{

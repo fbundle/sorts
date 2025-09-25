@@ -1,14 +1,14 @@
 package sorts
 
-type Var struct {
+type Symbol struct {
 	Name Name
 }
 
-func (c Var) Form() Form {
+func (c Symbol) Form() Form {
 	return c.Name
 }
 
-func (c Var) Eval(ctx Context) Sort {
+func (c Symbol) Eval(ctx Context) Sort {
 	return ctx.Get(c.Name)
 }
 
