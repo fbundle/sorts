@@ -54,6 +54,7 @@ func init() {
 		// then its lambda is
 		// (x: Nat) => Nat
 		// or some mechanism to introduce arrow type from pi type
+		// TODO - probably we don't need this anymore
 		panic("not implemented")
 	}
 }
