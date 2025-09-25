@@ -12,6 +12,15 @@ import (
 	"github.com/fbundle/sorts/sorts_parser"
 )
 
+type mode string
+
+const (
+	modeComp mode = "comp"
+	modeEval mode = "eval"
+)
+
+var currentMode = modeComp
+
 // el - basic EL with integers and addition
 func el() (sorts.Context, func(form.Form) sorts.Code) {
 	ctx := sorts_context.Context{
@@ -23,61 +32,87 @@ func el() (sorts.Context, func(form.Form) sorts.Code) {
 	}
 	Type2 := ctx.Default(2)
 	Nat := sorts.MakeBuiltinSort(
-		"Nat",
+		form.Name("Nat"),
 		Type2,
 		nil, nil,
 	)
 	ctx = ctx.Set("Nat", Nat).(sorts_context.Context)
 	ctx = ctx.Set("succ", sorts.MakeBuiltinSort(
-		"succ",
+		form.Name("succ"),
 		Nat,
 		[]sorts.Sort{Nat},
 		func(args []form.Form) form.Form {
 			if len(args) != 1 {
 				panic("internal")
 			}
-			x, err := strconv.Atoi(form.String(args[0]))
-			if err != nil {
-				panic(err)
+			switch currentMode {
+			case modeComp:
+				return form.List{form.Name("succ"), args[0]}
+			case modeEval:
+				x, err := strconv.Atoi(form.String(args[0]))
+				if err != nil {
+					panic(err)
+				}
+				y := x + 1
+				ret := form.Name(strconv.Itoa(y))
+				return ret
 			}
-			y := x + 1
-			ret := form.Name(strconv.Itoa(y))
-			return ret
+			panic("internal")
 		},
 	)).(sorts_context.Context)
 	ctx = ctx.Set("add", sorts.MakeBuiltinSort(
-		"add",
+		form.Name("add"),
 		Nat,
 		[]sorts.Sort{Nat, Nat},
 		func(args []form.Form) form.Form {
 			if len(args) != 2 {
 				panic("internal")
 			}
-			values := slices_util.Map(args, func(f form.Form) int {
-				v, err := strconv.Atoi(form.String(f))
-				if err != nil {
-					panic(err)
-				}
-				return v
-			})
-			output := values[0] + values[1]
-			ret := form.Name(strconv.Itoa(output))
-			return ret
+			switch currentMode {
+			case modeComp:
+				return form.List{form.Name("add"), args[0], args[1]}
+			case modeEval:
+				values := slices_util.Map(args, func(f form.Form) int {
+					v, err := strconv.Atoi(form.String(f))
+					if err != nil {
+						panic(err)
+					}
+					return v
+				})
+				output := values[0] + values[1]
+				ret := form.Name(strconv.Itoa(output))
+				return ret
+			}
+			panic("internal")
 		},
 	)).(sorts_context.Context)
 
 	ctx = ctx.
 		WithBuiltin(func(name form.Name) (sorts.Sort, bool) {
 			// add integer
-			_, err := strconv.Atoi(string(name))
+			v, err := strconv.Atoi(string(name))
 			if err != nil {
 				return nil, false
 			}
-			return sorts.MakeBuiltinSort(
-				name,
-				Nat,
-				nil, nil,
-			), true
+			switch currentMode {
+			case modeComp:
+				var output form.Form = form.Name("0")
+				for i := 0; i < v; i++ {
+					output = form.List{form.Name("succ"), output}
+				}
+				return sorts.MakeBuiltinSort(
+					output,
+					Nat,
+					nil, nil,
+				), true
+			case modeEval:
+				return sorts.MakeBuiltinSort(
+					name,
+					Nat,
+					nil, nil,
+				), true
+			}
+			panic("internal")
 		})
 	return ctx, sorts_parser.Parser{}.Init().Parse
 }
@@ -91,7 +126,7 @@ var source = `
 	x
 )
 
-(add 101 202)
+(add 3 5)
 
 (let
 	{Nat := (* Any_2)}

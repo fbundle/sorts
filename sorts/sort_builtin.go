@@ -7,9 +7,9 @@ import (
 	"github.com/fbundle/sorts/slices_util"
 )
 
-func MakeBuiltinSort(name Name, retType Sort, paramTypes []Sort, body func(args []Form) Form) Sort {
+func MakeBuiltinSort(form Form, retType Sort, paramTypes []Sort, body func(args []Form) Form) Sort {
 	if len(paramTypes) == 0 {
-		return NewTerm(name, retType)
+		return NewTerm(form, retType)
 	}
 	var count uint64
 	params := slices_util.Map(paramTypes, func(paramType Sort) Annot {
@@ -21,7 +21,7 @@ func MakeBuiltinSort(name Name, retType Sort, paramTypes []Sort, body func(args 
 		}
 	})
 	return Pi{
-		form:   name,
+		form:   form,
 		Params: params,
 		Body: builtinPiBody{
 			params:  params,
