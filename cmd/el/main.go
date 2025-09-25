@@ -111,9 +111,10 @@ var source = `
 )
 
 (let
+{0 := (* Nat)}
 {succ := (* {{x: Nat} => Nat})}
 
-succ
+(succ 0)
 )
 
 `

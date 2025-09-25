@@ -22,6 +22,7 @@ func (c Let) Eval(ctx Context) Sort {
 	} else {
 		value = valueCode.Eval(ctx)
 	}
+	value = valueCode.Eval(ctx)
 	return c.Body.Eval(ctx.Set(name, value))
 }
 
