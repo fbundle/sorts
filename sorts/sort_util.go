@@ -1,5 +1,9 @@
 package sorts
 
+const (
+	AnnotCmd Name = ":"
+)
+
 func compileAnnot(ctx Context, list List) Annot {
 	err := compileErr(list, []string{string(AnnotCmd), "name", "type"})
 	if len(list) != 2 {
@@ -11,18 +15,18 @@ func compileAnnot(ctx Context, list List) Annot {
 	}
 }
 
-const (
-	AnnotCmd Name = ":"
-)
-
 type Annot struct {
 	Name Name
-	Type Sort
+	Type Code
 }
 
 func (a Annot) Form() Form {
 	return List{AnnotCmd, a.Name, a.Type.Form()}
 }
+
+const (
+	BindingCmd Name = ":="
+)
 
 func compileBinding(ctx Context, list List) Binding {
 	err := compileErr(list, []string{string(BindingCmd), "name", "value"})
@@ -35,13 +39,9 @@ func compileBinding(ctx Context, list List) Binding {
 	}
 }
 
-const (
-	BindingCmd Name = ":="
-)
-
 type Binding struct {
 	Name  Name
-	Value Sort
+	Value Code
 }
 
 func (b Binding) Form() Form {

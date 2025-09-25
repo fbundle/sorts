@@ -27,7 +27,7 @@ type Code interface {
 }
 
 var _ = []Sort{
-	Atom{}, Lambda{}, // Inductive
+	Atom{}, Pi{}, // Inductive
 }
 
 var _ = []Code{

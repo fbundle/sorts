@@ -6,8 +6,12 @@ import (
 	"github.com/fbundle/sorts/slices_util"
 )
 
+const (
+	TypeCmd Name = "&"
+)
+
 func init() {
-	ListParseFuncMap[TypeCmd] = func(ctx Context, list List) Sort {
+	ListParseFuncMap[TypeCmd] = func(ctx Context, list List) Code {
 		err := compileErr(list, []string{string(TypeCmd), "value"})
 		if len(list) != 1 {
 			panic(err)
@@ -18,10 +22,6 @@ func init() {
 	}
 }
 
-const (
-	TypeCmd Name = "&"
-)
-
 type Type struct {
 	Value Code
 }
@@ -31,11 +31,15 @@ func (s Type) Form() Form {
 }
 
 func (s Type) Eval(ctx Context) Sort {
-	return s.Value.Parent(ctx)
+	return s.Value.Eval(ctx).Parent(ctx)
 }
 
+const (
+	InhabitCmd Name = "*"
+)
+
 func init() {
-	ListParseFuncMap[InhabitCmd] = func(ctx Context, list List) Sort {
+	ListParseFuncMap[InhabitCmd] = func(ctx Context, list List) Code {
 		err := compileErr(list, []string{string(InhabitCmd), "type"})
 		if len(list) != 1 {
 			panic(err)
@@ -47,14 +51,9 @@ func init() {
 	}
 }
 
-const (
-	InhabitCmd Name = "*"
-)
-
 type Inhabited struct {
-	code
 	uuid uint64
-	Type Sort
+	Type Code
 }
 
 func (s Inhabited) Form() Form {
@@ -64,13 +63,13 @@ func (s Inhabited) Form() Form {
 func (s Inhabited) Eval(ctx Context) Sort {
 	t := s.Type.Eval(ctx)
 	switch t := t.(type) {
-	case Lambda:
-		return Lambda{
+	case Pi:
+		return Pi{
 			Param: t.Param,
 			Body: Inhabited{
 				uuid: nextCount(),
 				Type: t.Body,
-			}.Eval(ctx),
+			},
 		}
 	default:
 		return NewTerm(s.Form(), t)
@@ -78,7 +77,10 @@ func (s Inhabited) Eval(ctx Context) Sort {
 }
 
 func init() {
-	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
+	const (
+		LambdaCmd Name = "=>"
+	)
+	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Code {
 		err := compileErr(list, []string{string(LambdaCmd), "param1", "...", "paramN", "body"}, "where N >= 0")
 		if len(list) != 2 {
 			panic(err)
@@ -88,7 +90,7 @@ func init() {
 		})
 		output := ctx.Parse(list[len(list)-1])
 		slices_util.ForEach(slices_util.Reverse(params), func(param Annot) {
-			output = Lambda{
+			output = Pi{
 				Param: param,
 				Body:  output,
 			}
@@ -96,7 +98,7 @@ func init() {
 		return output
 	}
 	const ArrowCmd Name = "->"
-	ListParseFuncMap[ArrowCmd] = func(ctx Context, list List) Sort {
+	ListParseFuncMap[ArrowCmd] = func(ctx Context, list List) Code {
 		// make builtin like succ
 		// e.g. if arrow is Nat -> Nat
 		// then its lambda is
@@ -107,47 +109,17 @@ func init() {
 	}
 }
 
-const (
-	LambdaCmd Name = "=>"
-)
-
-// Lambda - lambda abstraction (or Lambda-type)
-type Lambda struct {
-	Param Annot
-	Body  Sort
-}
-
-func (s Lambda) Form() Form {
-	return List{LambdaCmd, s.Param.Form(), s.Body.Form()}
-}
-
-func (s Lambda) Level(ctx Context) int {
-	panic("not_implemented")
-}
-
-func (s Lambda) Parent(ctx Context) Sort {
-	return Lambda{
-		Param: s.Param,
-		Body: Type{
-			Value: s.Body,
-		},
-	}
-}
-func (s Lambda) LessEqual(ctx Context, d Sort) bool {
-	panic("not_implemented")
-}
-
 func init() {
-	DefaultParseFunc = func(ctx Context, list List) Sort {
+	DefaultParseFunc = func(ctx Context, list List) Code {
 		err := compileErr(list, []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
 		if len(list) != 2 {
 			panic(err)
 		}
 		output := ctx.Parse(list[0])
-		args := slices_util.Map(list[1:], func(form Form) Sort {
+		args := slices_util.Map(list[1:], func(form Form) Code {
 			return ctx.Parse(form)
 		})
-		slices_util.ForEach(args, func(arg Sort) {
+		slices_util.ForEach(args, func(arg Code) {
 			output = Beta{
 				Cmd: output,
 				Arg: arg,
@@ -158,9 +130,8 @@ func init() {
 }
 
 type Beta struct {
-	code
-	Cmd Sort
-	Arg Sort
+	Cmd Code
+	Arg Code
 }
 
 func (s Beta) Form() Form {
@@ -168,5 +139,12 @@ func (s Beta) Form() Form {
 }
 
 func (s Beta) Eval(ctx Context) Sort {
-	return s.Cmd.Body.Eval(ctx.Set(s.Cmd.Param.Name, s.Arg))
+	cmd := mustType[Pi](TypeError, s.Cmd.Eval(ctx))
+	paramType := cmd.Param.Type.Eval(ctx)
+	arg := s.Arg.Eval(ctx)
+	argType := arg.Parent(ctx)
+	if !argType.LessEqual(ctx, paramType) {
+		panic(TypeError)
+	}
+	return cmd.Body.Eval(ctx.Set(cmd.Param.Name, arg))
 }

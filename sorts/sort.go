@@ -77,6 +77,11 @@ func (s Pi) LessEqual(ctx Context, d Sort) bool {
 	panic("not_implemented")
 }
 
+// Eval - Pi is both a Sort (Pi-type) and a Code (lambda abstraction)
+func (s Pi) Eval(ctx Context) Sort {
+	return s
+}
+
 type Sigma struct {
 	// TODO - probably similar to Pi
 }

@@ -11,16 +11,24 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
+type sortCode struct {
+	sorts.Sort
+}
+
+func (s sortCode) Eval(ctx sorts.Context) sorts.Sort {
+	return s.Sort
+}
+
 type context struct {
 	dict ordered_map.OrderedMap[form.Name, sorts.Sort]
 }
 
-func (c context) Parse(f form.Form) sorts.Sort {
+func (c context) Parse(f form.Form) sorts.Code {
 
 	switch f := f.(type) {
 	case form.Name:
 		if s, ok := c.dict.Get(f); ok {
-			return s
+			return sortCode{s}
 		}
 		panic(fmt.Errorf("name_not_found: %s", f))
 	case form.List:
@@ -32,10 +40,6 @@ func (c context) Parse(f form.Form) sorts.Sort {
 		return sorts.DefaultParseFunc(c, f)
 	}
 	panic(fmt.Errorf("parse_error: %v", f))
-}
-
-func (c context) Mode() sorts.Mode {
-	return sorts.ModeDebug
 }
 
 // LessEqual implements sorts.Context.
@@ -56,10 +60,10 @@ var Nat = sorts.NewTerm(form.Name("Nat"), sorts.NewChain("Parent", 2))
 
 var Zero = sorts.NewTerm(form.Name("0"), Nat)
 
-var Succ = sorts.Lambda{
+var Succ = sorts.Pi{
 	Param: sorts.Annot{
 		Name: "x",
-		Type: Nat,
+		Type: sortCode{Nat},
 	},
 	Body: succBody{},
 }
@@ -104,7 +108,6 @@ func (l succBody) Eval(ctx sorts.Context) sorts.Sort {
 	if !arg.Parent(ctx).LessEqual(ctx, Nat) {
 		panic("x not of subtype of Nat")
 	}
-	arg = arg.Eval(ctx)
 
 	x, err := strconv.Atoi(strings.Join(slicesMap(arg.Form().Marshal(), func(tok form.Token) string {
 		return tok
@@ -147,7 +150,6 @@ func main() {
 
 	for f := range parseForm(source) {
 		s := c.Parse(f)
-		_ = s.Parent(c) // type check
 		s1 := s.Eval(c) // evaluate
 		fmt.Println(s1.Form(), "<-", s.Form())
 	}
