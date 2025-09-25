@@ -14,8 +14,7 @@ func (c Let) Form() Form {
 }
 
 func (c Let) Eval(ctx Context) Sort {
-	//TODO implement me
-	panic("implement me")
+	return c.Body.Eval(ctx.Set(c.Binding.Name, c.Binding.Value.Eval(ctx)))
 }
 
 const (
