@@ -18,8 +18,16 @@ type Sort interface {
 	Eval(ctx Context) Sort // evaluation
 }
 
+type Code interface {
+	Form() Form
+}
+
 var _ = []Sort{
-	Atom{}, Lambda{}, Beta{}, Type{},
+	Atom{}, Lambda{}, Beta{}, Type{}, Let{},
+}
+
+var _ = []Code{
+	Annot{}, Binding{},
 }
 
 type Frame interface {
