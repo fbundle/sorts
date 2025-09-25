@@ -12,6 +12,7 @@ import (
 	"github.com/fbundle/sorts/sorts_parser"
 )
 
+// el - basic EL with integers and addition
 func el() (sorts.Context, func(form.Form) sorts.Code) {
 	ctx := sorts_context.Context{
 		Univ: sorts_context.Univ{
