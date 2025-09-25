@@ -47,6 +47,8 @@ func init() {
 		if len(list) != 1 {
 			panic(err)
 		}
+		// TODO - if type is Pi/Lambda
+		// make appropriate child
 		return Inhabited{
 			uuid: nextCount(),
 			Type: ctx.Parse(list[0]),
