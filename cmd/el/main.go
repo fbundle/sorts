@@ -110,9 +110,8 @@ var source = `
 	x
 )
 
-(*Nat)
-(*Nat)
-(*Nat)
+{{x: Nat} => Nat}
+
 `
 
 func main() {
