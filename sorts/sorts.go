@@ -28,7 +28,7 @@ type Expr interface {
 }
 
 var _ = []Sort{
-	Atom{}, Lambda{}, Beta{}, Type{}, Inhabited{},
+	Atom{}, Lambda{}, Beta{}, Type{}, Inhabited{}, // Inductive
 }
 
 var _ = []Code{
@@ -36,7 +36,7 @@ var _ = []Code{
 }
 
 var _ = []Expr{
-	Let{},
+	Let{}, // Match, etc
 }
 
 type Frame interface {
