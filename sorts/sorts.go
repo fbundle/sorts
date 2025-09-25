@@ -22,12 +22,21 @@ type Code interface {
 	Form() Form
 }
 
+type Expr interface {
+	Form() Form
+	Eval(ctx Context) Sort
+}
+
 var _ = []Sort{
-	Atom{}, Lambda{}, Beta{}, Type{}, Inhabited{}, Let{},
+	Atom{}, Lambda{}, Beta{}, Type{}, Inhabited{},
 }
 
 var _ = []Code{
 	Annot{}, Binding{},
+}
+
+var _ = []Expr{
+	Let{},
 }
 
 type Frame interface {
