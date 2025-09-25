@@ -1,20 +1,29 @@
 package sorts
 
+import "github.com/fbundle/sorts/slices_util"
+
 func init() {
 	DefaultParseFunc = func(ctx Context, list List) Sort {
-		err := compileErr(list, []string{"cmd", "arg"})
+		err := compileErr(list, []string{"cmd", "arg1", "...", "argN"}, "where N >= 0")
 		if len(list) != 2 {
 			panic(err)
 		}
-		return Beta{
-			Cmd: mustType[Lambda](err, ctx.Parse(list[0])),
-			Arg: ctx.Parse(list[1]),
-		}
+		output := ctx.Parse(list[0])
+		args := slices_util.Map(list[1:], func(form Form) Sort {
+			return ctx.Parse(form)
+		})
+		slices_util.ForEach(args, func(arg Sort) {
+			output = Beta{
+				Cmd: output,
+				Arg: arg,
+			}
+		})
+		return output
 	}
 }
 
 type Beta struct {
-	Cmd Lambda
+	Cmd Sort
 	Arg Sort
 }
 
@@ -42,10 +51,17 @@ func init() {
 		if len(list) != 2 {
 			panic(err)
 		}
-		return Lambda{
-			Param: compileAnnot(ctx, mustType[List](err, list[0])),
-			Body:  ctx.Parse(list[1]),
-		}
+		params := slices_util.Map(list[:len(list)-1], func(form Form) Annot {
+			return compileAnnot(ctx, mustType[List](err, form))
+		})
+		output := ctx.Parse(list[len(list)-1])
+		slices_util.ForEach(slices_util.Reverse(params), func(param Annot) {
+			output = Lambda{
+				Param: param,
+				Body:  output,
+			}
+		})
+		return output
 	}
 	const ArrowCmd Name = "->"
 	ListParseFuncMap[ArrowCmd] = func(ctx Context, list List) Sort {
