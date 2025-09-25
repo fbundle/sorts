@@ -16,15 +16,15 @@ type ListParseFunc = func(parse func(form sorts.Form) sorts.Code, list sorts.Lis
 type NameParseFunc = func(name sorts.Name) sorts.Code
 
 type Parser struct {
+	nameParseFunc      NameParseFunc
 	finalListParseFunc ListParseFunc
-	finalNameParseFunc NameParseFunc
 	listParseFuncMap   ordered_map.OrderedMap[sorts.Name, ListParseFunc]
 }
 
 func (p Parser) Parse(form sorts.Form) sorts.Code {
 	switch f := form.(type) {
 	case sorts.Name:
-		return p.finalNameParseFunc(f)
+		return p.nameParseFunc(f)
 	case sorts.List:
 		if len(f) == 0 {
 			panic("parse_error")

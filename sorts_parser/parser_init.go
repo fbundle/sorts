@@ -16,7 +16,7 @@ func (p Parser) finalize() Parser {
 }
 
 func (p Parser) Init() Parser {
-	p.finalNameParseFunc = func(name sorts.Name) sorts.Code {
+	p.nameParseFunc = func(name sorts.Name) sorts.Code {
 		return sorts.Symbol{Name: name}
 	}
 	p.finalListParseFunc = func(parse func(form sorts.Form) sorts.Code, list sorts.List) sorts.Code {
