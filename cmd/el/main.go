@@ -10,8 +10,18 @@ import (
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/slices_util"
 	"github.com/fbundle/sorts/sorts"
+	"github.com/fbundle/sorts/sorts_context"
 	"github.com/fbundle/sorts/sorts_parser"
 )
+
+var ctx sorts.Context = sorts_context.Context{
+	Frame: ordered_map.OrderedMap[form.Name, sorts.Sort]{},
+	Univ: sorts_context.Univ{
+		InitialTypeName:  "Unit",
+		TerminalTypeName: "Any",
+		DefaultTypeName:  "Type",
+	},
+}.Init()
 
 type sortCode struct {
 	sorts.Sort
@@ -20,29 +30,6 @@ type sortCode struct {
 func (s sortCode) Eval(ctx sorts.Context) sorts.Sort {
 	return s.Sort
 }
-
-type context struct {
-	dict ordered_map.OrderedMap[form.Name, sorts.Sort]
-}
-
-func (c context) LessEqual(s form.Form, d form.Form) bool {
-	return s == d
-}
-
-func (c context) Get(name sorts.Name) sorts.Sort {
-	if s, ok := c.dict.Get(name); ok {
-		return s
-	}
-	panic(fmt.Errorf("name_not_found: %s", name))
-}
-
-func (c context) Set(name sorts.Name, sort sorts.Sort) sorts.Context {
-	return context{
-		dict: c.dict.Set(name, sort),
-	}
-}
-
-var _ sorts.Context = context{}
 
 var Nat = sorts.NewTerm(form.Name("Nat"), sorts.NewChain("Parent", 2))
 
@@ -63,11 +50,7 @@ func (l succBody) Form() form.Form {
 }
 
 func (l succBody) Eval(ctx sorts.Context) sorts.Sort {
-	c := ctx.(context)
-	arg, ok := c.dict.Get("x")
-	if !ok {
-		panic("x not set")
-	}
+	arg := ctx.Get("x")
 	if !arg.Parent(ctx).LessEqual(ctx, Nat) {
 		panic("x not of subtype of Nat")
 	}
@@ -120,7 +103,7 @@ var source = `
 `
 
 func main() {
-	ctx := context{}.
+	ctx = ctx.
 		Set("Nat", Nat).
 		Set("0", Zero).
 		Set("succ", Succ)

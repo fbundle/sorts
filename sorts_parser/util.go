@@ -3,9 +3,6 @@ package sorts_parser
 import (
 	"fmt"
 	"strings"
-
-	"github.com/fbundle/sorts/form"
-	"github.com/fbundle/sorts/sorts"
 )
 
 func makeForm(cmd Name, args ...string) string {
