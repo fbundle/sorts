@@ -38,7 +38,7 @@ func (s Beta) Eval(ctx Context) Sort {
 
 func init() {
 	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Sort {
-		err := compileErr(list, []string{string(LambdaCmd), "param", "body"})
+		err := compileErr(list, []string{string(LambdaCmd), "param1", "...", "paramN", "body"}, "where N >= 0")
 		if len(list) != 2 {
 			panic(err)
 		}
