@@ -84,8 +84,8 @@ func (s Inhabited) LessEqual(ctx Context, d Sort) bool {
 func (s Inhabited) Eval(ctx Context) Sort {
 	t := s.Type.Eval(ctx)
 	switch t := t.(type) {
-	case Lambda:
-		return Lambda{
+	case Pi:
+		return Pi{
 			Param: t.Param,
 			Body: Inhabited{
 				uuid: nextCount(),

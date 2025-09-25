@@ -1,6 +1,8 @@
 package sorts
 
 import (
+	"errors"
+
 	"github.com/fbundle/sorts/form"
 )
 
@@ -8,34 +10,26 @@ type Name = form.Name
 type List = form.List
 type Form = form.Form
 
+var TypeError = errors.New("type_error")
+
 type Sort interface {
 	Form() Form
 
-	Parent(ctx Context) Sort // type checking
+	Parent(ctx Context) Sort
 	Level(ctx Context) int
 	LessEqual(ctx Context, d Sort) bool
-
-	Eval(ctx Context) Sort // evaluation
 }
 
 type Code interface {
 	Form() Form
-}
-
-type Expr interface {
-	Form() Form
-	Eval(ctx Context) Sort
+	Eval(ctx Context) Sort // evaluation
 }
 
 var _ = []Sort{
-	Atom{}, Lambda{}, Beta{}, Type{}, Inhabited{}, // Inductive
+	Atom{}, Pi{}, Beta{}, Type{}, Inhabited{}, // Inductive
 }
 
 var _ = []Code{
-	Annot{}, Binding{},
-}
-
-var _ = []Expr{
 	// Let, Match, etc
 }
 
@@ -52,19 +46,11 @@ type Universe interface {
 	LessEqual(src Form, dst Form) bool
 }
 
-type Mode string
-
-const (
-	ModeComp  Mode = "COMP"  // type checking
-	ModeEval  Mode = "EVAL"  // type checking and evaluation
-	ModeDebug Mode = "DEBUG" // type checking and print everything
-)
-
 type Context interface {
 	Frame
 	Parser
 	Universe
-	Mode() Mode
+	Debug() bool
 }
 
 var DefaultParseFunc ListParseFunc
