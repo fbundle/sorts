@@ -21,7 +21,35 @@ const (
 
 var currentMode = modeComp
 
-// el - basic EL with integers and addition
+func toNat(f form.Form) int {
+	switch f := f.(type) {
+	case form.Name:
+		if f != "0" {
+			panic("internal")
+		}
+		return 0
+	case form.List:
+		if len(f) != 2 {
+			panic("internal")
+		}
+		if f[0] != form.Name("succ") {
+			panic("internal")
+		}
+		return 1 + toNat(f[1])
+	default:
+		panic("internal")
+	}
+}
+
+func fromNat(n int) form.Form {
+	var output form.Form = form.Name("0")
+	for i := 0; i < n; i++ {
+		output = form.List{form.Name("succ"), output}
+	}
+	return output
+}
+
+// el - basic EL with naturals and addition
 func el() (sorts.Context, func(form.Form) sorts.Code) {
 	ctx := sorts_context.Context{
 		Univ: sorts_context.Univ{
@@ -70,26 +98,9 @@ func el() (sorts.Context, func(form.Form) sorts.Code) {
 			}
 			switch currentMode {
 			case modeComp:
-				arg1, arg2 := args[0], args[1]
-				for {
-					switch a1 := arg1.(type) {
-					case form.Name:
-						if a1 != "0" {
-							panic("internal")
-						}
-						return arg2
-					case form.List:
-						if len(a1) != 2 {
-							panic("internal")
-						}
-						if a1[0] != form.Name("succ") {
-							panic("internal")
-						}
-						arg1, arg2 = a1[1], form.List{form.Name("succ"), arg2}
-					default:
-						panic("internal")
-					}
-				}
+				values := slices_util.Map(args, toNat)
+				output := values[0] + values[1]
+				return fromNat(output)
 			case modeEval:
 				values := slices_util.Map(args, func(f form.Form) int {
 					v, err := strconv.Atoi(form.String(f))
@@ -115,12 +126,8 @@ func el() (sorts.Context, func(form.Form) sorts.Code) {
 			}
 			switch currentMode {
 			case modeComp:
-				var output form.Form = form.Name("0")
-				for i := 0; i < v; i++ {
-					output = form.List{form.Name("succ"), output}
-				}
 				return sorts.MakeBuiltinSort(
-					output,
+					fromNat(v),
 					Nat,
 					nil, nil,
 				), true
