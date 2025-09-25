@@ -115,7 +115,7 @@ func main() {
 		Set("0", Zero).
 		Set("succ", Succ)
 
-	parse := sorts_parser.MakeParser(nil)
+	parse := sorts_parser.Parser{}.Init().Parse
 
 	for f := range parseForm(source) {
 		code := parse(f)

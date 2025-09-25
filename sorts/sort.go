@@ -47,7 +47,7 @@ func (s Atom) LessEqual(ctx Context, d Sort) bool {
 }
 
 const (
-	PiCmd Name = "Π"
+	PiCmd Name = "=>" // "Π"
 )
 
 type Pi struct {
