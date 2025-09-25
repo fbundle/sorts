@@ -7,9 +7,9 @@ import (
 	"github.com/fbundle/sorts/slices_util"
 )
 
-func Builtin(name Name, paramTypes []Sort, retType Sort, body func(args []Form) Form) Sort {
+func MakeBuiltinSort(name Name, retType Sort, paramTypes []Sort, body func(args []Form) Form) Sort {
 	if len(paramTypes) == 0 {
-		return NewTerm(body(nil), retType)
+		return NewTerm(name, retType)
 	}
 	var count uint64
 	params := slices_util.Map(paramTypes, func(paramType Sort) Annot {

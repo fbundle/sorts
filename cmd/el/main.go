@@ -79,10 +79,10 @@ var source = `
 func main() {
 	Any2 := parser.Parse(form.Name("Any_2")).Eval(ctx)
 
-	Nat := sorts.Builtin(
+	Nat := sorts.MakeBuiltinSort(
 		"Nat",
-		nil,
 		Any2,
+		nil,
 		func(args []form.Form) form.Form {
 			if len(args) != 0 {
 				panic("internal")
@@ -90,10 +90,10 @@ func main() {
 			return form.Name("Nat")
 		},
 	)
-	Zero := sorts.Builtin(
+	Zero := sorts.MakeBuiltinSort(
 		"0",
-		nil,
 		Nat,
+		nil,
 		func(args []form.Form) form.Form {
 			if len(args) != 0 {
 				panic("internal")
@@ -101,10 +101,10 @@ func main() {
 			return form.Name("0")
 		},
 	)
-	Succ := sorts.Builtin(
+	Succ := sorts.MakeBuiltinSort(
 		"succ",
-		[]sorts.Sort{Nat},
 		Nat,
+		[]sorts.Sort{Nat},
 		func(args []form.Form) form.Form {
 			if len(args) != 1 {
 				panic("internal")
@@ -119,10 +119,10 @@ func main() {
 		},
 	)
 
-	Add := sorts.Builtin(
+	Add := sorts.MakeBuiltinSort(
 		"add",
-		[]sorts.Sort{Nat, Nat},
 		Nat,
+		[]sorts.Sort{Nat, Nat},
 		func(args []form.Form) form.Form {
 			if len(args) != 2 {
 				panic("internal")
