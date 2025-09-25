@@ -92,7 +92,7 @@ func init() {
 			panic(err)
 		}
 		params := slices_util.Map(list[:len(list)-1], func(form Form) Annot {
-			return compileAnnot(ctx, mustType[List](err, form))
+			return compileAnnot(ctx, mustType[List](err, form)[1:])
 		})
 		output := ctx.Parse(list[len(list)-1])
 		slices_util.ForEach(slices_util.Reverse(params), func(param Annot) {

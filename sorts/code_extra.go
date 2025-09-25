@@ -19,7 +19,7 @@ func init() {
 			panic(err)
 		}
 		bindings := slices_util.Map(list[:len(list)-1], func(form Form) Binding {
-			return compileBinding(ctx, mustType[List](err, form))
+			return compileBinding(ctx, mustType[List](err, form)[1:])
 		})
 		output := ctx.Parse(list[len(list)-1])
 		slices_util.ForEach(slices_util.Reverse(bindings), func(binding Binding) {

@@ -24,7 +24,6 @@ type context struct {
 }
 
 func (c context) Parse(f form.Form) sorts.Code {
-
 	switch f := f.(type) {
 	case form.Name:
 		if s, ok := c.dict.Get(f); ok {
@@ -70,35 +69,10 @@ var Succ = sorts.Pi{
 
 type succBody struct{}
 
-// Form implements sorts.Sort.
 func (l succBody) Form() form.Form {
 	return form.List{form.Name("succ"), form.Name("x")}
 }
 
-// LessEqual implements sorts.Sort.
-func (l succBody) LessEqual(ctx sorts.Context, d sorts.Sort) bool {
-	panic("unimplemented")
-}
-
-// Level implements sorts.Sort.
-func (l succBody) Level(ctx sorts.Context) int {
-	panic("unimplemented")
-}
-
-// Parent implements sorts.Sort.
-func (l succBody) Parent(ctx sorts.Context) sorts.Sort {
-	c := ctx.(context)
-	arg, ok := c.dict.Get("x")
-	if !ok {
-		panic("x not set")
-	}
-	if !arg.Parent(ctx).LessEqual(ctx, Nat) {
-		panic("x not of subtype of Nat")
-	}
-	return Nat
-}
-
-// Reduce implements sorts.Sort.
 func (l succBody) Eval(ctx sorts.Context) sorts.Sort {
 	c := ctx.(context)
 	arg, ok := c.dict.Get("x")
@@ -140,6 +114,11 @@ func parseForm(s string) <-chan form.Form {
 var source = `
 (succ 0)
 (succ (succ 0))
+
+(let
+	{x := 0}
+	x
+)
 `
 
 func main() {
