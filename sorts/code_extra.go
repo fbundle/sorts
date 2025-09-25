@@ -1,29 +1,40 @@
 package sorts
 
+import "github.com/fbundle/sorts/slices_util"
+
 const (
 	LetCmd Name = "let"
 )
 
 type Let struct {
-	Binding Binding
-	Body    Code
+	Bindings []Binding
+	Body     Code
 }
 
 func (c Let) Form() Form {
-	return List{LetCmd, c.Binding.Form(), c.Body.Form()}
+	var output List
+	output = append(output, LetCmd)
+	output = append(output, slices_util.Map(c.Bindings, func(binding Binding) Form {
+		return binding.Form()
+	})...)
+	output = append(output, c.Body.Form())
+	return output
 }
 
 func (c Let) Eval(ctx Context) Sort {
-	name, valueCode := c.Binding.Name, c.Binding.Value
-	var value Sort
-	if inh, ok := c.Binding.Value.(Inhabited); ok {
-		// if form binding an inhabited, then rename it
-		value = NewTerm(name, inh.Type.Eval(ctx))
-	} else {
-		value = valueCode.Eval(ctx)
-	}
-	value = valueCode.Eval(ctx)
-	return c.Body.Eval(ctx.Set(name, value))
+	subCtx := ctx
+	slices_util.ForEach(c.Bindings, func(binding Binding) {
+		name, valueCode := binding.Name, binding.Value
+		var value Sort
+		if inh, ok := valueCode.(Inhabited); ok {
+			// if form binding an inhabited, then rename it
+			value = NewTerm(name, inh.Type.Eval(subCtx))
+		} else {
+			value = valueCode.Eval(subCtx)
+		}
+		subCtx = subCtx.Set(name, value)
+	})
+	return c.Body.Eval(subCtx)
 }
 
 const (

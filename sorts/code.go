@@ -73,7 +73,8 @@ func (c Beta) Form() Form {
 }
 
 func (c Beta) Eval(ctx Context) Sort {
-	cmd := mustType[Pi](TypeError, c.Cmd.Eval(ctx))
+	cmdSort := c.Cmd.Eval(ctx)
+	cmd := mustType[Pi](TypeError, cmdSort)
 
 	if len(cmd.Params) != len(c.Args) {
 		panic(TypeError)

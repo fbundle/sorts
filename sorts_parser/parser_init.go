@@ -96,14 +96,14 @@ func (p Parser) Init() Parser {
 			params := slices_util.Map(list[:len(list)-1], func(form sorts.Form) sorts.Annot {
 				return compileAnnot(parse, mustType[sorts.List](err, form)[1:])
 			})
-			output := parse(list[len(list)-1])
+			body := parse(list[len(list)-1])
 			slices_util.ForEach(slices_util.Reverse(params), func(param sorts.Annot) {
-				output = sorts.Sigma{
+				body = sorts.Sigma{
 					Param: param,
-					Body:  output,
+					Body:  body,
 				}
 			})
-			return output
+			return body
 		}).
 		withListParseFunc(ArrowCmd, func(parse func(form sorts.Form) sorts.Code, list sorts.List) sorts.Code {
 			// make builtin like succ
@@ -128,14 +128,11 @@ func (p Parser) Init() Parser {
 			bindings := slices_util.Map(list[:len(list)-1], func(form Form) sorts.Binding {
 				return compileBinding(parse, mustType[List](err, form)[1:])
 			})
-			output := parse(list[len(list)-1])
-			slices_util.ForEach(slices_util.Reverse(bindings), func(binding sorts.Binding) {
-				output = sorts.Let{
-					Binding: binding,
-					Body:    output,
-				}
-			})
-			return output
+			body := parse(list[len(list)-1])
+			return sorts.Let{
+				Bindings: bindings,
+				Body:     body,
+			}
 		}).
 		finalize()
 }
