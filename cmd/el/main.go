@@ -8,6 +8,7 @@ import (
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
 	"github.com/fbundle/sorts/persistent/ordered_map"
+	"github.com/fbundle/sorts/slices_util"
 	"github.com/fbundle/sorts/sorts"
 	"github.com/fbundle/sorts/sorts_parser"
 )
@@ -71,7 +72,7 @@ func (l succBody) Eval(ctx sorts.Context) sorts.Sort {
 		panic("x not of subtype of Nat")
 	}
 
-	x, err := strconv.Atoi(strings.Join(slicesMap(arg.Form().Marshal(), func(tok form.Token) string {
+	x, err := strconv.Atoi(strings.Join(slices_util.Map(arg.Form().Marshal(), func(tok form.Token) string {
 		return tok
 	}), " "))
 	if err != nil {
@@ -81,10 +82,11 @@ func (l succBody) Eval(ctx sorts.Context) sorts.Sort {
 	return sorts.NewTerm(form.Name(strconv.Itoa(y)), Nat)
 }
 
-func parseForm(s string) <-chan form.Form {
-	ch := make(chan form.Form)
+func parseForm(s string) <-chan sorts.Code {
+	ch := make(chan sorts.Code)
 	go func() {
 		defer close(ch)
+		parse := sorts_parser.Parser{}.Init().Parse
 		tokens := form_processor.Tokenize(s)
 		var f form.Form
 		var err error
@@ -93,7 +95,7 @@ func parseForm(s string) <-chan form.Form {
 			if err != nil {
 				panic(err)
 			}
-			ch <- f
+			ch <- parse(f)
 		}
 	}()
 	return ch
@@ -115,18 +117,8 @@ func main() {
 		Set("0", Zero).
 		Set("succ", Succ)
 
-	parse := sorts_parser.Parser{}.Init().Parse
-
-	for f := range parseForm(source) {
-		code := parse(f)
+	for code := range parseForm(source) {
 		sort := code.Eval(ctx) // evaluate
 		fmt.Println(sort.Form(), "<-", code.Form())
 	}
-}
-func slicesMap[T1 any, T2 any](input []T1, f func(T1) T2) []T2 {
-	output := make([]T2, len(input))
-	for i, v := range input {
-		output[i] = f(v)
-	}
-	return output
 }
