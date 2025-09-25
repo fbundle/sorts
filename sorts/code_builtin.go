@@ -1,30 +1,37 @@
 package sorts
 
-/*
-type Param struct {
-	Name Name
-	Type Sort
-}
+import (
+	"strconv"
+	"sync/atomic"
 
-func Builtin(ctx Context, name Name, params []Param, retType Sort, body func(args []Form) Form) Context {
-	if len(params) == 0 {
+	"github.com/fbundle/sorts/slices_util"
+)
+
+func Builtin(ctx Context, name Name, paramTypes []Sort, retType Sort, body func(args []Form) Form) Context {
+	if len(paramTypes) == 0 {
 		return ctx.Set(name, NewTerm(body(nil), retType))
 	}
-	var output Sort = newBuiltinPi(
-		"",
-		params[len(params)-1],
-		retType,
-		func(arg Form) Form {
-			args := slices_util.Map(params[:len(params)-1], func(param Param) Form {
-
-			})
+	var count uint64
+	params := slices_util.Map(paramTypes, func(paramType Sort) Annot {
+		i := atomic.AddUint64(&count, 1)
+		paramName := Name("x_" + strconv.Itoa(int(i)))
+		return Annot{
+			Name: paramName,
+			Type: sortCode{paramType},
+		}
+	})
+	sort := piWithName{
+		name: name,
+		Pi: Pi{
+			Params: params,
+			Body: builtinPiBody{
+				params:  params,
+				retType: retType,
+				body:    body,
+			},
 		},
-	)
-	for i := len(params) - 2; i > 0; i-- {
-		param := params[i]
-
 	}
-
+	return ctx.Set(name, sort)
 }
 
 type sortCode struct {
@@ -36,8 +43,8 @@ func (s sortCode) Eval(ctx Context) Sort {
 }
 
 type builtinPiBody struct {
-	param   Param
-	body    func(arg Form) Form
+	params  []Annot
+	body    func(arg []Form) Form
 	retType Sort
 }
 
@@ -47,12 +54,14 @@ func (c builtinPiBody) Form() Form {
 }
 
 func (c builtinPiBody) Eval(ctx Context) Sort {
-	value := ctx.Get(c.param.Name)
-	if !value.Parent(ctx).LessEqual(ctx, c.param.Type) {
-		panic(TypeError)
-	}
-	arg := value.Form()
-	ret := c.body(arg)
+	args := slices_util.Map(c.params, func(param Annot) Form {
+		value := ctx.Get(param.Name)
+		if !value.Parent(ctx).LessEqual(ctx, param.Type.Eval(ctx)) {
+			panic(TypeError)
+		}
+		return value.Form()
+	})
+	ret := c.body(args)
 	return NewTerm(ret, c.retType)
 }
 
@@ -67,21 +76,3 @@ func (c piWithName) Form() Form {
 	}
 	return c.Pi.Form()
 }
-
-func newBuiltinPi(name Name, param Param, retType Sort, body func(arg Form) Form) piWithName {
-	return piWithName{
-		name: name,
-		Pi: Pi{
-			Param: Annot{
-				Name: param.Name,
-				Type: sortCode{param.Type},
-			},
-			Body: builtinPiBody{
-				param:   param,
-				body:    body,
-				retType: retType,
-			},
-		},
-	}
-}
-*/
