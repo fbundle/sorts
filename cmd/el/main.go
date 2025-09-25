@@ -65,6 +65,67 @@ func (l succBody) Eval(ctx sorts.Context) sorts.Sort {
 	return sorts.NewTerm(form.Name(strconv.Itoa(y)), Nat)
 }
 
+var Add = sorts.Pi{
+	Param: sorts.Annot{
+		Name: "x",
+		Type: sortCode{Nat},
+	},
+	Body: add1Body{},
+}
+var add2 = sorts.Pi{
+	Param: sorts.Annot{
+		Name: "y",
+		Type: sortCode{Nat},
+	},
+	Body: add2Body{},
+}
+
+type add1Body struct{}
+
+func (l add1Body) Form() form.Form {
+	return add2.Form()
+}
+func (l add1Body) Eval(ctx sorts.Context) sorts.Sort {
+	return sorts.Pi{
+		Param: sorts.Annot{
+			Name: "y",
+			Type: sortCode{Nat},
+		},
+		Body: add2Body{},
+	}
+}
+
+type add2Body struct{}
+
+func (l add2Body) Form() form.Form {
+	return form.List{form.List{form.Name("add"), form.Name("x")}, form.Name("y")}
+}
+func (l add2Body) Eval(ctx sorts.Context) sorts.Sort {
+	arg1 := ctx.Get("x")
+	if !arg1.Parent(ctx).LessEqual(ctx, Nat) {
+		panic("x not of subtype of Nat")
+	}
+	arg2 := ctx.Get("y")
+	if !arg2.Parent(ctx).LessEqual(ctx, Nat) {
+		panic("y not of subtype of Nat")
+	}
+
+	x, err := strconv.Atoi(strings.Join(slices_util.Map(arg1.Form().Marshal(), func(tok form.Token) string {
+		return tok
+	}), " "))
+	if err != nil {
+		panic(err)
+	}
+	y, err := strconv.Atoi(strings.Join(slices_util.Map(arg2.Form().Marshal(), func(tok form.Token) string {
+		return tok
+	}), " "))
+	if err != nil {
+		panic(err)
+	}
+	z := x + y
+	return sorts.NewTerm(form.Name(strconv.Itoa(z)), Nat)
+}
+
 func parseForm(s string) <-chan sorts.Code {
 	ch := make(chan sorts.Code)
 	go func() {
@@ -93,6 +154,15 @@ var source = `
 	x
 )
 
+add
+
+(let
+	{1 := (succ 0)}
+	{2 := (succ 1)}
+
+	(add 1 2)
+)
+
 (let
 	{Nat := (* Any_2)}
 	{0 := (* Nat)}
@@ -107,10 +177,12 @@ func main() {
 	ctx = ctx.
 		Set("Nat", Nat).
 		Set("0", Zero).
-		Set("succ", Succ)
+		Set("succ", Succ).
+		Set("add", Add)
 
 	for code := range parseForm(source) {
+		fmt.Println("evaluating", code.Form())
 		sort := code.Eval(ctx) // evaluate
-		fmt.Println(sort.Form(), "<-", code.Form())
+		fmt.Println("\t value:", sort.Form())
 	}
 }
