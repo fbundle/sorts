@@ -27,10 +27,11 @@ type Code interface {
 }
 
 var _ = []Sort{
-	Atom{}, Pi{}, // Inductive
+	Atom{}, Pi{}, Sigma{},
 }
 
 var _ = []Code{
+	Pi{}, Sigma{},
 	Symbol{}, Inhabited{}, Type{}, Beta{}, Let{}, // Let, Match, etc
 }
 

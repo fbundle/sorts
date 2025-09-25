@@ -82,6 +82,34 @@ func (s Pi) Eval(ctx Context) Sort {
 	return s
 }
 
+const (
+	SigmaCmd Name = "×"
+)
+
 type Sigma struct {
-	// TODO - probably similar to Pi
+	Param Annot
+	Body  Code
+}
+
+func (s Sigma) Form() Form {
+	return List{SigmaCmd, s.Param.Form(), s.Body.Form()}
+}
+
+func (s Sigma) Parent(ctx Context) Sort {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Sigma) Level(ctx Context) int {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Sigma) LessEqual(ctx Context, d Sort) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s Sigma) Eval(ctx Context) Sort {
+	return s
 }
