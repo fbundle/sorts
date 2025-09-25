@@ -26,12 +26,12 @@ type Type struct {
 	Value Code
 }
 
-func (s Type) Form() Form {
-	return List{TypeCmd, s.Value.Form()}
+func (c Type) Form() Form {
+	return List{TypeCmd, c.Value.Form()}
 }
 
-func (s Type) Eval(ctx Context) Sort {
-	return s.Value.Eval(ctx).Parent(ctx)
+func (c Type) Eval(ctx Context) Sort {
+	return c.Value.Eval(ctx).Parent(ctx)
 }
 
 const (
@@ -56,12 +56,12 @@ type Inhabited struct {
 	Type Code
 }
 
-func (s Inhabited) Form() Form {
-	return List{InhabitCmd, s.Type.Form(), Name(strconv.Itoa(int(s.uuid)))}
+func (c Inhabited) Form() Form {
+	return List{InhabitCmd, c.Type.Form(), Name(strconv.Itoa(int(c.uuid)))}
 }
 
-func (s Inhabited) Eval(ctx Context) Sort {
-	t := s.Type.Eval(ctx)
+func (c Inhabited) Eval(ctx Context) Sort {
+	t := c.Type.Eval(ctx)
 	switch t := t.(type) {
 	case Pi:
 		return Pi{
@@ -72,7 +72,7 @@ func (s Inhabited) Eval(ctx Context) Sort {
 			},
 		}
 	default:
-		return NewTerm(s.Form(), t)
+		return NewTerm(c.Form(), t)
 	}
 }
 
@@ -134,14 +134,14 @@ type Beta struct {
 	Arg Code
 }
 
-func (s Beta) Form() Form {
-	return List{s.Cmd.Form(), s.Arg.Form()}
+func (c Beta) Form() Form {
+	return List{c.Cmd.Form(), c.Arg.Form()}
 }
 
-func (s Beta) Eval(ctx Context) Sort {
-	cmd := mustType[Pi](TypeError, s.Cmd.Eval(ctx))
+func (c Beta) Eval(ctx Context) Sort {
+	cmd := mustType[Pi](TypeError, c.Cmd.Eval(ctx))
 	paramType := cmd.Param.Type.Eval(ctx)
-	arg := s.Arg.Eval(ctx)
+	arg := c.Arg.Eval(ctx)
 	argType := arg.Parent(ctx)
 	if !argType.LessEqual(ctx, paramType) {
 		panic(TypeError)

@@ -31,7 +31,7 @@ var _ = []Sort{
 }
 
 var _ = []Code{
-	Inhabited{}, Type{}, Beta{}, // Let, Match, etc
+	Inhabited{}, Type{}, Beta{}, Let{}, // Let, Match, etc
 }
 
 type Frame interface {
