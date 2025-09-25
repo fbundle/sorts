@@ -97,7 +97,7 @@ var source = `
 {0 := (* Nat)}
 {succ := (* {{x: Nat} => Nat})}
 
-(succ 0)
+(succ (succ 0))
 )
 
 `
