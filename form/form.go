@@ -1,5 +1,7 @@
 package form
 
+import "strings"
+
 type Token = string
 
 const (
@@ -32,3 +34,7 @@ func (n List) Marshal() []Token {
 }
 
 func (n List) formAttr() {}
+
+func String(form Form) string {
+	return strings.Join(form.Marshal(), " ")
+}

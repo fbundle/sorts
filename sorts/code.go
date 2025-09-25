@@ -1,5 +1,7 @@
 package sorts
 
+import "github.com/fbundle/sorts/slices_util"
+
 type Symbol struct {
 	Name Name
 }
@@ -45,7 +47,7 @@ func (c Inhabited) Eval(ctx Context) Sort {
 	switch t := t.(type) {
 	case Pi:
 		return Pi{
-			Param: t.Param,
+			Params: t.Params,
 			Body: Inhabited{
 				Type: t.Body,
 			},
@@ -57,21 +59,35 @@ func (c Inhabited) Eval(ctx Context) Sort {
 }
 
 type Beta struct {
-	Cmd Code
-	Arg Code
+	Cmd  Code
+	Args []Code
 }
 
 func (c Beta) Form() Form {
-	return List{c.Cmd.Form(), c.Arg.Form()}
+	var output List
+	output = append(output, c.Cmd.Form())
+	output = append(output, slices_util.Map(c.Args, func(code Code) Form {
+		return code.Form()
+	})...)
+	return output
 }
 
 func (c Beta) Eval(ctx Context) Sort {
 	cmd := mustType[Pi](TypeError, c.Cmd.Eval(ctx))
-	paramType := cmd.Param.Type.Eval(ctx)
-	arg := c.Arg.Eval(ctx)
-	argType := arg.Parent(ctx)
-	if !argType.LessEqual(ctx, paramType) {
+	if len(cmd.Params) != len(c.Args) {
 		panic(TypeError)
 	}
-	return cmd.Body.Eval(ctx.Set(cmd.Param.Name, arg))
+	subCtx := ctx
+	for i := 0; i < len(cmd.Params); i++ {
+		param := cmd.Params[i]
+		paramType := param.Type.Eval(ctx)
+		arg := c.Args[i].Eval(ctx)
+		argType := arg.Parent(ctx)
+		if !argType.LessEqual(ctx, paramType) {
+			panic(TypeError)
+		}
+		subCtx = subCtx.Set(param.Name, arg)
+	}
+
+	return cmd.Body.Eval(subCtx)
 }

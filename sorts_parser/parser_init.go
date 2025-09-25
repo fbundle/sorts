@@ -34,17 +34,14 @@ func (p Parser) Init() Parser {
 		if len(list) < 1 {
 			panic(err)
 		}
-		output := parse(list[0])
+		cmd := parse(list[0])
 		args := slices_util.Map(list[1:], func(form sorts.Form) sorts.Code {
 			return parse(form)
 		})
-		slices_util.ForEach(args, func(arg sorts.Code) {
-			output = sorts.Beta{
-				Cmd: output,
-				Arg: arg,
-			}
-		})
-		return output
+		return sorts.Beta{
+			Cmd:  cmd,
+			Args: args,
+		}
 	}
 	const (
 		ArrowCmd sorts.Name = "->"
@@ -84,14 +81,11 @@ func (p Parser) Init() Parser {
 			params := slices_util.Map(list[:len(list)-1], func(form sorts.Form) sorts.Annot {
 				return compileAnnot(parse, mustType[sorts.List](err, form)[1:])
 			})
-			output := parse(list[len(list)-1])
-			slices_util.ForEach(slices_util.Reverse(params), func(param sorts.Annot) {
-				output = sorts.Pi{
-					Param: param,
-					Body:  output,
-				}
-			})
-			return output
+			body := parse(list[len(list)-1])
+			return sorts.Pi{
+				Params: params,
+				Body:   body,
+			}
 		}).
 		withListParseFunc(sorts.SigmaCmd, func(parse func(form sorts.Form) sorts.Code, list sorts.List) sorts.Code {
 			err := compileErr(list, []string{

@@ -1,5 +1,7 @@
 package sorts
 
+import "github.com/fbundle/sorts/slices_util"
+
 func NewChain(name Name, level int) Atom {
 	return Atom{
 		form: name,
@@ -51,12 +53,18 @@ const (
 )
 
 type Pi struct {
-	Param Annot
-	Body  Code
+	Params []Annot
+	Body   Code
 }
 
 func (s Pi) Form() Form {
-	return List{PiCmd, s.Param.Form(), s.Body.Form()}
+	var output List
+	output = append(output, PiCmd)
+	output = append(output, slices_util.Map(s.Params, func(param Annot) Form {
+		return param.Form()
+	})...)
+	output = append(output, s.Body.Form())
+	return output
 }
 
 func (s Pi) Level(ctx Context) int {
@@ -66,7 +74,7 @@ func (s Pi) Level(ctx Context) int {
 
 func (s Pi) Parent(ctx Context) Sort {
 	return Pi{
-		Param: s.Param,
+		Params: s.Params,
 		Body: Type{
 			Value: s.Body,
 		},
