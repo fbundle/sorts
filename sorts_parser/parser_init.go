@@ -93,6 +93,29 @@ func (p Parser) Init() Parser {
 			})
 			return output
 		}).
+		withListParseFunc(sorts.SigmaCmd, func(parse func(form sorts.Form) sorts.Code, list sorts.List) sorts.Code {
+			err := compileErr(list, []string{
+				string(sorts.SigmaCmd),
+				makeForm(sorts.AnnotCmd, "name1", "type1"),
+				"...",
+				makeForm(sorts.AnnotCmd, "nameN", "typeN"),
+				"body",
+			}, "where N >= 0")
+			if len(list) < 1 {
+				panic(err)
+			}
+			params := slices_util.Map(list[:len(list)-1], func(form sorts.Form) sorts.Annot {
+				return compileAnnot(parse, mustType[sorts.List](err, form)[1:])
+			})
+			output := parse(list[len(list)-1])
+			slices_util.ForEach(slices_util.Reverse(params), func(param sorts.Annot) {
+				output = sorts.Sigma{
+					Param: param,
+					Body:  output,
+				}
+			})
+			return output
+		}).
 		withListParseFunc(ArrowCmd, func(parse func(form sorts.Form) sorts.Code, list sorts.List) sorts.Code {
 			// make builtin like succ
 			// e.g. if arrow is Nat -> Nat
