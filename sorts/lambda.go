@@ -11,6 +11,14 @@ func init() {
 			Body:  ctx.Parse(list[1]),
 		}
 	}
+	const ArrowCmd Name = "->"
+	ListParseFuncMap[ArrowCmd] = func(ctx Context, list List) Sort {
+		// make builtin like succ
+		// e.g. if arrow is Nat -> Nat
+		// then its lambda is
+		// (x: Nat) => Nat
+		panic("not implemented")
+	}
 }
 
 const (
