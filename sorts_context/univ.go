@@ -9,18 +9,12 @@ import (
 	"github.com/fbundle/sorts/sorts"
 )
 
+// Univ - Initial, Terminal, Default must be distinct
 type Univ struct {
 	InitialTypeName  Name
 	TerminalTypeName Name
 	DefaultTypeName  Name
 	nameLessEqual    ordered_map.Map[rule] // use Map since rule is not of cmp.Ordered
-}
-
-func (u Univ) Init() Univ {
-	if u.InitialTypeName == u.TerminalTypeName {
-		panic(TypeErr)
-	}
-	return u
 }
 
 func (u Univ) builtinNameGet(key Name) (Sort, bool) {

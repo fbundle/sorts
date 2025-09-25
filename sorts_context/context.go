@@ -1,15 +1,12 @@
 package sorts_context
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
 )
-
-var TypeErr = errors.New("type_error")
 
 type Form = form.Form
 type Name = form.Name
@@ -19,13 +16,6 @@ type Code = sorts.Code
 type Context struct {
 	Frame ordered_map.OrderedMap[Name, Sort]
 	Univ
-}
-
-func (c Context) Init() Context {
-	return Context{
-		Frame: c.Frame,
-		Univ:  c.Univ.Init(),
-	}
 }
 
 func (c Context) Get(name sorts.Name) sorts.Sort {

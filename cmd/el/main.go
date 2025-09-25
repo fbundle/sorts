@@ -20,17 +20,9 @@ var ctx sorts.Context = sorts_context.Context{
 		TerminalTypeName: "Any",
 		DefaultTypeName:  "Type",
 	},
-}.Init()
+}
 
 var parser = sorts_parser.Parser{}.Init()
-
-type sortCode struct {
-	sorts.Sort
-}
-
-func (s sortCode) Eval(ctx sorts.Context) sorts.Sort {
-	return s.Sort
-}
 
 func parseForm(s string) <-chan sorts.Code {
 	ch := make(chan sorts.Code)
