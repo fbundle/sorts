@@ -23,7 +23,7 @@ type Code interface {
 }
 
 var _ = []Sort{
-	Atom{}, Lambda{}, Beta{}, Type{}, Let{},
+	Atom{}, Lambda{}, Beta{}, Type{}, Inhabited{}, Let{},
 }
 
 var _ = []Code{
