@@ -14,7 +14,6 @@ var TypeError = errors.New("type_error")
 
 type Sort interface {
 	Form() Form
-
 	Parent(ctx Context) Sort
 	Level(ctx Context) int
 	LessEqual(ctx Context, d Sort) bool

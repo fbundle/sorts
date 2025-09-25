@@ -50,10 +50,6 @@ func (s Atom) LessEqual(ctx Context, d Sort) bool {
 	return ctx.LessEqual(s.Form(), d.Form())
 }
 
-func (s Atom) Eval(ctx Context) Sort {
-	return s
-}
-
 func init() {
 	ListParseFuncMap[PiCmd] = func(ctx Context, list List) Sort {
 		err := compileErr(list, []string{string(PiCmd), "param1", "...", "paramN", "body"}, "where N >= 0")
@@ -112,7 +108,4 @@ func (s Pi) Parent(ctx Context) Sort {
 }
 func (s Pi) LessEqual(ctx Context, d Sort) bool {
 	panic("not_implemented")
-}
-func (s Pi) Eval(ctx Context) Sort {
-	return s
 }
