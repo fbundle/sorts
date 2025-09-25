@@ -110,7 +110,11 @@ var source = `
 	x
 )
 
-{{x: Nat} => Nat}
+(let
+{succ := (* {{x: Nat} => Nat})}
+
+succ
+)
 
 `
 
