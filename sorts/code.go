@@ -1,10 +1,5 @@
 package sorts
 
-import (
-	"strconv"
-	"sync/atomic"
-)
-
 type Symbol struct {
 	Name Name
 }
@@ -37,23 +32,12 @@ const (
 	InhabitCmd Name = "*"
 )
 
-var count uint64
-
-func Inh(typ Code) Inhabited {
-	uuid := atomic.AddUint64(&count, 1)
-	return Inhabited{
-		Name: Name(strconv.Itoa(int(uuid))),
-		Type: typ,
-	}
-}
-
 type Inhabited struct {
-	Name Name
 	Type Code
 }
 
 func (c Inhabited) Form() Form {
-	return List{InhabitCmd, c.Name, c.Type.Form()}
+	return List{InhabitCmd, c.Type.Form()}
 }
 
 func (c Inhabited) Eval(ctx Context) Sort {
@@ -62,11 +46,14 @@ func (c Inhabited) Eval(ctx Context) Sort {
 	case Pi:
 		return Pi{
 			Param: t.Param,
-			Body:  Inh(t.Body),
+			Body: Inhabited{
+				Type: t.Body,
+			},
 		}
-	default:
+	case Atom:
 		return NewTerm(c.Form(), t)
 	}
+	panic("unreachable")
 }
 
 type Beta struct {

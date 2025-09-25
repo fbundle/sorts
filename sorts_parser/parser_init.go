@@ -65,7 +65,10 @@ func (p Parser) Init() Parser {
 			if len(list) != 1 {
 				panic(err)
 			}
-			return sorts.Inh(parse(list[0]))
+			typeCode := parse(list[0])
+			return sorts.Inhabited{
+				Type: typeCode,
+			}
 		}).
 		withListParseFunc(sorts.PiCmd, func(parse func(form sorts.Form) sorts.Code, list sorts.List) sorts.Code {
 			err := compileErr(list, []string{
