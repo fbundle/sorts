@@ -40,11 +40,11 @@ type Frame interface {
 	Set(name Name, sort Sort) Context
 }
 
-type Universe interface {
+type Univ interface {
 	LessEqual(src Form, dst Form) bool
 }
 
 type Context interface {
 	Frame
-	Universe
+	Univ
 }
