@@ -9,6 +9,7 @@ import (
 	"github.com/fbundle/sorts/form_processor"
 	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/sorts"
+	"github.com/fbundle/sorts/sorts_parser"
 )
 
 type sortCode struct {
@@ -114,7 +115,7 @@ func main() {
 		Set("0", Zero).
 		Set("succ", Succ)
 
-	parse := sorts.MakeParser(nil)
+	parse := sorts_parser.MakeParser(nil)
 
 	for f := range parseForm(source) {
 		code := parse(f)

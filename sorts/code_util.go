@@ -4,17 +4,6 @@ const (
 	AnnotCmd Name = ":"
 )
 
-func compileAnnot(parse func(form Form) Code, list List) Annot {
-	err := compileErr(list, []string{string(AnnotCmd), "name", "type"})
-	if len(list) != 2 {
-		panic(err)
-	}
-	return Annot{
-		Name: mustType[Name](err, list[0]),
-		Type: parse(list[1]),
-	}
-}
-
 type Annot struct {
 	Name Name
 	Type Code
@@ -27,17 +16,6 @@ func (a Annot) Form() Form {
 const (
 	BindingCmd Name = ":="
 )
-
-func compileBinding(parse func(form Form) Code, list List) Binding {
-	err := compileErr(list, []string{string(BindingCmd), "name", "value"})
-	if len(list) != 2 {
-		panic(err)
-	}
-	return Binding{
-		Name:  mustType[Name](err, list[0]),
-		Value: parse(list[1]),
-	}
-}
 
 type Binding struct {
 	Name  Name
