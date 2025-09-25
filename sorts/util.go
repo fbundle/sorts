@@ -3,6 +3,7 @@ package sorts
 import (
 	"fmt"
 	"strings"
+	"sync/atomic"
 )
 
 func mustType[T any](err error, o any) T {
@@ -50,4 +51,10 @@ func slicesForEach[T any](input []T, f func(T)) {
 	for _, v := range input {
 		f(v)
 	}
+}
+
+var count uint64 = 0
+
+func nextCount() uint64 {
+	return atomic.AddUint64(&count, 1)
 }
