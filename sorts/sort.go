@@ -60,6 +60,7 @@ func (s Pi) Form() Form {
 }
 
 func (s Pi) Level(ctx Context) int {
+	// hard - probably need to include a "proof of level"
 	panic("not_implemented")
 }
 
