@@ -25,13 +25,7 @@ func (c Let) Eval(ctx Context) Sort {
 	subCtx := ctx
 	slices_util.ForEach(c.Bindings, func(binding Binding) {
 		name, valueCode := binding.Name, binding.Value
-		var value Sort
-		if inh, ok := valueCode.(Inhabited); ok {
-			// if form binding an inhabited, then rename it
-			value = NewTerm(name, inh.Type.Eval(subCtx))
-		} else {
-			value = valueCode.Eval(subCtx)
-		}
+		value := valueCode.Eval(subCtx)
 		subCtx = subCtx.Set(name, value)
 	})
 	return c.Body.Eval(subCtx)
