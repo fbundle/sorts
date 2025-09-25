@@ -47,8 +47,6 @@ func init() {
 		if len(list) != 1 {
 			panic(err)
 		}
-		// TODO - if type is Pi/Lambda
-		// make appropriate child
 		return Inhabited{
 			uuid: nextCount(),
 			Type: ctx.Parse(list[0]),
@@ -84,5 +82,17 @@ func (s Inhabited) LessEqual(ctx Context, d Sort) bool {
 }
 
 func (s Inhabited) Eval(ctx Context) Sort {
-	return NewTerm(s.Form(), s.Type)
+	t := s.Type.Eval(ctx)
+	switch t := t.(type) {
+	case Lambda:
+		return Lambda{
+			Param: t.Param,
+			Body: Inhabited{
+				uuid: nextCount(),
+				Type: t.Body,
+			}.Eval(ctx),
+		}
+	default:
+		return NewTerm(s.Form(), t)
+	}
 }
