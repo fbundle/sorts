@@ -50,7 +50,6 @@ type Context interface {
 	Frame
 	Parser
 	Universe
-	Debug() bool
 }
 
 var DefaultParseFunc ListParseFunc
