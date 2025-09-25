@@ -6,7 +6,6 @@ import (
 
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
-	"github.com/fbundle/sorts/persistent/ordered_map"
 	"github.com/fbundle/sorts/slices_util"
 	"github.com/fbundle/sorts/sorts"
 	"github.com/fbundle/sorts/sorts_context"
@@ -14,7 +13,6 @@ import (
 )
 
 var ctx sorts.Context = sorts_context.Context{
-	Frame: ordered_map.OrderedMap[form.Name, sorts.Sort]{},
 	Univ: sorts_context.Univ{
 		InitialTypeName:  "Unit",
 		TerminalTypeName: "Any",
