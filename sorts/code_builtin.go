@@ -20,15 +20,13 @@ func Builtin(name Name, paramTypes []Sort, retType Sort, body func(args []Form) 
 			Type: sortCode{paramType},
 		}
 	})
-	return piWithName{
-		name: name,
-		Pi: Pi{
-			Params: params,
-			Body: builtinPiBody{
-				params:  params,
-				retType: retType,
-				body:    body,
-			},
+	return Pi{
+		name:   name,
+		Params: params,
+		Body: builtinPiBody{
+			params:  params,
+			retType: retType,
+			body:    body,
 		},
 	}
 }
@@ -62,16 +60,4 @@ func (c builtinPiBody) Eval(ctx Context) Sort {
 	})
 	ret := c.body(args)
 	return NewTerm(ret, c.retType)
-}
-
-type piWithName struct {
-	name Name
-	Pi
-}
-
-func (c piWithName) Form() Form {
-	if len(c.name) > 0 {
-		return c.name
-	}
-	return c.Pi.Form()
 }

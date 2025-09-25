@@ -7,6 +7,7 @@ import (
 	"github.com/fbundle/sorts/form"
 	"github.com/fbundle/sorts/form_processor"
 	"github.com/fbundle/sorts/persistent/ordered_map"
+	"github.com/fbundle/sorts/slices_util"
 	"github.com/fbundle/sorts/sorts"
 	"github.com/fbundle/sorts/sorts_context"
 	"github.com/fbundle/sorts/sorts_parser"
@@ -59,6 +60,11 @@ var source = `
 	x
 )
 
+(let
+	{1 := (succ 0)}
+	{2 := (succ 1)}
+	(add 1 2)
+)
 
 (let
 	{Nat := (* Any_2)}
@@ -103,11 +109,7 @@ func main() {
 			if len(args) != 1 {
 				panic("internal")
 			}
-			arg, ok := args[0].(form.Name)
-			if !ok {
-				panic("internal")
-			}
-			x, err := strconv.Atoi(string(arg))
+			x, err := strconv.Atoi(form.String(args[0]))
 			if err != nil {
 				panic(err)
 			}
@@ -117,10 +119,32 @@ func main() {
 		},
 	)
 
+	Add := sorts.Builtin(
+		"add",
+		[]sorts.Sort{Nat, Nat},
+		Nat,
+		func(args []form.Form) form.Form {
+			if len(args) != 2 {
+				panic("internal")
+			}
+			values := slices_util.Map(args, func(f form.Form) int {
+				v, err := strconv.Atoi(form.String(f))
+				if err != nil {
+					panic(err)
+				}
+				return v
+			})
+			output := values[0] + values[1]
+			ret := form.Name(strconv.Itoa(output))
+			return ret
+		},
+	)
+
 	ctx = ctx.
 		Set("Nat", Nat).
 		Set("0", Zero).
-		Set("succ", Succ)
+		Set("succ", Succ).
+		Set("add", Add)
 
 	for code := range parseForm(source) {
 		fmt.Println("evaluating", code.Form())

@@ -53,11 +53,15 @@ const (
 )
 
 type Pi struct {
+	name   Name // alternative name
 	Params []Annot
 	Body   Code
 }
 
 func (s Pi) Form() Form {
+	if len(s.name) > 0 {
+		return s.name
+	}
 	var output List
 	output = append(output, PiCmd)
 	output = append(output, slices_util.Map(s.Params, func(param Annot) Form {
