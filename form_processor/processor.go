@@ -22,7 +22,7 @@ type Processor struct {
 }
 
 var defaultProcessor = Processor{
-	Split: []Token{"+", "*", "$", "⊕", "⊗", "Π", "Σ", "=>", "->", ":", ",", "=", ":="},
+	Split: []Token{"+", "*", "&", "$", "⊕", "⊗", "Π", "Σ", "=>", "->", ":", ",", "=", ":="},
 	Blocks: map[Token]Block{
 		"(": {
 			End: ")",

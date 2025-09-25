@@ -109,6 +109,10 @@ var source = `
 	{x := 0}
 	x
 )
+
+(*Nat)
+(*Nat)
+(*Nat)
 `
 
 func main() {
