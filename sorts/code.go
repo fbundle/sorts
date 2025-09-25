@@ -31,25 +31,6 @@ func (s Beta) Form() Form {
 	return List{s.Cmd.Form(), s.Arg.Form()}
 }
 
-func (s Beta) Parent(ctx Context) Sort {
-	arrowType := mustType[Pi](TypeError, s.Cmd.Parent(ctx))
-	argType := s.Arg.Parent(ctx)
-	if !argType.LessEqual(ctx, arrowType.Param.Type) {
-		panic(TypeError)
-	}
-
-	return Beta{
-		Cmd: arrowType,
-		Arg: s.Arg,
-	}
-}
-func (s Beta) Level(ctx Context) int {
-	panic("not_implemented")
-}
-
-func (s Beta) LessEqual(ctx Context, d Sort) bool {
-	panic("not_implemented")
-}
 func (s Beta) Eval(ctx Context) Sort {
 	return s.Cmd.Body.Eval(ctx.Set(s.Cmd.Param.Name, s.Arg))
 }

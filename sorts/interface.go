@@ -17,6 +17,7 @@ type Sort interface {
 	Parent(ctx Context) Sort
 	Level(ctx Context) int
 	LessEqual(ctx Context, d Sort) bool
+	Code
 }
 
 type Code interface {
