@@ -39,24 +39,11 @@ type Frame interface {
 	Set(name Name, sort Sort) Context
 }
 
-type Parser interface {
-	Parse(form Form) Code
-}
-
 type Universe interface {
 	LessEqual(src Form, dst Form) bool
 }
 
 type Context interface {
 	Frame
-	Parser
 	Universe
 }
-
-type ListParseFunc = func(ctx Context, list List) Code
-type NameParseFunc = func(ctx Context, name Name) Code
-
-var FinalListParseFunc ListParseFunc
-var FinalNameParseFunc NameParseFunc
-
-var ListParseFuncMap = map[Name]ListParseFunc{}

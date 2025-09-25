@@ -9,7 +9,7 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[LetCmd] = func(ctx Context, list List) Code {
+	addListParseFunc(LetCmd, func(parse func(form Form) Code, list List) Code {
 		err := compileErr(list, []string{
 			string(LetCmd),
 			makeForm(BindingCmd, "name1", "value1"),
@@ -21,9 +21,9 @@ func init() {
 			panic(err)
 		}
 		bindings := slices_util.Map(list[:len(list)-1], func(form Form) Binding {
-			return compileBinding(ctx, mustType[List](err, form)[1:])
+			return compileBinding(parse, mustType[List](err, form)[1:])
 		})
-		output := ctx.Parse(list[len(list)-1])
+		output := parse(list[len(list)-1])
 		slices_util.ForEach(slices_util.Reverse(bindings), func(binding Binding) {
 			output = Let{
 				Binding: binding,
@@ -31,7 +31,7 @@ func init() {
 			}
 		})
 		return output
-	}
+	})
 }
 
 type Let struct {

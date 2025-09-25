@@ -7,9 +7,9 @@ import (
 )
 
 func init() {
-	FinalNameParseFunc = func(ctx Context, name Name) Code {
+	setFinalNameParseFunc(func(name Name) Code {
 		return Var{Name: name}
-	}
+	})
 }
 
 type Var struct {
@@ -29,15 +29,15 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[TypeCmd] = func(ctx Context, list List) Code {
+	addListParseFunc(TypeCmd, func(parse func(form Form) Code, list List) Code {
 		err := compileErr(list, []string{string(TypeCmd), "value"})
 		if len(list) != 1 {
 			panic(err)
 		}
 		return Type{
-			Value: ctx.Parse(list[0]),
+			Value: parse(list[0]),
 		}
-	}
+	})
 }
 
 type Type struct {
@@ -57,16 +57,16 @@ const (
 )
 
 func init() {
-	ListParseFuncMap[InhabitCmd] = func(ctx Context, list List) Code {
+	addListParseFunc(InhabitCmd, func(parse func(form Form) Code, list List) Code {
 		err := compileErr(list, []string{string(InhabitCmd), "type"})
 		if len(list) != 1 {
 			panic(err)
 		}
 		return Inhabited{
 			uuid: nextCount(),
-			Type: ctx.Parse(list[0]),
+			Type: parse(list[0]),
 		}
-	}
+	})
 }
 
 type Inhabited struct {
@@ -98,7 +98,7 @@ func init() {
 	const (
 		LambdaCmd Name = "=>"
 	)
-	ListParseFuncMap[LambdaCmd] = func(ctx Context, list List) Code {
+	addListParseFunc(LambdaCmd, func(parse func(form Form) Code, list List) Code {
 		err := compileErr(list, []string{
 			string(LambdaCmd),
 			makeForm(AnnotCmd, "name1", "type1"),
@@ -110,9 +110,9 @@ func init() {
 			panic(err)
 		}
 		params := slices_util.Map(list[:len(list)-1], func(form Form) Annot {
-			return compileAnnot(ctx, mustType[List](err, form)[1:])
+			return compileAnnot(parse, mustType[List](err, form)[1:])
 		})
-		output := ctx.Parse(list[len(list)-1])
+		output := parse(list[len(list)-1])
 		slices_util.ForEach(slices_util.Reverse(params), func(param Annot) {
 			output = Pi{
 				Param: param,
@@ -120,9 +120,9 @@ func init() {
 			}
 		})
 		return output
-	}
+	})
 	const ArrowCmd Name = "->"
-	ListParseFuncMap[ArrowCmd] = func(ctx Context, list List) Code {
+	addListParseFunc(ArrowCmd, func(parse func(form Form) Code, list List) Code {
 		// make builtin like succ
 		// e.g. if arrow is Nat -> Nat
 		// then its lambda is
@@ -130,11 +130,11 @@ func init() {
 		// or some mechanism to introduce arrow type from pi type
 		// TODO - probably we don't need this anymore
 		panic("not implemented")
-	}
+	})
 }
 
 func init() {
-	FinalListParseFunc = func(ctx Context, list List) Code {
+	setFinalListParseFunc(func(parse func(form Form) Code, list List) Code {
 		err := compileErr(list, []string{
 			"cmd",
 			"arg1",
@@ -144,9 +144,9 @@ func init() {
 		if len(list) < 1 {
 			panic(err)
 		}
-		output := ctx.Parse(list[0])
+		output := parse(list[0])
 		args := slices_util.Map(list[1:], func(form Form) Code {
-			return ctx.Parse(form)
+			return parse(form)
 		})
 		slices_util.ForEach(args, func(arg Code) {
 			output = Beta{
@@ -155,7 +155,7 @@ func init() {
 			}
 		})
 		return output
-	}
+	})
 }
 
 type Beta struct {
