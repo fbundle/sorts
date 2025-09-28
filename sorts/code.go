@@ -46,7 +46,29 @@ func (c Inhabited) Form() Form {
 
 func (c Inhabited) Eval(ctx Context) Sort {
 	t := c.Type.Eval(ctx)
-	return NewTerm(c.Form(), t)
+	switch t := t.(type) {
+	case Pi:
+		return Pi{
+			Params: t.Params,
+			Body:   Inhabited{Type: t.Body},
+		}
+	case Sigma:
+		termParams := slices_util.Map(t.Params, func(param Annot) Annot {
+			return Annot{
+				Name: param.Name, // reuse name
+				Type: Inhabited{Type: param.Type},
+			}
+		})
+
+		termBody := Inhabited{Type: t.Body}
+		return Sigma{
+			Params: termParams,
+			Body:   termBody,
+		}
+	case Atom:
+		return NewTerm(c.Form(), t)
+	}
+	panic("unreachable")
 }
 
 type Beta struct {
@@ -64,22 +86,24 @@ func (c Beta) Form() Form {
 }
 
 func (c Beta) Eval(ctx Context) Sort {
-	cmd := mustType[Pi](TypeError, c.Cmd.Eval(ctx))
+	cmd := c.Cmd.Eval(ctx)
+	typeArrow := mustType[Pi](TypeError, cmd.Parent(ctx))
 
-	if len(cmd.Params) != len(c.Args) {
-		panic(TypeError)
-	}
 	subCtx := ctx
-	for i := 0; i < len(cmd.Params); i++ {
-		param := cmd.Params[i]
+	slices_util.ZipForEach(TypeError, typeArrow.Params, c.Args, func(param Annot, argCode Code) {
 		paramType := param.Type.Eval(ctx)
-		arg := c.Args[i].Eval(ctx)
+		arg := argCode.Eval(ctx)
 		argType := arg.Parent(ctx)
 		if !argType.LessEqual(ctx, paramType) {
 			panic(TypeError)
 		}
 		subCtx = subCtx.Set(param.Name, arg)
-	}
+	})
 
-	return cmd.Body.Eval(subCtx)
+	switch cmd := cmd.(type) {
+	case Pi:
+		return cmd.Body.Eval(subCtx)
+	default:
+		return (Inhabited{Type: typeArrow.Body}).Eval(subCtx)
+	}
 }

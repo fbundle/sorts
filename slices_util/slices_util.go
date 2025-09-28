@@ -43,3 +43,12 @@ func IndexedForEach[T any](input []T, f func(int, T)) {
 		f(i, v)
 	}
 }
+
+func ZipForEach[T1 any, T2 any](err error, input1 []T1, input2 []T2, f func(T1, T2)) {
+	if len(input1) != len(input2) {
+		panic(err)
+	}
+	for i := 0; i < len(input1); i++ {
+		f(input1[i], input2[i])
+	}
+}
