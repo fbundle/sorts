@@ -21,7 +21,7 @@ func MakeBuiltinSort(form Form, retType Sort, paramTypes []Sort, body func(args 
 		}
 	})
 	return Pi{
-		form:   form,
+		Name:   form,
 		Params: params,
 		Body: builtinPiBody{
 			params:  params,

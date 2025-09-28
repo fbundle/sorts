@@ -53,14 +53,14 @@ const (
 )
 
 type Pi struct {
-	form   Form // alternative form
+	Name   Form // alternative Name
 	Params []Annot
 	Body   Code
 }
 
 func (s Pi) Form() Form {
-	if s.form != nil {
-		return s.form
+	if s.Name != nil {
+		return s.Name
 	}
 	var output List
 	output = append(output, PiCmd)
