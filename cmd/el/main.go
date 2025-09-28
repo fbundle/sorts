@@ -96,13 +96,16 @@ var source = `
 (let
 	{Nat := (* Any_2)}
 	{0 := (* Nat)}
-	{succ := (* {{_: Nat} => Nat})} # this is basically x := * (Nat -> Nat)
+	{NatToNat := {{_: Nat} => Nat}}		# NatToNat is Nat -> Nat
+	{succ := (* NatToNat)} 
 
 	(succ (succ 0))
 )
 
 (let
-	{x := {{_: Nat} × Nat}} # this is basically x := * (Nat × Nat)
+	{NatPair := {{_: Nat} × Nat} }		# NatPair is Nat × Nat 
+	{x := (* NatPair)}
+	x
 )
 
 

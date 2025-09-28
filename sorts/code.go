@@ -1,6 +1,8 @@
 package sorts
 
-import "github.com/fbundle/sorts/slices_util"
+import (
+	"github.com/fbundle/sorts/slices_util"
+)
 
 type Symbol struct {
 	Name Name
@@ -44,18 +46,7 @@ func (c Inhabited) Form() Form {
 
 func (c Inhabited) Eval(ctx Context) Sort {
 	t := c.Type.Eval(ctx)
-	switch t := t.(type) {
-	case Pi:
-		return Pi{
-			Params: t.Params,
-			Body: Inhabited{
-				Type: t.Body,
-			},
-		}
-	case Atom:
-		return NewTerm(c.Form(), t)
-	}
-	panic("unreachable")
+	return NewTerm(c.Form(), t)
 }
 
 type Beta struct {
