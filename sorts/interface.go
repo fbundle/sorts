@@ -32,7 +32,7 @@ var _ = []Sort{
 
 var _ = []Code{
 	Pi{}, Sigma{},
-	Symbol{}, Inhabited{}, Type{}, Beta{}, Let{}, // Let, Match, etc
+	Symbol{}, Inhabited{}, Type{}, Beta{}, Let{}, // Match, etc
 }
 
 type Frame interface {
