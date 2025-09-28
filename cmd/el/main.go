@@ -96,10 +96,15 @@ var source = `
 (let
 	{Nat := (* Any_2)}
 	{0 := (* Nat)}
-	{succ := (* {{_: Nat} => Nat})} # or syntactic sugar {succ := (* {Nat -> Nat})}
+	{succ := (* {{_: Nat} => Nat})} # this is basically x := * (Nat -> Nat)
 
 	(succ (succ 0))
 )
+
+(let
+	{x := {{_: Nat} × Nat}} # this is basically x := * (Nat × Nat)
+)
+
 
 `
 
