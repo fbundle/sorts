@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/fbundle/sorts/form"
@@ -82,41 +83,17 @@ func el() (sorts.Context, func(form.Form) sorts.Code) {
 	return ctx, sorts_parser.Parser{}.Init().Parse
 }
 
-var source = `
-(succ 0)
-(succ (succ 0))
-
-(let
-	{x := 0}
-	x
-)
-
-(add 3 5)
-
-(let
-	{Nat := (* Any_2)}
-	{0 := (* Nat)}
-	{NatToNat := {{_: Nat} => Nat}}		# NatToNat is Nat -> Nat
-	{succ := (* NatToNat)} 
-
-	(succ (succ 0))
-)
-
-(let
-	{NatPair := {{_: Nat} × Nat} }		# NatPair is Nat × Nat 
-	{x := (* NatPair)}
-	x
-)
-
-
-`
-
 func main() {
 	ctx, parse := el()
 
+	b, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		panic(err)
+	}
+	source := string(b)
+
 	tokens := form_processor.Tokenize(source)
 	var f form.Form
-	var err error
 	for len(tokens) > 0 {
 		tokens, f, err = form_processor.Parse(tokens)
 		if err != nil {
