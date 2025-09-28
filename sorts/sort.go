@@ -99,12 +99,22 @@ const (
 )
 
 type Sigma struct {
-	Param Annot
-	Body  Code
+	Name   Form
+	Params []Annot
+	Body   Code
 }
 
 func (s Sigma) Form() Form {
-	return List{SigmaCmd, s.Param.Form(), s.Body.Form()}
+	if s.Name != nil {
+		return s.Name
+	}
+	var output List
+	output = append(output, SigmaCmd)
+	output = append(output, slices_util.Map(s.Params, func(param Annot) Form {
+		return param.Form()
+	})...)
+	output = append(output, s.Body.Form())
+	return output
 }
 
 func (s Sigma) Parent(ctx Context) Sort {

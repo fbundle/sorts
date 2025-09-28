@@ -97,13 +97,10 @@ func (p Parser) Init() Parser {
 				return compileAnnot(parse, mustType[sorts.List](err, form)[1:])
 			})
 			body := parse(list[len(list)-1])
-			slices_util.ForEach(slices_util.Reverse(params), func(param sorts.Annot) {
-				body = sorts.Sigma{
-					Param: param,
-					Body:  body,
-				}
-			})
-			return body
+			return sorts.Sigma{
+				Params: params,
+				Body:   body,
+			}
 		}).
 		withListParseFunc(ArrowCmd, func(parse func(form sorts.Form) sorts.Code, list sorts.List) sorts.Code {
 			// make builtin like succ
