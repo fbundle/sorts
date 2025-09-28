@@ -135,3 +135,10 @@ func (s Sigma) LessEqual(ctx Context, d Sort) bool {
 func (s Sigma) Eval(ctx Context) Sort {
 	return s
 }
+
+// Inductive - TODO
+type Inductive struct {
+	Name Form
+	Type Annot   // Nat: Any_2
+	Cons []Annot // {nil, (x: Nat)} ->
+}
