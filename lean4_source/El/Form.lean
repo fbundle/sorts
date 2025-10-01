@@ -11,7 +11,7 @@ inductive Form where
 #eval (Form.list [Form.name "hello", Form.name "world"] : Form)
 
 
-def sortSplitTokens (splitTokens : List String) : List String :=
+private def sortSplitTokens (splitTokens : List String) : List String :=
   -- sort tokens so that if s2 is a prefix of s1, s1 should come first
   let lessEqual (s1: String) (s2: String): Bool :=
     if (s2.length < s1.length) && (s2.isPrefixOf s1) then true else
