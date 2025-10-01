@@ -23,12 +23,12 @@ def sortSplitTokens (splitTokens : List String) : List String :=
 #eval sortSplitTokens ["=", "==", ":="]
 
 
-def stringIndexOf (s: String) (substring: String): Option Int :=
+def stringIndexOf (s: String) (substring: String): Option Nat :=
   -- return the starting position of substring in s if exists
   if substring.isEmpty then
     some 0
   else
-    let rec helper (s: String) (substring: String) (startIdx: Nat) : Option Int :=
+    let rec helper (s: String) (substring: String) (startIdx: Nat) : Option Nat :=
       if startIdx + substring.length > s.length then
         none
       else if s.extract ⟨startIdx⟩ ⟨startIdx + substring.length⟩ = substring then
@@ -46,25 +46,17 @@ def stringIndexOf (s: String) (substring: String): Option Int :=
 
 
 private def splitPart (sortedSplitTokens : List String) (part : String) : List String :=
-  let rec loop (acc: List String) (sortedSplitTokens: List String) (part: String) : List String :=
-    match sortedSplitTokens with
-      | [] => acc
-      | s :: ss =>
-        if s.isPrefixOf part then
-          loop (acc ++ [s]) sortedSplitTokens (part.drop s.length)
-        else
-          loop acc ss part
-    decreasing_by all_goals sorry
-
-
-    match sortedSplitTokens with
+  match sortedSplitTokens with
     | [] => [part]
     | s :: ss =>
-      if s.isPrefixOf part then
-        s :: (splitPart sortedSplitTokens (part.drop s.length))
-      else
-        splitPart ss part
-    decreasing_by all_goals sorry
+      match stringIndexOf part s with
+        | some i =>
+          [part.take i] ++ [s] ++
+            splitPart ss (part.drop (i + s.length))
+        | none => splitPart ss part
+  decreasing_by all_goals sorry
+
+
 
 #eval! splitPart (sortSplitTokens ["=", "==", ":="]) "x:=3==2=1"
 
