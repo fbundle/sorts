@@ -23,7 +23,7 @@ def sortSplitTokens (splitTokens : List String) : List String :=
 #eval sortSplitTokens ["=", "==", ":="]
 
 
-def stringIndexOf (s: String) (substring: String): Option Nat :=
+private partial def stringIndexOf (s: String) (substring: String): Option Nat :=
   -- return the starting position of substring in s if exists
   if substring.isEmpty then
     some 0
@@ -35,17 +35,16 @@ def stringIndexOf (s: String) (substring: String): Option Nat :=
         some startIdx
       else
         helper s substring (startIdx + 1)
-      decreasing_by all_goals sorry
     helper s substring 0
 
 -- Test stringIndexOf
-#eval! stringIndexOf "hello world" "world"  -- should be some 6
-#eval! stringIndexOf "hello world" "hello"  -- should be some 0
-#eval! stringIndexOf "hello world" "xyz"    -- should be none
-#eval! stringIndexOf "hello world" ""       -- should be some 0
+#eval stringIndexOf "hello world" "world"  -- should be some 6
+#eval stringIndexOf "hello world" "hello"  -- should be some 0
+#eval stringIndexOf "hello world" "xyz"    -- should be none
+#eval stringIndexOf "hello world" ""       -- should be some 0
 
 
-private def splitPart (sortedSplitTokens : List String) (part : String) : List String :=
+private partial def splitPart (sortedSplitTokens : List String) (part : String) : List String :=
   match sortedSplitTokens with
     | [] => [part]
     | s :: ss =>
@@ -54,11 +53,9 @@ private def splitPart (sortedSplitTokens : List String) (part : String) : List S
           [part.take i] ++ [s] ++
             splitPart ss (part.drop (i + s.length))
         | none => splitPart ss part
-  decreasing_by all_goals sorry
 
 
-
-#eval! splitPart (sortSplitTokens ["=", "==", ":="]) "x:=3==2=1"
+#eval splitPart (sortSplitTokens ["=", "==", ":="]) "x:=3==2=1"
 
 
 def tokenize (sortedSplitTokens : List String) (s : String) : List String :=
