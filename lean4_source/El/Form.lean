@@ -57,10 +57,11 @@ private partial def splitPart (sortedSplitTokens : List String) (part : String) 
 
 #eval splitPart (sortSplitTokens ["=", "==", ":="]) "x:=3==2=1"
 
-
-def tokenize (sortedSplitTokens : List String) (s : String) : List String :=
+private def tokenize (sortedSplitTokens : List String) (s : String) : List String :=
   let parts := s.split (fun c => c.isWhitespace)
   parts.flatMap (splitPart sortedSplitTokens)
 
+
+#eval tokenize (sortSplitTokens ["=", "==", ":="]) "x:=3==2=1"
 
 end Form
