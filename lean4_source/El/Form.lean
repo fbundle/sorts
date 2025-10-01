@@ -20,7 +20,7 @@ def sortSplitTokens (splitTokens : List String) : List String :=
 
   splitTokens.mergeSort lessEqual
 
-#eval sortSplitTokens ["hello", "world", "hello world", "world hello"]
+#eval sortSplitTokens ["=", "==", ":="]
 
 private def splitPart (sortedSplitTokens : List String) (part : String) : List String :=
     match sortedSplitTokens with
