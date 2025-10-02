@@ -9,7 +9,7 @@ inductive Form where
 def toString (form: Form) : String :=
   match form with
     | Form.name s => s
-    | Form.list fs => "[" ++ String.join ((fs.map toString).intersperse " ") ++ "]"
+    | Form.list fs => " ( " ++ String.join ((fs.map toString).intersperse " ") ++ " ) "
 
 instance : ToString Form := ⟨toString⟩
 
@@ -108,6 +108,6 @@ def sortedSplitTokens := sortSplitTokens ["(", ")", "+", "-", "*", "/", "=", "==
 
 #eval parse "(" ")" ["(", "3", ")", "=", "1"]
 
-#eval parseAll "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1")
+#eval Form.list (parseAll "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1")).get!
 
 end Form
