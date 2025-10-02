@@ -102,6 +102,6 @@ def sortedSplitTokens := sortSplitTokens ["(", ")", "+", "-", "*", "/", "=", "==
 
 #eval parse "(" ")" ["(", "3", ")", "=", "1"]
 
-#eval parseAll "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1") -- TODO fix
+#eval parseAll "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1")
 
 end Form
