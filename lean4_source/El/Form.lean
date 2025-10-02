@@ -61,9 +61,9 @@ private partial def parseUntil (p: parser)  (closeBlockToken: String) (acc: List
       if t = closeBlockToken then
         some ⟨ts, acc⟩
       else
-        match p ts with
-          | some ⟨ts, form⟩ =>
-            parseUntil p closeBlockToken (acc ++ [form]) ts
+        match p tokens with
+          | some ⟨remainingTokens, form⟩ =>
+            parseUntil p closeBlockToken (acc ++ [form]) remainingTokens
           | none => none
 
 partial def parse (openBlockToken: String) (closeBlockToken: String) (tokens : List String) : Option (List String × Form) :=
@@ -91,15 +91,16 @@ def openBlockToken := "("
 def closeBlockToken := ")"
 def sortedSplitTokens := sortSplitTokens ["(", ")", "+", "-", "*", "/", "=", "==", ":="]
 
-#eval sortedSplitTokens
 
-#eval "123".take 1
+#eval tokenize sortedSplitTokens "x:=(3==2)=1"
 
-#eval stringIndexOf "x:=(3==2)=1" ":="
+#eval parse "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1")
 
-#eval splitPart sortedSplitTokens "x:=(3==2)=1" -- supposed to be ["x", ":=", "3", "==", "2", "=", "1"]
+#eval parse "(" ")" [":=", "(", "3", "==", "2", ")", "=", "1"]
 
-#eval tokenize sortedSplitTokens "x:=(3==2)=1"  -- TODO fix
+#eval parse "(" ")" ["(", "3", "==", "2", ")", "=", "1"]
+
+#eval parse "(" ")" ["(", "3", ")", "=", "1"]
 
 #eval parseAll "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1") -- TODO fix
 
