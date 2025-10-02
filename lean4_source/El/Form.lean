@@ -105,7 +105,8 @@ def closeBlockToken := ")"
 def sortedSplitTokens := sortSplitTokens ["(", ")", "+", "-", "*", "/", "=", "==", ":="]
 
 
-#eval (tokenize sortedSplitTokens "x:=(3==2)=1")
-#eval parseAll "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1")
+#eval (tokenize sortedSplitTokens "x:=(3==2)=1")  -- TODO fix
+
+#eval parseAll "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1") -- TODO fix
 
 end Form
