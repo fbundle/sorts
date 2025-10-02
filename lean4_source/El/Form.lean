@@ -5,7 +5,13 @@ universe u
 inductive Form where
   | name: String → Form
   | list: List Form → Form
-  deriving Repr
+
+def toString (form: Form) : String :=
+  match form with
+    | Form.name s => s
+    | Form.list fs => "[" ++ String.join ((fs.map toString).intersperse " ") ++ "]"
+
+instance : ToString Form := ⟨toString⟩
 
 
 private def sortSplitTokens (splitTokens : List String) : List String :=
