@@ -9,7 +9,7 @@ inductive Form where
 def toString (form: Form) : String :=
   match form with
     | Form.name s => s
-    | Form.list fs => " ( " ++ String.join ((fs.map toString).intersperse " ") ++ " ) "
+    | Form.list fs => "(" ++ String.join ((fs.map toString).intersperse " ") ++ ")"
 
 instance : ToString Form := ⟨toString⟩
 
