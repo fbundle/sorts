@@ -90,11 +90,13 @@ def sortedSplitTokens := sortSplitTokens ["(", ")", "+", "-", "*", "/", "=", "==
 
 #eval sortedSplitTokens
 
+#eval "123".take 1
+
 #eval stringIndexOf "x:=(3==2)=1" ":="
 
-#eval splitPart sortedSplitTokens "x:=(3==2)=1"
+#eval splitPart sortedSplitTokens "x:=(3==2)=1" -- supposed to be ["x", ":=", "3", "==", "2", "=", "1"]
 
-#eval (tokenize sortedSplitTokens "x:=(3==2)=1")  -- TODO fix
+#eval tokenize sortedSplitTokens "x:=(3==2)=1"  -- TODO fix
 
 #eval parseAll "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1") -- TODO fix
 
