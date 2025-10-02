@@ -7,9 +7,6 @@ inductive Form where
   | list: List Form → Form
   deriving Repr
 
-#eval (Form.name "hello" : Form)
-#eval (Form.list [Form.name "hello", Form.name "world"] : Form)
-
 
 private def sortSplitTokens (splitTokens : List String) : List String :=
   -- sort tokens so that if s2 is a prefix of s1, s1 should come first
@@ -19,8 +16,6 @@ private def sortSplitTokens (splitTokens : List String) : List String :=
     s1 < s2
 
   splitTokens.mergeSort lessEqual
-
-#eval sortSplitTokens ["=", "==", ":="]
 
 
 private partial def stringIndexOf (s: String) (substring: String): Option Nat :=
@@ -37,32 +32,21 @@ private partial def stringIndexOf (s: String) (substring: String): Option Nat :=
         helper s substring (startIdx + 1)
     helper s substring 0
 
--- Test stringIndexOf
-#eval stringIndexOf "hello world" "world"  -- should be some 6
-#eval stringIndexOf "hello world" "hello"  -- should be some 0
-#eval stringIndexOf "hello world" "xyz"    -- should be none
-#eval stringIndexOf "hello world" ""       -- should be some 0
-
 
 private partial def splitPart (sortedSplitTokens : List String) (part : String) : List String :=
   match sortedSplitTokens with
     | [] => [part]
     | s :: ss =>
       match stringIndexOf part s with
-        | some i =>
-          [part.take i] ++ [s] ++
-            splitPart ss (part.drop (i + s.length))
+        | some n =>
+          [part.take n] ++ [s] ++
+            splitPart sortedSplitTokens (part.drop (n + s.length))
         | none => splitPart ss part
-
-
-#eval splitPart (sortSplitTokens ["=", "==", ":="]) "x:=3==2=1"
 
 private def tokenize (sortedSplitTokens : List String) (s : String) : List String :=
   let parts := s.split (fun c => c.isWhitespace)
   parts.flatMap (splitPart sortedSplitTokens)
 
-
-#eval tokenize (sortSplitTokens ["=", "==", ":="]) "x:=3==2=1"
 
 def parser := List String → Option (List String × Form)
 
@@ -104,6 +88,11 @@ def openBlockToken := "("
 def closeBlockToken := ")"
 def sortedSplitTokens := sortSplitTokens ["(", ")", "+", "-", "*", "/", "=", "==", ":="]
 
+#eval sortedSplitTokens
+
+#eval stringIndexOf "x:=(3==2)=1" ":="
+
+#eval splitPart sortedSplitTokens "x:=(3==2)=1"
 
 #eval (tokenize sortedSplitTokens "x:=(3==2)=1")  -- TODO fix
 
