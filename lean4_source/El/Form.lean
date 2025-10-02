@@ -39,8 +39,11 @@ private partial def splitPart (sortedSplitTokens : List String) (part : String) 
     | s :: ss =>
       match stringIndexOf part s with
         | some n =>
-          [part.take n] ++ [s] ++
-            splitPart sortedSplitTokens (part.drop (n + s.length))
+          let before := part.take n
+          let after := part.drop (n + s.length)
+          let beforeParts := if before.isEmpty then [] else splitPart sortedSplitTokens before
+          let afterParts := if after.isEmpty then [] else splitPart sortedSplitTokens after
+          beforeParts ++ [s] ++ afterParts
         | none => splitPart ss part
 
 private def tokenize (sortedSplitTokens : List String) (s : String) : List String :=
