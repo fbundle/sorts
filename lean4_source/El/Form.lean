@@ -83,41 +83,10 @@ private partial def parse_ (openBlockToken: String) (closeBlockToken: String) (t
       else
         some ⟨ts, Form.name t⟩
 
-
-
-def openBlockToken := "("
-def closeBlockToken := ")"
-def sortedSplitTokens := sortSplitTokens ["(", ")", "+", "-", "*", "/", "=", "==", ":="]
-
-
-#eval tokenize_ sortedSplitTokens "x:=(3==2)=1"
-
-#eval parse_ "(" ")" (tokenize_ sortedSplitTokens "x:=(3==2)=1")
-
-#eval parse_ "(" ")" [":=", "(", "3", "==", "2", ")", "=", "1"]
-
-#eval parse_ "(" ")" ["(", "3", "==", "2", ")", "=", "1"]
-
-#eval parse_ "(" ")" ["(", "3", ")", "=", "1"]
-
-partial def parseAll (openBlockToken: String) (closeBlockToken: String) (tokens : List String) : Option (List Form) :=
-  let rec loop (acc: List Form) (tokens : List String) : Option (List Form) :=
-    match tokens with
-      | [] => some acc
-      | _ :: _ =>
-        match parse_ openBlockToken closeBlockToken tokens with
-          | some ⟨ts, form⟩ => loop (acc ++ [form]) ts
-          | none => none
-  loop [] tokens
-
-#eval Form.list (parseAll "(" ")" (tokenize_ sortedSplitTokens "x:=(3==2)=1")).get!
-
 structure Parser where
   openBlockToken: String
   closeBlockToken: String
   splitTokens: List String
-
-
 
 def Parser.init (p: Parser) : Parser :=
   {p with splitTokens := sortSplitTokens p.splitTokens}
@@ -128,6 +97,26 @@ def Parser.tokenize (p: Parser) (s: String): List String :=
 def Parser.parse (p: Parser) (tokens: List String): Option (List String × Form) :=
   parse_ p.openBlockToken p.closeBlockToken tokens
 
+private partial def iterate (iter: α → Option (α × β)) (terminate: α → Bool) (init: α): Option (List β) :=
+  let rec loop (acc: List β) (state: α): Option (List β) :=
+    match terminate state with
+      | true => acc
+      | false =>
+        match iter state with
+          | none => none
+          | some ⟨next_state, value⟩ => loop (acc ++ [value]) next_state
+  loop [] init
+
+def Parser.parseAll (p: Parser) (tokens: List String) : Option (List Form) :=
+  iterate p.parse (λ tokens => tokens.length = 0) tokens
+
+def defaultParser := ({
+  openBlockToken := "(",
+  closeBlockToken := ")",
+  splitTokens := ["(", ")", "+", "-", "*", "/", "=", "==", ":="]
+}: Parser).init
+
+#eval Form.list (defaultParser.parseAll (defaultParser.tokenize "x:=(3==2)=1")).get!
 
 
 
