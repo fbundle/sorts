@@ -52,7 +52,7 @@ private partial def splitPart (sortedSplitTokens : List String) (part : String) 
           beforeParts ++ [s] ++ afterParts
         | none => splitPart ss part
 
-private def tokenize (sortedSplitTokens : List String) (s : String) : List String :=
+private def tokenize_ (sortedSplitTokens : List String) (s : String) : List String :=
   let parts := s.split (fun c => c.isWhitespace)
   parts.flatMap (splitPart sortedSplitTokens)
 
@@ -72,42 +72,65 @@ private partial def parseUntil (p: parser)  (closeBlockToken: String) (acc: List
             parseUntil p closeBlockToken (acc ++ [form]) remainingTokens
           | none => none
 
-partial def parse (openBlockToken: String) (closeBlockToken: String) (tokens : List String) : Option (List String × Form) :=
+private partial def parse_ (openBlockToken: String) (closeBlockToken: String) (tokens : List String) : Option (List String × Form) :=
   match tokens with
     | [] => none
     | t :: ts =>
       if t = openBlockToken then
-        match parseUntil (parse openBlockToken closeBlockToken) closeBlockToken [] ts with
+        match parseUntil (parse_ openBlockToken closeBlockToken) closeBlockToken [] ts with
           | some ⟨ts, forms⟩ => some ⟨ts, Form.list forms⟩
           | none => none
       else
         some ⟨ts, Form.name t⟩
 
-partial def parseAll (openBlockToken: String) (closeBlockToken: String) (tokens : List String) : Option (List Form) :=
-  let rec loop (acc: List Form) (tokens : List String) : Option (List Form) :=
-    match tokens with
-      | [] => some acc
-      | _ :: _ =>
-        match parse openBlockToken closeBlockToken tokens with
-          | some ⟨ts, form⟩ => loop (acc ++ [form]) ts
-          | none => none
-  loop [] tokens
+
 
 def openBlockToken := "("
 def closeBlockToken := ")"
 def sortedSplitTokens := sortSplitTokens ["(", ")", "+", "-", "*", "/", "=", "==", ":="]
 
 
-#eval tokenize sortedSplitTokens "x:=(3==2)=1"
+#eval tokenize_ sortedSplitTokens "x:=(3==2)=1"
 
-#eval parse "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1")
+#eval parse_ "(" ")" (tokenize_ sortedSplitTokens "x:=(3==2)=1")
 
-#eval parse "(" ")" [":=", "(", "3", "==", "2", ")", "=", "1"]
+#eval parse_ "(" ")" [":=", "(", "3", "==", "2", ")", "=", "1"]
 
-#eval parse "(" ")" ["(", "3", "==", "2", ")", "=", "1"]
+#eval parse_ "(" ")" ["(", "3", "==", "2", ")", "=", "1"]
 
-#eval parse "(" ")" ["(", "3", ")", "=", "1"]
+#eval parse_ "(" ")" ["(", "3", ")", "=", "1"]
 
-#eval Form.list (parseAll "(" ")" (tokenize sortedSplitTokens "x:=(3==2)=1")).get!
+partial def parseAll (openBlockToken: String) (closeBlockToken: String) (tokens : List String) : Option (List Form) :=
+  let rec loop (acc: List Form) (tokens : List String) : Option (List Form) :=
+    match tokens with
+      | [] => some acc
+      | _ :: _ =>
+        match parse_ openBlockToken closeBlockToken tokens with
+          | some ⟨ts, form⟩ => loop (acc ++ [form]) ts
+          | none => none
+  loop [] tokens
+
+#eval Form.list (parseAll "(" ")" (tokenize_ sortedSplitTokens "x:=(3==2)=1")).get!
+
+structure Parser where
+  openBlockToken: String
+  closeBlockToken: String
+  splitTokens: List String
+
+
+
+def Parser.init (p: Parser) : Parser :=
+  {p with splitTokens := sortSplitTokens p.splitTokens}
+
+def Parser.tokenize (p: Parser) (s: String): List String :=
+  tokenize_ p.splitTokens s
+
+def Parser.parse (p: Parser) (tokens: List String): Option (List String × Form) :=
+  parse_ p.openBlockToken p.closeBlockToken tokens
+
+
+
+
+
 
 end Form
