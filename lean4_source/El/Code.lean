@@ -148,9 +148,8 @@ def _example: List Code :=
     | none => []
     | some xs =>
 
-    let ys := Util.applySome xs (parse parseName)
+    Util.applySome xs (parse parseName)
 
-    sorry
 
 
 
