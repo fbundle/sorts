@@ -18,5 +18,12 @@ def optionMapAll (xs: List α) (f: α → Option β): Option (List β) :=
   else
     ys
 
+def applyOnce {α: Type} {β} (fs: List (α → Option β)) (x: α): Option β :=
+  match fs with
+    | [] => none
+    | f :: fs =>
+      match f x with
+        | some y => some y
+        | none => applyOnce fs x
 
 end Util

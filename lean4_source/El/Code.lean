@@ -107,33 +107,31 @@ private def parseBeta (parse: Form → Option (Code β)) (form: Form): Option (C
     | _ => none
 
 partial def parse (parseAtom: String → Option β) (form: Form): Option (Code β) := do
-  let rec loop (parseLists: List (Form → Option (Code β))) (form: Form): Option (Code β) :=
-    match parseLists with
-      | [] => none
-      | parseList :: parseLists =>
-        match parseList form with
-          | some code => code
-          | none => loop parseLists form
-
-  let parseName (form: Form): Option (Code β) :=
+  let parseAtomFunc (form: Form): Option (Code β) :=
     match form with
       | .name name =>
         match parseAtom name with
           | some atom => some (.atom atom)
-          | none => some (.name name)
-      | .list _ => none
+          | none => none
+      | _ => none
 
-  loop [
-    parseName,
-    parseWithHead (parseListAnnot (parse parseAtom)) ":",
-    parseWithHead (parseListBinding (parse parseAtom)) ":=",
-    parseWithHead (parseListTypeof (parse parseAtom)) "&",
-    parseWithHead (parseListInh (parse parseAtom)) "*",
-    parseWithHead (parseListPi (parse parseAtom)) "=>",
-    parseBeta (parse parseAtom),
+  let parseNameFunc (form: Form): Option (Code β) :=
+    match form with
+      | .name name => some (.name name)
+      | _ => none
+
+  let parseList := parse parseAtom
+
+  Util.applyOnce [
+    parseAtomFunc,
+    parseNameFunc,
+    parseWithHead (parseListAnnot parseList) ":",
+    parseWithHead (parseListBinding parseList) ":=",
+    parseWithHead (parseListTypeof parseList) "&",
+    parseWithHead (parseListInh parseList) "*",
+    parseWithHead (parseListPi parseList) "=>",
+    parseBeta parseList,
   ] form
-
-
 
 inductive Atom where
   | univ: Int → Atom
@@ -151,6 +149,11 @@ private def parseUniverse (s: String): Option Atom := do
   pure (.univ i) -- universe level i
 
 private def parseAtom (s: String): Option Atom := do
+  Util.applyOnce [
+    parseInteger,
+    parseUniverse,
+
+  ]
 
 
 
