@@ -3,29 +3,43 @@ import El.Code
 
 namespace Code
 
-
-inductive Atom where
-  | univ: Int → Atom
-  | integer: Int → Atom
+inductive SortEl where -- SortEl - basic element of EL
+  | int: SortEl
+  | univ: Int → SortEl
+  | integer: Int → SortEl
   deriving Repr
 
-private def parseInteger (s: String): Option Atom := do
+def SortEl.level (s: SortEl): Int :=
+  match s with
+    | int => 1
+    | univ i => i
+    | integer _ => 0
+
+def SortEl.parent (s: SortEl): SortEl :=
+  match s with
+    | int => (.univ 2)
+    | univ i => (.univ (i+1))
+    | integer _ => (.int)
+
+
+
+private def parseInteger (s: String): Option SortEl := do
   let i ← s.toInt?
   pure (.integer i) -- integer i
 
-private def parseUniverse (s: String): Option Atom := do
+private def parseUniverse (s: String): Option SortEl := do
   let s ← s.dropPrefix? "U_"
   let s := s.toString
   let i ← s.toInt?
   pure (.univ i) -- universe level i
 
-private def parseAtom := Util.applyOnce [
+private def parseSortEl := Util.applyOnce [
   parseInteger,
   parseUniverse,
   λ _ => none,
 ]
 
-def _example: List (Code Atom) :=
+def _example: List (Code SortEl) :=
   let source := "
     (:= Nat (*U_2))
     (:= n0 (*Nat))
@@ -42,7 +56,7 @@ def _example: List (Code Atom) :=
     | none => []
     | some xs =>
 
-    Util.optionMap xs (parse parseAtom ["+"])
+    Util.optionMap xs (parse parseSortEl ["+"])
 
 #eval _example
 
