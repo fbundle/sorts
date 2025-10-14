@@ -40,6 +40,11 @@ structure Pi (α: Type) where -- Pi or Lambda
   body: α
   deriving Repr
 
+structure Arrow (α: Type) where
+  a: α
+  b: α
+  deriving Repr
+
 inductive Code (β: Type) where
   | atom: β → Code β
   | name: String → Code β
@@ -50,6 +55,7 @@ inductive Code (β: Type) where
   | typeof: Typeof (Code β) → Code β
   | inh: Inh (Code β) → Code β
   | pi: Pi (Code β) → Code β
+  | arrow: Arrow (Code β) → Code β
   deriving Repr
 
 
@@ -70,24 +76,24 @@ private def parseListAnnot (parse: Form → Option (Code β)) (list: List Form):
   let name ← getName nameForm
   let typeForm ← list[1]?
   let type ← parse typeForm
-  pure (Code.annot {name := name, type := type})
+  pure (.annot {name := name, type := type})
 
 private def parseListBinding (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let nameForm ← list[0]?
   let name ← getName nameForm
   let valueForm ← list[1]?
   let value ← parse valueForm
-  pure (Code.binding {name := name, value := value})
+  pure (.binding {name := name, value := value})
 
 private partial def parseListTypeof (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let valueForm ← list[0]?
   let value ← parse valueForm
-  pure (Code.typeof {value := value})
+  pure (.typeof {value := value})
 
 private def parseListInh (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let typeForm ← list[0]?
   let type ← parse typeForm
-  pure (Code.inh {type := type})
+  pure (.inh {type := type})
 
 private def parseListPi (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   if list.length = 0 then
@@ -97,12 +103,19 @@ private def parseListPi (parse: Form → Option (Code β)) (list: List Form): Op
     let params ← Util.optionMapAll paramForms ((λ form => do
       let annotCode ← parseWithHead (parseListAnnot parse) ":" form
       match annotCode with
-        | Code.annot annot => some annot
+        | .annot annot => some annot
         | _ => none
     ): Form → Option (Annot (Code β)))
     let bodyForm ← list[list.length-1]?
     let body ← parse bodyForm
-    pure (Code.pi {params := params, body := body})
+    pure (.pi {params := params, body := body})
+
+private def parseListArrow (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+  let aForm ← list[0]?
+  let a ← parse aForm
+  let bForm ← list[1]?
+  let b ← parse bForm
+  pure (.arrow {a := a, b := b})
 
 private def parseListOther (head: String) (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let args ← Util.optionMapAll list parse
