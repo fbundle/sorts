@@ -120,6 +120,8 @@ private partial def iterate (iter: α → Option (α × β)) (terminate: α → 
 def Parser.parseAll (p: Parser) (tokens: List String) : Option (List Form) :=
   iterate p.parse (λ tokens => tokens.length = 0) tokens
 
+-- default parser
+
 def defaultParser := ({
   openBlockToken := "(",
   closeBlockToken := ")",
@@ -131,9 +133,5 @@ def defaultParseAll := defaultParser.parseAll ∘ defaultParser.tokenize
 private def _example := "x:=(3==2)=1 123"
 
 #eval (defaultParseAll _example).get!
-
-
-
-
 
 end Form
