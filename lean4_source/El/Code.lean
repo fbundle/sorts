@@ -1,4 +1,5 @@
 import El.Form
+import El.Util
 
 namespace Code
 
@@ -45,18 +46,6 @@ abbrev getName := Form.getName
 abbrev getList := Form.getName
 abbrev Form := Form.Form
 
-private partial def applyMany (xs: List α) (f: α → Option β): Option (List β) :=
-  let rec loop (ys: Array β) (xs: List α) (f: α → Option β): Option (Array β) :=
-    match xs with
-      | [] => some #[]
-      | x :: xs =>
-        match f x with
-          | none => none
-          | some y => loop (ys.push y) xs f
-
-  match loop #[] xs f with
-    | none => none
-    | some a => some a.toList
 
 mutual
 
@@ -89,7 +78,7 @@ private partial def parseListPi (list: List Form): Option Code := do
     none
   else
     let paramForms := list.extract 0 (list.length-1)
-    let params ← applyMany paramForms ((λ form =>
+    let params ← Util.applyMany paramForms ((λ form =>
       match parseWithHead parseListAnnot ":" form with
         | Code.annot annot => some annot
         | _ => none
@@ -120,7 +109,7 @@ private partial def parseBeta (form: Form): Option Code := do
   match form with
     | .list (x :: xs) =>
       let cmd ← parse x
-      let args ← applyMany xs parse
+      let args ← Util.applyMany xs parse
       pure (Code.beta {cmd := cmd, args := args})
     | _ => none
 
