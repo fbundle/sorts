@@ -87,7 +87,7 @@ private partial def parseListPi (parse: Form → Option Code) (list: List Form):
     none
   else
     let paramForms := list.extract 0 (list.length-1)
-    let params ← Util.applyMany paramForms ((λ form =>
+    let params ← Util.applyAll paramForms ((λ form =>
       match parseWithHead (parseListAnnot parse) ":" form with
         | Code.annot annot => some annot
         | _ => none
@@ -96,23 +96,13 @@ private partial def parseListPi (parse: Form → Option Code) (list: List Form):
     let body ← parse bodyForm
     pure (Code.pi {params := params, body := body})
 
-
-
-
 private partial def parseBeta (parse: Form → Option Code) (form: Form): Option Code := do
   match form with
     | .list (x :: xs) =>
       let cmd ← parse x
-      let args ← Util.applyMany xs parse
+      let args ← Util.applyAll xs parse
       pure (Code.beta {cmd := cmd, args := args})
     | _ => none
-
-private partial def parseName (form: Form): Option Code :=
-  match form with
-    | .name name => some (.atom name)
-    | _ => none
-
-
 
 partial def parse (parseName: Form → Option Code) (form: Form): Option Code := do
   let rec loop (parseLists: List (Form → Option Code)) (form: Form): Option Code :=
@@ -134,28 +124,38 @@ partial def parse (parseName: Form → Option Code) (form: Form): Option Code :=
   ] form
 
 
+private partial def parseName (form: Form): Option Code :=
+  match form with
+    | .name name => some (.atom name)
+    | _ => none
+
+def _example: List Code :=
+  let source := "
+    (:= Nat (*U_2))
+    (:= 0 (*Nat))
+    (:= succ (*(-> Nat)))
+
+    (:= 1 (succ 0))
+    (:= 2 (succ 0))
+    (:= 3 (succ 0))
+    (:= 4 (succ 0))
+    (:= x 3)
+    (:= y 4)
+
+    (+ x y)
+  "
+  match Form.defaultParseAll source with
+    | none => []
+    | some xs =>
+
+    let ys := Util.applySome xs (parse parseName)
+
+    sorry
 
 
-def _example := "
-  (:= Nat (*U_2))
-  (:= 0 (*Nat))
-  (:= succ (*(-> Nat)))
-
-  (:= 1 (succ 0))
-  (:= 2 (succ 0))
-  (:= 3 (succ 0))
-  (:= 4 (succ 0))
-  (:= x 3)
-  (:= y 4)
-
-  (+ x y)
-"
 
 #eval _example
 
-#eval Form.defaultParser.tokenize _example
-
-#eval (Form.defaultParseAll _example).get!
 
 
 
