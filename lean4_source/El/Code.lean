@@ -1,5 +1,7 @@
 import El.Form
 
+namespace Code
+
 structure Beta (α: Type) where
   cmd: α
   args: List α
@@ -131,5 +133,6 @@ partial def parse (form: Form): Option Code := do
             | _ =>
               let code ← parseBeta list
               pure (.beta code)
-
 end
+
+end Code
