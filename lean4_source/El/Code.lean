@@ -138,8 +138,17 @@ end
 
 
 def _example := "
+  (:= Nat (inh U_2))
+  (:= 0 (inh Nat))
+  (:= succ (inh (-> Nat)))
+
+  (:= 1 (succ 0))
+  (:= 2 (succ 0))
+  (:= 3 (succ 0))
+  (:= 4 (succ 0))
   (:= x 3)
   (:= y 4)
+
   (+ x y)
 "
 
