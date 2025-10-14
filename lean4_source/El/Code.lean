@@ -18,7 +18,7 @@ structure Typeof (α: Type) where
 structure Inh (α: Type) where -- Inhabited
   value: α
 
-structure Pi (α: Type) where
+structure Pi (α: Type) where -- Pi or Lambda
   params: List (Annot α)
   body: α
 
