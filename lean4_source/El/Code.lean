@@ -43,7 +43,7 @@ abbrev Form := Form.Form
 
 mutual
 
-def parseBeta (list: List Form): Option (Beta Code) := do
+private partial def parseBeta (list: List Form): Option (Beta Code) := do
   match list with
     | [] => none
     | x :: xs =>
@@ -51,14 +51,14 @@ def parseBeta (list: List Form): Option (Beta Code) := do
       let args ← applyMany xs parse
       pure {cmd := cmd, args := args}
 
-def parseAnnot (list: List Form): Option (Annot Code) := do
+private partial def parseAnnot (list: List Form): Option (Annot Code) := do
   let nameForm ← list[0]?
   let name ← getName nameForm
   let typeForm ← list[1]?
   let type ← parse typeForm
   pure {name := name, type := type}
 
-def parseBinding (list: List Form): Option (Binding Code) := do
+private partial def parseBinding (list: List Form): Option (Binding Code) := do
   let nameForm ← list[0]?
   let name ← getName nameForm
   let valueForm ← list[1]?
@@ -68,7 +68,7 @@ def parseBinding (list: List Form): Option (Binding Code) := do
 
 
 
-def applyMany (xs: List α) (f: α → Option β): Option (List β) :=
+private partial def applyMany (xs: List α) (f: α → Option β): Option (List β) :=
   let rec loop (ys: Array β) (xs: List α) (f: α → Option β): Option (Array β) :=
     match xs with
       | [] => some #[]
@@ -81,7 +81,7 @@ def applyMany (xs: List α) (f: α → Option β): Option (List β) :=
     | none => none
     | some a => some a.toList
 
-def parse (form: Form): Option Code := do
+partial def parse (form: Form): Option Code := do
   match form with
     | .name name => pure (Code.name name)
     | .list list =>
