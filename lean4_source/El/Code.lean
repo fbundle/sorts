@@ -3,24 +3,30 @@ import El.Form
 structure Beta (α: Type) where
   cmd: α
   args: List α
+  deriving Repr
 
 structure Annot (α: Type) where
   name: String
   type: α
+  deriving Repr
 
 structure Binding (α: Type) where
   name: String
   value: α
+  deriving Repr
 
 structure Typeof (α: Type) where
   value: α
+  deriving Repr
 
 structure Inh (α: Type) where -- Inhabited
   type: α
+  deriving Repr
 
 structure Pi (α: Type) where -- Pi or Lambda
   params: List (Annot α)
   body: α
+  deriving Repr
 
 inductive Code where
   | name: String → Code
@@ -30,6 +36,7 @@ inductive Code where
   | typeof: Typeof Code → Code
   | inh: Inh Code → Code
   | pi: Pi Code → Code
+  deriving Repr
 
 
 abbrev getName := Form.getName
