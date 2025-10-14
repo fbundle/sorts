@@ -163,6 +163,7 @@ partial def parse
     parseWithHead (parseListTypeof parseList) "&",
     parseWithHead (parseListInh parseList) "*",
     parseWithHead (parseListPi parseList) "=>",
+    parseWithHead (parseListArrow parseList) "->",
   ]
   ++
   -- parse builtin
