@@ -100,7 +100,7 @@ private partial def parseWithHead (parseList: List Form → Option Code) (head: 
         | _ => none
 
 
-private partial def parseAtom (form: Form): Option Code :=
+private partial def parseName (form: Form): Option Code :=
   match form with
     | .name name => some (.atom name)
     | _ => none
@@ -123,7 +123,7 @@ partial def parse (form: Form): Option Code := do
           | none => loop parseLists form
 
   loop [
-    parseAtom,
+    parseName,
     parseWithHead parseListAnnot ":",
     parseWithHead parseListBinding ":=",
     parseWithHead parseListTypeof "&",
