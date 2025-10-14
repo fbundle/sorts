@@ -123,7 +123,7 @@ def defaultParser := ({
   splitTokens := ["(", ")", "+", "-", "*", "/", "=", "==", ":="]
 }: Parser).init
 
-#eval Form.list (defaultParser.parseAll (defaultParser.tokenize "x:=(3==2)=1")).get!
+#eval (defaultParser.parseAll (defaultParser.tokenize "x:=(3==2)=1 123")).get!
 
 
 
