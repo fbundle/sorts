@@ -32,7 +32,7 @@ structure Pi (α: Type) where -- Pi or Lambda
   deriving Repr
 
 inductive Code where
-  | name: String → Code
+  | atom: String → Code
   | beta: Beta Code → Code
   | annot: Annot Code → Code
   | binding: Binding Code → Code
@@ -100,9 +100,9 @@ private partial def parseWithHead (parseList: List Form → Option Code) (head: 
         | _ => none
 
 
-private partial def parseName (form: Form): Option Code :=
+private partial def parseAtom (form: Form): Option Code :=
   match form with
-    | .name name => some (Code.name name)
+    | .name name => some (.atom name)
     | _ => none
 
 private partial def parseBeta (form: Form): Option Code := do
@@ -123,7 +123,7 @@ partial def parse (form: Form): Option Code := do
           | none => loop parseLists form
 
   loop [
-    parseName,
+    parseAtom,
     parseWithHead parseListAnnot ":",
     parseWithHead parseListBinding ":=",
     parseWithHead parseListTypeof "&",
