@@ -12,8 +12,8 @@ structure Beta (α: Type) where
   args: List α
   deriving Repr
 
-structure BuiltinBeta (α: Type) where
-  head: String -- e.g. + - * / % for integers
+structure Other (α: Type) where -- Other - any form
+  head: String
   args: List α
   deriving Repr
 
@@ -44,7 +44,7 @@ inductive Code (β: Type) where
   | atom: β → Code β
   | name: String → Code β
   | beta: Beta (Code β) → Code β
-  | builtin_beta: BuiltinBeta (Code β) → Code β
+  | other: Other (Code β) → Code β
   | annot: Annot (Code β) → Code β
   | binding: Binding (Code β) → Code β
   | typeof: Typeof (Code β) → Code β
@@ -104,9 +104,9 @@ private def parseListPi (parse: Form → Option (Code β)) (list: List Form): Op
     let body ← parse bodyForm
     pure (Code.pi {params := params, body := body})
 
-private def parseListBuiltinBeta (head: String) (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+private def parseListOther (head: String) (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let args ← Util.optionMapAll list parse
-  pure (.builtin_beta {head := head, args := args})
+  pure (.other {head := head, args := args})
 
 private def parseBeta (parse: Form → Option (Code β)) (form: Form): Option (Code β) := do
   match form with
@@ -118,7 +118,7 @@ private def parseBeta (parse: Form → Option (Code β)) (form: Form): Option (C
 
 partial def parse
   (parseAtom: String → Option β)
-  (builtinHeadList: List String)
+  (otherHeadList: List String)
   (form: Form): Option (Code β) := do
   let makeParseAtomFunc (parseAtom: String → Option β) (form: Form): Option (Code β) :=
     match form with
@@ -133,7 +133,7 @@ partial def parse
       | .name name => some (.name name)
       | _ => none
 
-  let parseList := parse parseAtom builtinHeadList
+  let parseList := parse parseAtom otherHeadList
 
 
   let parseFuncList :=
@@ -153,8 +153,8 @@ partial def parse
   ]
   ++
   -- parse builtin
-  builtinHeadList.map (λ head =>
-    parseWithHead (parseListBuiltinBeta head parseList) head
+  otherHeadList.map (λ head =>
+    parseWithHead (parseListOther head parseList) head
   )
   ++
   -- parse beta (default case)
