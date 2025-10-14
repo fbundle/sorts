@@ -88,7 +88,7 @@ private def parseListPi (parse: Form → Option (Code β)) (list: List Form): Op
     none
   else
     let paramForms := list.extract 0 (list.length-1)
-    let params ← Util.applyAll paramForms ((λ form => do
+    let params ← Util.optionMapAll paramForms ((λ form => do
       let annotCode ← parseWithHead (parseListAnnot parse) ":" form
       match annotCode with
         | Code.annot annot => some annot
@@ -102,7 +102,7 @@ private def parseBeta (parse: Form → Option (Code β)) (form: Form): Option (C
   match form with
     | .list (x :: xs) =>
       let cmd ← parse x
-      let args ← Util.applyAll xs parse
+      let args ← Util.optionMapAll xs parse
       pure (Code.beta {cmd := cmd, args := args})
     | _ => none
 
@@ -144,13 +144,15 @@ private def parseInteger (s: String): Option Atom := do
   let i ← s.toInt?
   pure (.integer i) -- integer i
 
-
 private def parseUniverse (s: String): Option Atom := do
   let s ← s.dropPrefix? "U_"
   let s := s.toString
   let i ← s.toInt?
   pure (.univ i) -- universe level i
+
 private def parseAtom (s: String): Option Atom := do
+
+
 
 
   match s.toInt? with
@@ -179,7 +181,7 @@ def _example: List (Code Atom) :=
     | none => []
     | some xs =>
 
-    Util.applySome xs (parse parseAtom)
+    Util.optionMap xs (parse parseAtom)
 
 
 
