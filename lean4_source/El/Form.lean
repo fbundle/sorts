@@ -1,10 +1,18 @@
 namespace Form
 
-universe u
-
 inductive Form where
   | name: String → Form
   | list: List Form → Form
+
+def getName (form: Form): Option String :=
+  match form with
+    | .name name => some name
+    | _ => none
+
+def getList (form: Form): Option (List Form) :=
+  match form with
+    | .list list => some list
+    | _ => none
 
 def toString (form: Form) : String :=
   match form with
