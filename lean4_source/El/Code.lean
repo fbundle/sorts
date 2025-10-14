@@ -16,7 +16,7 @@ structure Typeof (α: Type) where
   value: α
 
 structure Inh (α: Type) where -- Inhabited
-  value: α
+  type: α
 
 structure Pi (α: Type) where -- Pi or Lambda
   params: List (Annot α)
@@ -40,6 +40,19 @@ inductive Code where
 abbrev getName := Form.getName
 abbrev getList := Form.getName
 abbrev Form := Form.Form
+
+private partial def applyMany (xs: List α) (f: α → Option β): Option (List β) :=
+  let rec loop (ys: Array β) (xs: List α) (f: α → Option β): Option (Array β) :=
+    match xs with
+      | [] => some #[]
+      | x :: xs =>
+        match f x with
+          | none => none
+          | some y => loop (ys.push y) xs f
+
+  match loop #[] xs f with
+    | none => none
+    | some a => some a.toList
 
 mutual
 
@@ -65,21 +78,15 @@ private partial def parseBinding (list: List Form): Option (Binding Code) := do
   let value ← parse valueForm
   pure {name := name, value := value}
 
+private partial def parseTypeof (list: List Form): Option (Typeof Code) := do
+  let valueForm ← list[0]?
+  let value ← parse valueForm
+  pure {value := value}
 
-
-
-private partial def applyMany (xs: List α) (f: α → Option β): Option (List β) :=
-  let rec loop (ys: Array β) (xs: List α) (f: α → Option β): Option (Array β) :=
-    match xs with
-      | [] => some #[]
-      | x :: xs =>
-        match f x with
-          | none => none
-          | some y => loop (ys.push y) xs f
-
-  match loop #[] xs f with
-    | none => none
-    | some a => some a.toList
+private partial def parseInh (list: List Form): Option (Inh Code) := do
+  let typeForm ← list[0]?
+  let type ← parse typeForm
+  pure {type := type}
 
 partial def parse (form: Form): Option Code := do
   match form with
@@ -95,6 +102,13 @@ partial def parse (form: Form): Option Code := do
             | .name ":=" =>
               let code ← parseBinding rest
               pure (.binding code)
+            | .name "&" =>
+              let code ← parseTypeof rest
+              pure (.typeof code)
+            | .name "*" =>
+              let code ← parseInh rest
+              pure (.inh code)
+
             -- TODO add more cases
             | _ =>
               let code ← parseBeta list
