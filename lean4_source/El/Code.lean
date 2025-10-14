@@ -60,51 +60,63 @@ private partial def applyMany (xs: List α) (f: α → Option β): Option (List 
 
 mutual
 
-private partial def parseBeta (list: List Form): Option (Beta Code) := do
+private partial def parseBeta (list: List Form): Option Code := do
   match list with
     | [] => none
     | x :: xs =>
       let cmd ← parse x
       let args ← applyMany xs parse
-      pure {cmd := cmd, args := args}
+      pure (Code.beta {cmd := cmd, args := args})
 
-private partial def parseAnnot (list: List Form): Option (Annot Code) := do
+private partial def parseAnnot (list: List Form): Option Code := do
   let nameForm ← list[0]?
   let name ← getName nameForm
   let typeForm ← list[1]?
   let type ← parse typeForm
-  pure {name := name, type := type}
+  pure (Code.annot {name := name, type := type})
 
-private partial def parseBinding (list: List Form): Option (Binding Code) := do
+private partial def parseBinding (list: List Form): Option Code := do
   let nameForm ← list[0]?
   let name ← getName nameForm
   let valueForm ← list[1]?
   let value ← parse valueForm
-  pure {name := name, value := value}
+  pure (Code.binding {name := name, value := value})
 
-private partial def parseTypeof (list: List Form): Option (Typeof Code) := do
+private partial def parseTypeof (list: List Form): Option Code := do
   let valueForm ← list[0]?
   let value ← parse valueForm
-  pure {value := value}
+  pure (Code.typeof {value := value})
 
-private partial def parseInh (list: List Form): Option (Inh Code) := do
+private partial def parseInh (list: List Form): Option Code := do
   let typeForm ← list[0]?
   let type ← parse typeForm
-  pure {type := type}
+  pure (Code.inh {type := type})
 
-private partial def parsePi (list: List Form): Option (Pi Code) := do
+private partial def parsePi (list: List Form): Option Code := do
   if list.length = 0 then
     none
   else
     let paramForms := list.extract 0 (list.length-1)
     let params ← applyMany paramForms ((λ form =>
-      match form with
-        | .name name => none
-        | .list list => parseAnnot list
+      match parseWithHead parseAnnot ":" form with
+        | Code.annot annot => some annot
+        | _ => none
     ): Form → Option (Annot Code))
     let bodyForm ← list[list.length-1]?
     let body ← parse bodyForm
-    pure {params := params, body := body}
+    pure (Code.pi {params := params, body := body})
+
+private partial def parseWithHead (parseList: List Form → Option Code) (head: String) (form: Form): Option Code :=
+  match form with
+    | .name _ => none
+    | .list list =>
+      match list with
+        | (.name name) :: xs =>
+          if name ≠ head then
+            none
+          else
+            parseList xs
+        | _ => none
 
 partial def parse (form: Form): Option Code := do
   match form with
