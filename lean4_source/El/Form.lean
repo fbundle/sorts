@@ -123,7 +123,11 @@ def defaultParser := ({
   splitTokens := ["(", ")", "+", "-", "*", "/", "=", "==", ":="]
 }: Parser).init
 
-#eval (defaultParser.parseAll (defaultParser.tokenize "x:=(3==2)=1 123")).get!
+def defaultParseAll := defaultParser.parseAll ∘ defaultParser.tokenize
+
+private def _example := "x:=(3==2)=1 123"
+
+#eval (defaultParseAll _example).get!
 
 
 
