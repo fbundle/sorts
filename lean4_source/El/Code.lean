@@ -60,7 +60,7 @@ private partial def applyMany (xs: List α) (f: α → Option β): Option (List 
 
 mutual
 
-private partial def parseBeta (list: List Form): Option Code := do
+private partial def parseListBeta (list: List Form): Option Code := do
   match list with
     | [] => none
     | x :: xs =>
@@ -68,37 +68,37 @@ private partial def parseBeta (list: List Form): Option Code := do
       let args ← applyMany xs parse
       pure (Code.beta {cmd := cmd, args := args})
 
-private partial def parseAnnot (list: List Form): Option Code := do
+private partial def parseListAnnot (list: List Form): Option Code := do
   let nameForm ← list[0]?
   let name ← getName nameForm
   let typeForm ← list[1]?
   let type ← parse typeForm
   pure (Code.annot {name := name, type := type})
 
-private partial def parseBinding (list: List Form): Option Code := do
+private partial def parseListBinding (list: List Form): Option Code := do
   let nameForm ← list[0]?
   let name ← getName nameForm
   let valueForm ← list[1]?
   let value ← parse valueForm
   pure (Code.binding {name := name, value := value})
 
-private partial def parseTypeof (list: List Form): Option Code := do
+private partial def parseListTypeof (list: List Form): Option Code := do
   let valueForm ← list[0]?
   let value ← parse valueForm
   pure (Code.typeof {value := value})
 
-private partial def parseInh (list: List Form): Option Code := do
+private partial def parseListInh (list: List Form): Option Code := do
   let typeForm ← list[0]?
   let type ← parse typeForm
   pure (Code.inh {type := type})
 
-private partial def parsePi (list: List Form): Option Code := do
+private partial def parseListPi (list: List Form): Option Code := do
   if list.length = 0 then
     none
   else
     let paramForms := list.extract 0 (list.length-1)
     let params ← applyMany paramForms ((λ form =>
-      match parseWithHead parseAnnot ":" form with
+      match parseWithHead parseListAnnot ":" form with
         | Code.annot annot => some annot
         | _ => none
     ): Form → Option (Annot Code))
