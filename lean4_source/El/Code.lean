@@ -8,6 +8,11 @@ structure Beta (α: Type) where
   args: List α
   deriving Repr
 
+structure BuiltinBeta (α: Type) where
+  head: String
+  args: List α
+  deriving Repr
+
 structure Annot (α: Type) where
   name: String
   type: α
@@ -35,6 +40,7 @@ inductive Code (β: Type) where
   | atom: β → Code β
   | name: String → Code β
   | beta: Beta (Code β) → Code β
+  | builtin_beta: BuiltinBeta (Code β) → Code β
   | annot: Annot (Code β) → Code β
   | binding: Binding (Code β) → Code β
   | typeof: Typeof (Code β) → Code β
@@ -98,16 +104,23 @@ private def parseListPi (parse: Form → Option (Code β)) (list: List Form): Op
     let body ← parse bodyForm
     pure (Code.pi {params := params, body := body})
 
+private def parseListBuiltinBeta (head: String) (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+  let args ← Util.optionMapAll list parse
+  pure (.builtin_beta {head := head, args := args})
+
 private def parseBeta (parse: Form → Option (Code β)) (form: Form): Option (Code β) := do
   match form with
     | .list (x :: xs) =>
       let cmd ← parse x
       let args ← Util.optionMapAll xs parse
-      pure (Code.beta {cmd := cmd, args := args})
+      pure (.beta {cmd := cmd, args := args})
     | _ => none
 
-partial def parse (parseAtom: String → Option β) (form: Form): Option (Code β) := do
-  let parseAtomFunc (form: Form): Option (Code β) :=
+partial def parse
+  (parseAtom: String → Option β)
+  (builtinHeadList: List String)
+  (form: Form): Option (Code β) := do
+  let makeParseAtomFunc (parseAtom: String → Option β) (form: Form): Option (Code β) :=
     match form with
       | .name name =>
         match parseAtom name with
@@ -120,18 +133,34 @@ partial def parse (parseAtom: String → Option β) (form: Form): Option (Code �
       | .name name => some (.name name)
       | _ => none
 
-  let parseList := parse parseAtom
+  let parseList := parse parseAtom builtinHeadList
 
-  Util.applyOnce [
-    parseAtomFunc,
+
+  let parseFuncList :=
+  -- parse name
+  [
+    makeParseAtomFunc parseAtom,
     parseNameFunc,
+  ]
+  ++
+  -- parse basic
+  [
     parseWithHead (parseListAnnot parseList) ":",
     parseWithHead (parseListBinding parseList) ":=",
     parseWithHead (parseListTypeof parseList) "&",
     parseWithHead (parseListInh parseList) "*",
     parseWithHead (parseListPi parseList) "=>",
-    parseBeta parseList,
-  ] form
+  ]
+  ++
+  -- parse builtin
+  builtinHeadList.map (λ head =>
+    parseWithHead (parseListBuiltinBeta head parseList) head
+  )
+  ++
+  -- parse beta (default case)
+  [parseBeta parseList]
+
+  Util.applyOnce parseFuncList form
 
 inductive Atom where
   | univ: Int → Atom
@@ -174,10 +203,7 @@ def _example: List (Code Atom) :=
     | none => []
     | some xs =>
 
-    Util.optionMap xs (parse parseAtom)
-
-
-
+    Util.optionMap xs (parse parseAtom ["+"])
 
 #eval _example
 
