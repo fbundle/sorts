@@ -138,9 +138,9 @@ end
 
 
 def _example := "
-  (:= Nat (inh U_2))
-  (:= 0 (inh Nat))
-  (:= succ (inh (-> Nat)))
+  (:= Nat (* U_2))
+  (:= 0 (* Nat))
+  (:= succ (* (-> Nat)))
 
   (:= 1 (succ 0))
   (:= 2 (succ 0))
