@@ -135,4 +135,17 @@ partial def parse (form: Form): Option Code := do
               pure (.beta code)
 end
 
+
+
+def _example := "
+  (:= x 3)
+"
+
+#eval _example
+
+#eval (Form.defaultParser.parseAll (Form.defaultParser.tokenize _example)).get!
+
+
+
+
 end Code
