@@ -45,7 +45,11 @@ structure Arrow (α: Type) where
   b: α
   deriving Repr
 
-inductive Code (β: Type) where
+class AtomClass (β: Type) where
+  level: β → Int
+  parent: β → β
+
+inductive Code (β: Type) [AtomClass β] where
   | atom: β → Code β
   | name: String → Code β
   | beta: Beta (Code β) → Code β
@@ -59,7 +63,7 @@ inductive Code (β: Type) where
   deriving Repr
 
 
-private def parseWithHead (parseList: List Form → Option (Code β)) (head: String) (form: Form): Option (Code β) :=
+private def parseWithHead[AtomClass β] (parseList: List Form → Option (Code β)) (head: String) (form: Form): Option (Code β) :=
   match form with
     | .name _ => none
     | .list list =>
@@ -71,31 +75,31 @@ private def parseWithHead (parseList: List Form → Option (Code β)) (head: Str
             parseList xs
         | _ => none
 
-private def parseListAnnot (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+private def parseListAnnot [AtomClass β] (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let nameForm ← list[0]?
   let name ← getName nameForm
   let typeForm ← list[1]?
   let type ← parse typeForm
   pure (.annot {name := name, type := type})
 
-private def parseListBinding (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+private def parseListBinding [AtomClass β] (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let nameForm ← list[0]?
   let name ← getName nameForm
   let valueForm ← list[1]?
   let value ← parse valueForm
   pure (.binding {name := name, value := value})
 
-private partial def parseListTypeof (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+private partial def parseListTypeof [AtomClass β] (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let valueForm ← list[0]?
   let value ← parse valueForm
   pure (.typeof {value := value})
 
-private def parseListInh (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+private def parseListInh [AtomClass β] (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let typeForm ← list[0]?
   let type ← parse typeForm
   pure (.inh {type := type})
 
-private def parseListPi (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+private def parseListPi [AtomClass β] (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   if list.length = 0 then
     none
   else
@@ -110,18 +114,18 @@ private def parseListPi (parse: Form → Option (Code β)) (list: List Form): Op
     let body ← parse bodyForm
     pure (.pi {params := params, body := body})
 
-private def parseListArrow (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+private def parseListArrow [AtomClass β] (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let aForm ← list[0]?
   let a ← parse aForm
   let bForm ← list[1]?
   let b ← parse bForm
   pure (.arrow {a := a, b := b})
 
-private def parseListOther (head: String) (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+private def parseListOther [AtomClass β] (head: String) (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let args ← Util.optionMapAll list parse
   pure (.other {head := head, args := args})
 
-private def parseBeta (parse: Form → Option (Code β)) (form: Form): Option (Code β) := do
+private def parseBeta [AtomClass β] (parse: Form → Option (Code β)) (form: Form): Option (Code β) := do
   match form with
     | .list (x :: xs) =>
       let cmd ← parse x
@@ -129,7 +133,7 @@ private def parseBeta (parse: Form → Option (Code β)) (form: Form): Option (C
       pure (.beta {cmd := cmd, args := args})
     | _ => none
 
-partial def parse
+partial def parse [AtomClass β]
   (parseAtom: String → Option β)
   (otherHeadList: List String)
   (form: Form): Option (Code β) := do

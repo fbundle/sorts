@@ -3,6 +3,7 @@ import El.Code
 
 namespace Code
 
+
 inductive Atom where -- Atom - basic element of EL
   | int: Atom
   | univ: Int → Atom
@@ -21,7 +22,9 @@ def Atom.parent (s: Atom): Atom :=
     | univ i => (.univ (i+1))
     | integer _ => (.int)
 
-
+instance: AtomClass Atom where
+  level (s: Atom): Int := s.level
+  parent (s: Atom): Atom := s.parent
 
 private def parseInteger (s: String): Option Atom := do
   let i ← s.toInt?
