@@ -60,14 +60,6 @@ private partial def applyMany (xs: List α) (f: α → Option β): Option (List 
 
 mutual
 
-private partial def parseListBeta (list: List Form): Option Code := do
-  match list with
-    | [] => none
-    | x :: xs =>
-      let cmd ← parse x
-      let args ← applyMany xs parse
-      pure (Code.beta {cmd := cmd, args := args})
-
 private partial def parseListAnnot (list: List Form): Option Code := do
   let nameForm ← list[0]?
   let name ← getName nameForm
@@ -118,33 +110,39 @@ private partial def parseWithHead (parseList: List Form → Option Code) (head: 
             parseList xs
         | _ => none
 
-partial def parse (form: Form): Option Code := do
+
+private partial def parseName (form: Form): Option Code :=
   match form with
-    | .name name => pure (Code.name name)
-    | .list list =>
-      match list with
-        | [] => none
-        | head :: rest =>
-          match head with
-            | .name ":" =>
-              let code ← parseAnnot rest
-              pure (.annot code)
-            | .name ":=" =>
-              let code ← parseBinding rest
-              pure (.binding code)
-            | .name "&" =>
-              let code ← parseTypeof rest
-              pure (.typeof code)
-            | .name "*" =>
-              let code ← parseInh rest
-              pure (.inh code)
-            | .name "=>" =>
-              let code ← parsePi rest
-              pure (.pi code)
-            -- TODO add more cases
-            | _ =>
-              let code ← parseBeta list
-              pure (.beta code)
+    | .name name => some (Code.name name)
+    | _ => none
+
+private partial def parseBeta (form: Form): Option Code := do
+  match form with
+    | .list (x :: xs) =>
+      let cmd ← parse x
+      let args ← applyMany xs parse
+      pure (Code.beta {cmd := cmd, args := args})
+    | _ => none
+
+partial def parse (form: Form): Option Code := do
+  let rec loop (parseLists: List (Form → Option Code)) (form: Form): Option Code :=
+    match parseLists with
+      | [] => none
+      | parseList :: parseLists =>
+        match parseList form with
+          | some code => code
+          | none => loop parseLists form
+
+  loop [
+    parseName,
+    parseWithHead parseListAnnot ":",
+    parseWithHead parseListBinding ":=",
+    parseWithHead parseListTypeof "&",
+    parseWithHead parseListInh "*",
+    parseWithHead parseListPi "=>",
+    parseBeta,
+  ] form
+
 end
 
 
