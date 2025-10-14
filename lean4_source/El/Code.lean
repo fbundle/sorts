@@ -148,20 +148,12 @@ private def parseUniverse (s: String): Option Atom := do
   let i ← s.toInt?
   pure (.univ i) -- universe level i
 
-private def parseAtom (s: String): Option Atom := do
-  Util.applyOnce [
-    parseInteger,
-    parseUniverse,
+private def parseAtom := Util.applyOnce [
+  parseInteger,
+  parseUniverse,
+  λ _ => none,
+]
 
-  ]
-
-
-
-
-  match s.toInt? with
-  | some i => -- try integer
-    pure (.integer i)
-  | none => -- try universe level i
 
 
 
