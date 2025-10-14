@@ -61,8 +61,11 @@ private partial def _splitPart (sortedSplitTokens : List String) (part : String)
         | none => _splitPart ss part
 
 private def _tokenize (sortedSplitTokens : List String) (s : String) : List String :=
-  let parts := s.split (fun c => c.isWhitespace)
-  parts.flatMap (_splitPart sortedSplitTokens)
+  let parts := s.split (λ c => c.isWhitespace)
+  let output := parts.flatMap (_splitPart sortedSplitTokens)
+  let output := output.filter (λ s => s.length > 0)
+  output
+
 
 
 def parser := List String → Option (List String × Form)
