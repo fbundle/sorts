@@ -160,13 +160,11 @@ private def parseAtom := Util.applyOnce [
 def _example: List (Code Atom) :=
   let source := "
     (:= Nat (*U_2))
-    (:= 0 (*Nat))
+    (:= n0 (*Nat))
     (:= succ (*(-> Nat)))
 
-    (:= 1 (succ 0))
-    (:= 2 (succ 0))
-    (:= 3 (succ 0))
-    (:= 4 (succ 0))
+    (:= n1 (succ n0))
+    (:= n2 (succ n0))
     (:= x 3)
     (:= y 4)
 
