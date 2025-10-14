@@ -120,7 +120,7 @@ partial def parse (parseAtom: String → Option β) (form: Form): Option (Code �
       | .name name =>
         match parseAtom name with
           | some atom => some (.atom atom)
-          | none => none
+          | none => some (.name name)
       | .list _ => none
 
   loop [
