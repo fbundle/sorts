@@ -46,47 +46,6 @@ abbrev getName := Form.getName
 abbrev getList := Form.getName
 abbrev Form := Form.Form
 
-
-mutual
-
-private partial def parseListAnnot (list: List Form): Option Code := do
-  let nameForm ← list[0]?
-  let name ← getName nameForm
-  let typeForm ← list[1]?
-  let type ← parse typeForm
-  pure (Code.annot {name := name, type := type})
-
-private partial def parseListBinding (list: List Form): Option Code := do
-  let nameForm ← list[0]?
-  let name ← getName nameForm
-  let valueForm ← list[1]?
-  let value ← parse valueForm
-  pure (Code.binding {name := name, value := value})
-
-private partial def parseListTypeof (list: List Form): Option Code := do
-  let valueForm ← list[0]?
-  let value ← parse valueForm
-  pure (Code.typeof {value := value})
-
-private partial def parseListInh (list: List Form): Option Code := do
-  let typeForm ← list[0]?
-  let type ← parse typeForm
-  pure (Code.inh {type := type})
-
-private partial def parseListPi (list: List Form): Option Code := do
-  if list.length = 0 then
-    none
-  else
-    let paramForms := list.extract 0 (list.length-1)
-    let params ← Util.applyMany paramForms ((λ form =>
-      match parseWithHead parseListAnnot ":" form with
-        | Code.annot annot => some annot
-        | _ => none
-    ): Form → Option (Annot Code))
-    let bodyForm ← list[list.length-1]?
-    let body ← parse bodyForm
-    pure (Code.pi {params := params, body := body})
-
 private partial def parseWithHead (parseList: List Form → Option Code) (head: String) (form: Form): Option Code :=
   match form with
     | .name _ => none
@@ -99,13 +58,48 @@ private partial def parseWithHead (parseList: List Form → Option Code) (head: 
             parseList xs
         | _ => none
 
+private partial def parseListAnnot (parse: Form → Option Code) (list: List Form): Option Code := do
+  let nameForm ← list[0]?
+  let name ← getName nameForm
+  let typeForm ← list[1]?
+  let type ← parse typeForm
+  pure (Code.annot {name := name, type := type})
 
-private partial def parseName (form: Form): Option Code :=
-  match form with
-    | .name name => some (.atom name)
-    | _ => none
+private partial def parseListBinding (parse: Form → Option Code) (list: List Form): Option Code := do
+  let nameForm ← list[0]?
+  let name ← getName nameForm
+  let valueForm ← list[1]?
+  let value ← parse valueForm
+  pure (Code.binding {name := name, value := value})
 
-private partial def parseBeta (form: Form): Option Code := do
+private partial def parseListTypeof (parse: Form → Option Code) (list: List Form): Option Code := do
+  let valueForm ← list[0]?
+  let value ← parse valueForm
+  pure (Code.typeof {value := value})
+
+private partial def parseListInh (parse: Form → Option Code) (list: List Form): Option Code := do
+  let typeForm ← list[0]?
+  let type ← parse typeForm
+  pure (Code.inh {type := type})
+
+private partial def parseListPi (parse: Form → Option Code) (list: List Form): Option Code := do
+  if list.length = 0 then
+    none
+  else
+    let paramForms := list.extract 0 (list.length-1)
+    let params ← Util.applyMany paramForms ((λ form =>
+      match parseWithHead (parseListAnnot parse) ":" form with
+        | Code.annot annot => some annot
+        | _ => none
+    ): Form → Option (Annot Code))
+    let bodyForm ← list[list.length-1]?
+    let body ← parse bodyForm
+    pure (Code.pi {params := params, body := body})
+
+
+
+
+private partial def parseBeta (parse: Form → Option Code) (form: Form): Option Code := do
   match form with
     | .list (x :: xs) =>
       let cmd ← parse x
@@ -113,7 +107,14 @@ private partial def parseBeta (form: Form): Option Code := do
       pure (Code.beta {cmd := cmd, args := args})
     | _ => none
 
-partial def parse (form: Form): Option Code := do
+private partial def parseName (form: Form): Option Code :=
+  match form with
+    | .name name => some (.atom name)
+    | _ => none
+
+
+
+partial def parse (parseName: Form → Option Code) (form: Form): Option Code := do
   let rec loop (parseLists: List (Form → Option Code)) (form: Form): Option Code :=
     match parseLists with
       | [] => none
@@ -124,15 +125,14 @@ partial def parse (form: Form): Option Code := do
 
   loop [
     parseName,
-    parseWithHead parseListAnnot ":",
-    parseWithHead parseListBinding ":=",
-    parseWithHead parseListTypeof "&",
-    parseWithHead parseListInh "*",
-    parseWithHead parseListPi "=>",
-    parseBeta,
+    parseWithHead (parseListAnnot (parse parseName)) ":",
+    parseWithHead (parseListBinding (parse parseName)) ":=",
+    parseWithHead (parseListTypeof (parse parseName)) "&",
+    parseWithHead (parseListInh (parse parseName)) "*",
+    parseWithHead (parseListPi (parse parseName)) "=>",
+    parseBeta (parse parseName),
   ] form
 
-end
 
 
 
