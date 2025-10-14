@@ -139,6 +139,8 @@ end
 
 def _example := "
   (:= x 3)
+  (:= y 4)
+  (+ x y)
 "
 
 #eval _example
