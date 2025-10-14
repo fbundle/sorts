@@ -10,7 +10,7 @@ structure Binding (α: Type) where
   name: String
   value: α
 
-structure Type (α: Type) where
+structure Typeof (α: Type) where
   value: α
 
 structure Inhabited (α: Type) where
@@ -23,3 +23,13 @@ structure Pi (α: Type) where
 structure Inductive (α: Type) where
   type: Annot α
   cons: List (Annot α)
+
+inductive Code where
+  | name: String → Code
+  | beta: Beta Code → Code
+  | annot: Annot Code → Code
+  | binding: Binding Code → Code
+  | typeof: Typeof Code → Code
+  | inh: Inhabited Code → Code
+  | pi: Pi Code → Code
+  | ind: Inductive Code → Code
