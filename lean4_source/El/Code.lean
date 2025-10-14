@@ -22,10 +22,6 @@ structure Pi (α: Type) where -- Pi or Lambda
   params: List (Annot α)
   body: α
 
-structure Ind (α: Type) where -- Inductive
-  type: Annot α
-  cons: List (Annot α)
-
 inductive Code where
   | name: String → Code
   | beta: Beta Code → Code
@@ -34,7 +30,6 @@ inductive Code where
   | typeof: Typeof Code → Code
   | inh: Inh Code → Code
   | pi: Pi Code → Code
-  | ind: Ind Code → Code
 
 
 abbrev getName := Form.getName
@@ -88,6 +83,20 @@ private partial def parseInh (list: List Form): Option (Inh Code) := do
   let type ← parse typeForm
   pure {type := type}
 
+private partial def parsePi (list: List Form): Option (Pi Code) := do
+  if list.length = 0 then
+    none
+  else
+    let paramForms := list.extract 0 (list.length-1)
+    let params ← applyMany paramForms ((λ form =>
+      match form with
+        | .name name => none
+        | .list list => parseAnnot list
+    ): Form → Option (Annot Code))
+    let bodyForm ← list[list.length-1]?
+    let body ← parse bodyForm
+    pure {params := params, body := body}
+
 partial def parse (form: Form): Option Code := do
   match form with
     | .name name => pure (Code.name name)
@@ -108,7 +117,9 @@ partial def parse (form: Form): Option Code := do
             | .name "*" =>
               let code ← parseInh rest
               pure (.inh code)
-
+            | .name "=>" =>
+              let code ← parsePi rest
+              pure (.pi code)
             -- TODO add more cases
             | _ =>
               let code ← parseBeta list
