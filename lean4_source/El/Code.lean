@@ -62,5 +62,8 @@ inductive Code (β: Type) [AtomClass β] where
   | arrow: Arrow (Code β) → Code β
   deriving Repr
 
+instance [AtomClass β]: AtomClass (Code β) where
+  level (s: Code β): Int := sorry
+  parent (s: Code β): Code β := sorry
 
 end Code
