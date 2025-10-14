@@ -135,19 +135,32 @@ partial def parse (parseAtom: String → Option β) (form: Form): Option (Code �
 
 
 
-inductive Builtin where
-  | univ: Int → Builtin
+inductive Atom where
+  | univ: Int → Atom
+  | integer: Int → Atom
   deriving Repr
 
-private def parseAtom (s: String): Option Builtin := do
-    let s ← s.dropPrefix? "U_"
-    let s := s.toString
-    let i ← s.toInt?
-
-    pure (.univ i) -- universe level i
+private def parseInteger (s: String): Option Atom := do
+  let i ← s.toInt?
+  pure (.integer i) -- integer i
 
 
-def _example: List (Code Builtin) :=
+private def parseUniverse (s: String): Option Atom := do
+  let s ← s.dropPrefix? "U_"
+  let s := s.toString
+  let i ← s.toInt?
+  pure (.univ i) -- universe level i
+private def parseAtom (s: String): Option Atom := do
+
+
+  match s.toInt? with
+  | some i => -- try integer
+    pure (.integer i)
+  | none => -- try universe level i
+
+
+
+def _example: List (Code Atom) :=
   let source := "
     (:= Nat (*U_2))
     (:= 0 (*Nat))
