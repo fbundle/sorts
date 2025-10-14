@@ -143,7 +143,9 @@ def _example := "
 
 #eval _example
 
-#eval (Form.defaultParser.parseAll (Form.defaultParser.tokenize _example)).get!
+#eval Form.defaultParser.tokenize _example
+
+#eval ((Form.defaultParser.parseAll ∘ Form.defaultParser.tokenize) _example).get!
 
 
 
