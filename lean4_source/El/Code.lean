@@ -9,7 +9,7 @@ structure Beta (α: Type) where
   deriving Repr
 
 structure BuiltinBeta (α: Type) where
-  head: String
+  head: String -- + - * / % for integers
   args: List α
   deriving Repr
 
