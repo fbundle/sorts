@@ -3,23 +3,7 @@ import EL.Code
 namespace EL
 
 
-
-private def parseListToParseForm (parseList: List Form → Option α) (head: String) (form: Form) : Option α := do
-  match form with
-    | .list (.name x :: xs) =>
-      if head ≠ x then
-        none
-      else
-        let a ← parseList xs
-        pure a
-    | _ => none
-
-private def parseFormToParseForm (parse: Form → Option α) (convert: α → β) (form: Form): Option β := do
-  let a ← parse form
-  let b := convert a
-  b
-
-private def parseBeta [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Beta (Code β)) := do
+private def parseBetaFunc [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Beta (Code β)) := do
   match form with
     | .list (x :: xs) =>
       let cmd ← parse x
@@ -27,72 +11,120 @@ private def parseBeta [Irreducible β] (parse: Form → Option (Code β)) (form:
       pure {cmd := cmd, args := args}
     | _ => none
 
-private def parseListAnnot [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Annot (Code β)) := do
-  let nameForm ← list[0]?
-  let name ← getName nameForm
-  let typeForm ← list[1]?
-  let type ← parse typeForm
-  pure {name := name, type := type}
+private structure ParseList α β where
+  parseHead: String
+  parseList (parse: Form → Option β) (list: List Form): Option α
 
-private def parseListBinding [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Binding (Code β)) := do
-  let nameForm ← list[0]?
-  let name ← getName nameForm
-  let valueForm ← list[1]?
-  let value ← parse valueForm
-  pure {name := name, value := value}
+private def ParseList.parseForm (pl: ParseList α β) (parse: Form → Option β) (form: Form) : Option α :=
+  match form with
+    | .list (.name x :: xs) =>
+      if pl.parseHead ≠ x then
+        none
+      else
+        pl.parseList parse xs
+    | _ => none
 
-private partial def parseListTypeof [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Typeof (Code β)) := do
-  let valueForm ← list[0]?
-  let value ← parse valueForm
-  pure {value := value}
+private def ParseList.convert(pl: ParseList α β) (f: α → γ): ParseList γ β :=
+  {
+    parseHead := pl.parseHead,
+    parseList (parse: Form → Option β) (list: List Form): Option γ := do
+      let a ← pl.parseList parse list
+      let c := f a
+      c
+  }
 
-private def parseListInh [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Inh (Code β)) := do
-  let typeForm ← list[0]?
-  let type ← parse typeForm
-  pure {type := type}
 
-private def parseListPi [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Pi (Code β)) := do
-  let parseAnnot := parseListToParseForm (parseListAnnot parse) ":"
+private def parseAnnot [Irreducible β] : ParseList (Annot (Code β)) (Code β) :=
+  {
+    parseHead := ":",
+    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Annot (Code β)) := do
+      let nameForm ← list[0]?
+      let name ← getName nameForm
+      let typeForm ← list[1]?
+      let type ← parse typeForm
+      pure {name := name, type := type}
+  }
 
-  let paramForms := list.extract 0 (list.length-1)
-  let params ← Util.optionMapAll paramForms parseAnnot
+private def parseBinding  [Irreducible β] : ParseList (Binding (Code β)) (Code β) :=
+  {
+    parseHead := "let",
+    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Binding (Code β)) := do
+      let nameForm ← list[0]?
+      let name ← getName nameForm
+      let valueForm ← list[1]?
+      let value ← parse valueForm
+      pure {name := name, value := value}
+  }
 
-  let bodyForm ← list[list.length-1]?
-  let body ← parse bodyForm
+private def parseTypeof [Irreducible β] : ParseList (Typeof (Code β)) (Code β) :=
+  {
+    parseHead := "&",
+    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Typeof (Code β)) := do
+      let valueForm ← list[0]?
+      let value ← parse valueForm
+      pure {value := value}
+  }
 
-  pure {params := params, body := body}
+private def parseInh [Irreducible β] : ParseList (Inh (Code β)) (Code β) :=
+  {
+    parseHead := "*",
+    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Inh (Code β)) := do
+    let typeForm ← list[0]?
+    let type ← parse typeForm
+    pure {type := type}
+  }
 
-private def parseListInd [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Ind (Code β)) := do
-  let parseAnnot := parseListToParseForm (parseListAnnot parse) ":"
-  let parsePi := parseListToParseForm (parseListPi parse) "=>"
+private def parsePi [Irreducible β] : ParseList (Pi (Code β)) (Code β) :=
+  {
+    parseHead := "=>",
+    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Pi (Code β)) := do
 
-  let nameForm ← list[0]?
-  let name ← parseAnnot nameForm
+      let paramForms := list.extract 0 (list.length-1)
+      let params ← Util.optionMapAll paramForms (parseAnnot.parseForm parse)
 
-  let consForm := list.extract 1 list.length
-  let cons ← Util.optionMapAll consForm parsePi
+      let bodyForm ← list[list.length-1]?
+      let body ← parse bodyForm
 
-  pure {name := name, cons := cons}
+      pure {params := params, body := body}
+  }
 
-private def parseListCase [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Case (Code β)) := do
-  let condForm ← list[0]?
-  let cond ← parseBeta parse condForm
+private def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
+  {
+    parseHead := "ind",
+    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Ind (Code β)) := do
+      let nameForm ← list[0]?
+      let name ← parseAnnot.parseForm parse nameForm
 
-  let valueForm ← list[1]?
-  let value ← parse valueForm
-  pure {cond := cond, value := value}
+      let consForm := list.extract 1 list.length
+      let cons ← Util.optionMapAll consForm (parsePi.parseForm parse)
 
-private def parseListMat [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Mat (Code β)) := do
-  let parseCase := parseListToParseForm (parseListCase parse) "->"
+      pure {name := name, cons := cons}
+  }
 
-  let compForm ← list[0]?
-  let comp ← parse compForm
+private def parseCase [Irreducible β] : ParseList (Case (Code β)) (Code β) :=
+  {
+    parseHead := "->",
+    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Case (Code β)) := do
+      let condForm ← list[0]?
+      let cond ← parseBetaFunc parse condForm
 
-  let casesForm := list.extract 1 list.length
-  let cases ← Util.optionMapAll casesForm parseCase
+      let valueForm ← list[1]?
+      let value ← parse valueForm
+      pure {cond := cond, value := value}
+  }
 
-  pure {comp := comp, cases := cases}
+private def parseMat [Irreducible β] : ParseList (Mat (Code β)) (Code β) :=
+  {
+    parseHead := "mat",
+    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Mat (Code β)) := do
+      let compForm ← list[0]?
+      let comp ← parse compForm
 
+      let casesForm := list.extract 1 list.length
+      let cases ← Util.optionMapAll casesForm (parseCase.parseForm parse)
+
+      pure {comp := comp, cases := cases}
+  }
 
 partial def parseCode [Irreducible β]
   (parseAtom: String → Option β)
@@ -121,16 +153,18 @@ partial def parseCode [Irreducible β]
   ++
   -- parse basic
   [
-    parseFormToParseForm (parseListToParseForm (parseListBinding parse) "let") (λ x => (.binding x)),
-    parseFormToParseForm (parseListToParseForm (parseListTypeof parse) "&") (λ x => (.typeof x)),
-    parseFormToParseForm (parseListToParseForm (parseListInh parse) "*") (λ x => (.inh x)),
-    parseFormToParseForm (parseListToParseForm (parseListPi parse) "=>") (λ x => (.pi x)),
-    parseFormToParseForm (parseListToParseForm (parseListInd parse) "ind") (λ x => (.ind x)),
-    parseFormToParseForm (parseListToParseForm (parseListMat parse) "match") (λ x => (.mat x)),
+    (parseBinding.convert (λ x => (Code.binding x))).parseForm parse,
+    (parseTypeof.convert (λ x => (Code.typeof x))).parseForm parse,
+    (parseInh.convert (λ x => (Code.inh x))).parseForm parse,
+
+
+    (parsePi.convert (λ x => (Code.pi x))).parseForm parse,
+    (parseInd.convert (λ x => (Code.ind x))).parseForm parse,
+    (parseMat.convert (λ x => (Code.mat x))).parseForm parse,
   ]
-  ++
+
   -- parse beta (default case)
-  [parseFormToParseForm (parseBeta parse) (λ x => (.beta x))]
+  let z := [parseBetaFunc parse]
 
   Util.applyOnce parseFuncList form
 
