@@ -102,7 +102,7 @@ partial def parseCode [Irreducible β]
   -- parse basic
   [
     parseFormToParseForm (parseListToParseForm (parseListAnnot parse) ":") (λ x => (.annot x)),
-    parseFormToParseForm (parseListToParseForm (parseListBinding parse) ":=") (λ x => (.binding x)),
+    parseFormToParseForm (parseListToParseForm (parseListBinding parse) "let") (λ x => (.binding x)),
     parseFormToParseForm (parseListToParseForm (parseListTypeof parse) "&") (λ x => (.typeof x)),
     parseFormToParseForm (parseListToParseForm (parseListInh parse) "*") (λ x => (.inh x)),
     parseFormToParseForm (parseListToParseForm (parseListPi parse) "=>") (λ x => (.pi x)),

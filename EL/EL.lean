@@ -12,15 +12,15 @@ def parse (tokens: List String): Option (List String × (Code Atom)) := do
 
 
 private def source := "
-  (:= Nat (*U_2))
-  (:= n0 (*Nat))
-  (:= succ (*(-> Nat)))
+  (let Nat (*U_2))
+  (let n0 (*Nat))
+  (let succ (*(-> Nat)))
 
-  (:= n1 (succ n0))
-  (:= n2 (succ n0))
+  (let n1 (succ n0))
+  (let n2 (succ n0))
 
-  (:= x 3)
-  (:= y 4)
+  (let x 3)
+  (let y 4)
 
   (+ x y)
 
@@ -29,10 +29,10 @@ private def source := "
     (: succ (=> (: _ Nat) Nat))
   )
 
-  (:= one (succ zero))
-  (:= two (succ one))
+  (let one (succ zero))
+  (let two (succ one))
 
-  (:= is_pos
+  (let is_pos
     (=> (: n Nat) (match
       (Nat.zero)    false
       (Nat.succ _)  true
