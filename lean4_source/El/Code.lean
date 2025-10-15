@@ -45,12 +45,18 @@ structure Arrow (α: Type) where
   b: α
   deriving Repr
 
-class AtomClass (β: Type) (γ: Type) where
-  level: β → Int
-  parent: β → β
-  reduce: β → γ
+-- Reducible α β is any type α that can be reduced into β
+class Reducible (α: Type) (β: Type) where
+  level: α → Int
+  parent: α → β
+  reduce: α → β
 
-inductive Code (β: Type) [AtomClass β β] where
+-- β is an atomic type which is reduced into itself, e.g. integer
+-- it instantiates Reducible β β
+-- Code β is any type which can be reduced into β
+-- it instantiates Reducible (Code β) β
+-- it is usually denoted by α
+inductive Code (β: Type) [Reducible β β] where
   | atom: β → Code β
   | name: String → Code β
   | beta: Beta (Code β) → Code β
@@ -63,9 +69,9 @@ inductive Code (β: Type) [AtomClass β β] where
   | arrow: Arrow (Code β) → Code β
   deriving Repr
 
-instance [AtomClass β β]: AtomClass (Code β) β where
+instance [Reducible β β]: Reducible (Code β) β where
   level (s: Code β): Int := sorry
-  parent (s: Code β): Code β := sorry -- equivalent to typecheck
+  parent (s: Code β): β := sorry -- equivalent to typecheck
   reduce (s: Code β): β := sorry -- equivalent to execute
 
 end Code
