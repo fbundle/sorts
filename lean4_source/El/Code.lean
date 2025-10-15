@@ -46,6 +46,7 @@ structure Arrow (α: Type) where
   deriving Repr
 
 -- Reducible α β is any type α that can be reduced into β
+-- TODO change this into α → Frame β → ..
 class Reducible (α: Type) (β: Type) where
   level: α → Int
   parent: α → β
