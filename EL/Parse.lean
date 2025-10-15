@@ -3,7 +3,7 @@ import EL.Code
 namespace EL
 
 
-private def parseBetaFunc [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Beta (Code β)) := do
+def parseBetaFunc [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Beta (Code β)) := do
   match form with
     | .list (x :: xs) =>
       let cmd ← parse x
@@ -11,11 +11,11 @@ private def parseBetaFunc [Irreducible β] (parse: Form → Option (Code β)) (f
       pure {cmd := cmd, args := args}
     | _ => none
 
-private structure ParseList α β where
+structure ParseList α β where
   parseHead: String
   parseList (parse: Form → Option β) (list: List Form): Option α
 
-private def ParseList.parseForm (pl: ParseList α β) (parse: Form → Option β) (form: Form) : Option α :=
+def ParseList.parseForm (pl: ParseList α β) (parse: Form → Option β) (form: Form) : Option α :=
   match form with
     | .list (.name x :: xs) =>
       if pl.parseHead ≠ x then
@@ -24,7 +24,7 @@ private def ParseList.parseForm (pl: ParseList α β) (parse: Form → Option β
         pl.parseList parse xs
     | _ => none
 
-private def ParseList.convert(pl: ParseList α β) (f: α → γ): ParseList γ β :=
+def ParseList.convert(pl: ParseList α β) (f: α → γ): ParseList γ β :=
   {
     parseHead := pl.parseHead,
     parseList (parse: Form → Option β) (list: List Form): Option γ := do
@@ -33,7 +33,7 @@ private def ParseList.convert(pl: ParseList α β) (f: α → γ): ParseList γ 
       c
   }
 
-private def parseAnnotOfSomething [Irreducible β] (typeParse: (Form → Option (Code β)) → Form → Option α) : ParseList (Annot α) (Code β) :=
+def parseAnnotOfSomething [Irreducible β] (typeParse: (Form → Option (Code β)) → Form → Option α) : ParseList (Annot α) (Code β) :=
   {
     parseHead := ":",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Annot α) := do
@@ -44,9 +44,9 @@ private def parseAnnotOfSomething [Irreducible β] (typeParse: (Form → Option 
       pure {name := name, type := type}
   }
 
-private def parseAnnot [Irreducible β] : ParseList (Annot (Code β)) (Code β) := parseAnnotOfSomething id
+def parseAnnot [Irreducible β] : ParseList (Annot (Code β)) (Code β) := parseAnnotOfSomething id
 
-private def parseBinding  [Irreducible β] : ParseList (Binding (Code β)) (Code β) :=
+def parseBinding  [Irreducible β] : ParseList (Binding (Code β)) (Code β) :=
   {
     parseHead := "let",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Binding (Code β)) := do
@@ -57,7 +57,7 @@ private def parseBinding  [Irreducible β] : ParseList (Binding (Code β)) (Code
       pure {name := name, value := value}
   }
 
-private def parseTypeof [Irreducible β] : ParseList (Typeof (Code β)) (Code β) :=
+def parseTypeof [Irreducible β] : ParseList (Typeof (Code β)) (Code β) :=
   {
     parseHead := "type",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Typeof (Code β)) := do
@@ -66,7 +66,7 @@ private def parseTypeof [Irreducible β] : ParseList (Typeof (Code β)) (Code β
       pure {value := value}
   }
 
-private def parseInh [Irreducible β] : ParseList (Inh (Code β)) (Code β) :=
+def parseInh [Irreducible β] : ParseList (Inh (Code β)) (Code β) :=
   {
     parseHead := "inh",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Inh (Code β)) := do
@@ -75,7 +75,7 @@ private def parseInh [Irreducible β] : ParseList (Inh (Code β)) (Code β) :=
     pure {type := type}
   }
 
-private def parsePi [Irreducible β] : ParseList (Pi (Code β)) (Code β) :=
+def parsePi [Irreducible β] : ParseList (Pi (Code β)) (Code β) :=
   {
     parseHead := "lambda",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Pi (Code β)) := do
@@ -89,9 +89,9 @@ private def parsePi [Irreducible β] : ParseList (Pi (Code β)) (Code β) :=
       pure {params := params, body := body}
   }
 
-private def parseAnnotOfPi [Irreducible β] : ParseList (Annot (Pi (Code β))) (Code β) := parseAnnotOfSomething parsePi.parseForm
+def parseAnnotOfPi [Irreducible β] : ParseList (Annot (Pi (Code β))) (Code β) := parseAnnotOfSomething parsePi.parseForm
 
-private def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
+def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
   {
     parseHead := "inductive",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Ind (Code β)) := do
@@ -104,7 +104,7 @@ private def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
       pure {name := name, cons := cons}
   }
 
-private def parseCase [Irreducible β] : ParseList (Case (Code β)) (Code β) :=
+def parseCase [Irreducible β] : ParseList (Case (Code β)) (Code β) :=
   {
     parseHead := "case",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Case (Code β)) := do
@@ -116,7 +116,7 @@ private def parseCase [Irreducible β] : ParseList (Case (Code β)) (Code β) :=
       pure {cond := cond, value := value}
   }
 
-private def parseMat [Irreducible β] : ParseList (Mat (Code β)) (Code β) :=
+def parseMat [Irreducible β] : ParseList (Mat (Code β)) (Code β) :=
   {
     parseHead := "match",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Mat (Code β)) := do

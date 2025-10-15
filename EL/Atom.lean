@@ -19,11 +19,11 @@ def Atom.parent (s: Atom): Atom :=
 instance: Irreducible Atom where
   parent := Atom.parent
 
-private def parseInteger (s: String): Option Atom := do
+def parseInteger (s: String): Option Atom := do
   let i ← s.toInt?
   pure (.integer i) -- integer i
 
-private def parseUniverse (s: String): Option Atom := do
+def parseUniverse (s: String): Option Atom := do
   let s ← s.dropPrefix? "U_"
   let s := s.toString
   let i ← s.toInt?

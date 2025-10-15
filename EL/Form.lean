@@ -25,7 +25,7 @@ def toString (form: Form) : String :=
 instance : ToString Form := ⟨toString⟩
 
 
-private def _sortSplitTokens (splitTokens : List String) : List String :=
+def _sortSplitTokens (splitTokens : List String) : List String :=
   -- sort tokens so that if s2 is a prefix of s1, s1 should come first
   let lessEqual (s1: String) (s2: String): Bool :=
     if (s2.length < s1.length) && (s2.isPrefixOf s1) then true else
@@ -35,7 +35,7 @@ private def _sortSplitTokens (splitTokens : List String) : List String :=
   splitTokens.mergeSort lessEqual
 
 
-private partial def _stringIndexOf (s: String) (substring: String): Option Nat :=
+partial def _stringIndexOf (s: String) (substring: String): Option Nat :=
   -- return the starting position of substring in s if exists
   if substring.isEmpty then
     some 0
@@ -50,7 +50,7 @@ private partial def _stringIndexOf (s: String) (substring: String): Option Nat :
     helper s substring 0
 
 
-private partial def _splitPart (sortedSplitTokens : List String) (part : String) : List String :=
+partial def _splitPart (sortedSplitTokens : List String) (part : String) : List String :=
   match sortedSplitTokens with
     | [] => [part]
     | s :: ss =>
@@ -63,7 +63,7 @@ private partial def _splitPart (sortedSplitTokens : List String) (part : String)
           beforeParts ++ [s] ++ afterParts
         | none => _splitPart ss part
 
-private def _tokenize (sortedSplitTokens : List String) (s : String) : List String :=
+def _tokenize (sortedSplitTokens : List String) (s : String) : List String :=
   let parts := s.split (λ c => c.isWhitespace)
   let output := parts.flatMap (_splitPart sortedSplitTokens)
   let output := output.filter (λ s => s.length > 0)
@@ -73,7 +73,7 @@ private def _tokenize (sortedSplitTokens : List String) (s : String) : List Stri
 
 def parser := List String → Option (List String × Form)
 
-private partial def _parseUntil (p: parser)  (closeBlockToken: String) (acc: List Form) (tokens : List String) : Option (List String × List Form) :=
+partial def _parseUntil (p: parser)  (closeBlockToken: String) (acc: List Form) (tokens : List String) : Option (List String × List Form) :=
   match tokens with
     | [] => none
     | t :: ts =>
@@ -85,7 +85,7 @@ private partial def _parseUntil (p: parser)  (closeBlockToken: String) (acc: Lis
             _parseUntil p closeBlockToken (acc ++ [form]) remainingTokens
           | none => none
 
-private partial def _parse (openBlockToken: String) (closeBlockToken: String) (tokens : List String) : Option (List String × Form) :=
+partial def _parse (openBlockToken: String) (closeBlockToken: String) (tokens : List String) : Option (List String × Form) :=
   match tokens with
     | [] => none
     | t :: ts =>
@@ -119,7 +119,7 @@ def defaultParser := ({
   splitTokens := ["(", ")", "+", "-", "*", "/", "=", "==", ":=", "=>", "->"]
 }: Parser).init
 
-private def _example := "x:=(3==2)=1 123"
+def _example := "x:=(3==2)=1 123"
 
 #eval Util.parseAll defaultParser.parse (defaultParser.tokenize _example)
 
