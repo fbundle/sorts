@@ -11,9 +11,9 @@ class Irreducible (β: Type) where
   parent: β → Option β
 
 -- Reducible α β is any type α that can be reduced into β
-class Reducible (α: Type) (β: Type) (Ctx: Type) [Irreducible β] [Context Ctx α] where
+class Reducible (α: Type) (Ctx: Type) [Context Ctx α] where
   level: α → Ctx → Option Int
-  parent: α → Ctx → Option β
-  reduce: α → Ctx → Option β
+  parent: α → Ctx → Option α
+  reduce: α → Ctx → Option α
 
 end EL
