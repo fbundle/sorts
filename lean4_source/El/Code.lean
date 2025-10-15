@@ -48,6 +48,7 @@ structure Arrow (α: Type) where
 class AtomClass (β: Type) where
   level: β → Int
   parent: β → β
+  reduce: β → β
 
 inductive Code (β: Type) [AtomClass β] where
   | atom: β → Code β
@@ -65,5 +66,6 @@ inductive Code (β: Type) [AtomClass β] where
 instance [AtomClass β]: AtomClass (Code β) where
   level (s: Code β): Int := sorry
   parent (s: Code β): Code β := sorry -- equivalent to typecheck
+  reduce (s: Code β): Code β := sorry -- equivalent to execute
 
 end Code

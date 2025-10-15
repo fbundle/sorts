@@ -25,6 +25,7 @@ def Atom.parent (s: Atom): Atom :=
 instance: AtomClass Atom where
   level (s: Atom): Int := s.level
   parent (s: Atom): Atom := s.parent
+  reduce (s: Atom): Atom := s
 
 private def parseInteger (s: String): Option Atom := do
   let i ← s.toInt?
