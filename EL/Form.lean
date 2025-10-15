@@ -5,6 +5,7 @@ namespace Form
 inductive Form where
   | name: String → Form
   | list: List Form → Form
+  deriving Repr
 
 def getName (form: Form): Option String :=
   match form with

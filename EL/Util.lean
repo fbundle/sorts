@@ -30,16 +30,19 @@ def applyOnce {α: Type} {β} (fs: List (α → Option β)) (x: α): Option β :
         | some y => some y
         | none => applyOnce fs x
 
+structure ParseAllResult (α: Type) (β: Type) where
+  remaining: List α
+  items: List β
+  deriving Repr
 
-
-partial def parseAll (parse: List α → Option (List α × β)) (tokens: List α): List α × List β :=
+partial def parseAll (parse: List α → Option (List α × β)) (tokens: List α): ParseAllResult α β :=
   let rec loop (items : Array β) (tokens: List α): List α × Array β :=
     match parse tokens with
       | none => (tokens, items)
       | some (tokens, item) =>  loop (items.push item) tokens
 
-  let (rest, items) := loop #[] tokens
-  (rest, items.toList)
+  let (remaining, items) := loop #[] tokens
+  {remaining := remaining, items := items.toList}
 
 
 def Frame β := Lean.PersistentHashMap String β
