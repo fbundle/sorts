@@ -1,3 +1,5 @@
+import EL.Util
+
 namespace Form
 
 inductive Form where
@@ -107,18 +109,6 @@ def Parser.tokenize (p: Parser) (s: String): List String :=
 def Parser.parse (p: Parser) (tokens: List String): Option (List String × Form) :=
   _parse p.openBlockToken p.closeBlockToken tokens
 
-private partial def iterate (iter: α → Option (α × β)) (terminate: α → Bool) (init: α): Option (List β) :=
-  let rec loop (acc: List β) (state: α): Option (List β) :=
-    match terminate state with
-      | true => acc
-      | false =>
-        match iter state with
-          | none => none
-          | some ⟨next_state, value⟩ => loop (acc ++ [value]) next_state
-  loop [] init
-
-def Parser.parseAll (p: Parser) (tokens: List String) : Option (List Form) :=
-  iterate p.parse (λ tokens => tokens.length = 0) tokens
 
 -- default parser
 
@@ -128,10 +118,8 @@ def defaultParser := ({
   splitTokens := ["(", ")", "+", "-", "*", "/", "=", "==", ":="]
 }: Parser).init
 
-def defaultParseAll := defaultParser.parseAll ∘ defaultParser.tokenize
-
 private def _example := "x:=(3==2)=1 123"
 
-#eval (defaultParseAll _example).get!
+#eval Util.iterateAll defaultParser.parse
 
 end Form
