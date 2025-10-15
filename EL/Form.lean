@@ -73,7 +73,7 @@ def _tokenize (sortedSplitTokens : List String) (s : String) : List String :=
 
 def parser := List String → Option (List String × Form)
 
-partial def _parseUntil (p: parser)  (closeBlockToken: String) (acc: List Form) (tokens : List String) : Option (List String × List Form) :=
+partial def _parseUntil (p: parser) (closeBlockToken: String) (acc: List Form) (tokens : List String) : Option (List String × List Form) :=
   match tokens with
     | [] => none
     | t :: ts =>
@@ -119,7 +119,11 @@ def defaultParser := ({
   splitTokens := ["(", ")", "+", "-", "*", "/", "=", "==", ":=", "=>", "->"]
 }: Parser).init
 
-def _example := "x:=(3==2)=1 123"
+
+def _example := "x:=
+  (3==  2)=1
+
+  123"
 
 #eval Util.parseAll defaultParser.parse (defaultParser.tokenize _example)
 
