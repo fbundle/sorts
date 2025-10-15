@@ -1,9 +1,9 @@
 import EL.EL
 
 def source := "
-  (let Nat (*U_2))
-  (let n0 (*Nat))
-  (let succ (*(-> Nat)))
+  (let Nat (inh U_2))
+  (let n0 (inh Nat))
+  (let succ (inh (lambda (: _ Nat) Nat)))
 
   (let n1 (succ n0))
   (let n2 (succ n0))
@@ -14,17 +14,17 @@ def source := "
   (+ x y)
 
   (inductive (: Nat U_2)
-    (: zero (=> Nat))
-    (: succ (=> (: _ Nat) Nat))
+    (: zero (lambda Nat))
+    (: succ (lambda (: _ Nat) Nat))
   )
 
   (let one (succ zero))
   (let two (succ one))
 
   (let is_pos
-    (=> (: n Nat) (match n
-      (-> (Nat.zero) false)
-      (-> (Nat.succ x) true)
+    (lambda (: n Nat) (match n
+      (case (Nat.zero) false)
+      (case (Nat.succ x) true)
     ))
   )
 "

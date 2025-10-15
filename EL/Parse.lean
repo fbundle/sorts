@@ -59,7 +59,7 @@ private def parseBinding  [Irreducible β] : ParseList (Binding (Code β)) (Code
 
 private def parseTypeof [Irreducible β] : ParseList (Typeof (Code β)) (Code β) :=
   {
-    parseHead := "&",
+    parseHead := "type",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Typeof (Code β)) := do
       let valueForm ← list[0]?
       let value ← parse valueForm
@@ -68,7 +68,7 @@ private def parseTypeof [Irreducible β] : ParseList (Typeof (Code β)) (Code β
 
 private def parseInh [Irreducible β] : ParseList (Inh (Code β)) (Code β) :=
   {
-    parseHead := "*",
+    parseHead := "inh",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Inh (Code β)) := do
     let typeForm ← list[0]?
     let type ← parse typeForm
@@ -77,7 +77,7 @@ private def parseInh [Irreducible β] : ParseList (Inh (Code β)) (Code β) :=
 
 private def parsePi [Irreducible β] : ParseList (Pi (Code β)) (Code β) :=
   {
-    parseHead := "=>",
+    parseHead := "lambda",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Pi (Code β)) := do
 
       let paramForms := list.extract 0 (list.length-1)
@@ -106,7 +106,7 @@ private def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
 
 private def parseCase [Irreducible β] : ParseList (Case (Code β)) (Code β) :=
   {
-    parseHead := "->",
+    parseHead := "case",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Case (Code β)) := do
       let condForm ← list[0]?
       let cond ← parseBetaFunc parse condForm
