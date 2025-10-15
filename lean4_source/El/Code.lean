@@ -45,12 +45,12 @@ structure Arrow (α: Type) where
   b: α
   deriving Repr
 
-class AtomClass (β: Type) where
+class AtomClass (β: Type) (γ: Type) where
   level: β → Int
   parent: β → β
-  reduce: β → β
+  reduce: β → γ
 
-inductive Code (β: Type) [AtomClass β] where
+inductive Code (β: Type) [AtomClass β β] where
   | atom: β → Code β
   | name: String → Code β
   | beta: Beta (Code β) → Code β
@@ -63,9 +63,9 @@ inductive Code (β: Type) [AtomClass β] where
   | arrow: Arrow (Code β) → Code β
   deriving Repr
 
-instance [AtomClass β]: AtomClass (Code β) where
+instance [AtomClass β β]: AtomClass (Code β) β where
   level (s: Code β): Int := sorry
   parent (s: Code β): Code β := sorry -- equivalent to typecheck
-  reduce (s: Code β): Code β := sorry -- equivalent to execute
+  reduce (s: Code β): β := sorry -- equivalent to execute
 
 end Code
