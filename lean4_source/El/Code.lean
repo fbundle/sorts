@@ -75,10 +75,16 @@ partial def Code.level [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ct
       c.level ctx
     | _ => sorry -- TODO
 
+partial def Code.parent [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option β :=
+  sorry
+
+partial def Code.reduce [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option β :=
+  sorry
+
 instance [Irreducible β] [Context Ctx (Code β)]: Reducible (Code β) β Ctx where
   level := Code.level
-  parent := sorry
-  reduce := sorry
+  parent := Code.parent
+  reduce := Code.reduce
 
 
 end EL
