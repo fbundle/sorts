@@ -74,6 +74,9 @@ def Code.level [Reducible β β] (c: Code β): Int :=
     | .atom a => Reducible.level (α := β) (β := β) a -- somehow, just a.level does not work
     | _ => sorry -- TODO
 
+
+
+
 instance [Reducible β β]: Reducible (Code β) β where
   level (c: Code β): Int := c.level
   parent (c: Code β): β := sorry -- equivalent to typecheck
