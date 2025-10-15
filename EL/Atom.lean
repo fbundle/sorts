@@ -52,7 +52,7 @@ def _example: List (Code Atom) :=
     | none => []
     | some xs =>
 
-    Util.optionMap xs (parse parseAtom ["+"])
+    Util.optionMap xs (parse parseAtom)
 
 #eval _example
 

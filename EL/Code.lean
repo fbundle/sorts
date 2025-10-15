@@ -15,11 +15,6 @@ structure Beta (α: Type) where
   args: List α
   deriving Repr
 
-structure Other (α: Type) where -- Other - any form
-  head: String
-  args: List α
-  deriving Repr
-
 structure Annot (α: Type) where
   name: String
   type: α
@@ -52,7 +47,6 @@ inductive Code (β: Type) [Irreducible β] where
   | atom: β → Code β
   | name: String → Code β
   | beta: Beta (Code β) → Code β
-  | other: Other (Code β) → Code β
   | annot: Annot (Code β) → Code β
   | binding: Binding (Code β) → Code β
   | typeof: Typeof (Code β) → Code β

@@ -53,10 +53,6 @@ private def parseListPi [Irreducible β] (parse: Form → Option (Code β)) (lis
     let body ← parse bodyForm
     pure (.pi {params := params, body := body})
 
-private def parseListOther [Irreducible β] (head: String) (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
-  let args ← Util.optionMapAll list parse
-  pure (.other {head := head, args := args})
-
 private def parseBeta [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Code β) := do
   match form with
     | .list (x :: xs) =>
@@ -67,7 +63,6 @@ private def parseBeta [Irreducible β] (parse: Form → Option (Code β)) (form:
 
 partial def parse [Irreducible β]
   (parseAtom: String → Option β)
-  (otherHeadList: List String)
   (form: Form): Option (Code β) := do
   let makeParseAtomFunc (parseAtom: String → Option β) (form: Form): Option (Code β) :=
     match form with
@@ -82,7 +77,7 @@ partial def parse [Irreducible β]
       | .name name => some (.name name)
       | _ => none
 
-  let parseList := parse parseAtom otherHeadList
+  let parseList := parse parseAtom
 
 
   let parseFuncList :=
@@ -100,11 +95,6 @@ partial def parse [Irreducible β]
     parseWithHead (parseListInh parseList) "*",
     parseWithHead (parseListPi parseList) "=>",
   ]
-  ++
-  -- parse builtin
-  otherHeadList.map (λ head =>
-    parseWithHead (parseListOther head parseList) head
-  )
   ++
   -- parse beta (default case)
   [parseBeta parseList]
