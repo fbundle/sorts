@@ -115,7 +115,7 @@ private def parseCase [Irreducible β] : ParseList (Case (Code β)) (Code β) :=
 
 private def parseMat [Irreducible β] : ParseList (Mat (Code β)) (Code β) :=
   {
-    parseHead := "mat",
+    parseHead := "match",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Mat (Code β)) := do
       let compForm ← list[0]?
       let comp ← parse compForm
@@ -164,7 +164,8 @@ partial def parseCode [Irreducible β]
   ]
 
   -- parse beta (default case)
-  let z := [parseBetaFunc parse]
+  ++
+  [λ form => ((λ x => Code.beta x) <$> (parseBetaFunc parse form))]
 
   Util.applyOnce parseFuncList form
 
