@@ -35,6 +35,8 @@ structure ParseAllResult (α: Type) (β: Type) where
   items: List β
   deriving Repr
 
+def ParseAllResult.ok (r: ParseAllResult α β): Bool := r.remaining.length = 0
+
 partial def parseAll (parse: List α → Option (List α × β)) (tokens: List α): ParseAllResult α β :=
   let rec loop (items : Array β) (tokens: List α): List α × Array β :=
     match parse tokens with
