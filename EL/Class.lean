@@ -8,11 +8,11 @@ class Context (Ctx: Type) (α: Type) where
 
 -- Irreducible β is any type β
 class Irreducible (β: Type) where
-  parent: β → β
+  infer: β → β
 
 -- Reducible α β is any type α that can be reduced into β
 class Reducible (α: Type) (Ctx: Type) [Context Ctx α] where
-  parent: α → Ctx → Option (α × Ctx)
-  reduce: α → Ctx → Option (α × Ctx)
+  infer: α → Ctx → Option (α × Ctx)
+  normalize: α → Ctx → Option (α × Ctx)
 
 end EL

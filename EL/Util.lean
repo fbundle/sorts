@@ -1,7 +1,6 @@
 
 import Lean.Data
 
-
 namespace Util
 
 def optionMap (xs: List α) (f: α → Option β): List β :=

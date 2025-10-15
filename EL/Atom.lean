@@ -1,4 +1,3 @@
-import EL.Code
 import EL.Util
 import EL.Parse
 
@@ -10,14 +9,14 @@ inductive Atom where -- Atom - basic element of EL
   | integer: Int → Atom
   deriving Repr
 
-def Atom.parent (s: Atom): Atom :=
+def Atom.infer (s: Atom): Atom :=
   match s with
     | int => .univ 2
     | univ i => .univ (i+1)
     | integer _ => .int
 
 instance: Irreducible Atom where
-  parent := Atom.parent
+  infer := Atom.infer
 
 def parseInteger (s: String): Option Atom := do
   let i ← s.toInt?

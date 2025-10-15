@@ -71,28 +71,28 @@ inductive Code (β: Type) [Irreducible β] where
   | mat: Mat (Code β) → Code β
   deriving Repr
 
-partial def Code.parent [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do
+partial def Code.infer [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do
   match c with
     | .atom a =>
-      let p ← Irreducible.parent (β := β) a
+      let p ← Irreducible.infer (β := β) a
       pure (.atom p, ctx)
     | .name n =>
       let c ← Context.get? (α := Code β) ctx n
-      c.parent ctx
+      c.infer ctx
     | _ => sorry
 
-partial def Code.reduce [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do
+partial def Code.normalize [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do
     match c with
     | .atom a =>
       pure (c, ctx) -- return itself
     | .name n =>
       let c ← Context.get? (α := Code β) ctx n
-      c.reduce ctx
+      c.normalize ctx
     | _ => sorry
 
 instance [Irreducible β] [Context Ctx (Code β)]: Reducible (Code β) Ctx where
-  parent := Code.parent
-  reduce := Code.reduce
+  infer := Code.infer
+  normalize := Code.normalize
 
 
 end EL
