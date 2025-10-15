@@ -115,11 +115,11 @@ def Parser.parse (p: Parser) (tokens: List String): Option (List String × Form)
 def defaultParser := ({
   openBlockToken := "(",
   closeBlockToken := ")",
-  splitTokens := ["(", ")", "+", "-", "*", "/", "=", "==", ":="]
+  splitTokens := ["(", ")", "+", "-", "*", "/", "=", "==", ":=", "=>"]
 }: Parser).init
 
 private def _example := "x:=(3==2)=1 123"
 
-#eval Util.iterateAll defaultParser.parse (defaultParser.tokenize _example)
+#eval Util.parseAll defaultParser.parse (defaultParser.tokenize _example)
 
 end Form

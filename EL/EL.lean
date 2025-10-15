@@ -18,12 +18,21 @@ private def source := "
 
   (:= n1 (succ n0))
   (:= n2 (succ n0))
+
   (:= x 3)
   (:= y 4)
 
   (+ x y)
+
+  (ind (: Nat U_2)
+    (: zero (=> Nat))
+    (: succ (=> (: _ Nat) Nat))
+  )
+
+  (:= one (succ zero))
+  (:= two (succ one))
 "
 
-#eval Util.iterateAll parse (tokenize source)
+#eval Util.parseAll parse (tokenize source)
 
 end EL
