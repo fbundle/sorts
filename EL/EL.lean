@@ -31,6 +31,13 @@ private def source := "
 
   (:= one (succ zero))
   (:= two (succ one))
+
+  (:= is_pos
+    (=> (: n Nat) (match
+      Nat.zero false
+      (Nat.succ _) true
+    ))
+  )
 "
 
 #eval Util.parseAll parse (tokenize source)
