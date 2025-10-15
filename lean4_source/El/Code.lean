@@ -64,6 +64,6 @@ inductive Code (β: Type) [AtomClass β] where
 
 instance [AtomClass β]: AtomClass (Code β) where
   level (s: Code β): Int := sorry
-  parent (s: Code β): Code β := sorry
+  parent (s: Code β): Code β := sorry -- equivalent to typecheck
 
 end Code
