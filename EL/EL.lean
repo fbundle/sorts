@@ -11,7 +11,7 @@ def parse (tokens: List String): Option (List String × (Code Atom)) := do
   pure (tokens, code)
 
 
-def source := "
+private def source := "
   (:= Nat (*U_2))
   (:= n0 (*Nat))
   (:= succ (*(-> Nat)))
@@ -23,5 +23,7 @@ def source := "
 
   (+ x y)
 "
+
+#eval Util.iterateAll parse (tokenize source)
 
 end EL
