@@ -10,22 +10,21 @@ inductive Atom where -- Atom - basic element of EL
   | integer: Int → Atom
   deriving Repr
 
-def Atom.level (s: Atom) (frame: Frame Atom): Option Int :=
+def Atom.level (s: Atom) : Int :=
   match s with
-    | int => some 1
-    | univ i => some i
-    | integer _ => some 0
+    | int => 1
+    | univ i => i
+    | integer _ => 0
 
-def Atom.parent (s: Atom) (frame: Frame Atom): Option Atom :=
+def Atom.parent (s: Atom): Atom :=
   match s with
-    | int => some (.univ 2)
-    | univ i => some (.univ (i+1))
-    | integer _ => some (.int)
+    | int => .univ 2
+    | univ i => .univ (i+1)
+    | integer _ => .int
 
-instance: Reducible Atom Atom where
-  level (s: Atom) (frame: Frame Atom): Option Int := s.level frame
-  parent (s: Atom) (frame: Frame Atom): Option Atom := s.parent frame
-  reduce (s: Atom) (frame: Frame Atom): Option Atom := s
+instance: Irreducible Atom where
+  level (s: Atom) : Int := s.level
+  parent (s: Atom) : Atom := s.parent
 
 private def parseInteger (s: String): Option Atom := do
   let i ← s.toInt?

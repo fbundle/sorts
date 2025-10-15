@@ -46,13 +46,13 @@ structure Arrow (α: Type) where
   b: α
   deriving Repr
 
-class Irreducicble (β: Type) where
+-- Irreducible β is any type β
+class Irreducible (β: Type) where
   level: β → Option Int
   parent: β → Option β
 
 -- Reducible α β is any type α that can be reduced into β
--- TODO change this into α → Frame β → ..
-class Reducible (α: Type) (β: Type) [Irreducicble β] where
+class Reducible (α: Type) (β: Type) [Irreducible β] where
   level: α → Frame α → Option Int
   parent: α → Frame α → Option β
   reduce: α → Frame α → Option β
@@ -62,7 +62,7 @@ class Reducible (α: Type) (β: Type) [Irreducicble β] where
 -- Code β is any type which can be reduced into β
 -- it instantiates Reducible (Code β) β
 -- it is usually denoted by α
-inductive Code (β: Type) [Irreducicble β] where
+inductive Code (β: Type) [Irreducible β] where
   | atom: β → Code β
   | name: String → Code β
   | beta: Beta (Code β) → Code β
@@ -75,18 +75,15 @@ inductive Code (β: Type) [Irreducicble β] where
   | arrow: Arrow (Code β) → Code β
   deriving Repr
 
-partial def Code.level [Irreducicble β] (c: Code β) (frame: Frame (Code β)): Option Int := do
+partial def Code.level [Irreducible β] (c: Code β) (frame: Frame (Code β)): Option Int := do
   match c with
-    | .atom a => Irreducicble.level a -- somehow, just a.level does not work
+    | .atom a => Irreducible.level a -- somehow, just a.level does not work
     | .name n =>
       let a ← frame.get? n
       a.level frame
     | _ => sorry -- TODO
 
-
-
-
-instance [Irreducicble β]: Reducible (Code β) β where
+instance [Irreducible β]: Reducible (Code β) β where
   level (c: Code β) (frame: Frame (Code β)): Option Int := c.level frame
   parent (c: Code β) (frame: Frame (Code β)): Option β := sorry -- equivalent to typecheck
   reduce (c: Code β) (frame: Frame (Code β)): Option β := sorry -- equivalent to execute
