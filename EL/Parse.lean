@@ -1,7 +1,11 @@
+import EL.Form
 import EL.Code
 
 namespace EL
 
+abbrev getName := Form.getName
+abbrev getList := Form.getList
+abbrev Form := Form.Form
 
 def parseBetaFunc (parse: Form → Option (Code β)) (form: Form): Option (Beta (Code β)) := do
   match form with
@@ -66,20 +70,10 @@ def parseTypeof : ParseList (Typeof (Code β)) (Code β) :=
       pure {value := value}
   }
 
-def parseInh : ParseList (Inh (Code β)) (Code β) :=
-  {
-    parseHead := "inh",
-    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Inh (Code β)) := do
-    let typeForm ← list[0]?
-    let type ← parse typeForm
-    pure {type := type}
-  }
-
 def parsePi : ParseList (Pi (Code β)) (Code β) :=
   {
     parseHead := "lambda",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Pi (Code β)) := do
-
       let paramForms := list.extract 0 (list.length-1)
       let params ← Util.optionMapAll paramForms (parseAnnot.parseForm parse)
 
@@ -113,6 +107,7 @@ def parseCase : ParseList (Case (Code β)) (Code β) :=
 
       let valueForm ← list[1]?
       let value ← parse valueForm
+
       pure {cond := cond, value := value}
   }
 
@@ -133,13 +128,10 @@ partial def parseCode
   (parseAtom: String → Option β)
   (form: Form): Option (Code β) := do
 
-  let parseAtomFunc (form: Form): Option (Code β) :=
-    match form with
-      | .name name =>
-        match parseAtom name with
-          | some atom => some (.atom atom)
-          | none => none
-      | _ => none
+  let parseAtomFunc (form: Form): Option (Code β) := do
+    let n ← getName form
+    let a ← parseAtom n
+    pure (.atom a)
 
   let parseNameFunc (form: Form): Option (Code β) :=
     match form with
@@ -158,14 +150,12 @@ partial def parseCode
   [
     (parseBinding.convert (λ x => (Code.binding x))).parseForm parse,
     (parseTypeof.convert (λ x => (Code.typeof x))).parseForm parse,
-    (parseInh.convert (λ x => (Code.inh x))).parseForm parse,
     (parsePi.convert (λ x => (Code.pi x))).parseForm parse,
     (parseInd.convert (λ x => (Code.ind x))).parseForm parse,
     (parseMat.convert (λ x => (Code.mat x))).parseForm parse,
   ]
-
-  -- parse beta (default case)
   ++
+  -- parse beta (default case)
   [λ form => ((λ x => Code.beta x) <$> (parseBetaFunc parse form))]
 
   Util.applyOnce parseFuncList form

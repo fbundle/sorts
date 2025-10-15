@@ -1,13 +1,4 @@
-import EL.Form
-import EL.Util
-
-
 namespace EL
-
-abbrev getName := Form.getName
-abbrev getList := Form.getName
-abbrev Form := Form.Form
-abbrev Frame := Util.Frame
 
 structure Beta (α: Type) where
   cmd: α
@@ -26,10 +17,6 @@ structure Binding (α: Type) where
 
 structure Typeof (α: Type) where
   value: α
-  deriving Repr
-
-structure Inh (α: Type) where -- Inhabited
-  type: α
   deriving Repr
 
 structure Pi (α: Type) where -- Pi or Lambda
@@ -64,7 +51,6 @@ inductive Code (β: Type) where
   | beta: Beta (Code β) → Code β
   | binding: Binding (Code β) → Code β
   | typeof: Typeof (Code β) → Code β
-  | inh: Inh (Code β) → Code β
   | pi: Pi (Code β) → Code β
   | ind: Ind (Code β) → Code β
   | mat: Mat (Code β) → Code β

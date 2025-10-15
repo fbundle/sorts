@@ -1,13 +1,6 @@
 import EL.EL
 
 def source := "
-  (let Nat (inh U_2))
-  (let n0 (inh Nat))
-  (let succ (inh (lambda (: _ Nat) Nat)))
-
-  (let n1 (succ n0))
-  (let n2 (succ n0))
-
   (let x 3)
   (let y 4)
 
