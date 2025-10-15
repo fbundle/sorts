@@ -40,7 +40,7 @@ structure Pi (α: Type) where -- Pi or Lambda
 
 structure Ind (α: Type) where -- Inductive
   name: Annot α
-  cons: List (Pi α)
+  cons: List (Annot (Pi α))
   deriving Repr
 
 structure Case (α: Type) where

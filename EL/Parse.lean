@@ -33,17 +33,18 @@ private def ParseList.convert(pl: ParseList α β) (f: α → γ): ParseList γ 
       c
   }
 
-
-private def parseAnnot [Irreducible β] : ParseList (Annot (Code β)) (Code β) :=
+private def parseAnnotOfSomething [Irreducible β] (typeParse: (Form → Option (Code β)) → Form → Option α) : ParseList (Annot α) (Code β) :=
   {
     parseHead := ":",
-    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Annot (Code β)) := do
+    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Annot α) := do
       let nameForm ← list[0]?
       let name ← getName nameForm
       let typeForm ← list[1]?
-      let type ← parse typeForm
+      let type ← typeParse parse typeForm
       pure {name := name, type := type}
   }
+
+private def parseAnnot [Irreducible β] : ParseList (Annot (Code β)) (Code β) := parseAnnotOfSomething id
 
 private def parseBinding  [Irreducible β] : ParseList (Binding (Code β)) (Code β) :=
   {
@@ -96,7 +97,7 @@ private def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
       let name ← parseAnnot.parseForm parse nameForm
 
       let consForm := list.extract 1 list.length
-      let cons ← Util.optionMapAll consForm (parsePi.parseForm parse)
+      let cons ← Util.optionMapAll consForm ((parseAnnotOfSomething parsePi.parseForm).parseForm parse)
 
       pure {name := name, cons := cons}
   }
