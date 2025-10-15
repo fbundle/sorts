@@ -1,8 +1,8 @@
-import El.Util
-import El.Code
-import El.CodeParse
+import EL.Code
+import EL.Util
+import EL.CodeParse
 
-namespace Code
+namespace EL
 
 inductive Atom where -- Atom - basic element of EL
   | int: Atom
@@ -64,4 +64,4 @@ def _example: List (Code Atom) :=
 #eval _example
 
 
-end Code
+end EL

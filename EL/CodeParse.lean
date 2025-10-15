@@ -1,6 +1,6 @@
-import El.Code
+import EL.Code
 
-namespace Code
+namespace EL
 
 private def parseWithHead [Irreducible β] (parseList: List Form → Option (Code β)) (head: String) (form: Form): Option (Code β) :=
   match form with
@@ -119,4 +119,4 @@ partial def parse [Irreducible β]
 
   Util.applyOnce parseFuncList form
 
-end Code
+end EL
