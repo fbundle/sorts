@@ -34,8 +34,8 @@ private def source := "
 
   (:= is_pos
     (=> (: n Nat) (match
-      Nat.zero false
-      (Nat.succ _) true
+      Nat.zero      false
+      (Nat.succ _)  true
     ))
   )
 "
