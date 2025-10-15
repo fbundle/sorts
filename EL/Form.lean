@@ -83,8 +83,8 @@ partial def _parseUntil
         some (ts, forms)
       else
         match parse tokens with
-          | some (remainingTokens, form) =>
-            _parseUntil parse closeBlockToken (forms.push form) remainingTokens
+          | some (tokens, form) =>
+            _parseUntil parse closeBlockToken (forms.push form) tokens
           | none => none
 
 partial def _parse
