@@ -73,16 +73,16 @@ def _tokenize (sortedSplitTokens : List String) (s : String) : List String :=
 
 def parser := List String → Option (List String × Form)
 
-partial def _parseUntil (p: parser) (closeBlockToken: String) (acc: List Form) (tokens : List String) : Option (List String × List Form) :=
+partial def _parseUntil (p: parser) (closeBlockToken: String) (forms: Array Form) (tokens : List String) : Option (List String × Array Form) :=
   match tokens with
     | [] => none
     | t :: ts =>
       if t = closeBlockToken then
-        some (ts, acc)
+        some (ts, forms)
       else
         match p tokens with
           | some (remainingTokens, form) =>
-            _parseUntil p closeBlockToken (acc ++ [form]) remainingTokens
+            _parseUntil p closeBlockToken (forms.push form) remainingTokens
           | none => none
 
 partial def _parse (openBlockToken: String) (closeBlockToken: String) (tokens : List String) : Option (List String × Form) :=
@@ -90,8 +90,8 @@ partial def _parse (openBlockToken: String) (closeBlockToken: String) (tokens : 
     | [] => none
     | t :: ts =>
       if t = openBlockToken then
-        match _parseUntil (_parse openBlockToken closeBlockToken) closeBlockToken [] ts with
-          | some (ts, forms) => some (ts, Form.list forms)
+        match _parseUntil (_parse openBlockToken closeBlockToken) closeBlockToken #[] ts with
+          | some (ts, forms) => some (ts, Form.list forms.toList)
           | none => none
       else
         some (ts, Form.name t)
