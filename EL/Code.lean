@@ -38,9 +38,11 @@ structure Pi (α: Type) where -- Pi or Lambda
   body: α
   deriving Repr
 
+
 structure Ind (α: Type) where -- Inductive
   name: Annot α
-  cons: Annot (List α)
+  cons: List (Pi α)
+  deriving Repr
 
 -- β is an atomic type which is reduced into itself, e.g. integer
 -- it instantiates Reducible β β
@@ -56,6 +58,7 @@ inductive Code (β: Type) [Irreducible β] where
   | typeof: Typeof (Code β) → Code β
   | inh: Inh (Code β) → Code β
   | pi: Pi (Code β) → Code β
+  | ind: Ind (Code β) → Code β
   deriving Repr
 
 partial def Code.parent [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do

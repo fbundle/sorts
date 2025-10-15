@@ -21,6 +21,12 @@ private def parseListAnnot [Irreducible β] (parse: Form → Option (Code β)) (
   let type ← parse typeForm
   pure (.annot {name := name, type := type})
 
+private def parseAnnot [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Annot (Code β)) := do
+   let annotCode ← parseWithHead (parseListAnnot parse) ":" form
+      match annotCode with
+        | .annot a => some a
+        | _ => none
+
 private def parseListBinding [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let nameForm ← list[0]?
   let name ← getName nameForm
@@ -43,15 +49,24 @@ private def parseListPi [Irreducible β] (parse: Form → Option (Code β)) (lis
     none
   else
     let paramForms := list.extract 0 (list.length-1)
-    let params ← Util.optionMapAll paramForms ((λ form => do
-      let annotCode ← parseWithHead (parseListAnnot parse) ":" form
-      match annotCode with
-        | .annot annot => some annot
-        | _ => none
-    ): Form → Option (Annot (Code β)))
+    let params ← Util.optionMapAll paramForms (parseAnnot parse)
+
     let bodyForm ← list[list.length-1]?
     let body ← parse bodyForm
+
     pure (.pi {params := params, body := body})
+
+private def parsePi  [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Pi (Code β)) := do
+  sorry
+
+private def parseListInd [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
+  let nameForm ← list[0]?
+  let name ← parseAnnot parse nameForm
+
+  let consForm ← list.extract 1 list.length
+  let cons ← Util.optionMapAll consForm (parsePi parse)
+
+  pure (.ind {name := name, cons := cons})
 
 private def parseBeta [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Code β) := do
   match form with
