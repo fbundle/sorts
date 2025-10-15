@@ -1,12 +1,14 @@
-import El.Form
-import El.Util
+import EL.Form
+import EL.Class
+import EL.Util
+
+
+namespace EL
 
 abbrev getName := Form.getName
 abbrev getList := Form.getName
 abbrev Form := Form.Form
 abbrev Frame := Util.Frame
-
-namespace Code
 
 structure Beta (α: Type) where
   cmd: α
@@ -46,16 +48,6 @@ structure Arrow (α: Type) where
   b: α
   deriving Repr
 
--- Irreducible β is any type β
-class Irreducible (β: Type) where
-  level: β → Option Int
-  parent: β → Option β
-
--- Reducible α β is any type α that can be reduced into β
-class Reducible (α: Type) (β: Type) [Irreducible β] where
-  level: α → Frame α → Option Int
-  parent: α → Frame α → Option β
-  reduce: α → Frame α → Option β
 
 -- β is an atomic type which is reduced into itself, e.g. integer
 -- it instantiates Reducible β β
@@ -75,19 +67,18 @@ inductive Code (β: Type) [Irreducible β] where
   | arrow: Arrow (Code β) → Code β
   deriving Repr
 
-partial def Code.level [Irreducible β] (c: Code β) (frame: Frame (Code β)): Option Int := do
+partial def Code.level [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option Int := do
   match c with
     | .atom a => Irreducible.level a -- somehow, just a.level does not work
     | .name n =>
-      let a ← frame.get? n
-      a.level frame
+      let c ← Context.get? (α := Code β) ctx n
+      c.level ctx
     | _ => sorry -- TODO
 
-instance [Irreducible β]: Reducible (Code β) β where
-  level (c: Code β) (frame: Frame (Code β)): Option Int := c.level frame
-  parent (c: Code β) (frame: Frame (Code β)): Option β := sorry -- equivalent to typecheck
-  reduce (c: Code β) (frame: Frame (Code β)): Option β := sorry -- equivalent to execute
+instance [Irreducible β] [Context Ctx (Code β)]: Reducible (Code β) β Ctx where
+  level := Code.level
+  parent := sorry
+  reduce := sorry
 
 
-
-end Code
+end EL

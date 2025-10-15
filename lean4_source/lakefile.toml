@@ -3,7 +3,7 @@ version = "0.1.0"
 defaultTargets = ["el"]
 
 [[lean_lib]]
-name = "El"
+name = "EL"
 
 [[lean_exe]]
 name = "el"
