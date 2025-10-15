@@ -120,6 +120,6 @@ def defaultParser := ({
 
 private def _example := "x:=(3==2)=1 123"
 
-#eval Util.iterateAll defaultParser.parse
+#eval Util.iterateAll defaultParser.parse (defaultParser.tokenize _example)
 
 end Form
