@@ -35,26 +35,5 @@ def parseAtom := Util.applyOnce [
   λ _ => none,
 ]
 
-def _example: List (Code Atom) :=
-  let source := "
-    (:= Nat (*U_2))
-    (:= n0 (*Nat))
-    (:= succ (*(-> Nat)))
-
-    (:= n1 (succ n0))
-    (:= n2 (succ n0))
-    (:= x 3)
-    (:= y 4)
-
-    (+ x y)
-  "
-  match Form.defaultParseAll source with
-    | none => []
-    | some xs =>
-
-    Util.optionMap xs (parse parseAtom)
-
-#eval _example
-
 
 end EL

@@ -3,18 +3,25 @@ import EL.Atom
 
 namespace EL
 
-partial def defaultParseAll (source: String): List (EL.Code EL.Atom) × String :=
-  let tokens := Form.defaultParser.tokenize source
+def tokenize := Form.defaultParser.tokenize
 
-  let rec loop (lines: Array (EL.Code EL.Atom)) (tokens: List String) : Array (EL.Code EL.Atom) × List String :=
-    match Form.defaultParser.parse tokens with
-      | none => (lines, tokens)
-      | some (tokens, form) =>
-        match EL.parse EL.parseAtom form with
-          | none => (lines, tokens)
-          | some code => loop (lines.push code) tokens
+def parse (tokens: List String): Option (List String × (Code Atom)) := do
+  let (tokens, form) ← Form.defaultParser.parse tokens
+  let code ← parseCode parseAtom form
+  pure (tokens, code)
 
-  let (lines, tokens) := loop #[] tokens
-  (lines.toList, String.join (tokens.intersperse " "))
+
+def source := "
+  (:= Nat (*U_2))
+  (:= n0 (*Nat))
+  (:= succ (*(-> Nat)))
+
+  (:= n1 (succ n0))
+  (:= n2 (succ n0))
+  (:= x 3)
+  (:= y 4)
+
+  (+ x y)
+"
 
 end EL

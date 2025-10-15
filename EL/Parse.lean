@@ -61,7 +61,7 @@ private def parseBeta [Irreducible β] (parse: Form → Option (Code β)) (form:
       pure (.beta {cmd := cmd, args := args})
     | _ => none
 
-partial def parse [Irreducible β]
+partial def parseCode [Irreducible β]
   (parseAtom: String → Option β)
   (form: Form): Option (Code β) := do
   let makeParseAtomFunc (parseAtom: String → Option β) (form: Form): Option (Code β) :=
@@ -77,7 +77,7 @@ partial def parse [Irreducible β]
       | .name name => some (.name name)
       | _ => none
 
-  let parseList := parse parseAtom
+  let parseList := parseCode parseAtom
 
 
   let parseFuncList :=
