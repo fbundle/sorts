@@ -85,12 +85,13 @@ partial def Code.parent [Irreducible β] [Context Ctx (Code β)] (c: Code β) (c
       c.parent ctx
     | _ => sorry
 
-partial def Code.reduce [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β) :=
+partial def Code.reduce [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β) := do
     match c with
-    | .atom a => pure (.atom a) -- return itself
+    | .atom a =>
+      pure c -- return itself
     | .name n =>
       let c ← Context.get? (α := Code β) ctx n
-      c.parent ctx
+      c.reduce ctx
     | _ => sorry
 
 instance [Irreducible β] [Context Ctx (Code β)]: Reducible (Code β) Ctx where
