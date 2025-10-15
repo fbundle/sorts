@@ -69,9 +69,16 @@ inductive Code (β: Type) [Reducible β β] where
   | arrow: Arrow (Code β) → Code β
   deriving Repr
 
+def Code.level [Reducible β β] (c: Code β): Int :=
+  match c with
+    | .atom a => Reducible.level (α := β) (β := β) a -- somehow, just a.level does not work
+    | _ => sorry -- TODO
+
 instance [Reducible β β]: Reducible (Code β) β where
   level (s: Code β): Int := sorry
   parent (s: Code β): β := sorry -- equivalent to typecheck
   reduce (s: Code β): β := sorry -- equivalent to execute
+
+
 
 end Code
