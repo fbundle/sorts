@@ -4,6 +4,7 @@ namespace EL
 class Context (Ctx: Type) (α: Type) where
   get?: Ctx → String → Option α
   set: Ctx → String → α → Ctx
+  top?: Ctx → Option α
 
 -- Irreducible β is any type β
 class Irreducible (β: Type) where

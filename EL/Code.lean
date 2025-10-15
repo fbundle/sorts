@@ -38,11 +38,21 @@ structure Pi (α: Type) where -- Pi or Lambda
   body: α
   deriving Repr
 
-
 structure Ind (α: Type) where -- Inductive
   name: Annot α
   cons: List (Pi α)
   deriving Repr
+
+structure Case (α: Type) where
+  cond: Beta α
+  value: α
+  deriving Repr
+
+structure Mat (α: Type) where
+  comp: α
+  cases: List (Case α)
+  deriving Repr
+
 
 -- β is an atomic type which is reduced into itself, e.g. integer
 -- it instantiates Reducible β β
@@ -53,12 +63,12 @@ inductive Code (β: Type) [Irreducible β] where
   | atom: β → Code β
   | name: String → Code β
   | beta: Beta (Code β) → Code β
-  | annot: Annot (Code β) → Code β
   | binding: Binding (Code β) → Code β
   | typeof: Typeof (Code β) → Code β
   | inh: Inh (Code β) → Code β
   | pi: Pi (Code β) → Code β
   | ind: Ind (Code β) → Code β
+  | mat: Mat (Code β) → Code β
   deriving Repr
 
 partial def Code.parent [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do

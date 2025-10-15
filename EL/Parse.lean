@@ -19,6 +19,14 @@ private def parseFormToParseForm (parse: Form → Option α) (convert: α → β
   let b := convert a
   b
 
+private def parseBeta [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Beta (Code β)) := do
+  match form with
+    | .list (x :: xs) =>
+      let cmd ← parse x
+      let args ← Util.optionMapAll xs parse
+      pure {cmd := cmd, args := args}
+    | _ => none
+
 private def parseListAnnot [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Annot (Code β)) := do
   let nameForm ← list[0]?
   let name ← getName nameForm
@@ -66,13 +74,25 @@ private def parseListInd [Irreducible β] (parse: Form → Option (Code β)) (li
 
   pure {name := name, cons := cons}
 
-private def parseBeta [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Beta (Code β)) := do
-  match form with
-    | .list (x :: xs) =>
-      let cmd ← parse x
-      let args ← Util.optionMapAll xs parse
-      pure {cmd := cmd, args := args}
-    | _ => none
+private def parseListCase [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Case (Code β)) := do
+  let condForm ← list[0]?
+  let cond ← parseBeta parse condForm
+
+  let valueForm ← list[1]?
+  let value ← parse valueForm
+  pure {cond := cond, value := value}
+
+private def parseListMat [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Mat (Code β)) := do
+  let parseCase := parseListToParseForm (parseListCase parse) "->"
+
+  let compForm ← list[0]?
+  let comp ← parse compForm
+
+  let casesForm := list.extract 1 list.length
+  let cases ← Util.optionMapAll casesForm parseCase
+
+  pure {comp := comp, cases := cases}
+
 
 partial def parseCode [Irreducible β]
   (parseAtom: String → Option β)
@@ -101,12 +121,12 @@ partial def parseCode [Irreducible β]
   ++
   -- parse basic
   [
-    parseFormToParseForm (parseListToParseForm (parseListAnnot parse) ":") (λ x => (.annot x)),
     parseFormToParseForm (parseListToParseForm (parseListBinding parse) "let") (λ x => (.binding x)),
     parseFormToParseForm (parseListToParseForm (parseListTypeof parse) "&") (λ x => (.typeof x)),
     parseFormToParseForm (parseListToParseForm (parseListInh parse) "*") (λ x => (.inh x)),
     parseFormToParseForm (parseListToParseForm (parseListPi parse) "=>") (λ x => (.pi x)),
     parseFormToParseForm (parseListToParseForm (parseListInd parse) "ind") (λ x => (.ind x)),
+    parseFormToParseForm (parseListToParseForm (parseListMat parse) "match") (λ x => (.mat x)),
   ]
   ++
   -- parse beta (default case)

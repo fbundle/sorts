@@ -33,9 +33,9 @@ private def source := "
   (let two (succ one))
 
   (let is_pos
-    (=> (: n Nat) (match
-      (Nat.zero)    false
-      (Nat.succ _)  true
+    (=> (: n Nat) (match n
+      (-> (Nat.zero) false)
+      (-> (Nat.succ x) true)
     ))
   )
 "
