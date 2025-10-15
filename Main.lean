@@ -31,7 +31,8 @@ def source := "
 
 #eval Util.parseAll EL.parse (EL.tokenize source)
 
-def main : IO Unit :=
-  let x := Util.parseAll EL.parse (EL.tokenize source)
+def main : IO Unit := do
+  let tokens := EL.tokenize source
+  let x := Util.parseAll EL.parse tokens
 
   IO.println s!"{repr x}"
