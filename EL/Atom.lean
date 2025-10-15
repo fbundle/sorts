@@ -15,9 +15,6 @@ def Atom.infer (s: Atom): Atom :=
     | univ i => .univ (i+1)
     | integer _ => .int
 
-instance: Irreducible Atom where
-  infer := Atom.infer
-
 def parseInteger (s: String): Option Atom := do
   let i ← s.toInt?
   pure (.integer i) -- integer i

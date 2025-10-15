@@ -3,7 +3,7 @@ import EL.Code
 namespace EL
 
 
-def parseBetaFunc [Irreducible β] (parse: Form → Option (Code β)) (form: Form): Option (Beta (Code β)) := do
+def parseBetaFunc (parse: Form → Option (Code β)) (form: Form): Option (Beta (Code β)) := do
   match form with
     | .list (x :: xs) =>
       let cmd ← parse x
@@ -33,7 +33,7 @@ def ParseList.convert(pl: ParseList α β) (f: α → γ): ParseList γ β :=
       c
   }
 
-def parseAnnotOfSomething [Irreducible β] (typeParse: (Form → Option (Code β)) → Form → Option α) : ParseList (Annot α) (Code β) :=
+def parseAnnotOfSomething (typeParse: (Form → Option (Code β)) → Form → Option α) : ParseList (Annot α) (Code β) :=
   {
     parseHead := ":",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Annot α) := do
@@ -44,9 +44,9 @@ def parseAnnotOfSomething [Irreducible β] (typeParse: (Form → Option (Code β
       pure {name := name, type := type}
   }
 
-def parseAnnot [Irreducible β] : ParseList (Annot (Code β)) (Code β) := parseAnnotOfSomething id
+def parseAnnot : ParseList (Annot (Code β)) (Code β) := parseAnnotOfSomething id
 
-def parseBinding  [Irreducible β] : ParseList (Binding (Code β)) (Code β) :=
+def parseBinding  : ParseList (Binding (Code β)) (Code β) :=
   {
     parseHead := "let",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Binding (Code β)) := do
@@ -57,7 +57,7 @@ def parseBinding  [Irreducible β] : ParseList (Binding (Code β)) (Code β) :=
       pure {name := name, value := value}
   }
 
-def parseTypeof [Irreducible β] : ParseList (Typeof (Code β)) (Code β) :=
+def parseTypeof : ParseList (Typeof (Code β)) (Code β) :=
   {
     parseHead := "type",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Typeof (Code β)) := do
@@ -66,7 +66,7 @@ def parseTypeof [Irreducible β] : ParseList (Typeof (Code β)) (Code β) :=
       pure {value := value}
   }
 
-def parseInh [Irreducible β] : ParseList (Inh (Code β)) (Code β) :=
+def parseInh : ParseList (Inh (Code β)) (Code β) :=
   {
     parseHead := "inh",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Inh (Code β)) := do
@@ -75,7 +75,7 @@ def parseInh [Irreducible β] : ParseList (Inh (Code β)) (Code β) :=
     pure {type := type}
   }
 
-def parsePi [Irreducible β] : ParseList (Pi (Code β)) (Code β) :=
+def parsePi : ParseList (Pi (Code β)) (Code β) :=
   {
     parseHead := "lambda",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Pi (Code β)) := do
@@ -89,9 +89,9 @@ def parsePi [Irreducible β] : ParseList (Pi (Code β)) (Code β) :=
       pure {params := params, body := body}
   }
 
-def parseAnnotOfPi [Irreducible β] : ParseList (Annot (Pi (Code β))) (Code β) := parseAnnotOfSomething parsePi.parseForm
+def parseAnnotOfPi : ParseList (Annot (Pi (Code β))) (Code β) := parseAnnotOfSomething parsePi.parseForm
 
-def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
+def parseInd : ParseList (Ind (Code β)) (Code β) :=
   {
     parseHead := "inductive",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Ind (Code β)) := do
@@ -104,7 +104,7 @@ def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
       pure {name := name, cons := cons}
   }
 
-def parseCase [Irreducible β] : ParseList (Case (Code β)) (Code β) :=
+def parseCase : ParseList (Case (Code β)) (Code β) :=
   {
     parseHead := "case",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Case (Code β)) := do
@@ -116,7 +116,7 @@ def parseCase [Irreducible β] : ParseList (Case (Code β)) (Code β) :=
       pure {cond := cond, value := value}
   }
 
-def parseMat [Irreducible β] : ParseList (Mat (Code β)) (Code β) :=
+def parseMat : ParseList (Mat (Code β)) (Code β) :=
   {
     parseHead := "match",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Mat (Code β)) := do
@@ -129,7 +129,7 @@ def parseMat [Irreducible β] : ParseList (Mat (Code β)) (Code β) :=
       pure {comp := comp, cases := cases}
   }
 
-partial def parseCode [Irreducible β]
+partial def parseCode
   (parseAtom: String → Option β)
   (form: Form): Option (Code β) := do
 

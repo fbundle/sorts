@@ -1,5 +1,4 @@
 import EL.Form
-import EL.Class
 import EL.Util
 
 
@@ -59,7 +58,7 @@ structure Mat (α: Type) where
 -- Code β is any type which can be reduced into β
 -- it instantiates Reducible (Code β) β
 -- it is usually denoted by α
-inductive Code (β: Type) [Irreducible β] where
+inductive Code (β: Type) where
   | atom: β → Code β
   | name: String → Code β
   | beta: Beta (Code β) → Code β
@@ -71,28 +70,28 @@ inductive Code (β: Type) [Irreducible β] where
   | mat: Mat (Code β) → Code β
   deriving Repr
 
-partial def Code.infer [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do
+structure Context α where
+  set: String → α → Context α
+  get?: String → Option α
+
+partial def Code.infer (c: Code β) (ctx: Context (Code β)) (inferAtom: β → β): Option (Code β × Context (Code β)) := do
   match c with
     | .atom a =>
-      let p ← Irreducible.infer (β := β) a
+      let p ← inferAtom a
       pure (.atom p, ctx)
     | .name n =>
-      let c ← Context.get? (α := Code β) ctx n
-      c.infer ctx
+      let c ← ctx.get? n
+      c.infer ctx inferAtom
     | _ => sorry
 
-partial def Code.normalize [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do
+partial def Code.normalize (c: Code β) (ctx: Context (Code β)): Option (Code β × Context (Code β)) := do
     match c with
     | .atom a =>
       pure (c, ctx) -- return itself
     | .name n =>
-      let c ← Context.get? (α := Code β) ctx n
+      let c ← ctx.get? n
       c.normalize ctx
     | _ => sorry
-
-instance [Irreducible β] [Context Ctx (Code β)]: Reducible (Code β) Ctx where
-  infer := Code.infer
-  normalize := Code.normalize
 
 
 end EL
