@@ -38,6 +38,10 @@ structure Pi (α: Type) where -- Pi or Lambda
   body: α
   deriving Repr
 
+structure Ind (α: Type) where -- Inductive
+  name: Annot α
+  cons: Annot (List α)
+
 -- β is an atomic type which is reduced into itself, e.g. integer
 -- it instantiates Reducible β β
 -- Code β is any type which can be reduced into β
