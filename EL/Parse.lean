@@ -89,6 +89,8 @@ private def parsePi [Irreducible β] : ParseList (Pi (Code β)) (Code β) :=
       pure {params := params, body := body}
   }
 
+private def parseAnnotOfPi [Irreducible β] : ParseList (Annot (Pi (Code β))) (Code β) := parseAnnotOfSomething parsePi.parseForm
+
 private def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
   {
     parseHead := "inductive",
@@ -97,7 +99,7 @@ private def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
       let name ← parseAnnot.parseForm parse nameForm
 
       let consForm := list.extract 1 list.length
-      let cons ← Util.optionMapAll consForm ((parseAnnotOfSomething parsePi.parseForm).parseForm parse)
+      let cons ← Util.optionMapAll consForm (parseAnnotOfPi.parseForm parse)
 
       pure {name := name, cons := cons}
   }
@@ -157,8 +159,6 @@ partial def parseCode [Irreducible β]
     (parseBinding.convert (λ x => (Code.binding x))).parseForm parse,
     (parseTypeof.convert (λ x => (Code.typeof x))).parseForm parse,
     (parseInh.convert (λ x => (Code.inh x))).parseForm parse,
-
-
     (parsePi.convert (λ x => (Code.pi x))).parseForm parse,
     (parseInd.convert (λ x => (Code.ind x))).parseForm parse,
     (parseMat.convert (λ x => (Code.mat x))).parseForm parse,
