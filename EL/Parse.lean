@@ -53,13 +53,6 @@ private def parseListPi [Irreducible β] (parse: Form → Option (Code β)) (lis
     let body ← parse bodyForm
     pure (.pi {params := params, body := body})
 
-private def parseListArrow [Irreducible β] (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
-  let aForm ← list[0]?
-  let a ← parse aForm
-  let bForm ← list[1]?
-  let b ← parse bForm
-  pure (.arrow {a := a, b := b})
-
 private def parseListOther [Irreducible β] (head: String) (parse: Form → Option (Code β)) (list: List Form): Option (Code β) := do
   let args ← Util.optionMapAll list parse
   pure (.other {head := head, args := args})
@@ -106,7 +99,6 @@ partial def parse [Irreducible β]
     parseWithHead (parseListTypeof parseList) "&",
     parseWithHead (parseListInh parseList) "*",
     parseWithHead (parseListPi parseList) "=>",
-    parseWithHead (parseListArrow parseList) "->",
   ]
   ++
   -- parse builtin

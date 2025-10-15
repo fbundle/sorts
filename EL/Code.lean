@@ -43,12 +43,6 @@ structure Pi (α: Type) where -- Pi or Lambda
   body: α
   deriving Repr
 
-structure Arrow (α: Type) where
-  a: α
-  b: α
-  deriving Repr
-
-
 -- β is an atomic type which is reduced into itself, e.g. integer
 -- it instantiates Reducible β β
 -- Code β is any type which can be reduced into β
@@ -64,38 +58,28 @@ inductive Code (β: Type) [Irreducible β] where
   | typeof: Typeof (Code β) → Code β
   | inh: Inh (Code β) → Code β
   | pi: Pi (Code β) → Code β
-  | arrow: Arrow (Code β) → Code β
   deriving Repr
 
-partial def Code.level [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option Int := do
-  match c with
-    | .atom a => Irreducible.level a
-    | .name n =>
-      let c ← Context.get? (α := Code β) ctx n
-      c.level ctx
-    | _ => sorry -- TODO
-
-partial def Code.parent [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β) := do
+partial def Code.parent [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do
   match c with
     | .atom a =>
-      let p ← Irreducible.parent a
-      pure (.atom p)
+      let p ← Irreducible.parent (β := β) a
+      pure (.atom p, ctx)
     | .name n =>
       let c ← Context.get? (α := Code β) ctx n
       c.parent ctx
     | _ => sorry
 
-partial def Code.reduce [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β) := do
+partial def Code.reduce [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do
     match c with
     | .atom a =>
-      pure c -- return itself
+      pure (c, ctx) -- return itself
     | .name n =>
       let c ← Context.get? (α := Code β) ctx n
       c.reduce ctx
     | _ => sorry
 
 instance [Irreducible β] [Context Ctx (Code β)]: Reducible (Code β) Ctx where
-  level := Code.level
   parent := Code.parent
   reduce := Code.reduce
 
