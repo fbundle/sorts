@@ -69,7 +69,7 @@ inductive Code (β: Type) [Irreducible β] where
 
 partial def Code.level [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option Int := do
   match c with
-    | .atom a => Irreducible.level a -- somehow, just a.level does not work
+    | .atom a => Irreducible.level a
     | .name n =>
       let c ← Context.get? (α := Code β) ctx n
       c.level ctx
