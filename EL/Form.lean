@@ -22,7 +22,8 @@ def toString (form: Form) : String :=
     | Form.name s => s
     | Form.list fs => "(" ++ String.join ((fs.map toString).intersperse " ") ++ ")"
 
-instance : ToString Form := ⟨toString⟩
+instance : ToString Form where
+ toString := toString
 
 
 def _sortSplitTokens (splitTokens : List String) : List String :=
@@ -43,7 +44,7 @@ partial def _stringIndexOf (s: String) (substring: String): Option Nat :=
     let rec helper (s: String) (substring: String) (startIdx: Nat) : Option Nat :=
       if startIdx + substring.length > s.length then
         none
-      else if s.extract ⟨startIdx⟩ ⟨startIdx + substring.length⟩ = substring then
+      else if s.extract {byteIdx := startIdx} {byteIdx := startIdx + substring.length} = substring then
         some startIdx
       else
         helper s substring (startIdx + 1)
@@ -70,7 +71,6 @@ def _tokenize (sortedSplitTokens : List String) (s : String) : List String :=
   output
 
 
-
 def parser := List String → Option (List String × Form)
 
 partial def _parseUntil (p: parser) (closeBlockToken: String) (acc: List Form) (tokens : List String) : Option (List String × List Form) :=
@@ -78,10 +78,10 @@ partial def _parseUntil (p: parser) (closeBlockToken: String) (acc: List Form) (
     | [] => none
     | t :: ts =>
       if t = closeBlockToken then
-        some ⟨ts, acc⟩
+        some (ts, acc)
       else
         match p tokens with
-          | some ⟨remainingTokens, form⟩ =>
+          | some (remainingTokens, form) =>
             _parseUntil p closeBlockToken (acc ++ [form]) remainingTokens
           | none => none
 
@@ -91,10 +91,10 @@ partial def _parse (openBlockToken: String) (closeBlockToken: String) (tokens : 
     | t :: ts =>
       if t = openBlockToken then
         match _parseUntil (_parse openBlockToken closeBlockToken) closeBlockToken [] ts with
-          | some ⟨ts, forms⟩ => some ⟨ts, Form.list forms⟩
+          | some (ts, forms) => some (ts, Form.list forms)
           | none => none
       else
-        some ⟨ts, Form.name t⟩
+        some (ts, Form.name t)
 
 structure Parser where
   openBlockToken: String
