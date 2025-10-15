@@ -13,7 +13,7 @@ def source := "
 
   (+ x y)
 
-  (ind (: Nat U_2)
+  (inductive (: Nat U_2)
     (: zero (=> Nat))
     (: succ (=> (: _ Nat) Nat))
   )
@@ -29,10 +29,13 @@ def source := "
   )
 "
 
-#eval Util.parseAll EL.parse (EL.tokenize source)
+-- #eval Util.parseAll EL.parse (EL.tokenize source)
 
 def main : IO Unit := do
   let tokens := EL.tokenize source
-  let x := Util.parseAll EL.parse tokens
+  let result := Util.parseAll EL.parse tokens
 
-  IO.println s!"{repr x}"
+  if result.remaining.length ≠ 0 then
+    IO.println s!"error at {repr result.remaining}"
+  else
+    IO.println s!"{repr result.items}"

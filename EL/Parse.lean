@@ -90,7 +90,7 @@ private def parsePi [Irreducible β] : ParseList (Pi (Code β)) (Code β) :=
 
 private def parseInd [Irreducible β] : ParseList (Ind (Code β)) (Code β) :=
   {
-    parseHead := "ind",
+    parseHead := "inductive",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Ind (Code β)) := do
       let nameForm ← list[0]?
       let name ← parseAnnot.parseForm parse nameForm
