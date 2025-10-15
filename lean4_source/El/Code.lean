@@ -75,9 +75,9 @@ def Code.level [Reducible β β] (c: Code β): Int :=
     | _ => sorry -- TODO
 
 instance [Reducible β β]: Reducible (Code β) β where
-  level (s: Code β): Int := sorry
-  parent (s: Code β): β := sorry -- equivalent to typecheck
-  reduce (s: Code β): β := sorry -- equivalent to execute
+  level (c: Code β): Int := c.level
+  parent (c: Code β): β := sorry -- equivalent to typecheck
+  reduce (c: Code β): β := sorry -- equivalent to execute
 
 
 
