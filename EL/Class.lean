@@ -11,7 +11,7 @@ class Irreducible (β: Type) where
 
 -- Reducible α β is any type α that can be reduced into β
 class Reducible (α: Type) (Ctx: Type) [Context Ctx α] where
-  infer: α → Ctx → Option (α × Ctx)
-  normalize: α → Ctx → Option (α × Ctx)
+  infer: α → Ctx → Option (α × Ctx)     -- type check
+  normalize: α → Ctx → Option (α × Ctx) -- reduce
 
 end EL
