@@ -1,3 +1,7 @@
+
+import Lean.Data
+
+
 namespace Util
 
 def optionMap (xs: List α) (f: α → Option β): List β :=
@@ -25,5 +29,13 @@ def applyOnce {α: Type} {β} (fs: List (α → Option β)) (x: α): Option β :
       match f x with
         | some y => some y
         | none => applyOnce fs x
+
+def Frame β := Lean.PersistentHashMap String β
+
+def emptyFrame: Frame β := Lean.PersistentHashMap.empty
+
+def Frame.set (f: Frame β) (key: String) (val: β): Frame β := f.insert key val
+
+def Frame.get? (f: Frame β) (key: String): Option β := f.find? key
 
 end Util

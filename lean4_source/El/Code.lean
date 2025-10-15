@@ -4,6 +4,7 @@ import El.Util
 abbrev getName := Form.getName
 abbrev getList := Form.getName
 abbrev Form := Form.Form
+abbrev Frame := Util.Frame
 
 namespace Code
 
@@ -48,9 +49,9 @@ structure Arrow (α: Type) where
 -- Reducible α β is any type α that can be reduced into β
 -- TODO change this into α → Frame β → ..
 class Reducible (α: Type) (β: Type) where
-  level: α → Int
-  parent: α → β
-  reduce: α → β
+  level: α → Frame α → Option Int
+  parent: α → Frame α → Option β
+  reduce: α → Frame α → Option β
 
 -- β is an atomic type which is reduced into itself, e.g. integer
 -- it instantiates Reducible β β
@@ -70,18 +71,21 @@ inductive Code (β: Type) [Reducible β β] where
   | arrow: Arrow (Code β) → Code β
   deriving Repr
 
-def Code.level [Reducible β β] (c: Code β): Int :=
+partial def Code.level [Reducible β β] (c: Code β) (frame: Frame (Code β)): Option Int := do
   match c with
-    | .atom a => Reducible.level (α := β) (β := β) a -- somehow, just a.level does not work
+    | .atom a => Reducible.level (α := β) (β := β) a Util.emptyFrame -- somehow, just a.level frame does not work
+    | .name n =>
+      let a ← frame.get? n
+      a.level frame
     | _ => sorry -- TODO
 
 
 
 
 instance [Reducible β β]: Reducible (Code β) β where
-  level (c: Code β): Int := c.level
-  parent (c: Code β): β := sorry -- equivalent to typecheck
-  reduce (c: Code β): β := sorry -- equivalent to execute
+  level (c: Code β) (frame: Frame (Code β)): Option Int := c.level frame
+  parent (c: Code β) (frame: Frame (Code β)): Option β := sorry -- equivalent to typecheck
+  reduce (c: Code β) (frame: Frame (Code β)): Option β := sorry -- equivalent to execute
 
 
 
