@@ -30,6 +30,8 @@ def applyOnce {α: Type} {β} (fs: List (α → Option β)) (x: α): Option β :
         | some y => some y
         | none => applyOnce fs x
 
+
+
 partial def parseAll (parse: List α → Option (List α × β)) (tokens: List α): List α × List β :=
   let rec loop (items : Array β) (tokens: List α): List α × Array β :=
     match parse tokens with
