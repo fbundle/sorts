@@ -1,4 +1,4 @@
-import Lean.Data
+import Std.Data
 
 namespace Util
 
@@ -45,9 +45,8 @@ partial def parseAll (parse: List α → Option (List α × β)) (tokens: List �
   {remaining := remaining, items := items.toList}
 
 
-def Frame β := Lean.PersistentHashMap String β
-def emptyFrame: Frame β := Lean.PersistentHashMap.empty
-def Frame.set (f: Frame β) (key: String) (val: β): Frame β := f.insert key val
-def Frame.get? (f: Frame β) (key: String): Option β := f.find? key
+def Map (α) (β) [BEq α] [Hashable α] := Std.HashMap α β
+
+
 
 end Util
