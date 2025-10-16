@@ -22,7 +22,7 @@ partial def parseBetaFunc (parseCmd: Form → Option α) (parseArg: Form → Opt
 partial def parsePatternBeta (form: Form): Option (Beta String String) :=
   Util.applyAtmostOnce [
     parseBetaFunc parseName parseName,
-    Util.optionChain parseName (some {cmd := ·, args := []}),
+    parseName >=> (some {cmd := ·, args := []}),
   ] form
 
 
@@ -96,7 +96,7 @@ def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β)
 def parsePatternPiAlphaBetaStringString (parseAnnotType: Form → Option α) (form: Form): Option (Pi α (Beta String String)) :=
   Util.applyAtmostOnce [
     (parsePi parseAnnotType parsePatternBeta).parseForm,
-    Util.optionChain parsePatternBeta (some {params := [], body := ·}),
+    parsePatternBeta >=> (some {params := [], body := ·}),
   ] form
 
 
