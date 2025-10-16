@@ -3,8 +3,6 @@ import EL.Code
 
 namespace EL
 
-abbrev getName := Form.getName
-abbrev getList := Form.getList
 abbrev Form := Form.Form
 
 def parseName (form: Form): Option String :=
@@ -47,7 +45,7 @@ def parseAnnot (parse: (Form → Option α)) : ParseList (Annot α) :=
     parseHead := ":",
     parseList (list: List Form): Option (Annot α) := do
       let nameForm ← list[0]?
-      let name ← getName nameForm
+      let name ← parseName nameForm
       let typeForm ← list[1]?
       let type ← parse typeForm
       pure {name := name, type := type}
@@ -58,7 +56,7 @@ def parseBinding(parse: (Form → Option α))  : ParseList (Binding α) :=
     parseHead := "let",
     parseList (list: List Form): Option (Binding α) := do
       let nameForm ← list[0]?
-      let name ← getName nameForm
+      let name ← parseName nameForm
       let valueForm ← list[1]?
       let value ← parse valueForm
       pure {name := name, value := value}
@@ -131,7 +129,7 @@ partial def parseCode
   (form: Form): Option (Code β) := do
 
   let parseAtomFunc (form: Form): Option (Code β) := do
-    let n ← getName form
+    let n ← parseName form
     let a ← parseAtom n
     pure (.atom a)
 
