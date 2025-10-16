@@ -12,17 +12,13 @@ def parseName (form: Form): Option String :=
     | .name n => some n
     | _ => none
 
-def parseBetaOfSomething (parse: Form → Option α) (form: Form): Option (Beta α) := do
+def parseBetaFunc (parse: Form → Option α) (form: Form): Option (Beta α) := do
   match form with
     | .list (x :: xs) =>
       let cmd ← parse x
       let args ← Util.optionMapAll xs parse
       pure {cmd := cmd, args := args}
     | _ => none
-
-def parseBetaOfStringFunc : (Form → Option String) → Form → Option (Beta String) := parseBetaOfSomething
-
-def parseBetaFunc: (Form → Option (Code β)) → Form → Option (Beta (Code β)) := parseBetaOfSomething
 
 structure ParseList γ where
   parseHead: String
@@ -109,7 +105,7 @@ def parseCase (parse: Form → Option α): ParseList (Case α) :=
     parseHead := "case",
     parseList (list: List Form): Option (Case α) := do
       let patternForm ← list[0]?
-      let pattern ← parseBetaOfStringFunc parseName patternForm
+      let pattern ← parseBetaFunc parseName patternForm
 
       let valueForm ← list[1]?
       let value ← parse valueForm
