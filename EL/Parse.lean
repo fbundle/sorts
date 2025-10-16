@@ -7,7 +7,7 @@ abbrev getName := Form.getName
 abbrev getList := Form.getList
 abbrev Form := Form.Form
 
-def parseString (form: Form): Option String :=
+def parseName (form: Form): Option String :=
   match form with
     | .name n => some n
     | _ => none
@@ -116,7 +116,7 @@ def parseCase : ParseList (Code β) (Case (Code β)) :=
     parseHead := "case",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Case (Code β)) := do
       let condForm ← list[0]?
-      let cond ← parseBetaOfStringFunc parseString condForm
+      let cond ← parseBetaOfStringFunc parseName condForm
 
       let valueForm ← list[1]?
       let value ← parse valueForm
@@ -146,10 +146,10 @@ partial def parseCode
     let a ← parseAtom n
     pure (.atom a)
 
-  let parseNameFunc (form: Form): Option (Code β) :=
-    match form with
-      | .name name => some (.name name)
-      | _ => none
+  let parseNameFunc (form: Form): Option (Code β) := do
+    let n ← parseName form
+    pure (.name n)
+
 
   let parse := parseCode parseAtom
   let parseFuncList: List (Form → Option (Code β)) :=
