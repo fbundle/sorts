@@ -110,14 +110,15 @@ partial def Parser.parse (p: Parser) (tokens: List String): Option (List String 
           pure (ts, Form.list forms)
 
 -- default parser
-def infixProcess (forms: List Form): Option (List Form) :=
-  if forms.length ≤ 1 then
-    none
-  else do
+partial def infixProcess (forms: List Form): Option (List Form) := do
+  if forms.length ≤ 2 then
+    pure forms
+  else
     let op ← forms[forms.length-2]?
     let last ← forms[forms.length-1]?
-    let init := forms.extract 0 (forms.length-2)
-    [op] ++ init ++ [last]
+    let init := (forms.extract 0 (forms.length-2))
+    let init ← infixProcess init
+    pure ([op, Form.list init, last])
 
 def defaultParser := ((
     newParser [
