@@ -20,16 +20,16 @@ def parseBetaFunc (parse: Form → Option α) (form: Form): Option (Beta α) := 
     | _ => none
 
 structure ParseList γ where
-  parseHead:  String
+  parseHead: List String
   parseList (list: List Form): Option γ
 
 def ParseList.parseForm (pl: ParseList γ) (form: Form) : Option γ :=
   match form with
     | .list (.name x :: xs) =>
-      if pl.parseHead ≠ x then
-        none
-      else
+      if pl.parseHead.contains x then
         pl.parseList xs
+      else
+        none
     | _ => none
 
 def ParseList.convert (pl: ParseList γ) (f: γ → δ): ParseList δ :=
@@ -43,7 +43,7 @@ def ParseList.convert (pl: ParseList γ) (f: γ → δ): ParseList δ :=
 
 def parseAnnot (parseLeft: (Form → Option α)) (parseRight: (Form → Option β)): ParseList (Annot α β) :=
   {
-    parseHead := ":",
+    parseHead := [":"],
     parseList (list: List Form): Option (Annot α β) := do
       let leftForm ← list[0]?
       let left ← parseLeft leftForm
@@ -54,7 +54,7 @@ def parseAnnot (parseLeft: (Form → Option α)) (parseRight: (Form → Option �
 
 def parseBinding(parse: (Form → Option α))  : ParseList (Binding α) :=
   {
-    parseHead := ":=",
+    parseHead := ["let", ":="],
     parseList (list: List Form): Option (Binding α) := do
       let nameForm ← list[0]?
       let name ← parseName nameForm
@@ -65,7 +65,7 @@ def parseBinding(parse: (Form → Option α))  : ParseList (Binding α) :=
 
 def parseInfer(parse: (Form → Option α)) : ParseList (Infer α) :=
   {
-    parseHead := "type",
+    parseHead := ["infer", "&"],
     parseList (list: List Form): Option (Infer α) := do
       let valueForm ← list[0]?
       let value ← parse valueForm
@@ -75,7 +75,7 @@ def parseInfer(parse: (Form → Option α)) : ParseList (Infer α) :=
 
 def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β) : ParseList (Pi α β) :=
   {
-    parseHead := "lambda",
+    parseHead := ["lambda", "=>"],
     parseList (list: List Form): Option (Pi α β) := do
       let paramForms := list.extract 0 (list.length-1)
       let params ← Util.optionMapAll paramForms (parseAnnot parseName parseAnnotType).parseForm
@@ -88,7 +88,7 @@ def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β)
 
 def parseInd (parse: Form → Option α) : ParseList (Ind α) :=
   {
-    parseHead := "inductive",
+    parseHead := ["inductive"],
     parseList (list: List Form): Option (Ind α) := do
       let nameForm ← list[0]?
       let name ← (parseAnnot (parsePi parse (parseBetaFunc parseName)).parseForm parse).parseForm nameForm
@@ -101,7 +101,7 @@ def parseInd (parse: Form → Option α) : ParseList (Ind α) :=
 
 def parseCase (parse: Form → Option α): ParseList (Case α) :=
   {
-    parseHead := "case",
+    parseHead := ["case", "->"],
     parseList (list: List Form): Option (Case α) := do
       let patternForm ← list[0]?
       let pattern ← parseBetaFunc parseName patternForm
@@ -114,7 +114,7 @@ def parseCase (parse: Form → Option α): ParseList (Case α) :=
 
 def parseMat(parse: Form → Option α) : ParseList (Mat α) :=
   {
-    parseHead := "match",
+    parseHead := ["match"],
     parseList (list: List Form): Option (Mat α) := do
       let condForm ← list[0]?
       let cond ← parse condForm
