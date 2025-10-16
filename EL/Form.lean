@@ -167,5 +167,7 @@ def defaultParser := (((
 #eval defaultParser.parse (defaultParser.tokenize "[x => y =>]")
 #eval defaultParser.parse (defaultParser.tokenize "[x => y => z]")
 
+#eval defaultParser.parse (defaultParser.tokenize "[{T: U_2} => (List T) : U_2]")
+
 
 end Form

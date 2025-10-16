@@ -26,7 +26,8 @@ def source := "
 
 
 
-  (inductive {{T: U_2} => (List T) : U_2}
+
+  (inductive [{T: U_2} => (List T) : U_2]
 
   )
 
