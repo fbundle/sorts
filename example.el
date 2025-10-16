@@ -1,3 +1,5 @@
+-- example of EL language
+
 (inductive {Bool: U_2}
   {true: Bool}
   {false: Bool}

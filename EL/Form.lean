@@ -92,10 +92,26 @@ def Parser.addBlockParser (p: Parser) (bp: BlockParser): Parser :=
     splitTokens := _sortSplitTokens (p.splitTokens ++ [bp.openBlockToken, bp.closeBlockToken]),
   }
 
+
 def Parser.tokenize (p: Parser) (s : String) : List String :=
+  -- remove comments
+  let lines := s.split (· = '\n')
+  let lines := lines.map (λ line =>
+    match line.splitOn "--" with
+      | head :: _ => head -- take everything before --
+      | _ => line
+  )
+  let s := String.join (lines.intersperse "\n")
+
+  -- basic tokenize
   let parts := s.split (·.isWhitespace)
+
+  -- further tokenize by splitTokens
   let output := parts.flatMap (_splitPart p.splitTokens)
+
+  -- drop empty tokens
   let output := output.filter (·.length > 0)
+
   output
 
 partial def Parser.parse (p: Parser) (tokens: List String): Option (List String × Form) :=
@@ -136,7 +152,6 @@ def defaultParser :=
   })
 
 
-#eval defaultParser.parse (defaultParser.tokenize "{x y => z}")
 
 structure ParseList γ where
   parseHead: List String
@@ -150,10 +165,5 @@ def ParseList.parseForm (pl: ParseList γ) (form: Form) : Option γ :=
       else
         none
     | _ => none
-
-
-
-
-
 
 end Form
