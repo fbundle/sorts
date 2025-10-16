@@ -38,10 +38,14 @@ def Pi.relax? (p: Pi α β): Option β :=
   else
     none
 
-structure Ind (α: Type) where -- Inductive - TODO dependent type
+structure Ind (α: Type) where -- Inductive
   name: Annot String α
   cons: List (Annot String (String ⊕ Pi α String))
   deriving Repr
+
+structure IndDep (α: Type) where -- Inductive with dependent type
+  name: Annot (Pi α (Beta String)) α
+  cons: List (Annot String ((Beta String) ⊕ Pi α (Beta String)))
 
 structure Case (α: Type) where
   pattern: Beta String
