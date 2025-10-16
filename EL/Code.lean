@@ -15,7 +15,7 @@ structure Binding (α: Type) where
   value: α
   deriving Repr
 
-structure Typeof (α: Type) where
+structure Infer (α: Type) where -- Type of
   value: α
   deriving Repr
 
@@ -50,7 +50,7 @@ inductive Code (β: Type) where
   | name: String → Code β
   | beta: Beta (Code β) → Code β
   | binding: Binding (Code β) → Code β
-  | typeof: Typeof (Code β) → Code β
+  | infer: Infer (Code β) → Code β
   | pi: Pi (Code β) → Code β
   | ind: Ind (Code β) → Code β
   | mat: Mat (Code β) → Code β

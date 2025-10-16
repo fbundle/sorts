@@ -75,10 +75,10 @@ def parseBinding  : ParseList (Code β) (Binding (Code β)) :=
       pure {name := name, value := value}
   }
 
-def parseTypeof : ParseList (Code β) (Typeof (Code β)) :=
+def parseInfer : ParseList (Code β) (Infer (Code β)) :=
   {
     parseHead := "type",
-    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Typeof (Code β)) := do
+    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Infer (Code β)) := do
       let valueForm ← list[0]?
       let value ← parse valueForm
       pure {value := value}
@@ -162,7 +162,7 @@ partial def parseCode
   -- parse basic
   [
     (parseBinding.convert (λ x => (Code.binding x))).parseForm parse,
-    (parseTypeof.convert (λ x => (Code.typeof x))).parseForm parse,
+    (parseInfer.convert (λ x => (Code.infer x))).parseForm parse,
     (parsePi.convert (λ x => (Code.pi x))).parseForm parse,
     (parseInd.convert (λ x => (Code.ind x))).parseForm parse,
     (parseMat.convert (λ x => (Code.mat x))).parseForm parse,
