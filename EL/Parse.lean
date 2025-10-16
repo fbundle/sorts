@@ -149,15 +149,15 @@ partial def parseCode
   ++
   -- parse basic
   [
-    ((parseBinding parse).convert (λ x => (Code.binding x))).parseForm,
-    ((parseInfer parse).convert (λ x => (Code.infer x))).parseForm,
-    ((parsePi parse parse).convert (λ x => (Code.pi x))).parseForm,
-    ((parseInd parse).convert (λ x => (Code.ind x))).parseForm,
-    ((parseMat parse).convert (λ x => (Code.mat x))).parseForm,
+    ((parseBinding parse).convert (Code.binding ·)).parseForm,
+    ((parseInfer parse).convert (Code.infer ·)).parseForm,
+    ((parsePi parse parse).convert (Code.pi ·)).parseForm,
+    ((parseInd parse).convert (Code.ind ·)).parseForm,
+    ((parseMat parse).convert (Code.mat ·)).parseForm,
   ]
   ++
   -- parse beta (default case)
-  [λ form => ((λ x => Code.beta x) <$> (parseBetaFunc parse form))]
+  [λ form => (Code.beta ·) <$> (parseBetaFunc parse form)]
 
 
   Util.applyAtmostOnce parseFuncList form

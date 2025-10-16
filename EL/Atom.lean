@@ -31,7 +31,6 @@ def parseUniverse (s: String): Option Atom := do
 def parseAtom := Util.applyAtmostOnce [
   parseInteger,
   parseUniverse,
-  λ _ => none,
 ]
 
 

@@ -84,9 +84,9 @@ def Parser.init (p: Parser) : Parser :=
   {p with splitTokens := _sortSplitTokens p.splitTokens}
 
 def Parser.tokenize (p: Parser) (s : String) : List String :=
-  let parts := s.split (λ c => c.isWhitespace)
+  let parts := s.split (·.isWhitespace)
   let output := parts.flatMap (_splitPart p.splitTokens)
-  let output := output.filter (λ s => s.length > 0)
+  let output := output.filter (·.length > 0)
   output
 
 partial def Parser.parse (p: Parser) (tokens: List String): Option (List String × Form) :=
@@ -100,10 +100,7 @@ partial def Parser.parse (p: Parser) (tokens: List String): Option (List String 
           let forms ← bp.postProcess forms.toList
           pure (ts, Form.list forms)
 
-
-
 -- default parser
-
 def defaultParser := ({
   blockParsers := Std.HashMap.emptyWithCapacity.insert "(" {
     closeBlockToken := ")",
