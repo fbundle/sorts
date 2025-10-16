@@ -18,13 +18,6 @@ def parseBetaFunc (parse: Form → Option α) (form: Form): Option (Beta α) := 
       let args ← Util.optionMapAll xs parse
       pure {cmd := cmd, args := args}
     | _ => none
-
-def relaxBeta (b: Beta α): Option α :=
-  if b.args.length = 0 then
-    b.cmd
-  else
-    none
-
 structure ParseList γ where
   parseHead: List String
   parseList (list: List Form): Option γ
@@ -92,34 +85,16 @@ def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β)
       pure {params := params, body := body}
   }
 
-def relaxPi (p: Pi α β) : Option β :=
-  if p.params.length = 0 then
-    some p.body
-  else
-    none
 
 def parseInd (parse: Form → Option α): ParseList (Ind α) :=
   {
     parseHead := ["inductive"],
     parseList (list: List Form): Option (Ind α) := do
       let nameForm ← list[0]?
-      let name ← (parseAnnot (λ form => do
-        let p ← (parsePi parse (parseBetaFunc parseName)).parseForm form
-        match relaxPi p with
-          | none => some (Sum.inr p) -- cannot relax, dependent type
-          | some b =>
-            match relaxBeta b with
-              | none => some (Sum.inr p) -- cannot relax, dependent type
-              | some n => some (Sum.inl n)
-      ) parse).parseForm nameForm
+      let name ← (parseAnnot parseName parse).parseForm nameForm
 
       let consForm := list.extract 1 list.length
-      let cons ← Util.optionMapAll consForm (parseAnnot parseName (λ form => do
-        let p ← (parsePi parse (parseBetaFunc parseName)).parseForm form
-        match relaxBeta p.body with
-          | none => sorry
-          | some n => sorry
-      )).parseForm
+      let cons ← Util.optionMapAll consForm (parseAnnot parseName (parsePi parse parseName).parseForm).parseForm
 
       pure {name := name, cons := cons}
   }

@@ -1,14 +1,14 @@
 import EL.EL
 
 def source := "
-  (inductive (: Bool U_2)
-    (: true Bool)
-    (: false Bool)
+  (inductive {Bool: U_2}
+    {true: {=> Bool}}
+    {false: {=> Bool}}
   )
 
-  (inductive (: Nat U_2)
-    (: zero Nat)
-    (: succ (lambda (_: Nat) Nat))
+  (inductive {Nat: U_2}
+    {zero: {=> Nat}}
+    {succ: {{_: Nat} => Nat}}
   )
 
   (let one (succ zero))

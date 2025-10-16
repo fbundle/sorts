@@ -27,13 +27,9 @@ structure Pi (α: Type) (β: Type) where -- Pi or Lambda
   deriving Repr
 
 
--- possible names
--- Nat
--- {(T: U_2) => (List T)}
-
-structure Ind (α: Type) where -- Inductive
-  name: Annot (String ⊕ Pi α (Beta String)) α
-  cons: List (Annot String (String ⊕ Pi α (String ⊕ (Beta String))))
+structure Ind (α: Type) where -- Inductive - TODO dependent type
+  name: Annot String α
+  cons: List (Annot String (Pi α String))
   deriving Repr
 
 structure Case (α: Type) where
