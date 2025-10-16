@@ -109,7 +109,7 @@ partial def Parser.parse (p: Parser) (tokens: List String): Option (List String 
 -- default parser
 
 def defaultParser := (
-  newParser ["(", ")", "+", "-", "*", "/", "=", "==", ":=", "=>", "->"]
+    newParser ["(", ")", "+", "-", "*", "/", "=", "==", ":=", "=>", "->"]
   ).addBlockParser {
     openBlockToken := "(",
     closeBlockToken := ")",
