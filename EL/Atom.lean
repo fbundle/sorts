@@ -1,5 +1,5 @@
+import EL.Class
 import EL.Util
-import EL.Parse
 
 namespace EL
 
@@ -14,6 +14,9 @@ def Atom.inferAtom (s: Atom): Atom :=
     | int => .univ 2
     | univ i => .univ (i+1)
     | integer _ => .int
+
+instance: Irreducible Atom where
+  inferAtom := Atom.inferAtom
 
 def parseInteger (s: String): Option Atom := do
   let i ← s.toInt?

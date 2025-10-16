@@ -1,4 +1,3 @@
-
 import Lean.Data
 
 namespace Util

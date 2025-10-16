@@ -1,4 +1,3 @@
-import EL.Util
 
 namespace Form
 
@@ -112,13 +111,5 @@ def defaultParser := ({
   closeBlockToken := ")",
   splitTokens := ["(", ")", "+", "-", "*", "/", "=", "==", ":=", "=>", "->"]
 }: Parser).init
-
-
-def _example := "x:=
-  (3==  2)=1
-
-  123"
-
-#eval Util.parseAll defaultParser.parse (defaultParser.tokenize _example)
 
 end Form
