@@ -72,7 +72,7 @@ partial def _parseUntilClose (parse: List String → Option (List String × Form
 
 
 structure BlockParser where
-  -- openBlockToken: String
+  openBlockToken: String
   closeBlockToken: String
   postProcess: List Form → Option (List Form)
 
@@ -80,8 +80,14 @@ structure Parser where
   blockParsers: Std.HashMap String BlockParser
   splitTokens: List String
 
-def Parser.init (p: Parser) : Parser :=
-  {p with splitTokens := _sortSplitTokens p.splitTokens}
+def newParser (splitTokens: List String): Parser :=
+  {
+    blockParsers := Std.HashMap.emptyWithCapacity,
+    splitTokens := _sortSplitTokens splitTokens
+  }
+
+def Parser.addBlockParser (p: Parser) (bp: BlockParser): Parser :=
+  {p with blockParsers := p.blockParsers.insert bp.openBlockToken bp}
 
 def Parser.tokenize (p: Parser) (s : String) : List String :=
   let parts := s.split (·.isWhitespace)
@@ -101,12 +107,14 @@ partial def Parser.parse (p: Parser) (tokens: List String): Option (List String 
           pure (ts, Form.list forms)
 
 -- default parser
-def defaultParser := ({
-  blockParsers := Std.HashMap.emptyWithCapacity.insert "(" {
+
+def defaultParser := (
+  newParser ["(", ")", "+", "-", "*", "/", "=", "==", ":=", "=>", "->"]
+  ).addBlockParser {
+    openBlockToken := "(",
     closeBlockToken := ")",
     postProcess := (some ·),
-  } ,
-  splitTokens := ["(", ")", "+", "-", "*", "/", "=", "==", ":=", "=>", "->"]
-}: Parser).init
+  }
+
 
 end Form
