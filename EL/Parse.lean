@@ -20,7 +20,7 @@ def parseBetaFunc (parse: Form → Option α) (form: Form): Option (Beta α) := 
     | _ => none
 
 structure ParseList γ where
-  parseHead: String
+  parseHead: List String
   parseList (list: List Form): Option γ
 
 def ParseList.parseForm (pl: ParseList γ) (form: Form) : Option γ :=
@@ -54,7 +54,7 @@ def parseAnnot (parseLeft: (Form → Option α)) (parseRight: (Form → Option �
 
 def parseBinding(parse: (Form → Option α))  : ParseList (Binding α) :=
   {
-    parseHead := "let",
+    parseHead := ":=",
     parseList (list: List Form): Option (Binding α) := do
       let nameForm ← list[0]?
       let name ← parseName nameForm

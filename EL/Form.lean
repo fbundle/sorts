@@ -110,7 +110,6 @@ partial def Parser.parse (p: Parser) (tokens: List String): Option (List String 
           pure (ts, Form.list forms)
 
 -- default parser
-
 def infixProcess (forms: List Form): Option (List Form) :=
   if forms.length ≤ 1 then
     none
