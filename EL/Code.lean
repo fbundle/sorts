@@ -30,12 +30,12 @@ structure Ind (α: Type) where -- Inductive
   deriving Repr
 
 structure Case (α: Type) where
-  cond: Beta String
+  pattern: Beta String
   value: α
   deriving Repr
 
 structure Mat (α: Type) where
-  comp: α
+  cond: α
   cases: List (Case α)
   deriving Repr
 

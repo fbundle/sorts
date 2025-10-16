@@ -115,26 +115,26 @@ def parseCase : ParseList (Code β) (Case (Code β)) :=
   {
     parseHead := "case",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Case (Code β)) := do
-      let condForm ← list[0]?
-      let cond ← parseBetaOfStringFunc parseName condForm
+      let patternForm ← list[0]?
+      let pattern ← parseBetaOfStringFunc parseName patternForm
 
       let valueForm ← list[1]?
       let value ← parse valueForm
 
-      pure {cond := cond, value := value}
+      pure {pattern := pattern, value := value}
   }
 
 def parseMat : ParseList (Code β) (Mat (Code β)) :=
   {
     parseHead := "match",
     parseList (parse: Form → Option (Code β)) (list: List Form): Option (Mat (Code β)) := do
-      let compForm ← list[0]?
-      let comp ← parse compForm
+      let condForm ← list[0]?
+      let cond ← parse condForm
 
       let casesForm := list.extract 1 list.length
       let cases ← Util.optionMapAll casesForm (parseCase.parseForm parse)
 
-      pure {comp := comp, cases := cases}
+      pure {cond := cond, cases := cases}
   }
 
 partial def parseCode
