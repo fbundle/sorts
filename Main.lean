@@ -6,6 +6,8 @@ def source := "
     {false: Bool}
   )
 
+  () break here
+
   (inductive {Nat: U_2}
     {zero: Nat}
     {succ: {{_: Nat} => Nat}}
@@ -49,6 +51,7 @@ def main : IO Unit := do
   let result := Util.parseAll EL.parse tokens
 
   if result.remaining.length ≠ 0 then
-    IO.println s!"error at {repr result.remaining}"
+    IO.println s!"{repr result.items}
+    error at {repr result.remaining}"
   else
     IO.println s!"{repr result.items}"
