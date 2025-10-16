@@ -1,10 +1,10 @@
 import EL.EL
 
 def source := "
-  (let x 3)
-  (let y 4)
-
-  (+ x y)
+  (inductive (: Bool U_2)
+    (: true (lambda Bool))
+    (: false (lambda Bool))
+  )
 
   (inductive (: Nat U_2)
     (: zero (lambda Nat))
@@ -16,10 +16,19 @@ def source := "
 
   (let is_pos
     (lambda (: n Nat) (match n
-      (case (Nat.zero) false)
-      (case (Nat.succ x) true)
+      (case (zero) false)
+      (case (succ x) true)
     ))
   )
+
+  (is_pos zero)
+  (is_pos two)
+
+  (let x 3)
+  (let y 4)
+
+  (+ x y)
+
 "
 
 -- #eval Util.parseAll EL.parse (EL.tokenize source)
