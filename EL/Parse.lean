@@ -20,7 +20,7 @@ def parseBetaFunc (parse: Form → Option α) (form: Form): Option (Beta α) := 
     | _ => none
 
 structure ParseList γ where
-  parseHead: List String
+  parseHead:  String
   parseList (list: List Form): Option γ
 
 def ParseList.parseForm (pl: ParseList γ) (form: Form) : Option γ :=
