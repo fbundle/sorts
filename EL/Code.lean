@@ -4,14 +4,8 @@ namespace EL
 
 structure Beta (α: Type) where
   cmd: α
-  args: List α
+  arg: α
   deriving Repr
-
-def Beta.relax? (b: Beta α): Option α :=
-  if b.args.length = 0 then
-    some b.cmd
-  else
-    none
 
 structure Annot (α: Type) (β: Type) where
   left: α
@@ -28,15 +22,9 @@ structure Infer (α: Type) where -- Type of
   deriving Repr
 
 structure Pi (α: Type) (β: Type) where -- Pi or Lambda
-  params: List (Annot String α)
+  param: Annot String α
   body: β
   deriving Repr
-
-def Pi.relax? (p: Pi α β): Option β :=
-  if p.params.length = 0 then
-    some p.body
-  else
-    none
 
 structure Ind (α: Type) where -- Inductive
   name: Annot String α

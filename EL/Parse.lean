@@ -11,13 +11,22 @@ def parseName (form: Form): Option String :=
     | .name n => some n
     | _ => none
 
-def parseBetaFunc (parse: Form → Option α) (form: Form): Option (Beta α) := do
+partial def parseBetaFunc (unify: Beta α → Option α) (parse: Form → Option α) (form: Form): Option (α ⊕ Beta α) := do
   match form with
-    | .list (x :: xs) =>
-      let cmd ← parse x
-      let args ← Util.optionMapAll xs parse
-      pure {cmd := cmd, args := args}
+    | .list [] => none
+    | .list (head :: []) =>
+      let a ← parse head
+      pure (Sum.inl a)
+    | .list (cmdForm :: tail) =>
+      let cmd ← parse cmdForm
+      let arg ← parseBetaFunc unify parse (Form.Form.list tail)
+      match arg with
+        | Sum.inl a => pure (Sum.inr {cmd := cmd, arg := a})
+        | Sum.inr a =>
+          let a ← unify a
+          pure (Sum.inr {cmd := cmd, arg := a})
     | _ => none
+
 structure ParseList γ where
   parseHead: List String
   parseList (list: List Form): Option γ
@@ -169,6 +178,8 @@ partial def parseCode
 
 
   let parse := parseCode parseAtom
+  let betaToCode (b: Beta (Code β)): Code β := Code.beta b
+
   let parseFuncList: List (Form → Option (Code β)) :=
   -- parse name
   [
@@ -188,7 +199,7 @@ partial def parseCode
   ++
   -- parse beta (default case)
   [λ (form: Form) => do
-    let b ← parseBetaFunc parse form
+    let b ← parseBetaFunc (λ b => Code.beta b) parse form
     pure (Code.beta b)
   ]
 
