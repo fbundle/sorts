@@ -46,6 +46,7 @@ structure Ind (α: Type) where -- Inductive
 structure IndDep (α: Type) where -- Inductive with dependent type
   name: Annot (Pi α (Beta String)) α
   cons: List (Annot String ((Beta String) ⊕ Pi α (Beta String)))
+  deriving Repr
 
 structure Case (α: Type) where
   pattern: Beta String
@@ -71,6 +72,7 @@ inductive Code (β: Type) where
   | infer: Infer (Code β) → Code β
   | pi: Pi (Code β) (Code β) → Code β
   | ind: Ind (Code β) → Code β
+  | ind_dep: IndDep (Code β) → Code β
   | mat: Mat (Code β) → Code β
   deriving Repr
 
