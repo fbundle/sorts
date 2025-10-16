@@ -1,6 +1,6 @@
 import EL.EL
 
-def source := "
+def sourc1e := "
   (inductive {Bool: U_2}
     {true: Bool}
     {false: Bool}
@@ -36,6 +36,9 @@ def source := "
   {x + y * z}
 
 "
+
+def source := "(1 2 3)"
+
 
 -- #eval Util.parseAll EL.parse (EL.tokenize source)
 

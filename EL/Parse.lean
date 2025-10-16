@@ -11,20 +11,12 @@ def parseName (form: Form): Option String :=
     | .name n => some n
     | _ => none
 
-partial def parseBetaFunc (unify: Beta α → Option α) (parse: Form → Option α) (form: Form): Option (α ⊕ Beta α) := do
+partial def parseBetaFunc (parse: Form → Option α) (form: Form): Option (Beta α) :=
   match form with
-    | .list [] => none
-    | .list (head :: []) =>
-      let a ← parse head
-      pure (Sum.inl a)
-    | .list (cmdForm :: tail) =>
+    | .list (cmdForm :: argForm :: []) => do
       let cmd ← parse cmdForm
-      let arg ← parseBetaFunc unify parse (Form.Form.list tail)
-      match arg with
-        | Sum.inl a => pure (Sum.inr {cmd := cmd, arg := a})
-        | Sum.inr a =>
-          let a ← unify a
-          pure (Sum.inr {cmd := cmd, arg := a})
+      let arg ← parse argForm
+      pure {cmd := cmd, arg := arg}
     | _ => none
 
 structure ParseList γ where
@@ -85,13 +77,12 @@ def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β)
   {
     parseHead := ["lambda", "=>"],
     parseList (list: List Form): Option (Pi α β) := do
-      let paramForms := list.extract 0 (list.length-1)
-      let params ← Util.optionMapAll paramForms (parseAnnot parseName parseAnnotType).parseForm
-
-      let bodyForm ← list[list.length-1]?
-      let body ← parseBody bodyForm
-
-      pure {params := params, body := body}
+      match list with
+        | paramForm :: bodyForm :: [] =>
+          let param ← (parseAnnot parseName parseAnnotType).parseForm paramForm
+          let body ← parseBody bodyForm
+          pure {param := param, body := body}
+        | _ => none
   }
 
 
@@ -178,8 +169,6 @@ partial def parseCode
 
 
   let parse := parseCode parseAtom
-  let betaToCode (b: Beta (Code β)): Code β := Code.beta b
-
   let parseFuncList: List (Form → Option (Code β)) :=
   -- parse name
   [
@@ -199,7 +188,7 @@ partial def parseCode
   ++
   -- parse beta (default case)
   [λ (form: Form) => do
-    let b ← parseBetaFunc (λ b => Code.beta b) parse form
+    let b ← parseBetaFunc parse form
     pure (Code.beta b)
   ]
 
