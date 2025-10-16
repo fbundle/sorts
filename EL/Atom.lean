@@ -28,7 +28,7 @@ def parseUniverse (s: String): Option Atom := do
   let i ← s.toInt?
   pure (.univ i) -- universe level i
 
-def parseAtom := Util.applyOnce [
+def parseAtom := Util.applyAtmostOnce [
   parseInteger,
   parseUniverse,
   λ _ => none,

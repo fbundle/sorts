@@ -160,6 +160,6 @@ partial def parseCode
   [λ form => ((λ x => Code.beta x) <$> (parseBetaFunc parse form))]
 
 
-  Util.applyOnce parseFuncList form
+  applyAtmostOnce parseFuncList form
 
 end EL
