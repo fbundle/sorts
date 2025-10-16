@@ -2,9 +2,9 @@ import EL.Class
 
 namespace EL
 
-structure Beta (α: Type) where
+structure Beta (α: Type) (β: Type) where
   cmd: α
-  arg: α
+  args: List β
   deriving Repr
 
 structure Annot (α: Type) (β: Type) where
@@ -22,22 +22,17 @@ structure Infer (α: Type) where -- Type of
   deriving Repr
 
 structure Pi (α: Type) (β: Type) where -- Pi or Lambda
-  param: Annot String α
+  params: List (Annot String α)
   body: β
   deriving Repr
 
-structure Ind (α: Type) where -- Inductive
-  name: Annot String α
-  cons: List (Annot String (String ⊕ Pi α String))
-  deriving Repr
-
-structure IndDep (α: Type) where -- Inductive with dependent type
-  name: Annot (Pi α (Beta String)) α
-  cons: List (Annot String ((Beta String) ⊕ Pi α (Beta String)))
+structure Ind (α: Type) where -- Inductive with dependent type
+  name: Annot (Pi α (Beta String String)) α
+  cons: List (Annot String (Pi α (Beta String String)))
   deriving Repr
 
 structure Case (α: Type) where
-  pattern: Beta String
+  pattern: Beta String String
   value: α
   deriving Repr
 
@@ -55,12 +50,11 @@ structure Mat (α: Type) where
 inductive Code (β: Type) where
   | atom: β → Code β
   | name: String → Code β
-  | beta: Beta (Code β) → Code β
+  | beta: Beta (Code β) (Code β) → Code β
   | binding: Binding (Code β) → Code β
   | infer: Infer (Code β) → Code β
   | pi: Pi (Code β) (Code β) → Code β
   | ind: Ind (Code β) → Code β
-  | ind_dep: IndDep (Code β) → Code β
   | mat: Mat (Code β) → Code β
   deriving Repr
 

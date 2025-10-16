@@ -11,13 +11,18 @@ def parseName (form: Form): Option String :=
     | .name n => some n
     | _ => none
 
-partial def parseBetaFunc (parse: Form → Option α) (form: Form): Option (Beta α) :=
+partial def parseBetaFunc (parseCmd: Form → Option α) (parseArg: Form → Option β) (form: Form): Option (Beta α β) :=
   match form with
-    | .list (cmdForm :: argForm :: []) => do
-      let cmd ← parse cmdForm
-      let arg ← parse argForm
-      pure {cmd := cmd, arg := arg}
+    | .list (cmdForm :: argForms) => do
+      let cmd ← parseCmd cmdForm
+      let args ← Util.optionMapAll argForms parseArg
+      pure {cmd := cmd, args := args}
     | _ => none
+
+partial def parsePatternBeta (form: Form): Option (Beta String String) :=
+  match form with
+    | .name n => some {cmd := n, args := []}
+    | .list _ => parseBetaFunc parseName parseName form
 
 structure ParseList γ where
   parseHead: List String
@@ -77,53 +82,29 @@ def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β)
   {
     parseHead := ["lambda", "=>"],
     parseList (list: List Form): Option (Pi α β) := do
-      match list with
-        | paramForm :: bodyForm :: [] =>
-          let param ← (parseAnnot parseName parseAnnotType).parseForm paramForm
-          let body ← parseBody bodyForm
-          pure {param := param, body := body}
-        | _ => none
+      let paramForms := list.dropLast
+      let bodyForm ← list.getLast?
+
+      let params ← Util.optionMapAll paramForms (parseAnnot parseName parseAnnotType).parseForm
+      let body ← parseBody bodyForm
+
+      pure {params := params, body := body}
   }
 
+def parsePatternPiAlphaBetaStringString (parseAnnotType: Form → Option α) (form: Form): Option (Pi α (Beta String String)) :=
+  match form with
+    | .name n => some {params := [], body := {cmd := n, args := []}}
+    | .list _ => (parsePi parseAnnotType parsePatternBeta).parseForm form
 
 def parseInd (parse: Form → Option α): ParseList (Ind α) :=
   {
     parseHead := ["inductive"],
     parseList (list: List Form): Option (Ind α) := do
       let nameForm ← list[0]?
-      let name ← (parseAnnot parseName parse).parseForm nameForm
+      let name ← (parseAnnot (parsePatternPiAlphaBetaStringString parse) parse).parseForm nameForm
 
       let consForm := list.extract 1 list.length
-      let cons ← Util.optionMapAll consForm (parseAnnot parseName (λ form =>
-        match (parsePi parse parseName).parseForm form with
-          | some p => some (Sum.inr p)
-          | none =>
-            match parseName form with
-              | some n => some (Sum.inl n)
-              | none => none
-      )).parseForm
-
-      pure {name := name, cons := cons}
-  }
-
-def parseIndDep (parse: Form → Option α): ParseList (IndDep α) :=
-  {
-    parseHead := ["inductive"],
-    parseList (list: List Form): Option (IndDep α) := do
-      let parsePiAlphaBetaString := (parsePi parse (parseBetaFunc parseName)).parseForm
-
-      let nameForm ← list[0]?
-      let name ← (parseAnnot parsePiAlphaBetaString parse).parseForm nameForm
-
-      let consForm := list.extract 1 list.length
-      let cons ← Util.optionMapAll consForm (parseAnnot parseName (λ form =>
-        match parsePiAlphaBetaString form with
-          | some p => some (Sum.inr p)
-          | none =>
-            match (parseBetaFunc parseName) form with
-              | some n => some (Sum.inl n)
-              | none => none
-      )).parseForm
+      let cons ← Util.optionMapAll consForm (parseAnnot parseName (parsePatternPiAlphaBetaStringString parse)).parseForm
 
       pure {name := name, cons := cons}
   }
@@ -133,7 +114,7 @@ def parseCase (parse: Form → Option α): ParseList (Case α) :=
     parseHead := ["case", "->"],
     parseList (list: List Form): Option (Case α) := do
       let patternForm ← list[0]?
-      let pattern ← (parseBetaFunc parseName) patternForm
+      let pattern ← parsePatternBeta patternForm
 
       let valueForm ← list[1]?
       let value ← parse valueForm
@@ -182,13 +163,12 @@ partial def parseCode
     ((parseInfer parse).convert (Code.infer ·)).parseForm,
     ((parsePi parse parse).convert (Code.pi ·)).parseForm,
     ((parseInd parse).convert (Code.ind ·)).parseForm,
-    ((parseIndDep parse).convert (Code.ind_dep ·)).parseForm,
     ((parseMat parse).convert (Code.mat ·)).parseForm,
   ]
   ++
   -- parse beta (default case)
   [λ (form: Form) => do
-    let b ← parseBetaFunc parse form
+    let b ← parseBetaFunc parse parse form
     pure (Code.beta b)
   ]
 
