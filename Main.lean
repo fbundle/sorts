@@ -8,7 +8,7 @@ def source := "
 
   (inductive {Nat: U_2}
     {zero: Nat}
-    {succ: {{_: Nat} => Nat}}
+    {succ: {_: Nat} => Nat}
   )
 
   {one := (succ zero)}
@@ -29,6 +29,7 @@ def source := "
 
   (inductive [{T: U_2} => (List T) : U_2]
     {nil : (List T)}
+    {cons : {{init: (List T)} => {tail : T} => (List T)}}
   )
 
 
