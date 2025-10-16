@@ -87,7 +87,10 @@ def newParser (splitTokens: List String): Parser :=
   }
 
 def Parser.addBlockParser (p: Parser) (bp: BlockParser): Parser :=
-  {p with blockParsers := p.blockParsers.insert bp.openBlockToken bp}
+  {p with
+    blockParsers := p.blockParsers.insert bp.openBlockToken bp,
+    splitTokens := _sortSplitTokens (p.splitTokens ++ [bp.openBlockToken, bp.closeBlockToken]),
+  }
 
 def Parser.tokenize (p: Parser) (s : String) : List String :=
   let parts := s.split (·.isWhitespace)
@@ -108,14 +111,28 @@ partial def Parser.parse (p: Parser) (tokens: List String): Option (List String 
 
 -- default parser
 
-def defaultParser := (
-    newParser ["(", ")", "+", "-", "*", "/", "=", "==", ":=", "=>", "->"]
+def infixProcess (forms: List Form): Option (List Form) :=
+  if forms.length ≤ 1 then
+    none
+  else do
+    let op ← forms[forms.length-2]?
+    let last ← forms[forms.length-1]?
+    let init := forms.extract 0 (forms.length-2)
+    [op] ++ init ++ [last]
+
+def defaultParser := ((
+    newParser [
+      "+", "-", "*", "/", "%", "=", "==",
+      ",", ";", ":", ":=", "=>", "->",
+      ]
   ).addBlockParser {
     openBlockToken := "(",
     closeBlockToken := ")",
     postProcess := (some ·),
+  }).addBlockParser {
+    openBlockToken := "{",
+    closeBlockToken := "}",
+    postProcess := infixProcess,
   }
-
--- TODO - add infix block
 
 end Form

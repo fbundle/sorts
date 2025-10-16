@@ -39,6 +39,9 @@ def source := "
 
 -- #eval Util.parseAll EL.parse (EL.tokenize source)
 
+#eval Form.defaultParser.tokenize "{}"
+#eval Form.defaultParser.parse (Form.defaultParser.tokenize "{a b (1, 2) => x}")
+
 def main : IO Unit := do
 
   let tokens := EL.tokenize source
