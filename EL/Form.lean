@@ -117,8 +117,14 @@ partial def infixProcess (forms: List Form): Option (List Form) := do
       pure [op, head, Form.list rest]
     | _ => pure forms
 
+partial def betaProcess (forms: List Form): Option (List Form) := do
+  match forms with
+    | head :: rest =>
+      let rest ← betaProcess rest
+      pure [Form.name "beta", head, Form.list rest]
+    | _ => pure forms
 
-def defaultParser := ((
+def defaultParser := (((
     newParser [
       "+", "-", "*", "/", "%", "=", "==",
       ",", ";", ":", ":=", "=>", "->",
@@ -131,8 +137,13 @@ def defaultParser := ((
     openBlockToken := "{",
     closeBlockToken := "}",
     postProcess := infixProcess,
+  }).addBlockParser {
+    openBlockToken := "[",
+    closeBlockToken := "]",
+    postProcess := betaProcess,
   }
 
 #eval defaultParser.parse (defaultParser.tokenize "{x => y => z}")
+#eval defaultParser.parse (defaultParser.tokenize "[a b c]")
 
 end Form

@@ -21,8 +21,8 @@ def source := "
     )}
   }
 
-  (is_pos zero)
-  (is_pos two)
+  [is_pos zero]
+  [is_pos two]
 
   () break
 
