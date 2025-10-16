@@ -27,8 +27,8 @@ structure Pi (α: Type) (β: Type) where -- Pi or Lambda
   deriving Repr
 
 structure Ind (α: Type) where -- Inductive
-  name: Annot (Pi α (Beta String)) α
-  cons: List (Annot String (Pi α (Beta String)))
+  name: Annot (String ⊕ Pi α (Beta String)) α
+  cons: List (Annot String (String ⊕ Pi α (String ⊕ Beta String)))
   deriving Repr
 
 structure Case (α: Type) where
@@ -55,6 +55,7 @@ inductive Code (β: Type) where
   | infer: Infer (Code β) → Code β
   | pi: Pi (Code β) (Code β) → Code β
   | ind: Ind (Code β) → Code β
+  | ind_dep: IndDep (Code β)→ Code β
   | mat: Mat (Code β) → Code β
   deriving Repr
 
