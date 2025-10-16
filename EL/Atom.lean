@@ -9,7 +9,7 @@ inductive Atom where -- Atom - basic element of EL
   | integer: Int → Atom
   deriving Repr
 
-def Atom.infer (s: Atom): Atom :=
+def Atom.inferAtom (s: Atom): Atom :=
   match s with
     | int => .univ 2
     | univ i => .univ (i+1)

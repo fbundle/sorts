@@ -60,7 +60,7 @@ structure Context α where
   set: String → α → Context α
   get?: String → Option α
 
-partial def Code.infer (c: Code β) (ctx: Context (Code β)) (inferAtom: β → β): Option (Code β × Context (Code β)) := do
+partial def Code.inferCode (c: Code β) (ctx: Context (Code β)) (inferAtom: β → β): Option (Code β × Context (Code β)) := do
   -- infer: turn everything to type then normalize
   match c with
     | .atom a =>
@@ -68,17 +68,17 @@ partial def Code.infer (c: Code β) (ctx: Context (Code β)) (inferAtom: β → 
       pure (.atom p, ctx)
     | .name n =>
       let c ← ctx.get? n
-      c.infer ctx inferAtom
+      c.inferCode ctx inferAtom
     | _ => sorry
 
-partial def Code.normalize (c: Code β) (ctx: Context (Code β)): Option (Code β × Context (Code β)) := do
+partial def Code.normalizeCode (c: Code β) (ctx: Context (Code β)): Option (Code β × Context (Code β)) := do
   -- normalize: just normalize
   match c with
     | .atom a =>
       pure (c, ctx) -- return itself
     | .name n =>
       let c ← ctx.get? n
-      c.normalize ctx
+      c.normalizeCode ctx
     | _ => sorry
 
 
