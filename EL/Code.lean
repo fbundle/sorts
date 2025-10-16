@@ -19,14 +19,14 @@ structure Infer (α: Type) where -- Type of
   value: α
   deriving Repr
 
-structure Pi (α: Type) where -- Pi or Lambda
+structure Pi (α: Type) (β: Type) where -- Pi or Lambda
   params: List (Annot α)
-  body: α
+  body: β
   deriving Repr
 
 structure Ind (α: Type) where -- Inductive
   name: Annot α
-  cons: List (Annot (Pi α))
+  cons: List (Annot (Pi α String))
   deriving Repr
 
 structure Case (α: Type) where
@@ -51,7 +51,7 @@ inductive Code (β: Type) where
   | beta: Beta (Code β) → Code β
   | binding: Binding (Code β) → Code β
   | infer: Infer (Code β) → Code β
-  | pi: Pi (Code β) → Code β
+  | pi: Pi (Code β) (Code β) → Code β
   | ind: Ind (Code β) → Code β
   | mat: Mat (Code β) → Code β
   deriving Repr

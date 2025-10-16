@@ -24,32 +24,32 @@ def parseBetaOfStringFunc : (Form → Option String) → Form → Option (Beta S
 
 def parseBetaFunc: (Form → Option (Code β)) → Form → Option (Beta (Code β)) := parseBetaOfSomething
 
-structure ParseList α β where
+structure ParseList γ where
   parseHead: String
-  parseList (parse: Form → Option α) (list: List Form): Option β
+  parseList (list: List Form): Option γ
 
-def ParseList.parseForm (pl: ParseList α β) (parse: Form → Option α) (form: Form) : Option β :=
+def ParseList.parseForm (pl: ParseList γ) (form: Form) : Option γ :=
   match form with
     | .list (.name x :: xs) =>
       if pl.parseHead ≠ x then
         none
       else
-        pl.parseList parse xs
+        pl.parseList xs
     | _ => none
 
-def ParseList.convert(pl: ParseList α β) (f: β → γ): ParseList α γ :=
+def ParseList.convert (pl: ParseList γ) (f: γ → δ): ParseList δ :=
   {
     parseHead := pl.parseHead,
-    parseList (parse: Form → Option α) (list: List Form): Option γ := do
-      let b ← pl.parseList parse list
+    parseList (list: List Form): Option δ := do
+      let b ← pl.parseList list
       let c := f b
       c
   }
 
-def parseAnnotOfSomething α : ParseList α (Annot α) :=
+def parseAnnot (parse: (Form → Option α)) : ParseList (Annot α) :=
   {
     parseHead := ":",
-    parseList (parse: Form → Option α) (list: List Form): Option (Annot α) := do
+    parseList (list: List Form): Option (Annot α) := do
       let nameForm ← list[0]?
       let name ← getName nameForm
       let typeForm ← list[1]?
@@ -57,17 +57,10 @@ def parseAnnotOfSomething α : ParseList α (Annot α) :=
       pure {name := name, type := type}
   }
 
-def parseAnnotOfPi : ParseList (Pi (Code β)) (Annot (Pi (Code β))) := parseAnnotOfSomething (Pi (Code β))
-
-def parseAnnot {β} := parseAnnotOfSomething (Code β)
-
-
-
-
-def parseBinding  : ParseList (Code β) (Binding (Code β)) :=
+def parseBinding(parse: (Form → Option α))  : ParseList (Binding α) :=
   {
     parseHead := "let",
-    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Binding (Code β)) := do
+    parseList (list: List Form): Option (Binding α) := do
       let nameForm ← list[0]?
       let name ← getName nameForm
       let valueForm ← list[1]?
@@ -75,46 +68,46 @@ def parseBinding  : ParseList (Code β) (Binding (Code β)) :=
       pure {name := name, value := value}
   }
 
-def parseInfer : ParseList (Code β) (Infer (Code β)) :=
+def parseInfer(parse: (Form → Option α)) : ParseList (Infer α) :=
   {
     parseHead := "type",
-    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Infer (Code β)) := do
+    parseList (list: List Form): Option (Infer α) := do
       let valueForm ← list[0]?
       let value ← parse valueForm
       pure {value := value}
   }
 
-def parsePi : ParseList (Code β) (Pi (Code β)) :=
+
+def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β) : ParseList (Pi α β) :=
   {
     parseHead := "lambda",
-    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Pi (Code β)) := do
+    parseList (list: List Form): Option (Pi α β) := do
       let paramForms := list.extract 0 (list.length-1)
-      let params ← Util.optionMapAll paramForms (parseAnnot.parseForm parse)
+      let params ← Util.optionMapAll paramForms (parseAnnot parseAnnotType).parseForm
 
       let bodyForm ← list[list.length-1]?
-      let body ← parse bodyForm
+      let body ← parseBody bodyForm
 
       pure {params := params, body := body}
   }
 
-
-def parseInd : ParseList (Code β) (Ind (Code β)) :=
+def parseInd (parse: Form → Option α) : ParseList (Ind α) :=
   {
     parseHead := "inductive",
-    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Ind (Code β)) := do
+    parseList (list: List Form): Option (Ind α) := do
       let nameForm ← list[0]?
-      let name ← parseAnnot.parseForm parse nameForm
+      let name ← (parseAnnot parse).parseForm nameForm
 
       let consForm := list.extract 1 list.length
-      let cons ← Util.optionMapAll consForm (parseAnnotOfPi.parseForm (parsePi.parseForm parse))
+      let cons ← Util.optionMapAll consForm (parseAnnot (parsePi parse parseName).parseForm).parseForm
 
       pure {name := name, cons := cons}
   }
 
-def parseCase : ParseList (Code β) (Case (Code β)) :=
+def parseCase (parse: Form → Option α): ParseList (Case α) :=
   {
     parseHead := "case",
-    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Case (Code β)) := do
+    parseList (list: List Form): Option (Case α) := do
       let patternForm ← list[0]?
       let pattern ← parseBetaOfStringFunc parseName patternForm
 
@@ -124,15 +117,15 @@ def parseCase : ParseList (Code β) (Case (Code β)) :=
       pure {pattern := pattern, value := value}
   }
 
-def parseMat : ParseList (Code β) (Mat (Code β)) :=
+def parseMat(parse: Form → Option α) : ParseList (Mat α) :=
   {
     parseHead := "match",
-    parseList (parse: Form → Option (Code β)) (list: List Form): Option (Mat (Code β)) := do
+    parseList (list: List Form): Option (Mat α) := do
       let condForm ← list[0]?
       let cond ← parse condForm
 
       let casesForm := list.extract 1 list.length
-      let cases ← Util.optionMapAll casesForm (parseCase.parseForm parse)
+      let cases ← Util.optionMapAll casesForm (parseCase parse).parseForm
 
       pure {cond := cond, cases := cases}
   }
@@ -161,15 +154,16 @@ partial def parseCode
   ++
   -- parse basic
   [
-    (parseBinding.convert (λ x => (Code.binding x))).parseForm parse,
-    (parseInfer.convert (λ x => (Code.infer x))).parseForm parse,
-    (parsePi.convert (λ x => (Code.pi x))).parseForm parse,
-    (parseInd.convert (λ x => (Code.ind x))).parseForm parse,
-    (parseMat.convert (λ x => (Code.mat x))).parseForm parse,
+    ((parseBinding parse).convert (λ x => (Code.binding x))).parseForm,
+    ((parseInfer parse).convert (λ x => (Code.infer x))).parseForm,
+    ((parsePi parse parse).convert (λ x => (Code.pi x))).parseForm,
+    ((parseInd parse).convert (λ x => (Code.ind x))).parseForm,
+    ((parseMat parse).convert (λ x => (Code.mat x))).parseForm,
   ]
   ++
   -- parse beta (default case)
   [λ form => ((λ x => Code.beta x) <$> (parseBetaFunc parse form))]
+
 
   Util.applyOnce parseFuncList form
 
