@@ -93,8 +93,10 @@ def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β)
 
 def parsePatternPiAlphaBetaStringString (parseAnnotType: Form → Option α) (form: Form): Option (Pi α (Beta String String)) :=
   match form with
-    | .name n => some {params := [], body := {cmd := n, args := []}}
-    | .list _ => (parsePi parseAnnotType parsePatternBeta).parseForm form
+    | .name n =>
+      some {params := [], body := {cmd := n, args := []}}
+    | .list _ =>
+      (parsePi parseAnnotType parsePatternBeta).parseForm form
 
 def parseInd (parse: Form → Option α): ParseList (Ind α) :=
   {

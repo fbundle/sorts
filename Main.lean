@@ -6,8 +6,6 @@ def source := "
     {false: Bool}
   )
 
-  () break here
-
   (inductive {Nat: U_2}
     {zero: Nat}
     {succ: {{_: Nat} => Nat}}
@@ -39,11 +37,6 @@ def source := "
 
 "
 
-
--- #eval Util.parseAll EL.parse (EL.tokenize source)
-
-#eval Form.defaultParser.tokenize "{}"
-#eval Form.defaultParser.parse (Form.defaultParser.tokenize "{a b (1, 2) => x}")
 
 def main : IO Unit := do
 

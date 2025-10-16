@@ -119,7 +119,7 @@ partial def infixProcess (forms: List Form): Option (List Form) := do
     let last ← forms[forms.length-1]?
     let init := (forms.extract 0 (forms.length-2))
     let init ← infixProcess init
-    pure [op, Form.list init, last]
+    pure ([op] ++init ++ [last])
 
 
 def defaultParser := ((
