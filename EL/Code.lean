@@ -7,9 +7,9 @@ structure Beta (α: Type) where
   args: List α
   deriving Repr
 
-structure Annot (α: Type) where
-  name: String
-  type: α
+structure Annot (α: Type) (β: Type) where
+  left: α
+  right: β
   deriving Repr
 
 structure Binding (α: Type) where
@@ -22,13 +22,13 @@ structure Infer (α: Type) where -- Type of
   deriving Repr
 
 structure Pi (α: Type) (β: Type) where -- Pi or Lambda
-  params: List (Annot α)
+  params: List (Annot String α)
   body: β
   deriving Repr
 
 structure Ind (α: Type) where -- Inductive
-  name: Annot α
-  cons: List (Annot (Pi α String))
+  name: Annot (Pi α (Beta String)) α
+  cons: List (Annot String (Pi α (Beta String)))
   deriving Repr
 
 structure Case (α: Type) where

@@ -41,15 +41,15 @@ def ParseList.convert (pl: ParseList γ) (f: γ → δ): ParseList δ :=
       c
   }
 
-def parseAnnot (parse: (Form → Option α)) : ParseList (Annot α) :=
+def parseAnnot (parseLeft: (Form → Option α)) (parseRight: (Form → Option β)): ParseList (Annot α β) :=
   {
     parseHead := ":",
-    parseList (list: List Form): Option (Annot α) := do
-      let nameForm ← list[0]?
-      let name ← parseName nameForm
-      let typeForm ← list[1]?
-      let type ← parse typeForm
-      pure {name := name, type := type}
+    parseList (list: List Form): Option (Annot α β) := do
+      let leftForm ← list[0]?
+      let left ← parseLeft leftForm
+      let rightForm ← list[1]?
+      let right ← parseRight rightForm
+      pure {left := left, right := right}
   }
 
 def parseBinding(parse: (Form → Option α))  : ParseList (Binding α) :=
@@ -78,7 +78,7 @@ def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β)
     parseHead := "lambda",
     parseList (list: List Form): Option (Pi α β) := do
       let paramForms := list.extract 0 (list.length-1)
-      let params ← Util.optionMapAll paramForms (parseAnnot parseAnnotType).parseForm
+      let params ← Util.optionMapAll paramForms (parseAnnot parseName parseAnnotType).parseForm
 
       let bodyForm ← list[list.length-1]?
       let body ← parseBody bodyForm
@@ -91,10 +91,10 @@ def parseInd (parse: Form → Option α) : ParseList (Ind α) :=
     parseHead := "inductive",
     parseList (list: List Form): Option (Ind α) := do
       let nameForm ← list[0]?
-      let name ← (parseAnnot parse).parseForm nameForm
+      let name ← (parseAnnot (parsePi parse (parseBetaFunc parseName)).parseForm parse).parseForm nameForm
 
       let consForm := list.extract 1 list.length
-      let cons ← Util.optionMapAll consForm (parseAnnot (parsePi parse parseName).parseForm).parseForm
+      let cons ← Util.optionMapAll consForm (parseAnnot parseName (parsePi parse (parseBetaFunc parseName)).parseForm).parseForm
 
       pure {name := name, cons := cons}
   }
