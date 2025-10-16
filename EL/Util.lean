@@ -33,7 +33,7 @@ def optionChain (f: α → Option β) (g: β → Option γ) (a: α): Option γ :
   let c ← g b
   pure c
 
-
+infix:50 " >>> " => optionChain
 
 structure ParseAllResult (α: Type) (β: Type) where
   remaining: List α

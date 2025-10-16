@@ -22,7 +22,7 @@ partial def parseBetaFunc (parseCmd: Form → Option α) (parseArg: Form → Opt
 partial def parsePatternBeta (form: Form): Option (Beta String String) :=
   Util.applyAtmostOnce [
     parseBetaFunc parseName parseName,
-    Util.optionChain parseName (some {cmd := ·, args := []})
+    Util.optionChain parseName (some {cmd := ·, args := []}),
   ] form
 
 
