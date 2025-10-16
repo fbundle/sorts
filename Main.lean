@@ -11,18 +11,20 @@ def source := "
     {succ: {{_: Nat} => Nat}}
   )
 
-  (let one (succ zero))
-  (let two (succ one))
+  {one := (succ zero)}
+  {two := (succ one)}
 
-  (let is_pos
-    (lambda {n: Nat} (match n
+  {is_pos :=
+    {{n: Nat} => (match n
       { (zero)   -> false}
       { (succ x) -> true}
-    ))
-  )
+    )}
+  }
 
   (is_pos zero)
   (is_pos two)
+
+  () break
 
   (inductive {{ {T: U_2} => (List T) } : U_2}
     {nil: (List T)}
@@ -33,9 +35,11 @@ def source := "
   {x := 3}
   {y := 4}
 
-  {x + y * z}
+  {x => y => z}
 
 "
+
+
 
 
 def main : IO Unit := do

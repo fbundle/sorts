@@ -110,16 +110,12 @@ partial def Parser.parse (p: Parser) (tokens: List String): Option (List String 
           pure (ts, Form.list forms)
 
 -- default parser
-
 partial def infixProcess (forms: List Form): Option (List Form) := do
-  if forms.length ≤ 2 then
-    forms
-  else
-    let op ← forms[forms.length-2]?
-    let last ← forms[forms.length-1]?
-    let init := (forms.extract 0 (forms.length-2))
-    let init ← infixProcess init
-    pure ([op] ++init ++ [last])
+  match forms with
+    | head :: op :: rest =>
+      let rest ← infixProcess rest
+      pure [op, head, Form.list rest]
+    | _ => pure forms
 
 
 def defaultParser := ((
@@ -136,5 +132,7 @@ def defaultParser := ((
     closeBlockToken := "}",
     postProcess := infixProcess,
   }
+
+#eval defaultParser.parse (defaultParser.tokenize "{x => y => z}")
 
 end Form
