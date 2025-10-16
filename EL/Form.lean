@@ -53,6 +53,19 @@ partial def _splitPart (sortedSplitTokens : List String) (part : String) : List 
           beforeParts ++ [s] ++ afterParts
         | none => _splitPart ss part
 
+
+partial def _parseUntilClose (parse: List String → Option (List String × Form)) (closeBlockToken: String) (forms: Array Form) (tokens : List String) : Option (List String × Array Form) :=
+  match tokens with
+    | [] => none
+    | t :: ts =>
+      if t = closeBlockToken then
+        some (ts, forms)
+      else
+        match parse tokens with
+          | some (tokens, form) =>
+            _parseUntilClose parse closeBlockToken (forms.push form) tokens
+          | none => none
+
 structure Parser where
   openBlockToken: String
   closeBlockToken: String
@@ -67,32 +80,19 @@ def Parser.tokenize (p: Parser) (s : String) : List String :=
   let output := output.filter (λ s => s.length > 0)
   output
 
-mutual
 
-partial def Parser._parseUntilClose (p: Parser) (forms: Array Form) (tokens : List String) : Option (List String × Array Form) :=
-  match tokens with
-    | [] => none
-    | t :: ts =>
-      if t = p.closeBlockToken then
-        some (ts, forms)
-      else
-        match p.parse tokens with
-          | some (tokens, form) =>
-            p._parseUntilClose (forms.push form) tokens
-          | none => none
 
 partial def Parser.parse (p: Parser) (tokens: List String): Option (List String × Form) :=
  match tokens with
     | [] => none
     | t :: ts =>
       if t = p.openBlockToken then
-        match p._parseUntilClose #[] ts with
+        match _parseUntilClose p.parse p.closeBlockToken #[] ts with
           | some (ts, forms) => some (ts, Form.list forms.toList)
           | none => none
       else
         some (ts, Form.name t)
 
-end
 
 
 -- default parser
