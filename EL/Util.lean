@@ -28,6 +28,13 @@ def applyAtmostOnce {α: Type} {β} (fs: List (α → Option β)) (x: α): Optio
         | some y => some y
         | none => applyAtmostOnce fs x
 
+def optionChain (f: α → Option β) (g: β → Option γ) (a: α): Option γ := do
+  let b ← f a
+  let c ← g b
+  pure c
+
+
+
 structure ParseAllResult (α: Type) (β: Type) where
   remaining: List α
   items: List β

@@ -20,9 +20,11 @@ partial def parseBetaFunc (parseCmd: Form → Option α) (parseArg: Form → Opt
     | _ => none
 
 partial def parsePatternBeta (form: Form): Option (Beta String String) :=
-  match form with
-    | .name n => some {cmd := n, args := []}
-    | .list _ => parseBetaFunc parseName parseName form
+  Util.applyAtmostOnce [
+    parseBetaFunc parseName parseName,
+    Util.optionChain parseName (some {cmd := ·, args := []})
+  ] form
+
 
 structure ParseList γ where
   parseHead: List String
@@ -91,12 +93,12 @@ def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β)
       pure {params := params, body := body}
   }
 
-def parsePatternPiAlphaBetaStringString (parseAnnotType: Form → Option α) (form: Form): Option (Pi α (Beta String String)) :=
-  match form with
-    | .name n =>
-      some {params := [], body := {cmd := n, args := []}}
-    | .list _ =>
-      (parsePi parseAnnotType parsePatternBeta).parseForm form
+def parsePatternPiAlphaBetaStringString (parseAnnotType: Form → Option α) (form: Form): Option (Pi α (Beta String String)) := do
+  Util.applyAtmostOnce [
+    (parsePi parseAnnotType parsePatternBeta).parseForm,
+    Util.optionChain parsePatternBeta (some {params := [], body := ·}),
+  ] form
+
 
 def parseInd (parse: Form → Option α): ParseList (Ind α) :=
   {

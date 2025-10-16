@@ -16,7 +16,7 @@ def source := "
 
   {is_pos :=
     {{n: Nat} => (match n
-      { (zero)   -> false}
+      { zero   -> false}
       { (succ x) -> true}
     )}
   }
@@ -28,7 +28,7 @@ def source := "
 
 
   (inductive [{T: U_2} => (List T) : U_2]
-
+    {nil : (List T)}
   )
 
 
