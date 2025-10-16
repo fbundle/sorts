@@ -116,5 +116,6 @@ def defaultParser := (
     postProcess := (some ·),
   }
 
+-- TODO - add infix block
 
 end Form
