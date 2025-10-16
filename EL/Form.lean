@@ -119,20 +119,22 @@ partial def infixLeftToRightProcess (forms: List Form): Option Form := do
     let initForms := forms.extract 0 (forms.length-2)
     pure (.list ([opForm] ++ initForms ++ [lastForm]))
 
-def defaultParser := (((
-    newParser [
-      "+", "-", "*", "/", "%", "=", "==",
-      ",", ";", ":", ":=", "=>", "->",
-      ]
-  ).addBlockParser {
+def defaultParser :=
+  newParser [
+    "+", "-", "*", "/", "%", "=", "==",
+    ",", ";", ":", ":=", "=>", "->",
+    ]
+  |> (·.addBlockParser {
     openBlockToken := "(",
     closeBlockToken := ")",
     postProcess := (Form.list ·),
-  }).addBlockParser {
+  })
+  |> (·.addBlockParser {
     openBlockToken := "{",
     closeBlockToken := "}",
     postProcess := infixLeftToRightProcess,
   })
+
 
 #eval defaultParser.parse (defaultParser.tokenize "{x y => z}")
 
