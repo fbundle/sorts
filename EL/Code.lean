@@ -1,3 +1,5 @@
+import EL.Class
+
 namespace EL
 
 structure Beta (α: Type) where
@@ -56,28 +58,26 @@ inductive Code (β: Type) where
   | mat: Mat (Code β) → Code β
   deriving Repr
 
-structure Context α where
-  set: String → α → Context α
-  get?: String → Option α
 
-partial def Code.inferCode (c: Code β) (ctx: Context (Code β)) (inferAtom: β → β): Option (Code β × Context (Code β)) := do
+
+partial def Code.inferCode [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx) : Option (Code β × Ctx) := do
   -- infer: turn everything to type then normalize
   match c with
     | .atom a =>
-      let p ← inferAtom a
+      let p := Irreducible.inferAtom a
       pure (.atom p, ctx)
     | .name n =>
-      let c ← ctx.get? n
-      c.inferCode ctx inferAtom
+      let c : Code β ← Context.get? ctx n
+      c.inferCode ctx
     | _ => sorry
 
-partial def Code.normalizeCode (c: Code β) (ctx: Context (Code β)): Option (Code β × Context (Code β)) := do
+partial def Code.normalizeCode [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do
   -- normalize: just normalize
   match c with
     | .atom a =>
       pure (c, ctx) -- return itself
     | .name n =>
-      let c ← ctx.get? n
+      let c: Code β ← Context.get? ctx n
       c.normalizeCode ctx
     | _ => sorry
 
