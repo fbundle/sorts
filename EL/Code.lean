@@ -58,8 +58,6 @@ inductive Code (β: Type) where
   | mat: Mat (Code β) → Code β
   deriving Repr
 
-
-
 partial def Code.inferCode [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx) : Option (Code β × Ctx) := do
   -- infer: turn everything to type then normalize
   match c with
