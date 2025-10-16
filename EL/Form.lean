@@ -53,42 +53,6 @@ partial def _splitPart (sortedSplitTokens : List String) (part : String) : List 
           beforeParts ++ [s] ++ afterParts
         | none => _splitPart ss part
 
-def _tokenize (sortedSplitTokens : List String) (s : String) : List String :=
-  let parts := s.split (λ c => c.isWhitespace)
-  let output := parts.flatMap (_splitPart sortedSplitTokens)
-  let output := output.filter (λ s => s.length > 0)
-  output
-
-
-partial def _parseUntil
-  (parse: List String → Option (List String × Form))
-  (closeBlockToken: String)
-  (forms: Array Form)
-  (tokens : List String) : Option (List String × Array Form) :=
-  match tokens with
-    | [] => none
-    | t :: ts =>
-      if t = closeBlockToken then
-        some (ts, forms)
-      else
-        match parse tokens with
-          | some (tokens, form) =>
-            _parseUntil parse closeBlockToken (forms.push form) tokens
-          | none => none
-
-partial def _parse
-  (openBlockToken: String) (closeBlockToken: String)
-  (tokens : List String) : Option (List String × Form) :=
-  match tokens with
-    | [] => none
-    | t :: ts =>
-      if t = openBlockToken then
-        match _parseUntil (_parse openBlockToken closeBlockToken) closeBlockToken #[] ts with
-          | some (ts, forms) => some (ts, Form.list forms.toList)
-          | none => none
-      else
-        some (ts, Form.name t)
-
 structure Parser where
   openBlockToken: String
   closeBlockToken: String
@@ -97,11 +61,38 @@ structure Parser where
 def Parser.init (p: Parser) : Parser :=
   {p with splitTokens := _sortSplitTokens p.splitTokens}
 
-def Parser.tokenize (p: Parser) (s: String): List String :=
-  _tokenize p.splitTokens s
+def Parser.tokenize (p: Parser) (s : String) : List String :=
+  let parts := s.split (λ c => c.isWhitespace)
+  let output := parts.flatMap (_splitPart p.splitTokens)
+  let output := output.filter (λ s => s.length > 0)
+  output
 
-def Parser.parse (p: Parser) (tokens: List String): Option (List String × Form) :=
-  _parse p.openBlockToken p.closeBlockToken tokens
+mutual
+
+partial def Parser._parseUntilClose (p: Parser) (forms: Array Form) (tokens : List String) : Option (List String × Array Form) :=
+  match tokens with
+    | [] => none
+    | t :: ts =>
+      if t = p.closeBlockToken then
+        some (ts, forms)
+      else
+        match p.parse tokens with
+          | some (tokens, form) =>
+            p._parseUntilClose (forms.push form) tokens
+          | none => none
+
+partial def Parser.parse (p: Parser) (tokens: List String): Option (List String × Form) :=
+ match tokens with
+    | [] => none
+    | t :: ts =>
+      if t = p.openBlockToken then
+        match p._parseUntilClose #[] ts with
+          | some (ts, forms) => some (ts, Form.list forms.toList)
+          | none => none
+      else
+        some (ts, Form.name t)
+
+end
 
 
 -- default parser
