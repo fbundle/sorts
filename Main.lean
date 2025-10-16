@@ -24,9 +24,9 @@ def source := "
   (is_pos zero)
   (is_pos two)
 
-  (inductive { (lambda (: T U_2) (List T)) : U_2}
-    {nil: (lambda (List T))}
-    {cons: (lambda (: init (List T)) (: tail T) (List T))}
+  (inductive {{ {T: U_2} => (List T) } : U_2}
+    {nil: (List T)}
+    {cons: {{init: (List T)} {tail: T} => (List T)} }
   )
 
 

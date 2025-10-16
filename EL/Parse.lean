@@ -95,11 +95,33 @@ def parseInd (parse: Form → Option α): ParseList (Ind α) :=
 
       let consForm := list.extract 1 list.length
       let cons ← Util.optionMapAll consForm (parseAnnot parseName (λ form =>
-        match parseName form with
-          | some n => some (Sum.inl n)
+        match (parsePi parse parseName).parseForm form with
+          | some p => some (Sum.inr p)
           | none =>
-            match (parsePi parse parseName).parseForm form with
-              | some p => some (Sum.inr p)
+            match parseName form with
+              | some n => some (Sum.inl n)
+              | none => none
+      )).parseForm
+
+      pure {name := name, cons := cons}
+  }
+
+def parseIndDep (parse: Form → Option α): ParseList (IndDep α) :=
+  {
+    parseHead := ["inductive"],
+    parseList (list: List Form): Option (IndDep α) := do
+      let parsePiAlphaBetaString := (parsePi parse (parseBetaFunc parseName)).parseForm
+
+      let nameForm ← list[0]?
+      let name ← (parseAnnot parsePiAlphaBetaString parse).parseForm nameForm
+
+      let consForm := list.extract 1 list.length
+      let cons ← Util.optionMapAll consForm (parseAnnot parseName (λ form =>
+        match parsePiAlphaBetaString form with
+          | some p => some (Sum.inr p)
+          | none =>
+            match (parseBetaFunc parseName) form with
+              | some n => some (Sum.inl n)
               | none => none
       )).parseForm
 
@@ -160,6 +182,7 @@ partial def parseCode
     ((parseInfer parse).convert (Code.infer ·)).parseForm,
     ((parsePi parse parse).convert (Code.pi ·)).parseForm,
     ((parseInd parse).convert (Code.ind ·)).parseForm,
+    ((parseIndDep parse).convert (Code.ind_dep ·)).parseForm,
     ((parseMat parse).convert (Code.mat ·)).parseForm,
   ]
   ++
