@@ -2,12 +2,12 @@ import EL.EL
 
 def source := "
   (inductive {Bool: U_2}
-    {true: {=> Bool}}
-    {false: {=> Bool}}
+    {true: Bool}
+    {false: Bool}
   )
 
   (inductive {Nat: U_2}
-    {zero: {=> Nat}}
+    {zero: Nat}
     {succ: {{_: Nat} => Nat}}
   )
 

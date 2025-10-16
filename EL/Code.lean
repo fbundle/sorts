@@ -7,6 +7,12 @@ structure Beta (α: Type) where
   args: List α
   deriving Repr
 
+def Beta.relax? (b: Beta α): Option α :=
+  if b.args.length = 0 then
+    some b.cmd
+  else
+    none
+
 structure Annot (α: Type) (β: Type) where
   left: α
   right: β
@@ -26,10 +32,15 @@ structure Pi (α: Type) (β: Type) where -- Pi or Lambda
   body: β
   deriving Repr
 
+def Pi.relax? (p: Pi α β): Option β :=
+  if p.params.length = 0 then
+    some p.body
+  else
+    none
 
 structure Ind (α: Type) where -- Inductive - TODO dependent type
   name: Annot String α
-  cons: List (Annot String (Pi α String))
+  cons: List (Annot String (String ⊕ Pi α String))
   deriving Repr
 
 structure Case (α: Type) where

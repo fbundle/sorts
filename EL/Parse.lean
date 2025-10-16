@@ -94,7 +94,14 @@ def parseInd (parse: Form → Option α): ParseList (Ind α) :=
       let name ← (parseAnnot parseName parse).parseForm nameForm
 
       let consForm := list.extract 1 list.length
-      let cons ← Util.optionMapAll consForm (parseAnnot parseName (parsePi parse parseName).parseForm).parseForm
+      let cons ← Util.optionMapAll consForm (parseAnnot parseName (λ form =>
+        match parseName form with
+          | some n => some (Sum.inl n)
+          | none =>
+            match (parsePi parse parseName).parseForm form with
+              | some p => some (Sum.inr p)
+              | none => none
+      )).parseForm
 
       pure {name := name, cons := cons}
   }
