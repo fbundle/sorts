@@ -138,5 +138,22 @@ def defaultParser :=
 
 #eval defaultParser.parse (defaultParser.tokenize "{x y => z}")
 
+structure ParseList γ where
+  parseHead: List String
+  parseList (list: List Form): Option γ
+
+def ParseList.parseForm (pl: ParseList γ) (form: Form) : Option γ :=
+  match form with
+    | .list (.name x :: xs) =>
+      if pl.parseHead.contains x then
+        pl.parseList xs
+      else
+        none
+    | _ => none
+
+
+
+
+
 
 end Form
