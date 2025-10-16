@@ -122,22 +122,12 @@ partial def parseCode
   (parseAtom: String → Option β)
   (form: Form): Option (Code β) := do
 
-  let parseAtomFunc (form: Form): Option (Code β) := do
-    let n ← parseName form
-    let a ← parseAtom n
-    pure (.atom a)
-
-  let parseNameFunc (form: Form): Option (Code β) := do
-    let n ← parseName form
-    pure (.name n)
-
-
   let parse := parseCode parseAtom
   let parseFuncList: List (Form → Option (Code β)) :=
   -- parse name
   [
-    parseAtomFunc,
-    parseNameFunc,
+    parseName >=> parseAtom >=> (λ x => some (Code.atom x)),
+    parseName >=> (λ x => some (Code.name x)),
   ]
   ++
   -- parse basic
