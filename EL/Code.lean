@@ -30,7 +30,7 @@ structure Ind (α: Type) where -- Inductive
   deriving Repr
 
 structure Case (α: Type) where
-  cond: Beta α
+  cond: Beta String
   value: α
   deriving Repr
 
