@@ -111,30 +111,13 @@ partial def Parser.parse (p: Parser) (tokens: List String): Option (List String 
 
 -- default parser
 partial def infixLeftToRightProcess (forms: List Form): Option Form := do
-  if forms.length = 1 then
-    let head ← forms[0]?
-    pure head
-  else if forms.length % 2 = 1 then
-    let head ← forms[0]?
-    let op ← forms[1]?
-    let rest := forms.extract 2 forms.length
-    let rest ← infixLeftToRightProcess rest
-    pure (.list [op, head, rest])
+  if forms.length ≤ 2 then
+    pure (.list forms)
   else
-    none
-
-partial def infixRightToLeftProcess (forms: List Form): Option Form := do
-  if forms.length = 1 then
-    let head ← forms[0]?
-    pure head
-  else if forms.length % 2 = 1 then
-    let tail ← forms[forms.length-1]?
-    let op ← forms[forms.length-2]?
-    let init := forms.extract 0 (forms.length-2)
-    let init ← infixRightToLeftProcess init
-    pure (.list [op, init, tail])
-  else
-    none
+    let lastForm ← forms[forms.length-1]?
+    let opForm ← forms[forms.length-2]?
+    let initForms := forms.extract 0 (forms.length-2)
+    pure (.list ([opForm] ++ initForms ++ [lastForm]))
 
 def defaultParser := (((
     newParser [
@@ -149,25 +132,9 @@ def defaultParser := (((
     openBlockToken := "{",
     closeBlockToken := "}",
     postProcess := infixLeftToRightProcess,
-  }).addBlockParser {
-    openBlockToken := "[",
-    closeBlockToken := "]",
-    postProcess := infixRightToLeftProcess,
-  }
+  })
 
-#eval defaultParser.parse (defaultParser.tokenize "{x}")
-#eval defaultParser.parse (defaultParser.tokenize "{x =>}")
-#eval defaultParser.parse (defaultParser.tokenize "{x => y}")
-#eval defaultParser.parse (defaultParser.tokenize "{x => y =>}")
-#eval defaultParser.parse (defaultParser.tokenize "{x => y => z}")
-
-#eval defaultParser.parse (defaultParser.tokenize "[x]")
-#eval defaultParser.parse (defaultParser.tokenize "[x =>]")
-#eval defaultParser.parse (defaultParser.tokenize "[x => y]")
-#eval defaultParser.parse (defaultParser.tokenize "[x => y =>]")
-#eval defaultParser.parse (defaultParser.tokenize "[x => y => z]")
-
-#eval defaultParser.parse (defaultParser.tokenize "[{T: U_2} => (List T) : U_2]")
+#eval defaultParser.parse (defaultParser.tokenize "{x y => z}")
 
 
 end Form

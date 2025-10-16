@@ -94,13 +94,10 @@ def parsePi (parseAnnotType: Form → Option α) (parseBody: Form → Option β)
   }
 
 def parsePatternPiAlphaBetaStringString (parseAnnotType: Form → Option α) (form: Form): Option (Pi α (Beta String String)) :=
-  let x := Util.applyAtmostOnce [
+  Util.applyAtmostOnce [
     (parsePi parseAnnotType parsePatternBeta).parseForm,
     Util.optionChain parsePatternBeta (some {params := [], body := ·}),
   ] form
-
-  dbg_trace s!"matching {form}"
-  x
 
 
 def parseInd (parse: Form → Option α): ParseList (Ind α) :=
