@@ -40,18 +40,27 @@ def el2 (_: Unit): List (Code Atom) :=
     },
 
     .bind_val {
-      name := "l", value := (.app {cmd := (.var "nil"), args := [(.var "Nat")]}),
+      name := "f", value := (.lam {
+        params := [{name := "_", type := (.var "Nat")}],
+        body := (.list [
+          .bind_val {
+            name := "l", value := (.app {cmd := (.var "nil"), args := [(.var "Nat")]}),
+          },
+          .bind_val {
+            name := "l", value := (.app {cmd := (.var "append"), args := [(.var "Nat"), (.var "zero"), (.var "l"), (.var "one")]}),
+          },
+          .bind_val {
+            name := "l", value := (.app {cmd := (.var "append"), args := [(.var "Nat"), (.var "one"), (.var "l"), (.var "two")]}),
+          },
+          .bind_val {
+            name := "l", value := (.app {cmd := (.var "append"), args := [(.var "Nat"), (.var "two"), (.var "l"), (.var "three")]}),
+          },
+          .var "l"
+        ])
+      })
     },
-    .bind_val {
-      name := "l", value := (.app {cmd := (.var "append"), args := [(.var "Nat"), (.var "zero"), (.var "l"), (.var "one")]}),
-    },
-    .bind_val {
-      name := "l", value := (.app {cmd := (.var "append"), args := [(.var "Nat"), (.var "one"), (.var "l"), (.var "two")]}),
-    },
-    .bind_val {
-      name := "l", value := (.app {cmd := (.var "append"), args := [(.var "Nat"), (.var "two"), (.var "l"), (.var "three")]}),
-    },
-    .var "l"
+
+    (.app {cmd := (.var "f"), args := [(.var "zero")]})
   ]
 
 

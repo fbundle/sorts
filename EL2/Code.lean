@@ -37,6 +37,8 @@ structure Lam (α: Type) where
   body: α
   deriving Repr
 
+-- TODO - add Mat - match
+
 -- β is an atomic type which is reduced into itself, e.g. integer
 -- it instantiates Reducible β β
 -- Code β is any type which can be reduced into β
