@@ -1,4 +1,5 @@
 import Std.Data
+namespace EL2
 
 namespace Util
 
@@ -61,3 +62,4 @@ def Map (α) (β) [BEq α] [Hashable α] := Std.HashMap α β
 
 
 end Util
+end EL2

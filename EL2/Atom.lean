@@ -1,7 +1,7 @@
 import EL2.Class
 import EL2.Util
 
-namespace EL
+namespace EL2
 
 inductive Atom where -- Atom - basic element of EL
   | int_type: Atom
@@ -19,4 +19,4 @@ instance: Irreducible Atom where
   inferAtom := Atom.inferAtom
 
 
-end EL
+end EL2

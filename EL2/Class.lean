@@ -1,4 +1,4 @@
-namespace EL
+namespace EL2
 
 class Irreducible β where
   inferAtom: β → β
@@ -9,4 +9,4 @@ class Context Ctx α where
   get?: Ctx → String → Option α
 
 
-end EL
+end EL2

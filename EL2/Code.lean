@@ -1,6 +1,6 @@
 import EL2.Class
 
-namespace EL
+namespace EL2
 
 structure Beta (α: Type) (β: Type) where
   cmd: α
@@ -82,4 +82,4 @@ partial def Code.normalizeCode [Irreducible β] [Context Ctx (Code β)] (c: Code
     | _ => sorry
 
 
-end EL
+end EL2
