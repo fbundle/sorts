@@ -56,34 +56,38 @@ inductive Code (β: Type) where
   | lam: Lam (Code β) → Code β
   deriving Repr
 
-partial def Code.toString [ToString β] (c: Code β): String :=
-    match c with
-      | .atom x => s!"(atom {x})"
-      | .var n => n
-      | .list l => String.join ((l.map toString).intersperse "; ")
-      | .ann x => s!"({x.name}: {x.type.toString})"
-      | .bind_val x => s!"({x.name} := {x.value.toString})"
-      | .bind_typ x => s!"(type {x.name} {
-        String.join ((x.params.map (Code.toString ∘ (Code.ann ·))).intersperse " ")
-      })"
-      | .bind_mk x => s!"(type_mk {x.name} {
-        String.join ((x.params.map (Code.toString ∘ (Code.ann ·))).intersperse " ")
-      } -> " ++
-      match x.type.args with
-        | [] => x.type.cmd
-        | _ => s!"({x.type.cmd} {
-            String.join ((x.type.args.map Code.toString).intersperse " ")
-          }))"
-      | .app x =>
-        match x.args with
-          | [] => x.cmd.toString
-          | _ =>
-            s!"({x.cmd.toString} {
-              String.join ((x.args.map Code.toString).intersperse " ")
-            })"
-      | .lam x => s!"({
-        String.join ((x.params.map (Code.toString ∘ (Code.ann ·))).intersperse " ")
-      } => {x.body.toString})"
+partial def Code.toString [ToString β] (c: Code β) (listIndent: Nat := 0): String :=
+  let listIndentStr := String.mk (List.replicate (listIndent*2) ' ')
+  listIndentStr ++ match c with
+    | .atom x => s!"(atom {x})"
+    | .var n => n
+    | .list l => "[\n"
+    ++
+    String.join (l.map (λ x => (x.toString (listIndent+1)) ++ "\n"))
+    ++ "]"
+    | .ann x => s!"({x.name}: {x.type.toString})"
+    | .bind_val x => s!"({x.name} := {x.value.toString})"
+    | .bind_typ x => s!"(type {x.name} {
+      String.join ((x.params.map (Code.toString ∘ (Code.ann ·))).intersperse " ")
+    })"
+    | .bind_mk x => s!"(type_mk {x.name} {
+      String.join ((x.params.map (Code.toString ∘ (Code.ann ·))).intersperse " ")
+    } -> " ++
+    match x.type.args with
+      | [] => x.type.cmd
+      | _ => s!"({x.type.cmd} {
+          String.join ((x.type.args.map Code.toString).intersperse " ")
+        }))"
+    | .app x =>
+      match x.args with
+        | [] => x.cmd.toString
+        | _ =>
+          s!"({x.cmd.toString} {
+            String.join ((x.args.map Code.toString).intersperse " ")
+          })"
+    | .lam x => s!"({
+      String.join ((x.params.map (Code.toString ∘ (Code.ann ·))).intersperse " ")
+    } => {x.body.toString})"
 
 instance [ToString β]: ToString (Code β) where
   toString := Code.toString
