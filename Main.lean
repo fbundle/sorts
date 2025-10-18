@@ -7,14 +7,14 @@ open EL2
 
 def el2 (_: Unit): Term Atom :=
   .list [
-    .bind_typ {name := "Nat", params := []},
+    .bind_typ {name := "Nat", params := [], parent := (.var "U_2")},
     .bind_mk {
       name := "zero", params := [], type := {cmd := "Nat", args := []},
     },
     .bind_mk {
       name := "succ", params := [{name := "n", type := (.app {cmd := (.var "Nat"), args := []})}], type := {cmd := "Nat", args := []},
     },
-    .bind_typ {name := "Vec", params := [{name := "T", type := (.var "U_2")}, {name := "n", type := (.var "Nat")}]},
+    .bind_typ {name := "Vec", params := [{name := "T", type := (.var "U_2")}, {name := "n", type := (.var "Nat")}], parent := (.var "U_2")},
     .bind_mk {
       name := "nil", params := [
         {name := "T", type := (.var "U_2")},

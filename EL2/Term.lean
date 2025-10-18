@@ -16,6 +16,7 @@ structure BindVal (α: Type) where
 structure BindTyp (α: Type) where -- List (T: Type)
   name: String
   params: List (Ann α)
+  parent: α
   deriving Repr
 
 -- App : function application
