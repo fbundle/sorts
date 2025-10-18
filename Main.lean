@@ -62,4 +62,4 @@ end EL2_EXAMPLE
 
 
 def main  : IO Unit := do
-  IO.println s!"{repr (EL2_EXAMPLE.el2 ())}"
+  IO.println s!"{(EL2_EXAMPLE.el2 ())}"

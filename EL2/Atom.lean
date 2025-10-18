@@ -18,5 +18,12 @@ def Atom.inferAtom (s: Atom): Atom :=
 instance: Irreducible Atom where
   inferAtom := Atom.inferAtom
 
+instance: ToString Atom where
+  toString (a: Atom): String :=
+    match a with
+      | .int_type => "int"
+      | .univ i => s!"U_{i}"
+      | .integer i => s!"{i}"
+
 
 end EL2
