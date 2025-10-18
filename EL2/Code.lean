@@ -45,6 +45,7 @@ structure Lam (α: Type) where
 inductive Code (β: Type) where
   | atom: β → Code β
   | var: String → Code β
+  | list: List (Code β) → Code β
   | ann: Ann (Code β) → Code β
   | bind_val: BindVal (Code β) → Code β
   | bind_typ: BindTyp (Code β) → Code β
@@ -57,6 +58,7 @@ partial def Code.toString [ToString β] (c: Code β): String :=
     match c with
       | .atom x => s!"(atom {x})"
       | .var n => n
+      | .list l => String.join ((l.map toString).intersperse "; ")
       | .ann x => s!"({x.name}: {x.type.toString})"
       | .bind_val x => s!"({x.name} := {x.value.toString})"
       | .bind_typ x => s!"(type {x.name} {
