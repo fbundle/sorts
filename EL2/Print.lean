@@ -12,6 +12,14 @@ def PrintCtx.next (ctx: PrintCtx): PrintCtx := {ctx with indentNum := ctx.indent
 def PrintCtx.indentStr (ctx: PrintCtx): String :=
   String.mk (List.replicate (ctx.indentNum * ctx.indentSize) ' ')
 
+
+def printList (l: List String): String :=
+  match l with
+    | [] => ""
+    | x :: [] => x
+    | _ =>
+      "(" ++ String.join (l.intersperse " ") ++ ")"
+
 partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
   match c with
     | .atom x =>
@@ -21,39 +29,37 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       n
 
     | .list l =>
-
-      "\n"
-      ++
-      String.join (l.map (λ x => ctx.indentStr ++ (ctx.next.print x) ++ "\n"))
+      "\n" ++ String.join (l.map (λ x => ctx.indentStr ++ (ctx.next.print x) ++ "\n"))
 
     | .ann x => s!"({x.name}: {ctx.print x.type})"
 
-    | .bind_val x => s!"{x.name} := {ctx.print x.value}"
+    | .bind_val x => s!"({x.name} := {ctx.print x.value})"
 
-    | .bind_typ x => s!"type {x.name} {
-      String.join ((x.params.map (ctx.print ∘ (Term.ann ·))).intersperse " ")
-    }"
+    | .bind_typ x => printList (
+      ["type"] ++
+      [x.name] ++
+      x.params.map (ctx.print ∘ (Term.ann ·))
+    )
 
-    | .bind_mk x => s!"type_mk {x.name} {
-      String.join ((x.params.map (ctx.print ∘ (Term.ann ·))).intersperse " ")
-    } -> " ++
-    match x.type.args with
-      | [] => x.type.cmd
-      | _ => s!"({x.type.cmd} {
-          String.join ((x.type.args.map ctx.print).intersperse " ")
-        })"
+    | .bind_mk x => printList (
+      ["type_mk"] ++
+      [x.name] ++
+      x.params.map (ctx.print ∘ (Term.ann ·)) ++
+      [printList (
+        [x.type.cmd] ++
+        x.type.args.map ctx.print
+      )]
+    )
+    | .app x => printList (
+      [ctx.print x.cmd] ++
+      x.args.map ctx.print
+    )
 
-    | .app x =>
-      match x.args with
-        | [] => ctx.print x.cmd
-        | _ =>
-          s!"({ctx.print x.cmd} {
-            String.join ((x.args.map ctx.print).intersperse " ")
-          })"
 
-    | .lam x => s!"{
-      String.join ((x.params.map (ctx.print ∘ (Term.ann ·))).intersperse " ")
-    } => {ctx.print x.body}"
+    | .lam x => printList (
+      x.params.map (ctx.print ∘ (Term.ann ·)) ++
+      [ctx.print x.body]
+    )
 
 instance [ToString β]: ToString (Term β) where
   toString (c: Term β):= {
