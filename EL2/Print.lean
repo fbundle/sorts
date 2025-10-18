@@ -22,11 +22,19 @@ def PrintCtx.indentStr (ctx: PrintCtx): String :=
   String.mk (List.replicate (ctx.indentNum * ctx.indentSize) ' ')
 
 
-def printList (l: List String): String :=
-  String.join (l.intersperse " ")
+def printList (l: List String) (withParens: Bool := False): String :=
+  match l with
+    | [] => ""
+    | x :: [] => x
+    | _ =>
+      let content := String.join (l.intersperse " ")
+      if withParens then
+        "(" ++ content ++ ")"
+      else
+        content
 
 partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
-  let content: List String := match c with
+  let contentList: List String := match c with
     | .atom x =>
       [toString x]
 
@@ -50,10 +58,10 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       ["type_mk"] ++
       [x.name] ++
       x.params.map (ctx.next.print ∘ (Term.ann ·)) ++
-      ["(" ++ printList (
+      [printList (
         [x.type.cmd] ++
         x.type.args.map ctx.next.print
-      ) ++ ")"]
+      ) true]
 
     | .app x =>
       [ctx.next.print x.cmd] ++
@@ -65,14 +73,7 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       x.params.map (ctx.next.print ∘ (Term.ann ·)) ++
       [ctx.next.print x.body]
 
-  match content with
-    | [] => ""
-    | x :: [] => x
-    | _ =>
-      if ctx.stripParens then
-        printList content
-      else
-        "(" ++ printList content ++ ")"
+  printList contentList
 
 instance [ToString β]: ToString (Term β) where
   toString (c: Term β):= {
