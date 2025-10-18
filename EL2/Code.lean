@@ -24,18 +24,15 @@ structure App (α: Type) (β: Type) where
   args: List β
   deriving Repr
 
-def Pattern := App String String
-deriving instance Repr for Pattern
-
 -- BindMk : type constructor
 structure BindMk (α: Type) where  -- nil: List T or cons (init: List T) (tail: T): List T
   name: String
   params: List (Ann α)            -- (init: List T) (tail: T)
-  type: Pattern                   -- (List T)
+  type: App String α                 -- (List T)
   deriving Repr
 
--- Abst : function abstraction
-structure Abst (α: Type) where
+-- Lam : function abstraction
+structure Lam (α: Type) where
   params: List (Ann α)
   body: α
   deriving Repr
@@ -48,13 +45,13 @@ structure Abst (α: Type) where
 -- it is usually denoted by α
 inductive Code (β: Type) where
   | atom: β → Code β
-  | name: String → Code β
+  | var: String → Code β
   | ann: Ann (Code β) → Code β
   | bind_val: BindVal (Code β) → Code β
   | bind_typ: BindTyp (Code β) → Code β
   | bind_mk: BindMk (Code β) → Code β
   | app: App (Code β) (Code β) → Code β
-  | abst: Abst (Code β) → Code β
+  | lam: Lam (Code β) → Code β
   deriving Repr
 
 partial def Code.inferCode [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx) : Option (Code β × Ctx) := do
@@ -63,7 +60,7 @@ partial def Code.inferCode [Irreducible β] [Context Ctx (Code β)] (c: Code β)
     | .atom a =>
       let p := Irreducible.inferAtom a
       pure (.atom p, ctx)
-    | .name n =>
+    | .var n =>
       let c : Code β ← Context.get? ctx n
       c.inferCode ctx
     | _ => sorry
@@ -73,7 +70,7 @@ partial def Code.normalizeCode [Irreducible β] [Context Ctx (Code β)] (c: Code
   match c with
     | .atom a =>
       pure (c, ctx) -- return itself
-    | .name n =>
+    | .var n =>
       let c: Code β ← Context.get? ctx n
       c.normalizeCode ctx
     | _ => sorry

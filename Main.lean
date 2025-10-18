@@ -7,29 +7,37 @@ open EL2
 
 def el2 (_: Unit): List (Code Atom) :=
   [
-    .bind_typ {name := "typ_Bool", params := []},
-    .bind_val {name := "Bool", value := (.app {cmd := (.name "typ_Bool"), args := []})},   -- Bool := typ_Bool ()
-    .bind_mk {name := "mk_true", params := [], type := {cmd := "Bool", args := []}},      -- mk_true := () => Bool
-    .bind_mk {name := "mk_false", params := [], type := {cmd := "Bool", args := []}},     -- mk_false := () => Bool
-    .bind_val {name := "true", value := (.app {cmd := (.name "mk_true"), args := []})},   -- true := mk_true ()
-    .bind_val {name := "false", value := (.app {cmd := (.name "mk_false"), args := []})}, -- false := mk_false ()
-
-    .bind_typ {name := "typ_Nat", params := []},
-    .bind_val {name := "Nat", value := (.app {cmd := (.name "typ_Nat"), args := []})},
-    .bind_mk {name := "mk_zero", params := [], type := {cmd := "Nat", args := []}},
+    .bind_typ {name := "mk_Nat", params := []},
     .bind_mk {
-      name := "mk_cons",
-      params := [{name := "n", type := (.name "Nat")}],
-      type := {cmd := "Nat", args := []},
+      name := "mk_zero", params := [], type := {cmd := "mk_Nat", args := []},
     },
-    .bind_val {name := "zero", value := (.app {cmd := (.name "mk_zero"), args := []})},
-    .bind_val {name := "cons", value := (.abst {
-      params := [{name := "x", type := (.name "Nat")}],
-      body := (.app {cmd := (.name "mk_zero"), args := [(.name "x")]}),
-    })},
-
-
-
+    .bind_mk {
+      name := "mk_succ", params := [{name := "n", type := (.app {cmd := (.var "mk_Nat"), args := []})}], type := {cmd := "mk_Nat", args := []},
+    },
+    .bind_val {
+      name := "Nat", value := (.app {cmd := (.var "mk_Nat"), args := []}),
+    },
+    .bind_val {
+      name := "zero", value := (.app {cmd := (.var "mk_zero"), args := []}),
+    },
+    .bind_val {
+      name := "succ", value := (.lam {
+        params := [{name := "n", type := (.var "Nat")}],
+        body := (.app {cmd := (.var "mk_succ"), args := [(.var "n")]}),
+      }),
+    },
+    .bind_typ {name := "Vec", params := [{name := "T", type := (.var "U_2")}, {name := "n", type := (.var "Nat")}]},
+    .bind_mk {
+      name := "mk_nil", params := [
+        {name := "T", type := (.var "U_2")},
+      ], type := {cmd := "Vec", args := [(.var "T"), (.var "0")]},
+    },
+    .bind_mk {
+      name := "mk_append", params := [
+        {name := "T", type := (.var "U_2")}, {name := "n", type := (.var "Nat")},
+        {name := "v", type := (.app {cmd := (.var "Vec"), args := [(.var "T"), (.var "n")]})}
+      ], type := {cmd := "Vec", args := [(.var "T"), (.app {cmd := (.var "succ"), args := [(.var "n")]})]},
+    },
   ]
 
 
