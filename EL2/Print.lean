@@ -7,59 +7,72 @@ structure PrintCtx where
   indentSize: Nat
   stripParens: Bool
 
-def PrintCtx.next (ctx: PrintCtx): PrintCtx := {ctx with indentNum := ctx.indentNum+1}
+def PrintCtx.next (ctx: PrintCtx): PrintCtx := {
+  ctx with
+  stripParens := false
+}
+
+def PrintCtx.nextIndent (ctx: PrintCtx): PrintCtx := {
+  ctx with
+  indentNum := ctx.indentNum+1
+  stripParens := true
+}
 
 def PrintCtx.indentStr (ctx: PrintCtx): String :=
   String.mk (List.replicate (ctx.indentNum * ctx.indentSize) ' ')
 
 
 def printList (l: List String): String :=
-  match l with
+  String.join (l.intersperse " ")
+
+partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
+  let content: List String := match c with
+    | .atom x =>
+      [toString x]
+
+    | .var n =>
+      [n]
+
+    | .list l =>
+      ["\n" ++ String.join (l.map (λ x => ctx.indentStr ++ (ctx.nextIndent.print x) ++ "\n"))]
+
+    | .ann x => [x.name, ":", ctx.next.print x.type]
+
+    | .bind_val x => [x.name, ":=", ctx.next.print x.value]
+
+    | .bind_typ x =>
+      ["type"] ++
+      [x.name] ++
+      x.params.map (ctx.next.print ∘ (Term.ann ·))
+
+
+    | .bind_mk x =>
+      ["type_mk"] ++
+      [x.name] ++
+      x.params.map (ctx.next.print ∘ (Term.ann ·)) ++
+      [printList (
+        [x.type.cmd] ++
+        x.type.args.map ctx.next.print
+      )]
+
+    | .app x =>
+      [ctx.next.print x.cmd] ++
+      x.args.map ctx.next.print
+
+
+
+    | .lam x =>
+      x.params.map (ctx.next.print ∘ (Term.ann ·)) ++
+      [ctx.next.print x.body]
+
+  match content with
     | [] => ""
     | x :: [] => x
     | _ =>
-      "(" ++ String.join (l.intersperse " ") ++ ")"
-
-partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
-  match c with
-    | .atom x =>
-      toString x
-
-    | .var n =>
-      n
-
-    | .list l =>
-      "\n" ++ String.join (l.map (λ x => ctx.indentStr ++ (ctx.next.print x) ++ "\n"))
-
-    | .ann x => s!"({x.name}: {ctx.print x.type})"
-
-    | .bind_val x => s!"({x.name} := {ctx.print x.value})"
-
-    | .bind_typ x => printList (
-      ["type"] ++
-      [x.name] ++
-      x.params.map (ctx.print ∘ (Term.ann ·))
-    )
-
-    | .bind_mk x => printList (
-      ["type_mk"] ++
-      [x.name] ++
-      x.params.map (ctx.print ∘ (Term.ann ·)) ++
-      [printList (
-        [x.type.cmd] ++
-        x.type.args.map ctx.print
-      )]
-    )
-    | .app x => printList (
-      [ctx.print x.cmd] ++
-      x.args.map ctx.print
-    )
-
-
-    | .lam x => printList (
-      x.params.map (ctx.print ∘ (Term.ann ·)) ++
-      [ctx.print x.body]
-    )
+      if ctx.stripParens then
+        printList content
+      else
+        "(" ++ printList content ++ ")"
 
 instance [ToString β]: ToString (Term β) where
   toString (c: Term β):= {
