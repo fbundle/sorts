@@ -9,6 +9,9 @@ structure PrintCtx where
 
 def PrintCtx.next (ctx: PrintCtx): PrintCtx := {ctx with indentNum := ctx.indentNum+1}
 
+def PrintCtx.indentStr (ctx: PrintCtx): String :=
+  String.mk (List.replicate (ctx.indentNum * ctx.indentSize) ' ')
+
 partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
   match c with
     | .atom x =>
@@ -18,10 +21,10 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       n
 
     | .list l =>
-      let indentStr := String.mk (List.replicate (ctx.indentNum * ctx.indentSize) ' ')
+
       "\n"
       ++
-      String.join (l.map (λ x => indentStr ++ (ctx.next.print x) ++ "\n"))
+      String.join (l.map (λ x => ctx.indentStr ++ (ctx.next.print x) ++ "\n"))
 
     | .ann x => s!"({x.name}: {ctx.print x.type})"
 
