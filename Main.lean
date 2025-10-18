@@ -58,8 +58,10 @@ def el2 (_: Unit): List (Code Atom) :=
 end EL2_EXAMPLE
 
 
-
+def printLines [ToString α] (lines: List α) : IO Unit :=
+  lines.forM IO.println
 
 
 def main  : IO Unit := do
-  IO.println s!"{(EL2_EXAMPLE.el2 ())}"
+  let code := EL2_EXAMPLE.el2 ()
+  printLines code
