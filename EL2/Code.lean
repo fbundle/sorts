@@ -2,45 +2,38 @@ import EL2.Class
 
 namespace EL2
 
-structure Beta (α: Type) (β: Type) where
-  cmd: α
-  args: List β
-  deriving Repr
-
-structure Annot (α: Type) (β: Type) where
-  left: α
-  right: β
-  deriving Repr
-
-structure Bind (α: Type) where
+structure BindVal (α: Type) where
   name: String
   value: α
   deriving Repr
 
-structure Infer (α: Type) where -- Type of
-  value: α
+structure Ann (α: Type) where -- (2: Nat)
+  name: String
+  type: α
   deriving Repr
 
-structure Pi (α: Type) (β: Type) where -- Pi or Lambda
-  params: List (Annot String α)
-  body: β
+-- BindTyp : type
+structure BindTyp (α: Type) where -- List (T: Type)
+  name: String
+  params: List (Ann α)
   deriving Repr
 
-notation "IndType" α => Pi α (Beta String String)
-
-structure Ind (α: Type) where -- Inductive with dependent type
-  name: Annot (IndType α) α
-  cons: List (Annot String (IndType α))
+-- App : function application
+structure App (α: Type) (β: Type) where
+  cmd: α
+  args: List β
   deriving Repr
 
-structure Case (α: Type) where
-  pattern: Beta String String
-  value: α
+-- Mk : type constructor
+structure Mk (α: Type) where    -- nil: List T or cons (init: List T) (tail: T): List T
+  params: List (Ann α)          -- (init: List T) (tail: T)
+  body: App String String       -- (List T)
   deriving Repr
 
-structure Mat (α: Type) where
-  cond: α
-  cases: List (Case α)
+-- Abst : function abstraction
+structure Abst (α: Type) where
+  params: List (Ann α)
+  body: α
   deriving Repr
 
 
@@ -52,12 +45,12 @@ structure Mat (α: Type) where
 inductive Code (β: Type) where
   | atom: β → Code β
   | name: String → Code β
-  | beta: Beta (Code β) (Code β) → Code β
-  | bind: Bind (Code β) → Code β
-  | infer: Infer (Code β) → Code β
-  | pi: Pi (Code β) (Code β) → Code β
-  | ind: Ind (Code β) → Code β
-  | mat: Mat (Code β) → Code β
+  | bind_val: BindVal (Code β) → Code β
+  | ann: Ann (Code β) → Code β
+  | bind_typ: BindTyp (Code β) → Code β
+  | app: App (Code β) (Code β) → Code β
+  | mk: Mk (Code β) → Code β
+  | abst: Abst (Code β) → Code β
   deriving Repr
 
 partial def Code.inferCode [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx) : Option (Code β × Ctx) := do

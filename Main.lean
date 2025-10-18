@@ -1,9 +1,18 @@
 import EL.EL
+import EL2.EL2
 import Std
 
-open EL
+namespace EL2_EXAMPLE
+open EL2
+
+def el2 (_: Unit): List (Code Atom) :=
+  [
 
 
+  ]
+
+
+end EL2_EXAMPLE
 
 
 
