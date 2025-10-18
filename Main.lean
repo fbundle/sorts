@@ -5,8 +5,8 @@ import Std
 namespace EL2_EXAMPLE
 open EL2
 
-def el2 (_: Unit): List (Code Atom) :=
-  [
+def el2 (_: Unit): Code Atom :=
+  .list [
     .bind_typ {name := "Nat", params := []},
     .bind_mk {
       name := "zero", params := [], type := {cmd := "Nat", args := []},
@@ -73,4 +73,4 @@ def printLines [ToString α] (lines: List α) : IO Unit :=
 
 def main  : IO Unit := do
   let code := EL2_EXAMPLE.el2 ()
-  printLines code
+  IO.println code

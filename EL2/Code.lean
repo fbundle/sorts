@@ -56,41 +56,41 @@ inductive Code (β: Type) where
   | lam: Lam (Code β) → Code β
   deriving Repr
 
-partial def Code.toString [ToString β] (c: Code β) (listIndent: Nat := 0): String :=
+partial def Code.toString [ToString β] (c: Code β) (listIndent: Nat): String :=
   let listIndentStr := String.mk (List.replicate (listIndent*2) ' ')
-  listIndentStr ++ match c with
+  match c with
     | .atom x => s!"(atom {x})"
     | .var n => n
     | .list l => "[\n"
     ++
-    String.join (l.map (λ x => (x.toString (listIndent+1)) ++ "\n"))
+    String.join (l.map (λ x => listIndentStr ++ (x.toString (listIndent+1)) ++ "\n"))
     ++ "]"
-    | .ann x => s!"({x.name}: {x.type.toString})"
-    | .bind_val x => s!"({x.name} := {x.value.toString})"
+    | .ann x => s!"({x.name}: {x.type.toString listIndent})"
+    | .bind_val x => s!"({x.name} := {x.value.toString listIndent})"
     | .bind_typ x => s!"(type {x.name} {
-      String.join ((x.params.map (Code.toString ∘ (Code.ann ·))).intersperse " ")
+      String.join ((x.params.map ((Code.toString · listIndent) ∘ (Code.ann ·))).intersperse " ")
     })"
     | .bind_mk x => s!"(type_mk {x.name} {
-      String.join ((x.params.map (Code.toString ∘ (Code.ann ·))).intersperse " ")
+      String.join ((x.params.map ((Code.toString · listIndent) ∘ (Code.ann ·))).intersperse " ")
     } -> " ++
     match x.type.args with
       | [] => x.type.cmd
       | _ => s!"({x.type.cmd} {
-          String.join ((x.type.args.map Code.toString).intersperse " ")
+          String.join ((x.type.args.map (Code.toString · listIndent)).intersperse " ")
         }))"
     | .app x =>
       match x.args with
-        | [] => x.cmd.toString
+        | [] => x.cmd.toString listIndent
         | _ =>
-          s!"({x.cmd.toString} {
-            String.join ((x.args.map Code.toString).intersperse " ")
+          s!"({x.cmd.toString listIndent} {
+            String.join ((x.args.map (Code.toString · listIndent)).intersperse " ")
           })"
     | .lam x => s!"({
-      String.join ((x.params.map (Code.toString ∘ (Code.ann ·))).intersperse " ")
-    } => {x.body.toString})"
+      String.join ((x.params.map ((Code.toString · listIndent) ∘ (Code.ann ·))).intersperse " ")
+    } => {x.body.toString listIndent})"
 
 instance [ToString β]: ToString (Code β) where
-  toString := Code.toString
+  toString (c: Code β):= Code.toString c 1
 
 partial def Code.inferCode [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx) : Option (Code β × Ctx) := do
   -- infer: turn everything to type then normalize
