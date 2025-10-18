@@ -1,6 +1,17 @@
 import EL.EL
 import Std
 
+open EL
+
+def el_example (_: Unit): List (Code Atom) :=
+  [
+    Code.ind {name := sorry, cons := sorry}
+
+  ]
+
+
+
+
 
 def main (args : List String) : IO UInt32 := do
   match args with

@@ -38,7 +38,7 @@ def parseAnnotFunc (parseLeft: (Form → Option α)) (parseRight: (Form → Opti
   }: Form.ParseList (Annot α β)).parseForm
 
 def parseBindingFunc(parse: (Form → Option α))  : Form → Option  (Binding α) :=
-  ({
+  {
     parseHead := ["let", ":="],
     parseList (list: List Form): Option (Binding α) := do
       let nameForm ← list[0]?
@@ -46,21 +46,23 @@ def parseBindingFunc(parse: (Form → Option α))  : Form → Option  (Binding �
       let valueForm ← list[1]?
       let value ← parse valueForm
       pure {name := name, value := value}
-  }: Form.ParseList (Binding α)).parseForm
+    : Form.ParseList (Binding α)
+  }.parseForm
 
 
 def parseInferFunc (parse: (Form → Option α)) : Form → Option (Infer α) :=
-  ({
+  {
     parseHead := ["infer", "&"],
     parseList (list: List Form): Option (Infer α) := do
       let valueForm ← list[0]?
       let value ← parse valueForm
       pure {value := value}
-  }: Form.ParseList (Infer α)).parseForm
+    : Form.ParseList (Infer α)
+  }.parseForm
 
 
 def parsePiFunc (parseAnnotType: Form → Option α) (parseBody: Form → Option β) : Form → Option (Pi α β) :=
-  ({
+  {
     parseHead := ["lambda", "=>"],
     parseList (list: List Form): Option (Pi α β) := do
       let paramForms := list.dropLast
@@ -70,7 +72,8 @@ def parsePiFunc (parseAnnotType: Form → Option α) (parseBody: Form → Option
       let body ← parseBody bodyForm
 
       pure {params := params, body := body}
-  }: Form.ParseList (Pi α β)).parseForm
+    : Form.ParseList (Pi α β)
+  }.parseForm
 
 def parsePatternPiAlphaBetaStringString (parseAnnotType: Form → Option α) (form: Form): Option (Pi α (Beta String String)) :=
   Util.applyAtmostOnce [
@@ -80,7 +83,7 @@ def parsePatternPiAlphaBetaStringString (parseAnnotType: Form → Option α) (fo
 
 
 def parseIndFunc (parse: Form → Option α): Form → Option (Ind α) :=
-  ({
+  {
     parseHead := ["inductive"],
     parseList (list: List Form): Option (Ind α) := do
       let nameForm ← list[0]?
@@ -90,10 +93,11 @@ def parseIndFunc (parse: Form → Option α): Form → Option (Ind α) :=
       let cons ← Util.optionMapAll consForm (parseAnnotFunc parseName (parsePatternPiAlphaBetaStringString parse))
 
       pure {name := name, cons := cons}
-  }: Form.ParseList (Ind α)).parseForm
+    : Form.ParseList (Ind α)
+  }.parseForm
 
 def parseCaseFunc (parse: Form → Option α): Form → Option (Case α) :=
-  ({
+  {
     parseHead := ["case", "->"],
     parseList (list: List Form): Option (Case α) := do
       let patternForm ← list[0]?
@@ -103,10 +107,11 @@ def parseCaseFunc (parse: Form → Option α): Form → Option (Case α) :=
       let value ← parse valueForm
 
       pure {pattern := pattern, value := value}
-  }: Form.ParseList (Case α)).parseForm
+    : Form.ParseList (Case α)
+  }.parseForm
 
 def parseMatFunc(parse: Form → Option α) : Form → Option (Mat α) :=
-  ({
+  {
     parseHead := ["match"],
     parseList (list: List Form): Option (Mat α) := do
       let condForm ← list[0]?
@@ -116,7 +121,8 @@ def parseMatFunc(parse: Form → Option α) : Form → Option (Mat α) :=
       let cases ← Util.optionMapAll casesForm (parseCaseFunc parse)
 
       pure {cond := cond, cases := cases}
-  }: Form.ParseList (Mat α)).parseForm
+    : Form.ParseList (Mat α)
+  }.parseForm
 
 partial def parseCode
   (parseAtom: String → Option β)
