@@ -50,12 +50,10 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       ["type_mk"] ++
       [x.name] ++
       x.params.map (ctx.next.print ∘ (Term.ann ·)) ++
-      [printList (
-        ["("] ++
+      ["(" ++ printList (
         [x.type.cmd] ++
-        x.type.args.map ctx.next.print ++
-        [")"]
-      )]
+        x.type.args.map ctx.next.print
+      ) ++ ")"]
 
     | .app x =>
       [ctx.next.print x.cmd] ++
