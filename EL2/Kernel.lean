@@ -4,7 +4,7 @@ namespace EL2
 
 
 partial def Term.infer [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ctx: Ctx) : Option (Term β × Ctx) := do
-  -- infer: turn everything to type then normalize
+  -- infer: infer type
   match c with
     | .atom a =>
       let p := Irreducible.inferAtom a
@@ -15,7 +15,7 @@ partial def Term.infer [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ct
     | _ => sorry
 
 partial def Term.normalize [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ctx: Ctx): Option (Term β × Ctx) := do
-  -- normalize: just normalize
+  -- normalize
   match c with
     | .atom a =>
       pure (c, ctx) -- return itself
