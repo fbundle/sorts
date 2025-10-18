@@ -43,4 +43,5 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Code β): String :=
 
 instance [ToString β]: ToString (Code β) where
   toString (c: Code β):= {indentNum := 0, indentSize := 2 :PrintCtx}.print c
+
 end EL2
