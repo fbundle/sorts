@@ -37,16 +37,16 @@ def parseAnnotFunc (parseLeft: (Form → Option α)) (parseRight: (Form → Opti
       pure {left := left, right := right}
   }: Form.ParseList (Annot α β)).parseForm
 
-def parseBindingFunc(parse: (Form → Option α))  : Form → Option  (Binding α) :=
+def parseBindingFunc(parse: (Form → Option α))  : Form → Option  (Bind α) :=
   {
     parseHead := ["let", ":="],
-    parseList (list: List Form): Option (Binding α) := do
+    parseList (list: List Form): Option (Bind α) := do
       let nameForm ← list[0]?
       let name ← parseName nameForm
       let valueForm ← list[1]?
       let value ← parse valueForm
       pure {name := name, value := value}
-    : Form.ParseList (Binding α)
+    : Form.ParseList (Bind α)
   }.parseForm
 
 
@@ -138,7 +138,7 @@ partial def parseCode
   ++
   -- parse basic
   [
-    (parseBindingFunc parse) >=> (Code.binding ·),
+    (parseBindingFunc parse) >=> (Code.bind ·),
     (parseInferFunc parse) >=> (Code.infer ·),
     (parsePiFunc parse parse) >=> (Code.pi ·),
     (parseIndFunc parse) >=> (Code.ind ·),

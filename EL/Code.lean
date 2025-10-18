@@ -12,7 +12,7 @@ structure Annot (α: Type) (β: Type) where
   right: β
   deriving Repr
 
-structure Binding (α: Type) where
+structure Bind (α: Type) where
   name: String
   value: α
   deriving Repr
@@ -51,7 +51,7 @@ inductive Code (β: Type) where
   | atom: β → Code β
   | name: String → Code β
   | beta: Beta (Code β) (Code β) → Code β
-  | binding: Binding (Code β) → Code β
+  | bind: Bind (Code β) → Code β
   | infer: Infer (Code β) → Code β
   | pi: Pi (Code β) (Code β) → Code β
   | ind: Ind (Code β) → Code β
