@@ -5,7 +5,7 @@ import Std
 namespace EL2_EXAMPLE
 open EL2
 
-def el2 (_: Unit): Code Atom :=
+def el2 (_: Unit): Term Atom :=
   .list [
     .bind_typ {name := "Nat", params := []},
     .bind_mk {

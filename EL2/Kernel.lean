@@ -1,26 +1,26 @@
-import EL2.Code
+import EL2.Term
 
 namespace EL2
 
 
-partial def Code.inferCode [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx) : Option (Code β × Ctx) := do
+partial def Term.inferTerm [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ctx: Ctx) : Option (Term β × Ctx) := do
   -- infer: turn everything to type then normalize
   match c with
     | .atom a =>
       let p := Irreducible.inferAtom a
       pure (.atom p, ctx)
     | .var n =>
-      let c : Code β ← Context.get? ctx n
-      c.inferCode ctx
+      let c : Term β ← Context.get? ctx n
+      c.inferTerm ctx
     | _ => sorry
 
-partial def Code.normalizeCode [Irreducible β] [Context Ctx (Code β)] (c: Code β) (ctx: Ctx): Option (Code β × Ctx) := do
+partial def Term.normalizeCode [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ctx: Ctx): Option (Term β × Ctx) := do
   -- normalize: just normalize
   match c with
     | .atom a =>
       pure (c, ctx) -- return itself
     | .var n =>
-      let c: Code β ← Context.get? ctx n
+      let c: Term β ← Context.get? ctx n
       c.normalizeCode ctx
     | _ => sorry
 

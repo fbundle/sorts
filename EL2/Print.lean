@@ -1,4 +1,4 @@
-import EL2.Code
+import EL2.Term
 
 namespace EL2
 
@@ -8,7 +8,7 @@ structure PrintCtx where
 
 def PrintCtx.next (ctx: PrintCtx): PrintCtx := {ctx with indentNum := ctx.indentNum+1}
 
-partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Code β): String :=
+partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
   match c with
     | .atom x => toString x
     | .var n => n
@@ -20,10 +20,10 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Code β): String :=
     | .ann x => s!"({x.name}: {ctx.print x.type})"
     | .bind_val x => s!"{x.name} := {ctx.print x.value}"
     | .bind_typ x => s!"(type {x.name} {
-      String.join ((x.params.map (ctx.print ∘ (Code.ann ·))).intersperse " ")
+      String.join ((x.params.map (ctx.print ∘ (Term.ann ·))).intersperse " ")
     })"
     | .bind_mk x => s!"(type_mk {x.name} {
-      String.join ((x.params.map (ctx.print ∘ (Code.ann ·))).intersperse " ")
+      String.join ((x.params.map (ctx.print ∘ (Term.ann ·))).intersperse " ")
     } -> " ++
     match x.type.args with
       | [] => x.type.cmd
@@ -38,10 +38,10 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Code β): String :=
             String.join ((x.args.map ctx.print).intersperse " ")
           })"
     | .lam x => s!"{
-      String.join ((x.params.map (ctx.print ∘ (Code.ann ·))).intersperse " ")
+      String.join ((x.params.map (ctx.print ∘ (Term.ann ·))).intersperse " ")
     } => {ctx.print x.body}"
 
-instance [ToString β]: ToString (Code β) where
-  toString (c: Code β):= {indentNum := 0, indentSize := 2 :PrintCtx}.print c
+instance [ToString β]: ToString (Term β) where
+  toString (c: Term β):= {indentNum := 0, indentSize := 2 :PrintCtx}.print c
 
 end EL2

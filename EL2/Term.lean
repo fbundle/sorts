@@ -44,16 +44,16 @@ structure Lam (α: Type) where
 -- Code β is any type which can be reduced into β
 -- it instantiates Reducible (Code β) β
 -- it is usually denoted by α
-inductive Code (β: Type) where
-  | atom: β → Code β
-  | var: String → Code β
-  | list: List (Code β) → Code β
-  | ann: Ann (Code β) → Code β
-  | bind_val: BindVal (Code β) → Code β
-  | bind_typ: BindTyp (Code β) → Code β
-  | bind_mk: BindMk (Code β) → Code β
-  | app: App (Code β) (Code β) → Code β
-  | lam: Lam (Code β) → Code β
+inductive Term (β: Type) where
+  | atom: β → Term β
+  | var: String → Term β
+  | list: List (Term β) → Term β
+  | ann: Ann (Term β) → Term β
+  | bind_val: BindVal (Term β) → Term β
+  | bind_typ: BindTyp (Term β) → Term β
+  | bind_mk: BindMk (Term β) → Term β
+  | app: App (Term β) (Term β) → Term β
+  | lam: Lam (Term β) → Term β
   deriving Repr
 
 
