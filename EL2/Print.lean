@@ -5,13 +5,16 @@ namespace EL2
 structure PrintCtx where
   indentNum: Nat
   indentSize: Nat
+  stripParens: Bool
 
 def PrintCtx.next (ctx: PrintCtx): PrintCtx := {ctx with indentNum := ctx.indentNum+1}
 
 partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
   match c with
-    | .atom x => toString x
-    | .var n => n
+    | .atom x =>
+      toString x
+    | .var n =>
+      n
     | .list l =>
       let indentStr := String.mk (List.replicate (ctx.indentNum * ctx.indentSize) ' ')
       "\n"
@@ -42,6 +45,10 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
     } => {ctx.print x.body}"
 
 instance [ToString β]: ToString (Term β) where
-  toString (c: Term β):= {indentNum := 0, indentSize := 2 :PrintCtx}.print c
+  toString (c: Term β):= {
+    indentNum := 0,
+    indentSize := 2
+    stripParens := true
+  :PrintCtx}.print c
 
 end EL2
