@@ -3,11 +3,7 @@ import Std
 
 open EL
 
-def el_example (_: Unit): List (Code Atom) :=
-  [
-    Code.ind {name := sorry, cons := sorry}
 
-  ]
 
 
 

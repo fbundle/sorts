@@ -26,9 +26,11 @@ structure Pi (α: Type) (β: Type) where -- Pi or Lambda
   body: β
   deriving Repr
 
+notation "IndType" α => Pi α (Beta String String)
+
 structure Ind (α: Type) where -- Inductive with dependent type
-  name: Annot (Pi α (Beta String String)) α
-  cons: List (Annot String (Pi α (Beta String String)))
+  name: Annot (IndType α) α
+  cons: List (Annot String (IndType α))
   deriving Repr
 
 structure Case (α: Type) where
