@@ -47,17 +47,17 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
 
     | .ann x => [x.name, ":", ctx.next.print x.type]
 
-    | .bind_val x => [x.name, ":=", ctx.next.print x.value]
+    | .bind_val x => ["bind_val", x.name, ctx.next.print x.value]
 
     | .bind_typ x =>
-      ["type"] ++
+      ["bind_typ"] ++
       [x.name] ++
       x.params.map (ctx.next.print ∘ (Term.ann ·)) ++
       [ctx.next.print x.parent]
 
 
     | .bind_mk x =>
-      ["type_mk"] ++
+      ["bind_mk"] ++
       [x.name] ++
       x.params.map (ctx.next.print ∘ (Term.ann ·)) ++
       [printList (
