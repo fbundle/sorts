@@ -28,7 +28,6 @@
   {cons : {{init: (List T)} {tail : T} => (List T)}}
 )
 
-
 {x := 3}
 {y := 4}
 
