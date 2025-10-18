@@ -1,5 +1,0 @@
-inductive Sort
-    | Atom : string -> int -> Sort -> Sort
-    | Arrow : Sort -> Sort -> Sort
-    | Prod : Sort -> Sort -> Sort
-    | Sum : Sort -> Sort -> Sort

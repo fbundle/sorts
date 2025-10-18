@@ -1,41 +1,35 @@
-(let
-    {Nil   := (inh Any_2)}
-    {nil   := (inh Nil)}
-    {Bool  := (inh Any_2)}
-    {True  := (inh Bool)}
-    {False := (inh Bool)}
+-- example of EL language
 
-    {Nat   := (inh Any_2)}
-    {n0    := (inh Nat)}
-    {succ  := (inh {Nat -> Nat})}
-
-    {n1 := (succ n0)}
-    {n2 := (succ n1)}
-    {n3 := (succ n2)}
-
-    {x := {n1 ⊕ n2}}
-    {x := {n1 ⊗ n2 ⊗ n3}}
-
-    {is_pos := {{x : Nat} => (match x
-        {(succ z) => True}
-        {n0       => False}
-    )}}
-
-    {must_pos := {{x : Nat} => (match x
-        {(succ z) => x}
-        {n0       => nil}
-    )}}
-
-
-    {_ := (inspect is_pos)}                    # resolved type as       Nat -> Bool
-    {_ := (inspect must_pos)}                  # resolved type as       Nat -> (Nat ⊕ Nil)
-                                               # better to resolve as   Π_{x: Nat} B(x) where B(x) = (type (must_pos x))
-
-    (type Unit_0)
+(inductive {Bool: U_2}
+  {true: Bool}
+  {false: Bool}
 )
 
+(inductive {Nat: U_2}
+  {zero: Nat}
+  {succ: {{_: Nat} => Nat}}
+)
 
+{one := (succ zero)}
+{two := (succ one)}
 
+{is_pos :=
+  {{n: Nat} => (match n
+    { zero   -> false}
+    { (succ x) -> true}
+  )}
+}
 
+(is_pos zero)
+(is_pos two)
 
+(inductive {{{T: U_2} => (List T)} : U_2}
+  {nil : (List T)}
+  {cons : {{init: (List T)} {tail : T} => (List T)}}
+)
+
+{x := 3}
+{y := 4}
+
+{x => y => z}
 

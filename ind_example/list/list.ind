@@ -1,3 +1,0 @@
-inductive List
-    | Nil : List
-    | Cons : T -> List -> List

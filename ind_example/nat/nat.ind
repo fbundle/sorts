@@ -1,3 +1,0 @@
-inductive Nat
-	| Zero : Nat
-	| Succ : Nat -> Nat
