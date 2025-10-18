@@ -22,7 +22,7 @@ def PrintCtx.indentStr (ctx: PrintCtx): String :=
   String.mk (List.replicate (ctx.indentNum * ctx.indentSize) ' ')
 
 
-def printList (l: List String) (stripParens: Bool := False): String :=
+def printList (l: List String) (stripParens: Bool): String :=
   match l with
     | [] => ""
     | x :: [] => x
