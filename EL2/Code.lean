@@ -2,14 +2,14 @@ import EL2.Class
 
 namespace EL2
 
-structure BindVal (α: Type) where
-  name: String
-  value: α
-  deriving Repr
-
 structure Ann (α: Type) where -- (2: Nat)
   name: String
   type: α
+  deriving Repr
+
+structure BindVal (α: Type) where
+  name: String
+  value: α
   deriving Repr
 
 -- BindTyp : type
@@ -24,10 +24,14 @@ structure App (α: Type) (β: Type) where
   args: List β
   deriving Repr
 
--- Mk : type constructor
-structure Mk (α: Type) where    -- nil: List T or cons (init: List T) (tail: T): List T
-  params: List (Ann α)          -- (init: List T) (tail: T)
-  body: App String String       -- (List T)
+def Pattern := App String String
+deriving instance Repr for Pattern
+
+-- BindMk : type constructor
+structure BindMk (α: Type) where  -- nil: List T or cons (init: List T) (tail: T): List T
+  name: String
+  params: List (Ann α)            -- (init: List T) (tail: T)
+  type: Pattern                   -- (List T)
   deriving Repr
 
 -- Abst : function abstraction
@@ -45,11 +49,11 @@ structure Abst (α: Type) where
 inductive Code (β: Type) where
   | atom: β → Code β
   | name: String → Code β
-  | bind_val: BindVal (Code β) → Code β
   | ann: Ann (Code β) → Code β
+  | bind_val: BindVal (Code β) → Code β
   | bind_typ: BindTyp (Code β) → Code β
+  | bind_mk: BindMk (Code β) → Code β
   | app: App (Code β) (Code β) → Code β
-  | mk: Mk (Code β) → Code β
   | abst: Abst (Code β) → Code β
   deriving Repr
 
