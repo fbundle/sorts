@@ -5,6 +5,9 @@ defaultTargets = ["el"]
 [[lean_lib]]
 name = "EL"
 
+[[lean_lib]]
+name = "EL2"
+
 [[lean_exe]]
 name = "el"
 root = "Main"
