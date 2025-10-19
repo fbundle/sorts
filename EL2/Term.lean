@@ -74,4 +74,14 @@ notation "lam" x => Term.t (T.lam x)
 notation "app" x => Term.t (T.app x)
 notation "mat" x => Term.t (T.mat x)
 
+notation "inh_atom" x => InhTerm.atom x
+notation "inh_var" x => InhTerm.t (T.var x)
+notation "inh_lst" x => InhTerm.t (T.lst x)
+notation "inh_bind_typ" x => InhTerm.t (T.bind_typ x)
+notation "inh_bind_val" x => InhTerm.t (T.bind_val x)
+notation "inh_bind_mk" x => InhTerm.t (T.bind_mk x)
+notation "inh_lam" x => InhTerm.t (T.lam x)
+notation "inh_app" x => InhTerm.t (T.app x)
+notation "inh_mat" x => InhTerm.t (T.mat x)
+
 end EL2
