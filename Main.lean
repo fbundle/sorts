@@ -4,6 +4,7 @@ import Std
 namespace EL2_EXAMPLE
 open EL2
 
+notation "atom" x => Term.atom x
 notation "var" x => Term.t (T.var x)
 notation "lst" x => Term.t (T.lst x)
 notation "bind_typ" x => Term.t (T.bind_typ x)
