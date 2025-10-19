@@ -38,6 +38,15 @@ structure Lam (α: Type) where
   body: α
   deriving Repr
 
+structure Case (α: Type) where
+  pattern: App String String
+  value: α
+
+-- Mat : match
+structure Mat (α: Type) where
+  cond: α
+  cases: List (Case α)
+
 -- TODO - add Mat - match
 
 -- β is an atomic type which is reduced into itself, e.g. integer
