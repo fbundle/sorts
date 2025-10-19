@@ -30,11 +30,11 @@ partial def PrintCtx.printAnn [ToString β] (ctx: PrintCtx) (x: Ann (Term β)): 
 
 partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
   let contentList: List String := match c with
-    | .atom x =>
-      [toString x]
+    | .atom a =>
+      [toString a]
 
-    | .var n =>
-      [n]
+    | .var name =>
+      [name]
 
     | .list {init, tail} =>
       if init.length = 0 then
@@ -43,43 +43,45 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
         let parts := (init ++ [tail]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
         ["\n" ++ String.join parts]
 
-    | .bind_val x =>
-      ["bind_val", x.name, ctx.print x.value]
+    | .bind_val {name, value} =>
+      ["bind_val", name, ctx.print value]
 
-    | .bind_typ x =>
+    | .bind_typ {name, params, parent} =>
       ["bind_typ"] ++
-      [x.name] ++
-      x.params.map ctx.printAnn ++
-      [ctx.print x.parent]
+      [name] ++
+      params.map ctx.printAnn ++
+      [ctx.print parent]
 
-    | .bind_mk x =>
+    | .bind_mk {name, params, type} =>
+      let {cmd, args} := type
       ["bind_mk"] ++
-      [x.name] ++
-      x.params.map ctx.printAnn ++
+      [name] ++
+      params.map ctx.printAnn ++
       ["->"] ++
       [printList (
-        [x.type.cmd] ++
-        x.type.args.map ctx.print
+        [cmd] ++
+        args.map ctx.print
       )]
 
-    | .app x =>
-      [ctx.print x.cmd] ++
-      x.args.map ctx.print
+    | .app {cmd, args} =>
+      [ctx.print cmd] ++
+      args.map ctx.print
 
-    | .lam x =>
-      x.params.map ctx.printAnn ++
+    | .lam {params, body} =>
+      params.map ctx.printAnn ++
       ["=>"] ++
-      [ctx.print x.body]
+      [ctx.print body]
 
-    | .mat x =>
+    | .mat {cond, cases} =>
       ["match"] ++
-      [ctx.print x.cond] ++
-      x.cases.map (λ case =>
+      [ctx.print cond] ++
+      cases.map (λ {pattern, value} =>
+
         "\n" ++ ctx.indentStr ++ printList (
-          [case.pattern.cmd] ++
-          case.pattern.args ++
+          [pattern.cmd] ++
+          pattern.args ++
           ["=>"] ++
-          [ctx.print case.value]
+          [ctx.print value]
         )
       ) ++ ["\n"]
 
