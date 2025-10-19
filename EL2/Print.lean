@@ -33,6 +33,10 @@ def printList (l: List String) (stripParens: Bool): String :=
       else
         "(" ++ content ++ ")"
 
+mutual
+partial def PrintCtx.printAnn [ToString β] (ctx: PrintCtx) (x: Ann (Term β)): String :=
+  let contentList: List String := [x.name, ":", ctx.withParens.print x.type]
+  printList contentList ctx.stripParens
 
 partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
   let contentList: List String := match c with
@@ -45,22 +49,19 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
     | .list l =>
       ["\n" ++ String.join (l.map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n"))]
 
-    | .ann x =>
-      [x.name, ":", ctx.withParens.print x.type]
-
     | .bind_val x =>
       ["bind_val", x.name, ctx.withParens.print x.value]
 
     | .bind_typ x =>
       ["bind_typ"] ++
       [x.name] ++
-      x.params.map (ctx.withParens.print ∘ (Term.ann ·)) ++
+      x.params.map ctx.withParens.printAnn ++
       [ctx.withParens.print x.parent]
 
     | .bind_mk x =>
       ["bind_mk"] ++
       [x.name] ++
-      x.params.map (ctx.withParens.print ∘ (Term.ann ·)) ++
+      x.params.map ctx.withParens.printAnn ++
       ["->"] ++
       [printList (
         [x.type.cmd] ++
@@ -72,7 +73,7 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       x.args.map ctx.withParens.print
 
     | .lam x =>
-      x.params.map (ctx.withParens.print ∘ (Term.ann ·)) ++
+      x.params.map ctx.withParens.printAnn ++
       ["=>"] ++
       [ctx.withParens.print x.body]
 
@@ -89,6 +90,8 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       ) ++ ["\n"]
 
   printList contentList ctx.stripParens
+
+end
 
 instance [ToString β]: ToString (Term β) where
   toString (c: Term β):= {

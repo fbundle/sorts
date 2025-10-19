@@ -52,7 +52,6 @@ inductive Term (β: Type) where
   | atom: β → Term β
   | var: String → Term β
   | list: List (Term β) → Term β
-  | ann: Ann (Term β) → Term β
   | bind_val: BindVal (Term β) → Term β
   | bind_typ: BindTyp (Term β) → Term β
   | bind_mk: BindMk (Term β) → Term β
