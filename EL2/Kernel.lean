@@ -25,7 +25,17 @@ partial def Term.normalize [Irreducible β] [Context Ctx (Term β)] (c: Term β)
       c.normalize ctx
 
     | .list init tail =>
-      sorry
+      let rec loopInit (ctx: Ctx) (init: List (Term β)): Option Ctx := do
+        match init with
+          | [] => ctx
+          | head :: init =>
+            let (_, ctx)  ← head.normalize ctx
+            loopInit ctx init
+
+      let ctx ← loopInit ctx init
+      tail.normalize ctx
+
+    | .bind_val
 
     | _ => sorry
 
