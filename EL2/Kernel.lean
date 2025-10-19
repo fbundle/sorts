@@ -3,7 +3,7 @@ import EL2.Term
 namespace EL2
 
 
-partial def Term.infer [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ctx: Ctx) : Option (Term β × Ctx) := do
+partial def Term.infer [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ctx: Ctx) : Option (Ctx × Term β) := do
   -- infer: infer type
   match c with
     | .atom a =>
@@ -14,11 +14,11 @@ partial def Term.infer [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ct
       c.infer ctx
     | _ => sorry
 
-partial def Term.normalize [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ctx: Ctx): Option (Term β × Ctx) := do
+partial def Term.normalize [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ctx: Ctx): Option (Ctx × Term β) := do
   -- normalize
   match c with
     | .atom a =>
-      pure (c, ctx)
+      pure (ctx, c)
 
     | .var n =>
       let c: Term β ← Context.get? ctx n
@@ -29,13 +29,16 @@ partial def Term.normalize [Irreducible β] [Context Ctx (Term β)] (c: Term β)
         match init with
           | [] => ctx
           | head :: init =>
-            let (_, ctx)  ← head.normalize ctx
+            let (ctx, _)  ← head.normalize ctx
             loopInit ctx init
 
       let ctx ← loopInit ctx init
       tail.normalize ctx
 
-    | .bind_val
+    | .bind_val {name, value} =>
+      let (ctx, value) ← value.normalize ctx
+      let ctx := Context.set ctx name value
+      pure (ctx, value)
 
     | _ => sorry
 
