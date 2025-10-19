@@ -9,10 +9,11 @@ partial def infer [Irreducible β] [Context Ctx (Term β)] (ctx: Ctx) (term: Ter
     | .atom a =>
       let p := Irreducible.inferAtom a
       pure (ctx, .atom p)
-    | .var n =>
-      let term : Term β ← Context.get? ctx n
-      infer ctx term
-    | _ => sorry
+    | .t t => match t with
+      | .var n =>
+        let term : Term β ← Context.get? ctx n
+        infer ctx term
+      | _ => sorry
 
 def reduceParams (params: List (Ann α)) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List (Ann β)) :=
   Util.optionCtxMapAll params ((λ ctx {name, type} => do
@@ -26,54 +27,55 @@ partial def normalize [Irreducible β] [Context Ctx (Term β)] (ctx: Ctx) (term:
     | .atom a =>
       pure (ctx, term)
 
-    | .var n =>
-      let term: Term β ← Context.get? ctx n
-      normalize ctx term
+    | .t t => match t with
+      | .var n =>
+        let term: Term β ← Context.get? ctx n
+        normalize ctx term
 
-    | .lst {init, tail} =>
-      let (ctx, _) ← Util.optionCtxMapAll init normalize ctx
-      normalize ctx tail
+      | .lst {init, tail} =>
+        let (ctx, _) ← Util.optionCtxMapAll init normalize ctx
+        normalize ctx tail
 
-    | .bind_val {name, value} =>
-      let (ctx, value) ← normalize ctx value
-      pure (Context.set ctx name value)
+      | .bind_val {name, value} =>
+        let (ctx, value) ← normalize ctx value
+        pure (Context.set ctx name value)
 
-    | .bind_typ {name, params, parent} =>
-      let (ctx, params) ← reduceParams params normalize ctx
-      let (ctx, parent) ← normalize ctx parent
-      let value: Term β := .bind_typ {
-        name := name,
-        params := params,
-        parent := parent,
-      }
-      pure (Context.set ctx name value)
+      | .bind_typ {name, params, parent} =>
+        let (ctx, params) ← reduceParams params normalize ctx
+        let (ctx, parent) ← normalize ctx parent
+        let value: T (Term β) := .bind_typ {
+          name := name,
+          params := params,
+          parent := parent,
+        }
+        pure (Context.set ctx name value)
 
-    | .bind_mk {name, params, type} =>
-      let (ctx, params) ← reduceParams params normalize ctx
+      | .bind_mk {name, params, type} =>
+        let (ctx, params) ← reduceParams params normalize ctx
 
-      let {cmd, args} := type
-      let (ctx, args) ← Util.optionCtxMapAll args normalize ctx
+        let {cmd, args} := type
+        let (ctx, args) ← Util.optionCtxMapAll args normalize ctx
 
-      let value: Term β := .bind_mk {
-        name := name,
-        params := params,
-        type := {
-          cmd := cmd,
-          args := args,
-        },
-      }
-      pure (Context.set ctx name value)
+        let value: T (Term β) := .bind_mk {
+          name := name,
+          params := params,
+          type := {
+            cmd := cmd,
+            args := args,
+          },
+        }
+        pure (Context.set ctx name value)
 
-    | .lam {params, body} =>
-      let (ctx, params) ← reduceParams params normalize ctx
-      let value: Term β := .lam {
-        params := params,
-        body := body,
-      }
-      pure (ctx, value)
+      | .lam {params, body} =>
+        let (ctx, params) ← reduceParams params normalize ctx
+        let value: T (Term β) := .lam {
+          params := params,
+          body := body,
+        }
+        pure (ctx, value)
 
-    | .app {cmd, args} => sorry
-    | .mat {cond, cases} => sorry
+      | .app {cmd, args} => sorry
+      | .mat {cond, cases} => sorry
 
 
 

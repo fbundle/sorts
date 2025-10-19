@@ -28,62 +28,64 @@ partial def PrintCtx.printAnn [ToString β] (ctx: PrintCtx) (x: Ann (Term β)): 
   let contentList: List String := [x.name, ":", ctx.print x.type]
   printList contentList
 
-partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
-  let contentList: List String := match c with
+partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (term: Term β): String :=
+  let contentList: List String := match term with
     | .atom a =>
       [toString a]
 
-    | .var name =>
-      [name]
+    | .t t => match t with
 
-    | .lst {init, tail} =>
-      if init.length = 0 then
-        [ctx.print tail]
-      else
-        let parts := (init ++ [tail]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
-        ["\n" ++ String.join parts]
+      | .var name =>
+        [name]
 
-    | .bind_val {name, value} =>
-      ["bind_val", name, ctx.print value]
+      | .lst {init, tail} =>
+        if init.length = 0 then
+          [ctx.print tail]
+        else
+          let parts := (init ++ [tail]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
+          ["\n" ++ String.join parts]
 
-    | .bind_typ {name, params, parent} =>
-      ["bind_typ"] ++
-      [name] ++
-      params.map ctx.printAnn ++
-      [ctx.print parent]
+      | .bind_val {name, value} =>
+        ["bind_val", name, ctx.print value]
 
-    | .bind_mk {name, params, type} =>
-      let {cmd, args} := type
-      ["bind_mk"] ++
-      [name] ++
-      params.map ctx.printAnn ++
-      ["->"] ++
-      [printList (
-        [cmd] ++
+      | .bind_typ {name, params, parent} =>
+        ["bind_typ"] ++
+        [name] ++
+        params.map ctx.printAnn ++
+        [ctx.print parent]
+
+      | .bind_mk {name, params, type} =>
+        let {cmd, args} := type
+        ["bind_mk"] ++
+        [name] ++
+        params.map ctx.printAnn ++
+        ["->"] ++
+        [printList (
+          [cmd] ++
+          args.map ctx.print
+        )]
+
+      | .app {cmd, args} =>
+        [ctx.print cmd] ++
         args.map ctx.print
-      )]
 
-    | .app {cmd, args} =>
-      [ctx.print cmd] ++
-      args.map ctx.print
+      | .lam {params, body} =>
+        params.map ctx.printAnn ++
+        ["=>"] ++
+        [ctx.print body]
 
-    | .lam {params, body} =>
-      params.map ctx.printAnn ++
-      ["=>"] ++
-      [ctx.print body]
+      | .mat {cond, cases} =>
+        ["match"] ++
+        [ctx.print cond] ++
+        cases.map (λ {pattern, value} =>
 
-    | .mat {cond, cases} =>
-      ["match"] ++
-      [ctx.print cond] ++
-      cases.map (λ {pattern, value} =>
-
-        "\n" ++ ctx.indentStr ++ printList (
-          [pattern.cmd] ++
-          pattern.args ++
-          ["=>"] ++
-          [ctx.print value]
-        )
-      ) ++ ["\n"]
+          "\n" ++ ctx.indentStr ++ printList (
+            [pattern.cmd] ++
+            pattern.args ++
+            ["=>"] ++
+            [ctx.print value]
+          )
+        ) ++ ["\n"]
 
   printList contentList
 

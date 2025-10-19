@@ -46,25 +46,25 @@ structure Lst (α: Type) where
   init: List α
   tail: α
 
--- β is an atomic type which is reduced into itself, e.g. integer
--- it instantiates Reducible β
--- Term β is any type which can be reduced into β - normalize
+inductive T (α: Type) where
+  | var: (name: String) → T α
+  | lst: Lst α → T α
+  | bind_val: BindVal α → T α
+  | bind_typ: BindTyp α → T α
+  | bind_mk: BindMk α → T α
+  | lam: Lam α → T α
+  | app: App α α → T α
+  | mat: Mat α → T α
+
 inductive Term (β: Type) where
-  | atom: (atom: β) → Term β
-  | var: (name: String) → Term β
-  | lst: Lst (Term β) → Term β
-  | bind_val: BindVal (Term β) → Term β
-  | bind_typ: BindTyp (Term β) → Term β
-  | bind_mk: BindMk (Term β) → Term β
-  | lam: Lam (Term β) → Term β
-  | app: App (Term β) (Term β) → Term β
-  | mat: Mat (Term β) → Term β
+  | atom: (a: β) → Term β
+  | t: T (Term β) → Term β
 
+inductive InhTerm (β: Type) where
+  | atom: (a: β) → InhTerm β
+  | t: (value: T (InhTerm β)) → (type: T (InhTerm β)) → InhTerm β
 
--- Inh - term after typechecked
-structure Inh (β: Type) where
-  term: β ⊕ (App (Inh β) (Inh β)) -- either an atomic object or a App from bind_mk
-  type: Inh β
-
+instance: Coe (T (Term β)) (Term β) where
+  coe := (.t ·)
 
 end EL2
