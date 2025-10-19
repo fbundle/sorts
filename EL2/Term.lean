@@ -72,9 +72,10 @@ notation "app" x => Term.t (T.app x)
 notation "mat" x => Term.t (T.mat x)
 
 
+-- TypTerm - hold typechecked Term
 inductive TypTerm (β: Type) [Irreducible β] where
   | atom: (value: β) → TypTerm β
-  | t: (value: T (TypTerm β)) → (type: T (TypTerm β)) → TypTerm β
+  | t: (value: T (Term β)) → (type: T (TypTerm β)) → TypTerm β
 
 
 end EL2
