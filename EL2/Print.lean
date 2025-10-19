@@ -65,7 +65,7 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       [printList (
         [x.type.cmd] ++
         x.type.args.map ctx.withParens.print
-      ) true]
+      ) false]
 
     | .app x =>
       [ctx.withParens.print x.cmd] ++
@@ -80,13 +80,13 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       ["match"] ++
       [ctx.withParens.print x.cond] ++
       x.cases.map (λ case =>
-        printList (
-        [case.pattern.cmd] ++
-        case.pattern.args ++
-        ["=>"] ++
-        [ctx.withParens.print case.value]
-      ) false
-      )
+        "\n" ++ ctx.indentStr ++ printList (
+          [case.pattern.cmd] ++
+          case.pattern.args ++
+          ["=>"] ++
+          [ctx.withParens.print case.value]
+        ) true
+      ) ++ ["\n"]
 
   printList contentList ctx.stripParens
 
