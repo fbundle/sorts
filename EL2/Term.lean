@@ -56,10 +56,10 @@ inductive Term (β: Type) where
   | mat: Mat (Term β) → Term β
 
 
--- Inh - term after type checked
+-- Inh - term after typechecked
 structure Inh (β: Type) where
-  term: Term β
-  type: Term β
+  term: β ⊕ (App (Inh β) (Inh β)) -- either an atomic object or a App from bind_mk
+  type: Inh β
 
 
 end EL2
