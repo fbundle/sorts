@@ -72,8 +72,8 @@ partial def normalize [Irreducible β] [Context Ctx (Term β)] (ctx: Ctx) (term:
       }
       pure (ctx, value)
 
-
-    | _ => sorry
+    | .app {cmd, args} => sorry
+    | .mat {cond, cases} => sorry
 
 
 
