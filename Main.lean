@@ -60,7 +60,21 @@ def el2 (_: Unit): Term Atom :=
       })
     },
 
-    (.app {cmd := (.var "f"), args := [(.var "zero")]})
+    .bind_val {
+      name := "is_pos", value := (.lam {
+        params := [{name := "n", type := (.var "Nat")}],
+        body := (.mat {
+          cond := (.var "n"),
+          cases := [
+            {pattern := {cmd := "zero", args := []}, value := (.var "zero")},
+            {pattern := {cmd := "succ", args := ["m"]}, value := (.var "one")},
+          ],
+        }),
+      })
+    },
+
+    (.app {cmd := (.var "f"), args := [(.var "zero")]}),
+    (.app {cmd := (.var "is_pos"), args := [(.var "one")]}),
   ]
 
 

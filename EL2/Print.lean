@@ -5,14 +5,14 @@ namespace EL2
 structure PrintCtx where
   indentNum: Nat
   indentSize: Nat
-  stripParens: Bool
+  stripParens: Bool := false
 
-def PrintCtx.next (ctx: PrintCtx): PrintCtx := {
+def PrintCtx.withParens (ctx: PrintCtx): PrintCtx := {
   ctx with
   stripParens := false
 }
 
-def PrintCtx.nextIndent (ctx: PrintCtx): PrintCtx := {
+def PrintCtx.withIndent (ctx: PrintCtx): PrintCtx := {
   ctx with
   indentNum := ctx.indentNum+1
   stripParens := true
@@ -43,37 +43,50 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       [n]
 
     | .list l =>
-      ["\n" ++ String.join (l.map (λ x => ctx.indentStr ++ (ctx.nextIndent.print x) ++ "\n"))]
+      ["\n" ++ String.join (l.map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n"))]
 
-    | .ann x => [x.name, ":", ctx.next.print x.type]
+    | .ann x =>
+      [x.name, ":", ctx.withParens.print x.type]
 
-    | .bind_val x => ["bind_val", x.name, ctx.next.print x.value]
+    | .bind_val x =>
+      ["bind_val", x.name, ctx.withParens.print x.value]
 
     | .bind_typ x =>
       ["bind_typ"] ++
       [x.name] ++
-      x.params.map (ctx.next.print ∘ (Term.ann ·)) ++
-      [ctx.next.print x.parent]
-
+      x.params.map (ctx.withParens.print ∘ (Term.ann ·)) ++
+      [ctx.withParens.print x.parent]
 
     | .bind_mk x =>
       ["bind_mk"] ++
       [x.name] ++
-      x.params.map (ctx.next.print ∘ (Term.ann ·)) ++
+      x.params.map (ctx.withParens.print ∘ (Term.ann ·)) ++
+      ["->"] ++
       [printList (
         [x.type.cmd] ++
-        x.type.args.map ctx.next.print
+        x.type.args.map ctx.withParens.print
       ) false]
 
     | .app x =>
-      [ctx.next.print x.cmd] ++
-      x.args.map ctx.next.print
-
-
+      [ctx.withParens.print x.cmd] ++
+      x.args.map ctx.withParens.print
 
     | .lam x =>
-      x.params.map (ctx.next.print ∘ (Term.ann ·)) ++
-      [ctx.next.print x.body]
+      x.params.map (ctx.withParens.print ∘ (Term.ann ·)) ++
+      ["=>"] ++
+      [ctx.withParens.print x.body]
+
+    | .mat x =>
+      ["match"] ++
+      [ctx.withParens.print x.cond] ++
+      x.cases.map (λ case =>
+        printList (
+        [case.pattern.cmd] ++
+        case.pattern.args ++
+        ["=>"] ++
+        [ctx.withParens.print case.value]
+      ) false
+      )
 
   printList contentList ctx.stripParens
 

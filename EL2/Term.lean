@@ -5,38 +5,32 @@ namespace EL2
 structure Ann (α: Type) where -- (2: Nat)
   name: String
   type: α
-  deriving Repr
 
 structure BindVal (α: Type) where
   name: String
   value: α
-  deriving Repr
 
 -- BindTyp : type
 structure BindTyp (α: Type) where -- List (T: Type)
   name: String
   params: List (Ann α)
   parent: α
-  deriving Repr
 
 -- App : function application
 structure App (α: Type) (β: Type) where
   cmd: α
   args: List β
-  deriving Repr
 
 -- BindMk : type constructor
 structure BindMk (α: Type) where  -- nil: List T or cons (init: List T) (tail: T): List T
   name: String
   params: List (Ann α)            -- (init: List T) (tail: T)
   type: App String α                 -- (List T)
-  deriving Repr
 
 -- Lam : function abstraction
 structure Lam (α: Type) where
   params: List (Ann α)
   body: α
-  deriving Repr
 
 structure Case (α: Type) where
   pattern: App String String
@@ -64,7 +58,7 @@ inductive Term (β: Type) where
   | bind_mk: BindMk (Term β) → Term β
   | app: App (Term β) (Term β) → Term β
   | lam: Lam (Term β) → Term β
-  deriving Repr
+  | mat: Mat (Term β) → Term β
 
 
 
