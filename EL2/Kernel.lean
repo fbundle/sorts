@@ -24,6 +24,9 @@ partial def Term.normalize [Irreducible β] [Context Ctx (Term β)] (c: Term β)
       let c: Term β ← Context.get? ctx n
       c.normalize ctx
 
+    | .list init tail =>
+      sorry
+
     | _ => sorry
 
 

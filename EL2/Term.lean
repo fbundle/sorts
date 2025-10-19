@@ -45,9 +45,9 @@ structure Mat (α: Type) where
 -- it instantiates Reducible β
 -- Term β is any type which can be reduced into β - normalize
 inductive Term (β: Type) where
-  | atom: β → Term β
-  | var: String → Term β
-  | list: List (Term β) → Term β → Term β
+  | atom: (atom: β) → Term β
+  | var: (name: String) → Term β
+  | list: (init: List (Term β)) → (tail: Term β) → Term β
   | bind_val: BindVal (Term β) → Term β
   | bind_typ: BindTyp (Term β) → Term β
   | bind_mk: BindMk (Term β) → Term β
