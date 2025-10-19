@@ -17,78 +17,92 @@ notation "mat" x => Term.t (T.mat x)
 def el2 (_: Unit): Term Atom :=
   lst {
     init := [
-      bind_typ {name := "Nat", params := [], parent := (var "U_2")},
+      bind_typ {name := "Nat", params := [], parent := var "U_2"},
       bind_mk {
-        name := "zero", params := [], type := {cmd := "Nat", args := []},
+        name := "zero",
+        params := [],
+        type := {cmd := "Nat", args := []},
       },
       bind_mk {
-        name := "succ", params := [{name := "n", type := (app {cmd := (var "Nat"), args := []})}], type := {cmd := "Nat", args := []},
+        name := "succ",
+        params := [{name := "n", type := app {cmd := var "Nat", args := []}}],
+        type := {cmd := "Nat", args := []},
       },
-      bind_typ {name := "Vec", params := [{name := "T", type := (var "U_2")}, {name := "n", type := (var "Nat")}], parent := (var "U_2")},
+      bind_typ {
+        name := "Vec",
+        params := [{name := "T", type := var "U_2"}, {name := "n", type := var "Nat"}],
+        parent := var "U_2",
+      },
       bind_mk {
         name := "nil", params := [
-          {name := "T", type := (var "U_2")},
-        ], type := {cmd := "Vec", args := [(var "T"), (var "0")]},
+          {name := "T", type := var "U_2"},
+        ],
+        type := {cmd := "Vec", args := [var "T", var "0"]},
       },
       bind_mk {
         name := "append", params := [
-          {name := "T", type := (var "U_2")}, {name := "n", type := (var "Nat")},
-          {name := "v", type := (app {cmd := (var "Vec"), args := [(var "T"), (var "n")]})},
-          {name := "x", type := (var "T")},
-        ], type := {cmd := "Vec", args := [(var "T"), (app {cmd := (var "succ"), args := [(var "n")]})]},
+          {name := "T", type := var "U_2"},
+          {name := "n", type := var "Nat"},
+          {name := "v", type := app {cmd := var "Vec", args := [var "T", var "n"]}},
+          {name := "x", type := var "T"},
+        ],
+        type := {cmd := "Vec", args := [var "T", app {cmd := var "succ", args := [var "n"]}]},
       },
 
       -- code
       bind_val {
-        name := "one", value := (app {cmd := (var "succ"), args := [(var "zero")]}),
+        name := "one",
+        value := app {cmd := var "succ", args := [var "zero"]},
       },
       bind_val {
-        name := "two", value := (app {cmd := (var "succ"), args := [(var "one")]}),
+        name := "two",
+        value := app {cmd := var "succ", args := [var "one"]},
       },
       bind_val {
-        name := "three", value := (app {cmd := (var "succ"), args := [(var "two")]}),
+        name := "three",
+        value := app {cmd := var "succ", args := [var "two"]},
       },
 
       bind_val {
-        name := "f", value := (lam {
-          params := [{name := "_", type := (var "Nat")}],
+        name := "f", value := lam {
+          params := [{name := "_", type := var "Nat"}],
           body := lst {
             init := [
               bind_val {
-                name := "l", value := (app {cmd := (var "nil"), args := [(var "Nat")]}),
+                name := "l", value := app {cmd := var "nil", args := [var "Nat"]},
               },
               bind_val {
-                name := "l", value := (app {cmd := (var "append"), args := [(var "Nat"), (var "zero"), (var "l"), (var "one")]}),
+                name := "l", value := app {cmd := var "append", args := [var "Nat", var "zero", var "l", var "one"]},
               },
               bind_val {
-                name := "l", value := (app {cmd := (var "append"), args := [(var "Nat"), (var "one"), (var "l"), (var "two")]}),
+                name := "l", value := app {cmd := var "append", args := [var "Nat", var "one", var "l", var "two"]},
               },
               bind_val {
-                name := "l", value := (app {cmd := (var "append"), args := [(var "Nat"), (var "two"), (var "l"), (var "three")]}),
+                name := "l", value := app {cmd := var "append", args := [var "Nat", var "two", var "l", var "three"]},
               },
             ],
-            tail := (var "l"),
+            tail := var "l",
           },
-        })
+        }
       },
 
       bind_val {
-        name := "is_pos", value := (lam {
-          params := [{name := "n", type := (var "Nat")}],
-          body := (mat {
-            cond := (var "n"),
+        name := "is_pos", value := lam {
+          params := [{name := "n", type := var "Nat"}],
+          body := mat {
+            cond := var "n",
             cases := [
-              {pattern := {cmd := "zero", args := []}, value := (var "zero")},
-              {pattern := {cmd := "succ", args := ["m"]}, value := (var "one")},
+              {pattern := {cmd := "zero", args := []}, value := var "zero"},
+              {pattern := {cmd := "succ", args := ["m"]}, value := var "one"},
             ],
-          }),
-        })
+          },
+        }
       },
 
-      (app {cmd := (var "f"), args := [(var "zero")]}),
+      app {cmd := var "f", args := [var "zero"]},
 
     ],
-    tail := (app {cmd := (var "is_pos"), args := [(var "one")]}),
+    tail := app {cmd := var "is_pos", args := [var "one"]},
   }
 
 
