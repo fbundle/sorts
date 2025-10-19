@@ -9,7 +9,7 @@ def optionMap (xs: List α) (f: α → Option β): List β :=
       | [] => ys
       | x :: xs =>
         match f x with
-          | none => loop ys xs f
+          | none => ys
           | some y => loop (ys.push y) xs f
 
   (loop #[] xs f).toList
@@ -21,6 +21,24 @@ def optionMapAll (xs: List α) (f: α → Option β): Option (List β) :=
   else
     ys
 
+partial def ctxMap (xs: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Ctx × List β :=
+  let rec loop (ctx: Ctx) (ys: Array β) (listA: List α): Ctx × Array β :=
+    match listA with
+      | [] => (ctx, ys)
+      | x :: xs =>
+        match f ctx x with
+          | none => (ctx, ys)
+          | some (ctx, b) => loop ctx (ys.push b) xs
+
+  let (ctx, ys) := loop ctx #[] xs
+  (ctx, ys.toList)
+
+def ctxMapAll (xs: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List β) :=
+  let (ctx, ys) := ctxMap xs f ctx
+  if ys.length ≠ xs.length then
+    none
+  else
+    some (ctx, ys)
 def applyAtmostOnce {α: Type} {β} (fs: List (α → Option β)) (x: α): Option β :=
   match fs with
     | [] => none
@@ -28,8 +46,6 @@ def applyAtmostOnce {α: Type} {β} (fs: List (α → Option β)) (x: α): Optio
       match f x with
         | some y => some y
         | none => applyAtmostOnce fs x
-
-
 
 structure ParseAllResult (α: Type) (β: Type) where
   remaining: List α
@@ -50,24 +66,6 @@ partial def parseAll (parse: List α → Option (List α × β)) (tokens: List �
 
 def Map (α) (β) [BEq α] [Hashable α] := Std.HashMap α β
 
-partial def ctxMap (listA: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Ctx × List β :=
-  let rec loop (ctx: Ctx) (arrayB: Array β) (listA: List α): Ctx × Array β :=
-    match listA with
-      | [] => (ctx, arrayB)
-      | a :: listA =>
-        match f ctx a with
-          | none => (ctx, arrayB)
-          | some (ctx, b) => loop ctx (arrayB.push b) listA
-
-  let (ctx, arrayB) := loop ctx #[] listA
-  (ctx, arrayB.toList)
-
-def ctxMapAll (listA: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List β) :=
-  let (ctx, listB) := ctxMap listA f ctx
-  if listB.length ≠ listA.length then
-    none
-  else
-    some (ctx, listB)
 
 
 
