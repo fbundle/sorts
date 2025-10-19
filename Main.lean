@@ -5,7 +5,7 @@ namespace EL2_EXAMPLE
 open EL2
 
 def el2 (_: Unit): Term Atom :=
-  .list {
+  .lst {
     init := [
       .bind_typ {name := "Nat", params := [], parent := (.var "U_2")},
       .bind_mk {
@@ -42,7 +42,7 @@ def el2 (_: Unit): Term Atom :=
       .bind_val {
         name := "f", value := (.lam {
           params := [{name := "_", type := (.var "Nat")}],
-          body := .list {
+          body := .lst {
             init := [
               .bind_val {
                 name := "l", value := (.app {cmd := (.var "nil"), args := [(.var "Nat")]}),

@@ -41,7 +41,8 @@ structure Mat (α: Type) where
   cond: α
   cases: List (Case α)
 
-structure NonEmptyList (α: Type) where
+-- Lst : an non empty list
+structure Lst (α: Type) where
   init: List α
   tail: α
 
@@ -51,7 +52,7 @@ structure NonEmptyList (α: Type) where
 inductive Term (β: Type) where
   | atom: (atom: β) → Term β
   | var: (name: String) → Term β
-  | list: NonEmptyList (Term β) → Term β
+  | lst: Lst (Term β) → Term β
   | bind_val: BindVal (Term β) → Term β
   | bind_typ: BindTyp (Term β) → Term β
   | bind_mk: BindMk (Term β) → Term β

@@ -30,7 +30,7 @@ partial def normalize [Irreducible β] [Context Ctx (Term β)] (ctx: Ctx) (term:
       let term: Term β ← Context.get? ctx n
       normalize ctx term
 
-    | .list {init, tail} =>
+    | .lst {init, tail} =>
       let (ctx, _) ← Util.optionCtxMapAll init normalize ctx
       normalize ctx tail
 
