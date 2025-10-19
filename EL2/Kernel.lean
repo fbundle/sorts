@@ -3,10 +3,6 @@ import EL2.Util
 
 namespace EL2
 
-
-
-
-
 partial def Term.infer [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ctx: Ctx) : Option (Ctx × Term β) := do
   -- infer: infer type
   match c with
