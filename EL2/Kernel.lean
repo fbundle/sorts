@@ -18,10 +18,12 @@ partial def Term.normalize [Irreducible β] [Context Ctx (Term β)] (c: Term β)
   -- normalize
   match c with
     | .atom a =>
-      pure (c, ctx) -- return itself
+      pure (c, ctx)
+
     | .var n =>
       let c: Term β ← Context.get? ctx n
       c.normalize ctx
+
     | _ => sorry
 
 

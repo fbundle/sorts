@@ -41,8 +41,6 @@ structure Mat (α: Type) where
   cond: α
   cases: List (Case α)
 
--- TODO - add Mat - match
-
 -- β is an atomic type which is reduced into itself, e.g. integer
 -- it instantiates Reducible β β
 -- Code β is any type which can be reduced into β
