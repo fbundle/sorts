@@ -29,7 +29,7 @@ def printList (l: List String) (stripParens: Bool): String :=
     | _ =>
       let content := String.join (l.intersperse " ")
       if stripParens then
-        content
+        "(" ++ content ++ ")"
       else
         "(" ++ content ++ ")"
 
