@@ -5,7 +5,7 @@ class Irreducible β where
 
 
 class Context Ctx α where
-  set: Ctx → String → α → Ctx
+  set: Ctx → String → α → (Ctx × α)
   get?: Ctx → String → Option α
 
 
