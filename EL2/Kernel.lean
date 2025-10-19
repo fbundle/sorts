@@ -25,7 +25,7 @@ partial def Term.normalize [Irreducible β] [Context Ctx (Term β)] (c: Term β)
       c.normalize ctx
 
     | .list init tail =>
-      let (ctx, _) ← Util.ctxMapAll init (λ ctx term => term.normalize ctx) ctx
+      let (ctx, _) ← Util.optionCtxMapAll init (λ ctx term => term.normalize ctx) ctx
       tail.normalize ctx
 
     | .bind_val {name, value} =>

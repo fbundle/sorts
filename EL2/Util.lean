@@ -21,7 +21,7 @@ def optionMapAll (xs: List α) (f: α → Option β): Option (List β) :=
   else
     ys
 
-partial def ctxMap (xs: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Ctx × List β :=
+partial def optionCtxMap (xs: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Ctx × List β :=
   let rec loop (ctx: Ctx) (ys: Array β) (listA: List α): Ctx × Array β :=
     match listA with
       | [] => (ctx, ys)
@@ -33,8 +33,8 @@ partial def ctxMap (xs: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ct
   let (ctx, ys) := loop ctx #[] xs
   (ctx, ys.toList)
 
-def ctxMapAll (xs: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List β) :=
-  let (ctx, ys) := ctxMap xs f ctx
+def optionCtxMapAll (xs: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List β) :=
+  let (ctx, ys) := optionCtxMap xs f ctx
   if ys.length ≠ xs.length then
     none
   else
