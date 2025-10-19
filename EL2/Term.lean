@@ -41,13 +41,17 @@ structure Mat (α: Type) where
   cond: α
   cases: List (Case α)
 
+structure NonEmptyList (α: Type) where
+  init: List α
+  tail: α
+
 -- β is an atomic type which is reduced into itself, e.g. integer
 -- it instantiates Reducible β
 -- Term β is any type which can be reduced into β - normalize
 inductive Term (β: Type) where
   | atom: (atom: β) → Term β
   | var: (name: String) → Term β
-  | list: (init: List (Term β)) → (tail: Term β) → Term β
+  | list: NonEmptyList (Term β) → Term β
   | bind_val: BindVal (Term β) → Term β
   | bind_typ: BindTyp (Term β) → Term β
   | bind_mk: BindMk (Term β) → Term β

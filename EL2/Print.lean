@@ -36,7 +36,7 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
     | .var n =>
       [n]
 
-    | .list init tail =>
+    | .list {init, tail} =>
       if init.length = 0 then
         [ctx.print tail]
       else
