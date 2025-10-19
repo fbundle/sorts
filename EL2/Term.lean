@@ -56,6 +56,10 @@ inductive Term (β: Type) where
   | mat: Mat (Term β) → Term β
 
 
+-- Inh - term after type checked
+structure Inh (β: Type) where
+  term: Term β
+  type: Term β
 
 
 end EL2
