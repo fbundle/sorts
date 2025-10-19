@@ -57,12 +57,9 @@ inductive T (α: Type) where
   | mat: Mat α → T α
 
 inductive Term (β: Type) where
-  | atom: (a: β) → Term β
+  | atom: (value: β) → Term β
   | t: T (Term β) → Term β
 
-inductive InhTerm (β: Type) where
-  | atom: (a: β) → InhTerm β
-  | t: (value: T (InhTerm β)) → (type: T (InhTerm β)) → InhTerm β
 
 notation "atom" x => Term.atom x
 notation "var" x => Term.t (T.var x)
@@ -74,14 +71,10 @@ notation "lam" x => Term.t (T.lam x)
 notation "app" x => Term.t (T.app x)
 notation "mat" x => Term.t (T.mat x)
 
-notation "inh_atom" x => InhTerm.atom x
-notation "inh_var" x => InhTerm.t (T.var x)
-notation "inh_lst" x => InhTerm.t (T.lst x)
-notation "inh_bind_typ" x => InhTerm.t (T.bind_typ x)
-notation "inh_bind_val" x => InhTerm.t (T.bind_val x)
-notation "inh_bind_mk" x => InhTerm.t (T.bind_mk x)
-notation "inh_lam" x => InhTerm.t (T.lam x)
-notation "inh_app" x => InhTerm.t (T.app x)
-notation "inh_mat" x => InhTerm.t (T.mat x)
+
+inductive TypTerm (β: Type) [Irreducible β] where
+  | atom: (value: β) → TypTerm β
+  | t: (value: T (TypTerm β)) → (type: T (TypTerm β)) → TypTerm β
+
 
 end EL2

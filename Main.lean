@@ -5,6 +5,7 @@ namespace EL2_EXAMPLE
 open EL2
 
 
+
 def el2 (_: Unit): Term Atom :=
   lst {
     init := [
