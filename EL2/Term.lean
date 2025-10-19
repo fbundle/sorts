@@ -42,10 +42,8 @@ structure Mat (α: Type) where
   cases: List (Case α)
 
 -- β is an atomic type which is reduced into itself, e.g. integer
--- it instantiates Reducible β β
--- Code β is any type which can be reduced into β
--- it instantiates Reducible (Code β) β
--- it is usually denoted by α
+-- it instantiates Reducible β
+-- Term β is any type which can be reduced into β - normalize
 inductive Term (β: Type) where
   | atom: β → Term β
   | var: String → Term β
