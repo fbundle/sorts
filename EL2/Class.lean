@@ -2,6 +2,7 @@ namespace EL2
 
 class Irreducible β where
   inferAtom: β → β
+  inhabited: α → Int → β
 
 
 class Context Ctx α where
