@@ -5,38 +5,28 @@ namespace EL2
 structure PrintCtx where
   indentNum: Nat
   indentSize: Nat
-  stripParens: Bool := false
-
-def PrintCtx.withParens (ctx: PrintCtx): PrintCtx := {
-  ctx with
-  stripParens := false
-}
 
 def PrintCtx.withIndent (ctx: PrintCtx): PrintCtx := {
   ctx with
   indentNum := ctx.indentNum+1
-  stripParens := true
 }
 
 def PrintCtx.indentStr (ctx: PrintCtx): String :=
   String.mk (List.replicate (ctx.indentNum * ctx.indentSize) ' ')
 
 
-def printList (l: List String) (stripParens: Bool): String :=
+def printList (l: List String): String :=
   match l with
     | [] => ""
     | x :: [] => x
     | _ =>
       let content := String.join (l.intersperse " ")
-      if stripParens then
-        "(" ++ content ++ ")"
-      else
-        "(" ++ content ++ ")"
+      "(" ++ content ++ ")"
 
 mutual
 partial def PrintCtx.printAnn [ToString β] (ctx: PrintCtx) (x: Ann (Term β)): String :=
-  let contentList: List String := [x.name, ":", ctx.withParens.print x.type]
-  printList contentList ctx.stripParens
+  let contentList: List String := [x.name, ":", ctx.print x.type]
+  printList contentList
 
 partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
   let contentList: List String := match c with
@@ -51,46 +41,46 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       ["\n" ++ String.join parts]
 
     | .bind_val x =>
-      ["bind_val", x.name, ctx.withParens.print x.value]
+      ["bind_val", x.name, ctx.print x.value]
 
     | .bind_typ x =>
       ["bind_typ"] ++
       [x.name] ++
-      x.params.map ctx.withParens.printAnn ++
-      [ctx.withParens.print x.parent]
+      x.params.map ctx.printAnn ++
+      [ctx.print x.parent]
 
     | .bind_mk x =>
       ["bind_mk"] ++
       [x.name] ++
-      x.params.map ctx.withParens.printAnn ++
+      x.params.map ctx.printAnn ++
       ["->"] ++
       [printList (
         [x.type.cmd] ++
-        x.type.args.map ctx.withParens.print
-      ) false]
+        x.type.args.map ctx.print
+      )]
 
     | .app x =>
-      [ctx.withParens.print x.cmd] ++
-      x.args.map ctx.withParens.print
+      [ctx.print x.cmd] ++
+      x.args.map ctx.print
 
     | .lam x =>
-      x.params.map ctx.withParens.printAnn ++
+      x.params.map ctx.printAnn ++
       ["=>"] ++
-      [ctx.withParens.print x.body]
+      [ctx.print x.body]
 
     | .mat x =>
       ["match"] ++
-      [ctx.withParens.print x.cond] ++
+      [ctx.print x.cond] ++
       x.cases.map (λ case =>
         "\n" ++ ctx.indentStr ++ printList (
           [case.pattern.cmd] ++
           case.pattern.args ++
           ["=>"] ++
-          [ctx.withParens.print case.value]
-        ) true
+          [ctx.print case.value]
+        )
       ) ++ ["\n"]
 
-  printList contentList ctx.stripParens
+  printList contentList
 
 end
 
@@ -98,7 +88,6 @@ instance [ToString β]: ToString (Term β) where
   toString (c: Term β):= {
     indentNum := 0,
     indentSize := 2
-    stripParens := true
   :PrintCtx}.print c
 
 end EL2
