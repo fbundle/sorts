@@ -1,6 +1,10 @@
 import EL2.Term
+import EL2.Util
 
 namespace EL2
+
+
+
 
 
 partial def Term.infer [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ctx: Ctx) : Option (Ctx × Term β) := do
@@ -41,6 +45,7 @@ partial def Term.normalize [Irreducible β] [Context Ctx (Term β)] (c: Term β)
       pure (ctx, value)
 
     | .bind_typ {name, params, parent} =>
+
       sorry
 
     | _ => sorry
