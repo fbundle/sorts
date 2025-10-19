@@ -4,15 +4,6 @@ import Std
 namespace EL2_EXAMPLE
 open EL2
 
-notation "atom" x => Term.atom x
-notation "var" x => Term.t (T.var x)
-notation "lst" x => Term.t (T.lst x)
-notation "bind_typ" x => Term.t (T.bind_typ x)
-notation "bind_val" x => Term.t (T.bind_val x)
-notation "bind_mk" x => Term.t (T.bind_mk x)
-notation "lam" x => Term.t (T.lam x)
-notation "app" x => Term.t (T.app x)
-notation "mat" x => Term.t (T.mat x)
 
 def el2 (_: Unit): Term Atom :=
   lst {
