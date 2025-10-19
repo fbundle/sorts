@@ -8,7 +8,7 @@ partial def Term.infer [Irreducible β] [Context Ctx (Term β)] (c: Term β) (ct
   match c with
     | .atom a =>
       let p := Irreducible.inferAtom a
-      pure (.atom p, ctx)
+      pure (ctx, .atom p)
     | .var n =>
       let c : Term β ← Context.get? ctx n
       c.infer ctx
