@@ -43,7 +43,7 @@ partial def normalize [Irreducible β] [Context Ctx (Term β)] (ctx: Ctx) (term:
       | .bind_typ {name, params, parent} =>
         let (ctx, params) ← reduceParams params normalize ctx
         let (ctx, parent) ← normalize ctx parent
-        let value: T (Term β) := .bind_typ {
+        let value := bind_typ {
           name := name,
           params := params,
           parent := parent,
@@ -56,7 +56,7 @@ partial def normalize [Irreducible β] [Context Ctx (Term β)] (ctx: Ctx) (term:
         let {cmd, args} := type
         let (ctx, args) ← Util.optionCtxMapAll args normalize ctx
 
-        let value: T (Term β) := .bind_mk {
+        let value := bind_mk {
           name := name,
           params := params,
           type := {
@@ -68,7 +68,7 @@ partial def normalize [Irreducible β] [Context Ctx (Term β)] (ctx: Ctx) (term:
 
       | .lam {params, body} =>
         let (ctx, params) ← reduceParams params normalize ctx
-        let value: T (Term β) := .lam {
+        let value := lam {
           params := params,
           body := body,
         }
