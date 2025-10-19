@@ -40,6 +40,9 @@ partial def Term.normalize [Irreducible β] [Context Ctx (Term β)] (c: Term β)
       let ctx := Context.set ctx name value
       pure (ctx, value)
 
+    | .bind_typ {name, params, parent} =>
+      sorry
+
     | _ => sorry
 
 
