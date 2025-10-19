@@ -1,4 +1,3 @@
-
 import EL2.EL2
 import Std
 
@@ -55,8 +54,7 @@ def el2 (_: Unit): Term Atom :=
           .bind_val {
             name := "l", value := (.app {cmd := (.var "append"), args := [(.var "Nat"), (.var "two"), (.var "l"), (.var "three")]}),
           },
-          .var "l"
-        ])
+        ] (.var "l"))
       })
     },
 
@@ -74,8 +72,8 @@ def el2 (_: Unit): Term Atom :=
     },
 
     (.app {cmd := (.var "f"), args := [(.var "zero")]}),
-    (.app {cmd := (.var "is_pos"), args := [(.var "one")]}),
-  ]
+
+  ] (.app {cmd := (.var "is_pos"), args := [(.var "one")]})
 
 
 end EL2_EXAMPLE
