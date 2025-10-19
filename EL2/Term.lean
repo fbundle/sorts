@@ -51,8 +51,8 @@ inductive Term (β: Type) where
   | bind_val: BindVal (Term β) → Term β
   | bind_typ: BindTyp (Term β) → Term β
   | bind_mk: BindMk (Term β) → Term β
-  | app: App (Term β) (Term β) → Term β
   | lam: Lam (Term β) → Term β
+  | app: App (Term β) (Term β) → Term β
   | mat: Mat (Term β) → Term β
 
 
