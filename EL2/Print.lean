@@ -65,7 +65,7 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       [printList (
         [x.type.cmd] ++
         x.type.args.map ctx.withParens.print
-      ) false]
+      ) true]
 
     | .app x =>
       [ctx.withParens.print x.cmd] ++
