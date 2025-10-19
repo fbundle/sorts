@@ -37,8 +37,11 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (c: Term β): String :=
       [n]
 
     | .list init tail =>
-      let parts := (init ++ [tail]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
-      ["\n" ++ String.join parts]
+      if init.length = 0 then
+        [ctx.print tail]
+      else
+        let parts := (init ++ [tail]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
+        ["\n" ++ String.join parts]
 
     | .bind_val x =>
       ["bind_val", x.name, ctx.print x.value]
