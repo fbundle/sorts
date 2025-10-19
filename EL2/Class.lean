@@ -2,7 +2,7 @@ namespace EL2
 
 class Irreducible β where
   inferAtom: β → β
-  inhabited: α → Int → β
+  inhabited: (type: α) → (level: Int) → β -- useful to create dummy variable for lambda type checking
 
 
 class Context Ctx α where

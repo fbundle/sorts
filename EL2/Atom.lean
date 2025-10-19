@@ -5,9 +5,9 @@ namespace EL2
 
 inductive Atom where -- Atom - basic element of EL
   | int_type: Atom
-  | univ: Int → Atom
-  | integer: Int → Atom
-  | inh : α → Int → Atom
+  | univ: (level: Int) → Atom
+  | integer: (value: Int) → Atom
+  | inh : (type: α) → (level: Int) → Atom
 
 def Atom.inferAtom (s: Atom): Atom :=
   match s with
