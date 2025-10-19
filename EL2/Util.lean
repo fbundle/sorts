@@ -50,19 +50,19 @@ partial def parseAll (parse: List α → Option (List α × β)) (tokens: List �
 
 def Map (α) (β) [BEq α] [Hashable α] := Std.HashMap α β
 
-partial def ctxMap (listA: List α) (f: α → Option (Ctx × β)) (ctx: Ctx): Ctx × List β :=
+partial def ctxMap (listA: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Ctx × List β :=
   let rec loop (ctx: Ctx) (arrayB: Array β) (listA: List α): Ctx × Array β :=
     match listA with
       | [] => (ctx, arrayB)
       | a :: listA =>
-        match f a with
+        match f ctx a with
           | none => (ctx, arrayB)
           | some (ctx, b) => loop ctx (arrayB.push b) listA
 
   let (ctx, arrayB) := loop ctx #[] listA
   (ctx, arrayB.toList)
 
-def ctxMapAll (listA: List α) (f: α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List β) :=
+def ctxMapAll (listA: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List β) :=
   let (ctx, listB) := ctxMap listA f ctx
   if listB.length ≠ listA.length then
     none
