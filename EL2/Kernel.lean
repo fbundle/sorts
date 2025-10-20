@@ -33,7 +33,6 @@ partial def matchParamsArgs? [BEq α] (params: List (Ann α)) (argsType: List α
     let tailArgsType := argsType.extract 1
     matchParamsArgs? tailParams tailArgsType
 
-mutual
 
 partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) := do
   -- (ctx: Ctx) - map name -> type
@@ -146,7 +145,6 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
 partial def reduceTerm? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) :=
   sorry
 
-end
 
 
 end EL2
