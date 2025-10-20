@@ -68,20 +68,31 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
 
       let (ctx, _) ← reduceParams? params ctx inferType?
 
-      dbg_trace s!"2 checking bind_mk {name} {repr params}"
-
       let {cmd := typeName, args := typeArgs} := type
-      let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs ctx inferType?
-
-      dbg_trace s!"3 checking bind_mk {typeName}"
+      dbg_trace s!"2 checking bind_mk {name} {repr params}"
 
       match Context.get? ctx typeName with
         | some (lam typeType) =>
           -- type of type is Pi/lam
-          dbg_trace s!"4 checking bind_mk {name}"
 
           let {params := typeParams, body := _} := typeType
+          dbg_trace s!"4 checking bind_mk {name} {repr typeParams}"
+
+          -- set dummy args
+          let (ctx, _) ← reduceParamsWithName? typeParams ctx ((λ ctx name value =>
+            let ctx := Context.insert ctx name value -- possibly need to normalize/reduce this
+            some (ctx, value)
+          ))
+          dbg_trace s!"5 checking bind_mk {name} {repr ctx}"
+
+          -- resolve return type
+          let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs ctx inferType?
+
+
+
           let _ ← matchParamsArgs? typeParams typeArgsType
+
+
           -- type of a type constructor is Pi
           let parent := lam {
             params := params,
@@ -115,7 +126,7 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
           -- type of bind_typ, bind_mk, lam is lam/Pi
           let (ctx, argsType) ← Util.optionCtxMap? args ctx inferType?
           let _ ← matchParamsArgs? cmdTypeParams argsType
-          -- set args type
+          -- set dummy args
           let (ctx, _) ← reduceParamsWithName? cmdTypeParams ctx ((λ ctx name value =>
             let ctx := Context.insert ctx name value
             some (ctx, value)
