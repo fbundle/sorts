@@ -124,3 +124,9 @@ def main  : IO Unit := do
     IO.println s!"term: {term}"
     IO.println s!"type: {type}"
     IO.println ""
+
+  if h: typeList.length < termList.length then
+    let nextTerm := termList[typeList.length]'h
+    IO.println s!"type check error at: {nextTerm}"
+  else
+    pure ()
