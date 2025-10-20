@@ -21,8 +21,6 @@ partial def matchParamsArgs? (params: List (Ann α)) (argsType: List α) (le: α
     let tailArgsType := argsType.extract 1
     matchParamsArgs? tailParams tailArgsType le
 
-
-
 partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: Ctx) (term: Term β): Option (Ctx × Term β) := do
   -- (ctx: Ctx) - map name -> type
   match term with
@@ -30,17 +28,17 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
       pure (ctx, atom Irreducible.inferType a)
 
     | var n =>
-      let type: Term β ← Context.get? ctx n
-      pure (ctx, type)
+      let parent: Term β ← Context.get? ctx n
+      pure (ctx, parent)
 
     | lst {init, last} =>
       let (ctx, _) ← Util.optionCtxMap? init inferType? ctx
       inferType? ctx last
 
     | bind_val {name, value} =>
-      let (ctx, valueType) ← inferType? ctx value
-      let ctx := Context.set ctx name valueType
-      pure (ctx, valueType)
+      let (ctx, parent) ← inferType? ctx value
+      let ctx := Context.set ctx name parent
+      pure (ctx, parent)
 
     | bind_typ {name, params, parent} =>
       let (ctx, _) ← reduceParams? params inferType? ctx
@@ -54,11 +52,16 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
       let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs inferType? ctx
 
       match Context.get? ctx typeName with
-        | some (bind_typ {name, params, parent}) =>
-          let _ ← matchParamsArgs? params typeArgsType equal?
-          let ctx := Context.set ctx name (sorry: Term β) -- type constructor
-
-          pure (ctx, sorry)
+        | some (bind_typ type) =>
+          let {name := typeName, params := typeParams, parent := typeParent} := type
+          let _ ← matchParamsArgs? typeParams typeArgsType equal?
+          -- type of a type constructor is Pi or Lam
+          let parent := lam {
+            params := params,
+            body := bind_typ type,
+          }
+          let ctx := Context.set ctx name parent
+          pure (ctx, parent)
         | _ => none
 
     | lam {params, body} =>
