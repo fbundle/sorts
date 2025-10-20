@@ -9,5 +9,5 @@ name = "EL"
 name = "EL2"
 
 [[lean_exe]]
-name = "el"
+name = "Main.lean"
 root = "Main"
