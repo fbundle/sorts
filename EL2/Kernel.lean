@@ -83,6 +83,7 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
           -- set dummy args
           let (ctx, _) ← reduceParamsWithName? typeParams ctx ((λ ctx name value =>
             let ctx := Context.insert ctx name value
+            -- in one case, value is (var "Nat")
             -- TODO possibly need to normalize/reduce this
             -- reduce = typeInfer? + substitution
             some (ctx, value)
