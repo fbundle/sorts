@@ -29,14 +29,14 @@ partial def matchParamsArgs? [BEq α] (params: List (Ann α)) (argsType: List α
     let tailArgsType := argsType.extract 1
     matchParamsArgs? tailParams tailArgsType
 
-partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: Ctx) (term: Term β): Option (Ctx × Term β) := do
+partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) := do
   -- (ctx: Ctx) - map name -> type
   match term with
-    | atom a =>
-      pure (ctx, atom Irreducible.inferType a)
+    | univ level =>
+      pure (ctx, univ (level+1))
 
     | var n =>
-      let parent: Term β ← Context.get? ctx n
+      let parent: Term ← Context.get? ctx n
       pure (ctx, parent)
 
     | lst {init, last} =>
@@ -48,10 +48,15 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
       let ctx := Context.set ctx name parent
       pure (ctx, parent)
 
-    | bind_typ {name, params, parent} =>
+    | bind_typ {name, params, level} =>
       let (ctx, _) ← reduceParams? params ctx inferType?
-      let (ctx, _) ← inferType? ctx parent
-      pure (Context.set ctx name term, parent)
+      -- type of type definition is Pi
+      let parent := lam {
+        params := params,
+        body := univ level,
+      }
+      let ctx := Context.set ctx name parent
+      pure (ctx, parent)
 
     | bind_mk {name, params, type} =>
       let (ctx, _) ← reduceParams? params ctx inferType?
@@ -61,7 +66,7 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
 
       match Context.get? ctx typeName with
         | some (bind_typ type) =>
-          let {name := typeName, params := typeParams, parent := typeParent} := type
+          let {name := typeName, params := typeParams, level := typeLevel} := type
           let _ ← matchParamsArgs? typeParams typeArgsType
           -- type of a type constructor is Pi
           let parent := lam {
@@ -87,7 +92,8 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
       }
       pure (ctx, parent)
 
-    | app {cmd, args} => sorry
+    | app {cmd, args} =>
+      sorry
     | mat {cond, cases} => sorry
 
 

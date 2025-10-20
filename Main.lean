@@ -6,10 +6,10 @@ open EL2
 
 
 
-def el2 (_: Unit): Term Atom :=
+def el2 (_: Unit): Term :=
   lst {
     init := [
-      bind_typ {name := "Nat", params := [], parent := var "U_2"},
+      bind_typ {name := "Nat", params := [], level := 1},
       bind_mk {
         name := "zero",
         params := [],
@@ -22,18 +22,18 @@ def el2 (_: Unit): Term Atom :=
       },
       bind_typ {
         name := "Vec",
-        params := [{name := "T", type := var "U_2"}, {name := "n", type := var "Nat"}],
-        parent := var "U_2",
+        params := [{name := "T", type := univ 1}, {name := "n", type := var "Nat"}],
+        level := 1,
       },
       bind_mk {
         name := "nil", params := [
-          {name := "T", type := var "U_2"},
+          {name := "T", type := univ 1},
         ],
         type := {cmd := "Vec", args := [var "T", var "0"]},
       },
       bind_mk {
         name := "append", params := [
-          {name := "T", type := var "U_2"},
+          {name := "T", type := univ 1},
           {name := "n", type := var "Nat"},
           {name := "v", type := app {cmd := var "Vec", args := [var "T", var "n"]}},
           {name := "x", type := var "T"},

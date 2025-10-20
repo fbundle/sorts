@@ -16,7 +16,7 @@ structure BindVal (α: Type) where
 structure BindTyp (α: Type) where -- List (T: Type)
   name: String
   params: List (Ann α)
-  parent: α -- TODO - consider changing this into Universe Level
+  level: Int
   deriving BEq
 
 -- App : function application
@@ -60,39 +60,30 @@ structure Typ (α: Type) where
   value: α
   deriving BEq
 
-inductive T (α: Type) where
-  | var: (name: String) → T α
-  | lst: Lst α → T α
-  | bind_val: BindVal α → T α
-  | bind_typ: BindTyp α → T α
-  | bind_mk: BindMk α → T α
-  | typ: Typ α → T α
-  | lam: Lam α → T α
-  | app: App α α → T α
-  | mat: Mat α → T α
-  deriving BEq
-
-inductive Term (β: Type) where
-  | atom: (value: β) → Term β
-  | t: T (Term β) → Term β
+inductive Term where
+  | univ: (level: Int) → Term
+  | var: (name: String) → Term
+  | lst: Lst Term → Term
+  | bind_val: BindVal Term → Term
+  | bind_typ: BindTyp Term → Term
+  | bind_mk: BindMk Term → Term
+  | typ: Typ Term → Term
+  | lam: Lam Term → Term
+  | app: App Term Term → Term
+  | mat: Mat Term → Term
   deriving BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
 notation "atom" x => Term.atom x
-notation "var" x => Term.t (T.var x)
-notation "lst" x => Term.t (T.lst x)
-notation "bind_typ" x => Term.t (T.bind_typ x)
-notation "bind_val" x => Term.t (T.bind_val x)
-notation "bind_mk" x => Term.t (T.bind_mk x)
-notation "typ" x => Term.t (T.typ x)
-notation "lam" x => Term.t (T.lam x)
-notation "app" x => Term.t (T.app x)
-notation "mat" x => Term.t (T.mat x)
-
-
--- TypTerm - hold typechecked Term
-inductive TypTerm (β: Type) [Irreducible β] where
-  | atom: (value: β) → TypTerm β
-  | t: (value: T (Term β)) → (type: T (TypTerm β)) → TypTerm β
+notation "univ" x => Term.univ x
+notation "var" x => Term.var x
+notation "lst" x => Term.lst x
+notation "bind_typ" x => Term.bind_typ x
+notation "bind_val" x => Term.bind_val x
+notation "bind_mk" x => Term.bind_mk x
+notation "typ" x => Term.typ x
+notation "lam" x => Term.lam x
+notation "app" x => Term.app x
+notation "mat" x => Term.mat x
 
 
 end EL2

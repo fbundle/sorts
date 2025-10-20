@@ -24,14 +24,15 @@ def printList (l: List String): String :=
       "(" ++ content ++ ")"
 
 mutual
-partial def PrintCtx.printAnn [ToString β] (ctx: PrintCtx) (x: Ann (Term β)): String :=
+
+partial def PrintCtx.printAnn (ctx: PrintCtx) (x: Ann Term): String :=
   let contentList: List String := [x.name, ":", ctx.print x.type]
   printList contentList
 
-partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (term: Term β): String :=
+partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
   let contentList: List String := match term with
-    | atom a =>
-      [toString a]
+    | univ level =>
+      [s!"U_{level}"]
 
     | var name =>
       [name]
@@ -46,11 +47,11 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (term: Term β): String
     | bind_val {name, value} =>
       ["bind_val", name, ctx.print value]
 
-    | bind_typ {name, params, parent} =>
+    | bind_typ {name, params, level} =>
       ["bind_typ"] ++
       [name] ++
       params.map ctx.printAnn ++
-      [ctx.print parent]
+      [s!"U_{level}"]
 
     | bind_mk {name, params, type} =>
       let {cmd, args} := type
@@ -93,10 +94,11 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (term: Term β): String
 
 end
 
-instance [ToString β]: ToString (Term β) where
-  toString (c: Term β):= {
+instance : ToString Term where
+  toString (c: Term):= {
     indentNum := 0,
-    indentSize := 2
-  :PrintCtx}.print c
+    indentSize := 2,
+    :PrintCtx
+  }.print c
 
 end EL2
