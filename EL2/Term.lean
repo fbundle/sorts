@@ -71,17 +71,4 @@ inductive Term where
   | mat: Mat Term → Term
   deriving Repr, BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
-notation "atom" x => Term.atom x
-notation "univ" x => Term.univ x
-notation "var" x => Term.var x
-notation "lst" x => Term.lst x
-notation "bind_typ" x => Term.bind_typ x
-notation "bind_val" x => Term.bind_val x
-notation "bind_mk" x => Term.bind_mk x
-notation "typ" x => Term.typ x
-notation "lam" x => Term.lam x
-notation "app" x => Term.app x
-notation "mat" x => Term.mat x
-
-
 end EL2

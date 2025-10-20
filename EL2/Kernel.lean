@@ -37,33 +37,33 @@ partial def matchParamsArgs? [BEq α] (params: List (Ann α)) (argsType: List α
 partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) := do
   -- (ctx: Ctx) - map name -> type
   match term with
-    | univ level =>
-      pure (ctx, univ (level+1))
+    | .univ level =>
+      pure (ctx, .univ (level+1))
 
-    | var n =>
+    | .var n =>
       let parent: Term ← Context.get? ctx n
       pure (ctx, parent)
 
-    | lst {init, last} =>
+    | .lst {init, last} =>
       let (ctx, _) ← Util.optionCtxMap? init ctx inferType?
       inferType? ctx last
 
-    | bind_val {name, value} =>
+    | .bind_val {name, value} =>
       let (ctx, parent) ← inferType? ctx value
       let ctx := Context.insert ctx name parent
       pure (ctx, parent)
 
-    | bind_typ {name, params, level} =>
+    | .bind_typ {name, params, level} =>
       let (ctx, _) ← reduceParams? params ctx inferType?
       -- type of type definition is Pi
-      let parent := lam {
+      let parent := .lam {
         params := params,
-        body := univ level,
+        body := .univ level,
       }
       let ctx := Context.insert ctx name parent
       pure (ctx, parent)
 
-    | bind_mk {name, params, type} =>
+    | .bind_mk {name, params, type} =>
 
       dbg_trace s!"1 checking bind_mk {name} {repr params}"
 
@@ -73,7 +73,7 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
       dbg_trace s!"2 checking bind_mk {name} {repr params}"
 
       match Context.get? ctx typeName with
-        | some (lam typeType) =>
+        | some (Term.lam typeType) =>
           -- type of type is Pi/lam
 
           let {params := typeParams, body := _} := typeType
@@ -104,35 +104,35 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
 
 
           -- type of a type constructor is Pi
-          let parent := lam {
+          let parent := .lam {
             params := params,
-            body := lam typeType,
+            body := .lam typeType,
           }
           let ctx := Context.insert ctx name parent
           pure (ctx, parent)
         | _ => none
 
-    | typ {value} =>
+    | .typ {value} =>
       let (ctx, type) ← inferType? ctx value
       let (ctx, parent) ← inferType? ctx type
       pure (ctx, parent)
 
-    | lam {params, body} =>
+    | .lam {params, body} =>
       -- type of parent is Pi
-      let parent := lam {
+      let parent := .lam {
         params := params,
-        body := typ {value := body},
+        body := .typ {value := body},
         -- we use typ to create a future type infer object
         -- normalizing typ will invoke inferType?
       }
       pure (ctx, parent)
 
-    | app {cmd, args} =>
+    | .app {cmd, args} =>
       dbg_trace s!"1 checking app {repr cmd} {repr args}"
 
       let (ctx, cmdType) ← inferType? ctx cmd
       match cmdType with
-        | lam {params := cmdTypeParams, body := cmdTypeBody} =>
+        | .lam {params := cmdTypeParams, body := cmdTypeBody} =>
           -- type of bind_typ, bind_mk, lam is lam/Pi
           let (ctx, argsType) ← Util.optionCtxMap? args ctx inferType?
           let _ ← matchParamsArgs? cmdTypeParams argsType
@@ -144,8 +144,8 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
           -- return the type of body given the context
           pure (ctx, cmdTypeBody)
         | _ => none
-    | mat {cond, cases} =>
-      pure (ctx, univ 1)
+    | .mat {cond, cases} =>
+      pure (ctx, .univ 1)
       -- TODO change it
 
 partial def reduceTerm? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) :=

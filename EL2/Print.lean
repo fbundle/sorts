@@ -31,29 +31,29 @@ partial def PrintCtx.printAnn (ctx: PrintCtx) (x: Ann Term): String :=
 
 partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
   let contentList: List String := match term with
-    | univ level =>
+    | .univ level =>
       [s!"U_{level}"]
 
-    | var name =>
+    | .var name =>
       [name]
 
-    | lst {init, last} =>
+    | .lst {init, last} =>
       if init.length = 0 then
         [ctx.print last]
       else
         let parts := (init ++ [last]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
         ["\n" ++ String.join parts]
 
-    | bind_val {name, value} =>
+    | .bind_val {name, value} =>
       ["bind_val", name, ctx.print value]
 
-    | bind_typ {name, params, level} =>
+    | .bind_typ {name, params, level} =>
       ["bind_typ"] ++
       [name] ++
       params.map ctx.printAnn ++
       [s!"U_{level}"]
 
-    | bind_mk {name, params, type} =>
+    | .bind_mk {name, params, type} =>
       let {cmd, args} := type
       ["bind_mk"] ++
       [name] ++
@@ -64,20 +64,20 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
         args.map ctx.print
       )]
 
-    | typ {value} =>
+    | .typ {value} =>
       ["type"] ++
       [ctx.print value]
 
-    | app {cmd, args} =>
+    | .app {cmd, args} =>
       [ctx.print cmd] ++
       args.map ctx.print
 
-    | lam {params, body} =>
+    | .lam {params, body} =>
       params.map ctx.printAnn ++
       ["=>"] ++
       [ctx.print body]
 
-    | mat {cond, cases} =>
+    | .mat {cond, cases} =>
       ["match"] ++
       [ctx.print cond] ++
       cases.map (λ {pattern, value} =>
