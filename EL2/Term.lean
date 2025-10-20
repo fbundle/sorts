@@ -55,12 +55,18 @@ structure Lst (α: Type) where
   last: α
   deriving BEq
 
+-- Typ
+structure Typ (α: Type) where
+  value: α
+  deriving BEq
+
 inductive T (α: Type) where
   | var: (name: String) → T α
   | lst: Lst α → T α
   | bind_val: BindVal α → T α
   | bind_typ: BindTyp α → T α
   | bind_mk: BindMk α → T α
+  | typ: Typ α → T α
   | lam: Lam α → T α
   | app: App α α → T α
   | mat: Mat α → T α
@@ -81,6 +87,7 @@ notation "lst" x => Term.t (T.lst x)
 notation "bind_typ" x => Term.t (T.bind_typ x)
 notation "bind_val" x => Term.t (T.bind_val x)
 notation "bind_mk" x => Term.t (T.bind_mk x)
+notation "typ" x => Term.t (T.typ x)
 notation "lam" x => Term.t (T.lam x)
 notation "app" x => Term.t (T.app x)
 notation "mat" x => Term.t (T.mat x)

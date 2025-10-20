@@ -70,17 +70,13 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
           pure (ctx, parent)
         | _ => none
 
+    | typ {value} =>
+      sorry
     | lam {params, body} =>
-      -- set dummy args into ctx
-      let (ctx, _) ← reduceParamsWithName? params ctx (λ ctx paramName paramType =>
-        let ctx := Context.set ctx paramName paramType
-        some (ctx, ())
-      )
-      let (ctx, bodyType) ← inferType? ctx body
       -- type of parent is Pi
       let parent := lam {
         params := params,
-        body := bodyType, -- TODO think about this
+        body := typ {value := body},
       }
       pure (ctx, parent)
 
