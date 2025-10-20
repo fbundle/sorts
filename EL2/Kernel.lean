@@ -73,12 +73,12 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
       let {cmd := typeName, args := typeArgs} := type
       let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs ctx inferType?
 
-
+      dbg_trace s!"3 checking bind_mk {typeName}"
 
       match Context.get? ctx typeName with
         | some (lam typeType) =>
           -- type of type is Pi/lam
-          dbg_trace s!"3 checking bind_mk {name}"
+          dbg_trace s!"4 checking bind_mk {name}"
 
           let {params := typeParams, body := _} := typeType
           let _ ← matchParamsArgs? typeParams typeArgsType
