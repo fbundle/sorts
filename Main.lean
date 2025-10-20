@@ -102,8 +102,17 @@ def printLines [ToString α] (lines: List α) : IO Unit :=
   lines.forM IO.println
 
 
+
+instance: EL2.Context (Std.HashMap String α) α where
+  insert (m: Std.HashMap String α) (key: String) (val: α) := m.insert key val
+  get? (m: Std.HashMap String α) (key: String) := m.get? key
+
+def frame : Std.HashMap String EL2.Term := Std.HashMap.emptyWithCapacity
+
+
 def main  : IO Unit := do
   let termList := EL2_EXAMPLE.termList
+
 
 
 

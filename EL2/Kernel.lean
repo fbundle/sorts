@@ -4,7 +4,7 @@ import EL2.Util
 namespace EL2
 
 class Context Ctx α where
-  set: Ctx → String → α → Ctx
+  insert: Ctx → String → α → Ctx
   get?: Ctx → String → Option α
 
 def reduceParamsWithName? (params: List (Ann α)) (ctx: Ctx) (f: Ctx → String → α → Option (Ctx × β)): Option (Ctx × List (Ann β)) :=
@@ -49,7 +49,7 @@ partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx �
 
     | bind_val {name, value} =>
       let (ctx, parent) ← inferType? ctx value
-      let ctx := Context.set ctx name parent
+      let ctx := Context.insert ctx name parent
       pure (ctx, parent)
 
     | bind_typ {name, params, level} =>
@@ -59,7 +59,7 @@ partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx �
         params := params,
         body := univ level,
       }
-      let ctx := Context.set ctx name parent
+      let ctx := Context.insert ctx name parent
       pure (ctx, parent)
 
     | bind_mk {name, params, type} =>
@@ -77,7 +77,7 @@ partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx �
             params := params,
             body := bind_typ type,
           }
-          let ctx := Context.set ctx name parent
+          let ctx := Context.insert ctx name parent
           pure (ctx, parent)
         | _ => none
 
@@ -104,7 +104,7 @@ partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx �
           let _ ← matchParamsArgs? cmdParams argsType
           -- set args type
           let (ctx, _) ← reduceParamsWithName? cmdParams ctx ((λ ctx name value =>
-            let ctx := Context.set ctx name value
+            let ctx := Context.insert ctx name value
             some (ctx, value)
           ))
           -- return the type of body given the context
