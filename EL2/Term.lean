@@ -16,7 +16,7 @@ structure BindVal (α: Type) where
 structure BindTyp (α: Type) where -- List (T: Type)
   name: String
   params: List (Ann α)
-  parent: α
+  parent: α -- TODO - consider changing this into Universe Level
   deriving BEq
 
 -- App : function application
