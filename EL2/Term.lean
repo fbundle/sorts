@@ -69,7 +69,7 @@ inductive T (α: Type) where
 inductive Term (β: Type) where
   | atom: (value: β) → Term β
   | t: T (Term β) → Term β
-  deriving BEq
+  deriving BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
 
 notation "atom" x => Term.atom x
