@@ -8,7 +8,7 @@ inductive Atom where -- Atom - basic element of EL
   | univ: (level: Int) → Atom
   | integer: (value: Int) → Atom
 
-def Atom.interType (s: Atom): Atom :=
+def Atom.inferType (s: Atom): Atom :=
   match s with
     | int_type => .univ 2
     | univ i => .univ (i+1)
@@ -16,7 +16,7 @@ def Atom.interType (s: Atom): Atom :=
 
 
 instance: Irreducible Atom where
-  interType := Atom.interType
+  inferType := Atom.inferType
 
 instance: ToString Atom where
   toString (a: Atom): String :=
@@ -24,7 +24,6 @@ instance: ToString Atom where
       | .int_type => "int"
       | .univ i => s!"U_{i}"
       | .integer i => s!"{i}"
-      | .inh type level => s!"inh"
 
 
 end EL2

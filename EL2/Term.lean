@@ -44,7 +44,7 @@ structure Mat (α: Type) where
 -- Lst : an non empty list
 structure Lst (α: Type) where
   init: List α
-  tail: α
+  last: α
 
 inductive T (α: Type) where
   | var: (name: String) → T α

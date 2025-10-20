@@ -38,11 +38,11 @@ partial def PrintCtx.print [ToString β] (ctx: PrintCtx) (term: Term β): String
       | .var name =>
         [name]
 
-      | .lst {init, tail} =>
+      | .lst {init, last} =>
         if init.length = 0 then
-          [ctx.print tail]
+          [ctx.print last]
         else
-          let parts := (init ++ [tail]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
+          let parts := (init ++ [last]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
           ["\n" ++ String.join parts]
 
       | .bind_val {name, value} =>

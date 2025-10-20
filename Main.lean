@@ -73,7 +73,7 @@ def el2 (_: Unit): Term Atom :=
                 name := "l", value := app {cmd := var "append", args := [var "Nat", var "two", var "l", var "three"]},
               },
             ],
-            tail := var "l",
+            last := var "l",
           },
         }
       },
@@ -94,7 +94,7 @@ def el2 (_: Unit): Term Atom :=
       app {cmd := var "f", args := [var "zero"]},
 
     ],
-    tail := app {cmd := var "is_pos", args := [var "one"]},
+    last := app {cmd := var "is_pos", args := [var "one"]},
   }
 
 

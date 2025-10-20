@@ -11,61 +11,62 @@ def reduceParams (params: List (Ann α)) (f: Ctx → α → Option (Ctx × β)) 
     pure (ctx, {name := name, type := type})
   ): Ctx → Ann α → Option (Ctx × (Ann β))) ctx
 
+partial def matchParamsArgs (params: List (Ann α)) (argsType: List α) (le: α → α → Option Unit): Option Unit := do
+  if params.length = 0 ∧ argsType.length = 0 then
+    ()
+  else
+    let headParam ← params.head?
+    let headArgsType ← argsType.head?
+    let _ ← le headArgsType headParam.type
+
+    let tailParams := params.extract 1
+    let tailArgsType := argsType.extract 1
+    matchParamsArgs tailParams tailArgsType le
+
+partial def equal [Irreducible β] [Context Ctx (Term β)] (ctx: Ctx) (x: Term β) (y: Term β): Option Unit := do
+  sorry
+
 partial def inferType [Irreducible β] [Context Ctx (Term β)] (ctx: Ctx) (term: Term β): Option (Ctx × Term β) := do
   -- (ctx: Ctx) - map name -> type
   match term with
     | .atom a =>
-      pure (ctx, term)
+      pure (ctx, atom Irreducible.inferType a)
 
     | .t t => match t with
       | .var n =>
-        let term: Term β ← Context.get? ctx n
-        pure (ctx, term)
+        let type: Term β ← Context.get? ctx n
+        pure (ctx, type)
 
-      | .lst {init, tail} =>
-        let (ctx, _) ← Util.optionCtxMapAll init normalize ctx
-        normalize ctx tail
+      | .lst {init, last} =>
+        let (ctx, _) ← Util.optionCtxMapAll init inferType ctx
+        inferType ctx last
 
       | .bind_val {name, value} =>
-        let (ctx, value) ← normalize ctx value
-        let ctx := Context.set ctx name value
-        pure (ctx, value)
+        let (ctx, valueType) ← inferType ctx value
+        let ctx := Context.set ctx name valueType
+        pure (ctx, valueType)
 
       | .bind_typ {name, params, parent} =>
-        let (ctx, params) ← reduceParams params normalize ctx
-        let (ctx, parent) ← normalize ctx parent
-        let value: Term β := bind_typ {
-          name := name,
-          params := params,
-          parent := parent,
-        }
-
-        pure (Context.set ctx name value, value)
+        let (ctx, _) ← reduceParams params inferType ctx
+        let (ctx, _) ← inferType ctx parent
+        pure (Context.set ctx name term, parent)
 
       | .bind_mk {name, params, type} =>
-        let (ctx, params) ← reduceParams params normalize ctx
+        let (ctx, _) ← reduceParams params inferType ctx
 
-        let {cmd, args} := type
-        let (ctx, args) ← Util.optionCtxMapAll args normalize ctx
+        let (typeName, typeArgs) := (type.cmd, type.args)
+        let (ctx, typeArgsType) ← Util.optionCtxMapAll typeArgs inferType ctx
 
-        let value := bind_mk {
-          name := name,
-          params := params,
-          type := {
-            cmd := cmd,
-            args := args,
-          },
-        }
-        let ctx := Context.set ctx name value
-        pure (ctx, value)
+        match Context.get? ctx typeName with
+          | some (Term.t (T.bind_typ {name, params, parent})) =>
+            let _ ← matchParamsArgs params typeArgsType (equal ctx)
+            let ctx := Context.set ctx name (sorry: Term β) -- type constructor
+
+            pure (ctx, sorry)
+          | _ => none
 
       | .lam {params, body} =>
-        let (ctx, params) ← reduceParams params normalize ctx
-        let value := lam {
-          params := params,
-          body := body,
-        }
-        pure (ctx, value)
+        sorry
 
       | .app {cmd, args} => sorry
       | .mat {cond, cases} => sorry
