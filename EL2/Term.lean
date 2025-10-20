@@ -5,46 +5,55 @@ namespace EL2
 structure Ann (α: Type) where -- (2: Nat)
   name: String
   type: α
+  deriving BEq
 
 structure BindVal (α: Type) where
   name: String
   value: α
+  deriving BEq
 
 -- BindTyp : type
 structure BindTyp (α: Type) where -- List (T: Type)
   name: String
   params: List (Ann α)
   parent: α
+  deriving BEq
 
 -- App : function application
 structure App (α: Type) (β: Type) where
   cmd: α
   args: List β
+  deriving BEq
 
 -- BindMk : type constructor
 structure BindMk (α: Type) where  -- nil: List T or cons (init: List T) (tail: T): List T
   name: String
   params: List (Ann α)            -- (init: List T) (tail: T)
   type: App String α                 -- (List T)
+  deriving BEq
 
 -- Lam : function abstraction
 structure Lam (α: Type) where
   params: List (Ann α)
   body: α
+  deriving BEq
 
 structure Case (α: Type) where
   pattern: App String String
   value: α
+  deriving BEq
 
 -- Mat : match
 structure Mat (α: Type) where
   cond: α
   cases: List (Case α)
+  deriving BEq
 
 -- Lst : an non empty list
 structure Lst (α: Type) where
   init: List α
   last: α
+  deriving BEq
 
 inductive T (α: Type) where
   | var: (name: String) → T α
@@ -55,10 +64,12 @@ inductive T (α: Type) where
   | lam: Lam α → T α
   | app: App α α → T α
   | mat: Mat α → T α
+  deriving BEq
 
 inductive Term (β: Type) where
   | atom: (value: β) → Term β
   | t: T (Term β) → Term β
+  deriving BEq
 
 
 notation "atom" x => Term.atom x
