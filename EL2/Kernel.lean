@@ -23,7 +23,7 @@ partial def matchParamsArgs? (params: List (Ann α)) (argsType: List α) (le: α
 
 
 
-partial def inferType [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: Ctx) (term: Term β): Option (Ctx × Term β) := do
+partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: Ctx) (term: Term β): Option (Ctx × Term β) := do
   -- (ctx: Ctx) - map name -> type
   match term with
     | .atom a =>
@@ -35,24 +35,24 @@ partial def inferType [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: Ct
         pure (ctx, type)
 
       | .lst {init, last} =>
-        let (ctx, _) ← Util.optionCtxMap? init inferType ctx
-        inferType ctx last
+        let (ctx, _) ← Util.optionCtxMap? init inferType? ctx
+        inferType? ctx last
 
       | .bind_val {name, value} =>
-        let (ctx, valueType) ← inferType ctx value
+        let (ctx, valueType) ← inferType? ctx value
         let ctx := Context.set ctx name valueType
         pure (ctx, valueType)
 
       | .bind_typ {name, params, parent} =>
-        let (ctx, _) ← reduceParams? params inferType ctx
-        let (ctx, _) ← inferType ctx parent
+        let (ctx, _) ← reduceParams? params inferType? ctx
+        let (ctx, _) ← inferType? ctx parent
         pure (Context.set ctx name term, parent)
 
       | .bind_mk {name, params, type} =>
-        let (ctx, _) ← reduceParams? params inferType ctx
+        let (ctx, _) ← reduceParams? params inferType? ctx
 
         let (typeName, typeArgs) := (type.cmd, type.args)
-        let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs inferType ctx
+        let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs inferType? ctx
 
         match Context.get? ctx typeName with
           | some (Term.t (T.bind_typ {name, params, parent})) =>
