@@ -68,10 +68,12 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
 
       let (ctx, _) ← reduceParams? params ctx inferType?
 
+      dbg_trace s!"2 checking bind_mk {name}"
+
       let (typeName, typeArgs) := (type.cmd, type.args)
       let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs ctx inferType?
 
-      dbg_trace s!"2 checking bind_mk {name}"
+
 
       match Context.get? ctx typeName with
         | some (lam typeType) =>
