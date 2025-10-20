@@ -33,7 +33,7 @@ partial def matchParamsArgs? [BEq α] (params: List (Ann α)) (argsType: List α
     let tailArgsType := argsType.extract 1
     matchParamsArgs? tailParams tailArgsType
 
-partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) := do
+partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) := do
   -- (ctx: Ctx) - map name -> type
   match term with
     | univ level =>
@@ -69,13 +69,14 @@ partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx �
       let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs ctx inferType?
 
       match Context.get? ctx typeName with
-        | some (bind_typ type) =>
-          let {name := typeName, params := typeParams, level := typeLevel} := type
+        | some (lam typeType) =>
+          -- type of type is Pi/lam
+          let {params := typeParams, body := _} := typeType
           let _ ← matchParamsArgs? typeParams typeArgsType
           -- type of a type constructor is Pi
           let parent := lam {
             params := params,
-            body := bind_typ type,
+            body := lam typeType,
           }
           let ctx := Context.insert ctx name parent
           pure (ctx, parent)
