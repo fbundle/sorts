@@ -33,7 +33,7 @@ partial def optionCtxMap (xs: List α) (f: Ctx → α → Option (Ctx × β)) (c
   let (ctx, ys) := loop ctx #[] xs
   (ctx, ys.toList)
 
-def optionCtxMapAll (xs: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List β) :=
+def optionCtxMap? (xs: List α) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List β) :=
   let (ctx, ys) := optionCtxMap xs f ctx
   if ys.length ≠ xs.length then
     none
