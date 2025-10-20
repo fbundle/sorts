@@ -80,6 +80,8 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
       let parent := lam {
         params := params,
         body := typ {value := body},
+        -- we use typ to create a future type infer object
+        -- normalizing typ will invoke inferType
       }
       pure (ctx, parent)
 
