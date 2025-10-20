@@ -3,9 +3,15 @@ import EL2.Util
 
 namespace EL2
 
-def reduceParams? (params: List (Ann α)) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List (Ann β)) :=
+def reduceParams? (params: List (Ann α))(ctx: Ctx) (f: Ctx → α → Option (Ctx × β)): Option (Ctx × List (Ann β)) :=
   Util.optionCtxMap? params ((λ ctx {name, type} => do
     let (ctx, type) ← f ctx type
+    pure (ctx, {name := name, type := type})
+  ): Ctx → Ann α → Option (Ctx × (Ann β))) ctx
+
+def reduceParamsWithName? (params: List (Ann α))(ctx: Ctx) (f: Ctx → String → α → Option (Ctx × β)): Option (Ctx × List (Ann β)) :=
+  Util.optionCtxMap? params ((λ ctx {name, type} => do
+    let (ctx, type) ← f ctx name type
     pure (ctx, {name := name, type := type})
   ): Ctx → Ann α → Option (Ctx × (Ann β))) ctx
 
@@ -41,12 +47,12 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
       pure (ctx, parent)
 
     | bind_typ {name, params, parent} =>
-      let (ctx, _) ← reduceParams? params inferType? ctx
+      let (ctx, _) ← reduceParams? params ctx inferType?
       let (ctx, _) ← inferType? ctx parent
       pure (Context.set ctx name term, parent)
 
     | bind_mk {name, params, type} =>
-      let (ctx, _) ← reduceParams? params inferType? ctx
+      let (ctx, _) ← reduceParams? params ctx inferType?
 
       let (typeName, typeArgs) := (type.cmd, type.args)
       let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs inferType? ctx
@@ -55,7 +61,7 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
         | some (bind_typ type) =>
           let {name := typeName, params := typeParams, parent := typeParent} := type
           let _ ← matchParamsArgs? typeParams typeArgsType equal?
-          -- type of a type constructor is Pi or Lam
+          -- type of a type constructor is Pi
           let parent := lam {
             params := params,
             body := bind_typ type,
@@ -65,7 +71,18 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
         | _ => none
 
     | lam {params, body} =>
-      sorry
+      -- set dummy args into ctx
+      let (ctx, _) ← reduceParamsWithName? params ctx (λ ctx paramName paramType =>
+        let ctx := Context.set ctx paramName paramType
+        some (ctx, ())
+      )
+      let (ctx, bodyType) ← inferType? ctx body
+      -- type of parent is Pi
+      let parent := lam {
+        params := params,
+        body := bodyType, -- TODO think about this
+      }
+      pure (ctx, parent)
 
     | app {cmd, args} => sorry
     | mat {cond, cases} => sorry
