@@ -33,6 +33,8 @@ partial def matchParamsArgs? [BEq α] (params: List (Ann α)) (argsType: List α
     let tailArgsType := argsType.extract 1
     matchParamsArgs? tailParams tailArgsType
 
+mutual
+
 partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) := do
   -- (ctx: Ctx) - map name -> type
   match term with
@@ -80,7 +82,9 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
 
           -- set dummy args
           let (ctx, _) ← reduceParamsWithName? typeParams ctx ((λ ctx name value =>
-            let ctx := Context.insert ctx name value -- possibly need to normalize/reduce this
+            let ctx := Context.insert ctx name value
+            -- TODO possibly need to normalize/reduce this
+            -- reduce = typeInfer? + substitution
             some (ctx, value)
           ))
           dbg_trace s!"5 checking bind_mk {name} {repr ctx}"
@@ -138,6 +142,10 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
       pure (ctx, univ 1)
       -- TODO change it
 
+partial def reduceTerm? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) :=
+  sorry
+
+end
 
 
 end EL2
