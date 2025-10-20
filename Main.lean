@@ -107,15 +107,20 @@ instance: EL2.Context (Std.HashMap String α) α where
   insert (m: Std.HashMap String α) (key: String) (val: α) := m.insert key val
   get? (m: Std.HashMap String α) (key: String) := m.get? key
 
-def frame : Std.HashMap String EL2.Term := Std.HashMap.emptyWithCapacity
+def ctx : Std.HashMap String EL2.Term := Std.HashMap.emptyWithCapacity
 
 
 def main  : IO Unit := do
   let termList := EL2_EXAMPLE.termList
+  -- print program
+  IO.println (lst {init := termList, last := (univ 0)})
 
+  -- type check
+  IO.println "type checking ..."
+  IO.println ""
 
-
-
-
-
-  IO.println termList
+  let (ctx, typeList) := EL2.Util.optionCtxMap termList ctx EL2.inferType?
+  for (term, type) in List.zip termList typeList do
+    IO.println s!"term: {term}"
+    IO.println s!"type: {type}"
+    IO.println ""
