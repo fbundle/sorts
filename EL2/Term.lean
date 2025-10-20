@@ -1,5 +1,3 @@
-import EL2.Class
-
 namespace EL2
 
 structure Ann (α: Type) where -- (2: Nat)

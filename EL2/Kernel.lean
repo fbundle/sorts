@@ -3,17 +3,21 @@ import EL2.Util
 
 namespace EL2
 
-def reduceParamsWithName? (params: List (Ann α))(ctx: Ctx) (f: Ctx → String → α → Option (Ctx × β)): Option (Ctx × List (Ann β)) :=
-  Util.optionCtxMap? params ((λ ctx {name, type} => do
+class Context Ctx α where
+  set: Ctx → String → α → Ctx
+  get?: Ctx → String → Option α
+
+def reduceParamsWithName? (params: List (Ann α)) (ctx: Ctx) (f: Ctx → String → α → Option (Ctx × β)): Option (Ctx × List (Ann β)) :=
+  Util.optionCtxMap? params ctx ((λ ctx {name, type} => do
     let (ctx, type) ← f ctx name type
     pure (ctx, {name := name, type := type})
-  ): Ctx → Ann α → Option (Ctx × (Ann β))) ctx
+  ): Ctx → Ann α → Option (Ctx × (Ann β)))
 
 def reduceParams? (params: List (Ann α)) (ctx: Ctx) (f: Ctx → α → Option (Ctx × β)): Option (Ctx × List (Ann β)) :=
-  Util.optionCtxMap? params ((λ ctx {name, type} => do
+  Util.optionCtxMap? params ctx ((λ ctx {name, type} => do
     let (ctx, type) ← f ctx type
     pure (ctx, {name := name, type := type})
-  ): Ctx → Ann α → Option (Ctx × (Ann β))) ctx
+  ): Ctx → Ann α → Option (Ctx × (Ann β)))
 
 partial def matchParamsArgs? [BEq α] (params: List (Ann α)) (argsType: List α): Option Unit := do
   if params.length = 0 ∧ argsType.length = 0 then
@@ -40,7 +44,7 @@ partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx �
       pure (ctx, parent)
 
     | lst {init, last} =>
-      let (ctx, _) ← Util.optionCtxMap? init inferType? ctx
+      let (ctx, _) ← Util.optionCtxMap? init ctx inferType?
       inferType? ctx last
 
     | bind_val {name, value} =>
@@ -62,7 +66,7 @@ partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx �
       let (ctx, _) ← reduceParams? params ctx inferType?
 
       let (typeName, typeArgs) := (type.cmd, type.args)
-      let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs inferType? ctx
+      let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs ctx inferType?
 
       match Context.get? ctx typeName with
         | some (bind_typ type) =>
@@ -88,12 +92,24 @@ partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx �
         params := params,
         body := typ {value := body},
         -- we use typ to create a future type infer object
-        -- normalizing typ will invoke inferType
+        -- normalizing typ will invoke inferType?
       }
       pure (ctx, parent)
 
     | app {cmd, args} =>
-      sorry
+      match cmd with
+        | lam {params := cmdParams, body := cmdBody} =>
+          -- type of bind_typ, bind_mk, lam is lam/Pi
+          let (ctx, argsType) ← Util.optionCtxMap? args ctx inferType?
+          let _ ← matchParamsArgs? cmdParams argsType
+          -- set args type
+          let (ctx, _) ← reduceParamsWithName? cmdParams ctx ((λ ctx name value =>
+            let ctx := Context.set ctx name value
+            some (ctx, value)
+          ))
+          -- return the type of body given the context
+          inferType? ctx cmdBody
+        | _ => none
     | mat {cond, cases} => sorry
 
 
