@@ -71,7 +71,10 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
         | _ => none
 
     | typ {value} =>
-      sorry
+      let (ctx, type) ← inferType? ctx value
+      let (ctx, parent) ← inferType? ctx type
+      pure (ctx, parent)
+
     | lam {params, body} =>
       -- type of parent is Pi
       let parent := lam {
