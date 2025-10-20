@@ -15,17 +15,19 @@ def reduceParams? (params: List (Ann α)) (ctx: Ctx) (f: Ctx → α → Option (
     pure (ctx, {name := name, type := type})
   ): Ctx → Ann α → Option (Ctx × (Ann β))) ctx
 
-partial def matchParamsArgs? (params: List (Ann α)) (argsType: List α) (le: α → α → Option Unit): Option Unit := do
+partial def matchParamsArgs? [BEq α] (params: List (Ann α)) (argsType: List α): Option Unit := do
   if params.length = 0 ∧ argsType.length = 0 then
     ()
   else
     let headParam ← params.head?
     let headArgsType ← argsType.head?
-    let _ ← le headArgsType headParam.type
+    if headParam.type != headArgsType then
+      none
+    else
 
     let tailParams := params.extract 1
     let tailArgsType := argsType.extract 1
-    matchParamsArgs? tailParams tailArgsType le
+    matchParamsArgs? tailParams tailArgsType
 
 partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: Ctx) (term: Term β): Option (Ctx × Term β) := do
   -- (ctx: Ctx) - map name -> type
@@ -60,7 +62,7 @@ partial def inferType? [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: C
       match Context.get? ctx typeName with
         | some (bind_typ type) =>
           let {name := typeName, params := typeParams, parent := typeParent} := type
-          let _ ← matchParamsArgs? typeParams typeArgsType equal?
+          let _ ← matchParamsArgs? typeParams typeArgsType
           -- type of a type constructor is Pi
           let parent := lam {
             params := params,
