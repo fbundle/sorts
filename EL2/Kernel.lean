@@ -3,8 +3,6 @@ import EL2.Util
 
 namespace EL2
 
-
-
 def reduceParams (params: List (Ann α)) (f: Ctx → α → Option (Ctx × β)) (ctx: Ctx): Option (Ctx × List (Ann β)) :=
   Util.optionCtxMapAll params ((λ ctx {name, type} => do
     let (ctx, type) ← f ctx type
