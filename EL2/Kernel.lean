@@ -64,13 +64,13 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
 
     | bind_mk {name, params, type} =>
 
-      dbg_trace s!"1 checking bind_mk {name}"
+      dbg_trace s!"1 checking bind_mk {name} {repr params}"
 
       let (ctx, _) ← reduceParams? params ctx inferType?
 
-      dbg_trace s!"2 checking bind_mk {name}"
+      dbg_trace s!"2 checking bind_mk {name} {repr params}"
 
-      let (typeName, typeArgs) := (type.cmd, type.args)
+      let {cmd := typeName, args := typeArgs} := type
       let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs ctx inferType?
 
 
@@ -107,18 +107,21 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
       pure (ctx, parent)
 
     | app {cmd, args} =>
-      match cmd with
-        | lam {params := cmdParams, body := cmdBody} =>
+      dbg_trace s!"1 checking app {repr cmd} {repr args}"
+
+      let (ctx, cmdType) ← inferType? ctx cmd
+      match cmdType with
+        | lam {params := cmdTypeParams, body := cmdTypeBody} =>
           -- type of bind_typ, bind_mk, lam is lam/Pi
           let (ctx, argsType) ← Util.optionCtxMap? args ctx inferType?
-          let _ ← matchParamsArgs? cmdParams argsType
+          let _ ← matchParamsArgs? cmdTypeParams argsType
           -- set args type
-          let (ctx, _) ← reduceParamsWithName? cmdParams ctx ((λ ctx name value =>
+          let (ctx, _) ← reduceParamsWithName? cmdTypeParams ctx ((λ ctx name value =>
             let ctx := Context.insert ctx name value
             some (ctx, value)
           ))
           -- return the type of body given the context
-          inferType? ctx cmdBody
+          pure (ctx, cmdTypeBody)
         | _ => none
     | mat {cond, cases} =>
       pure (ctx, univ 1)
