@@ -110,7 +110,9 @@ partial def inferType? [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx Ã
           -- return the type of body given the context
           inferType? ctx cmdBody
         | _ => none
-    | mat {cond, cases} => sorry
+    | mat {cond, cases} =>
+      pure (ctx, univ 1)
+      -- TODO change it
 
 
 
