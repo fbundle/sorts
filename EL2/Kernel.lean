@@ -21,9 +21,6 @@ partial def matchParamsArgs (params: List (Ann α)) (argsType: List α) (le: α 
     let tailArgsType := argsType.extract 1
     matchParamsArgs tailParams tailArgsType le
 
-def equal [BEq β] (x: Term β) (y: Term β): Option Unit :=
-  if x == y then some () else none
-
 
 
 partial def inferType [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: Ctx) (term: Term β): Option (Ctx × Term β) := do
@@ -59,7 +56,7 @@ partial def inferType [Irreducible β] [BEq β] [Context Ctx (Term β)] (ctx: Ct
 
         match Context.get? ctx typeName with
           | some (Term.t (T.bind_typ {name, params, parent})) =>
-            let _ ← matchParamsArgs params typeArgsType equal
+            let _ ← matchParamsArgs params typeArgsType mustEqual
             let ctx := Context.set ctx name (sorry: Term β) -- type constructor
 
             pure (ctx, sorry)

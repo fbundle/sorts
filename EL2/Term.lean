@@ -72,6 +72,9 @@ inductive Term (β: Type) where
   deriving BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
 
+def mustEqual [BEq β] (x: Term β) (y: Term β): Option Unit :=
+  if x == y then some () else none
+
 notation "atom" x => Term.atom x
 notation "var" x => Term.t (T.var x)
 notation "lst" x => Term.t (T.lst x)
