@@ -3,15 +3,15 @@ import EL2.Util
 
 namespace EL2
 
-def reduceParams? (params: List (Ann α))(ctx: Ctx) (f: Ctx → α → Option (Ctx × β)): Option (Ctx × List (Ann β)) :=
-  Util.optionCtxMap? params ((λ ctx {name, type} => do
-    let (ctx, type) ← f ctx type
-    pure (ctx, {name := name, type := type})
-  ): Ctx → Ann α → Option (Ctx × (Ann β))) ctx
-
 def reduceParamsWithName? (params: List (Ann α))(ctx: Ctx) (f: Ctx → String → α → Option (Ctx × β)): Option (Ctx × List (Ann β)) :=
   Util.optionCtxMap? params ((λ ctx {name, type} => do
     let (ctx, type) ← f ctx name type
+    pure (ctx, {name := name, type := type})
+  ): Ctx → Ann α → Option (Ctx × (Ann β))) ctx
+
+def reduceParams? (params: List (Ann α)) (ctx: Ctx) (f: Ctx → α → Option (Ctx × β)): Option (Ctx × List (Ann β)) :=
+  Util.optionCtxMap? params ((λ ctx {name, type} => do
+    let (ctx, type) ← f ctx type
     pure (ctx, {name := name, type := type})
   ): Ctx → Ann α → Option (Ctx × (Ann β))) ctx
 
