@@ -116,7 +116,7 @@ def Ctx := Std.HashMap String EL2.InferedTerm deriving Repr
 def ctx : Ctx  := Std.HashMap.emptyWithCapacity
 
 instance: EL2.Context Ctx where
-  insert (m: Ctx) (key: String) (val: EL2.InferedTerm) := m.insert key val
+  set (m: Ctx) (key: String) (val: EL2.InferedTerm) := m.insert key val
   get? (m: Ctx) (key: String) := m.get? key
 
 
