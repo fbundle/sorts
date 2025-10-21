@@ -9,7 +9,21 @@ class Context Ctx where
   get?: Ctx → String → Option (Term × Term)
 
 partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Term): Option (Ctx × Term × Term) := do
-  none
+  -- return (ctx, term, type)
+  match term with
+    | .univ level =>
+      pure (ctx, term, Term.univ (level+1))
+    | .var name =>
+      let (term, type) ← Context.get? ctx name
+      pure (ctx, term, type)
+    | .inh type _ _ =>
+      pure (ctx, term, type)
+    | .infer value =>
+      let (_, valueTerm, valueType) ← infer? reduce ctx value
+      pure (ctx, valueTerm, valueType)
+    | .list init last =>
+      none
+    | _ => none
 
 
 

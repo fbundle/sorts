@@ -4,7 +4,7 @@ inductive Term where
   | univ: (level: Int) → Term
   | var: (name: String) → Term
   | inh: (type: Term) → (method: String) → (values: List Term) → Term
-  | infer: (term: Term) → Term -- type of
+  | infer: (value: Term) → Term -- type of
   | list: (init: List Term) → (last: Term) → Term
   | bind: (name: String) → (value: Term) → Term
   | app: (cmd: Term) → (args: List Term) → Term
