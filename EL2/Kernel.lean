@@ -18,7 +18,7 @@ partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Ter
       pure (ctx, term, type)
     | .inh type _ _ =>
       pure (ctx, term, type)
-    | .infer value =>
+    | .typ value =>
       let (_, valueTerm, valueType) ← infer? reduce ctx value
       pure (ctx, valueTerm, valueType)
     | .list init last =>

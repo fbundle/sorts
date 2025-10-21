@@ -31,8 +31,8 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
       ["inh", ctx.print type, method] ++
       values.map ctx.print
 
-    | .infer value =>
-      ["infer", ctx.print value]
+    | .typ value =>
+      ["typ", ctx.print value]
 
     | .univ level =>
       [s!"U_{level}"]
