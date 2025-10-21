@@ -16,10 +16,10 @@ class Frame F where
 def dummyName (i: Int): String := s!"dummy_{i}"
 
 
-partial def infer? [Repr F] [Frame F] (oldFrame: F) (term: Term) (reduce: Bool := false): Option (F × InferedTerm) := do
-  let inferMany? (frame: F) (termList: List Term) (reduce: Bool): Option (F × List (InferedTerm)) :=
+partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × InferedTerm) := do
+  let inferMany? (frame: F) (termList: List Term): Option (F × List (InferedTerm)) :=
     Util.statefulMap? termList frame (λ frame term => do
-      let (frame, iterm) ← infer? frame term reduce
+      let (frame, iterm) ← reduce? frame term
       pure (frame, iterm)
     )
 
@@ -44,8 +44,8 @@ partial def infer? [Repr F] [Frame F] (oldFrame: F) (term: Term) (reduce: Bool :
       pure (oldFrame, iterm)
 
     | inh x =>
-      let (_, iType) ← infer? frame x.type reduce
-      let (_, iArgs) ← inferMany? frame x.args reduce
+      let (_, iType) ← reduce? frame x.type
+      let (_, iArgs) ← inferMany? frame x.args
       pure (oldFrame, {
         term := inh {
           type := iType.term,
@@ -57,20 +57,21 @@ partial def infer? [Repr F] [Frame F] (oldFrame: F) (term: Term) (reduce: Bool :
       })
 
     | typ x =>
-      let (_, iValue) ← infer? frame x.value reduce
-      let (_, iType) ← infer? frame iValue.type reduce
+      let (_, iValue) ← reduce? frame x.value
+      let (_, iType) ← reduce? frame iValue.type
       pure (oldFrame, iType)
 
     | lst x =>
-      let (initFrame, _) ← inferMany? frame x.init reduce
-      infer? initFrame x.last reduce
+      let (initFrame, _) ← inferMany? frame x.init
+      reduce? initFrame x.last
 
     | bind x =>
-      let (_, iValue) ← infer? frame x.value reduce
+      let (_, iValue) ← reduce? frame x.value
       pure (Frame.set oldFrame x.name iValue, iValue)
 
     | lam x => none
     | app x => none
+      -- TODO - for level 0, do reduce if only specified for level > 1 reduce
     | mat x => none
 
 
