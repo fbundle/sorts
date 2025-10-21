@@ -1,7 +1,7 @@
 namespace EL2
 
 inductive Term where
-| univ: (level: Int) → Term
+  | univ: (level: Int) → Term
   | var: (name: String) → Term
   | inh: (type: Term) → (method: String) → (values: List Term) → Term
   | infer: (term: Term) → Term -- type of
