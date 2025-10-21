@@ -92,7 +92,7 @@ partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Ter
 
       let (params, body) ← isLam? cmdTerm
 
-
+      -- TODO match args to params
 
 
 
