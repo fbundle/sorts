@@ -25,12 +25,10 @@ def Counter.next (counter: Counter α): Counter α := {
 def Counter.dummyName (counter: Counter α): String := s!"dummy_{counter.count}"
 
 partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Term): Option (Ctx × Term × Term × Int) := do
-  let rec inferMany? (reduce: Bool) (ctx: Ctx) (outputList: List (Term × Term × Int)) (termList: List Term): Option (Ctx × List (Term × Term × Int)) := do
-    match termList with
-      | [] => pure (ctx, outputList)
-      | term :: termList =>
-        let (ctx, term, type, level) ← infer? reduce ctx term
-        inferMany? reduce ctx (outputList ++ [(term, type, level)]) termList
+  let isLam? (term: Term): Option (List (String × Term) × Term) :=
+    match term with
+      | .lam params body => some (params, body)
+      | _ => none
 
   -- return (ctx, term, type, level)
   match term with
@@ -42,16 +40,15 @@ partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Ter
       pure (ctx, term, type, level)
 
     | .inh type cons name =>
-      let (_, type, _, typeLevel) ← infer? reduce ctx type
-      pure (ctx, .inh type cons name, type, typeLevel - 1)
+      let (_, typeTerm, _, typeLevel) ← infer? reduce ctx type
+      pure (ctx, .inh typeTerm cons name, typeTerm, typeLevel - 1)
 
     | .typ value =>
-      let (_, _, term, level) ← infer? reduce ctx value
-      let (_, _, type, _) ← infer? reduce ctx term
-      pure (ctx, term, type, level)
+      let (_, _, valueType, _) ← infer? reduce ctx value
+      infer? reduce ctx valueType
 
     | .list init last =>
-      let (listCtx, _) ← inferMany? reduce ctx [] init
+      let (listCtx, _) ← Util.optionCtxMap? init ctx (infer? reduce)
       infer? reduce listCtx last
 
     | .bind name value =>
@@ -87,6 +84,19 @@ partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Ter
       pure (ctx, term, type, level)
 
     | .app cmd args =>
+      let (_, cmdTerm, cmdType, cmdLevel) ← infer? reduce ctx cmd
+      let (_, args) ← Util.optionCtxMap? args ctx (λ ctx arg => do
+        let (ctx, argTerm, argType, argLevel) ← infer? reduce ctx arg
+        pure (ctx, (argTerm, argType, argLevel))
+      )
+
+      let (params, body) ← isLam? cmdTerm
+
+
+
+
+
+
       none
     | _ => none
 
