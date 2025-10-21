@@ -5,23 +5,88 @@ namespace EL2
 
 
 class Context Ctx where
-  set: Ctx → String → Term × Term → Ctx
-  get?: Ctx → String → Option (Term × Term)
+  set: Ctx → String → Term × Term × Int → Ctx
+  get?: Ctx → String → Option (Term × Term × Int)
 
-partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Term): Option (Ctx × Term × Term) := do
-  -- return (ctx, term, type)
+structure Counter (α: Type) where
+  field: α
+  count: Nat := 0
+
+def Counter.with (counter: Counter α) (field: β): Counter β := {
+  counter with
+  field := field,
+}
+
+def Counter.next (counter: Counter α): Counter α := {
+  counter with
+  count := counter.count + 1,
+}
+
+def Counter.dummyName (counter: Counter α): String := s!"dummy_{counter.count}"
+
+partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Term): Option (Ctx × Term × Term × Int) := do
+  let rec inferMany? (reduce: Bool) (ctx: Ctx) (outputList: List (Term × Term × Int)) (termList: List Term): Option (Ctx × List (Term × Term × Int)) := do
+    match termList with
+      | [] => pure (ctx, outputList)
+      | term :: termList =>
+        let (ctx, term, type, level) ← infer? reduce ctx term
+        inferMany? reduce ctx (outputList ++ [(term, type, level)]) termList
+
+  -- return (ctx, term, type, level)
   match term with
     | .univ level =>
-      pure (ctx, term, Term.univ (level+1))
+      pure (ctx, term, Term.univ (level+1), level+1)
+
     | .var name =>
-      let (term, type) ← Context.get? ctx name
-      pure (ctx, term, type)
-    | .inh type _ _ =>
-      pure (ctx, term, type)
+      let (term, type, level) ← Context.get? ctx name
+      pure (ctx, term, type, level)
+
+    | .inh type cons name =>
+      let (_, type, _, typeLevel) ← infer? reduce ctx type
+      pure (ctx, .inh type cons name, type, typeLevel - 1)
+
     | .typ value =>
-      let (_, valueTerm, valueType) ← infer? reduce ctx value
-      pure (ctx, valueTerm, valueType)
+      let (_, _, term, level) ← infer? reduce ctx value
+      let (_, _, type, _) ← infer? reduce ctx term
+      pure (ctx, term, type, level)
+
     | .list init last =>
+      let (listCtx, _) ← inferMany? reduce ctx [] init
+      infer? reduce listCtx last
+
+    | .bind name value =>
+      let (_, term, type, level) ← infer? reduce ctx value
+      pure (Context.set ctx name (term, type, level), term, type, level)
+
+    | .lam params body =>
+      let counterCtx := {field := ctx, count := 0 : Counter Ctx}
+
+      let (counterCtx, paramsType) ← -- : Ctx × List (String × Term × Term × Int)
+        Util.optionCtxMap? params counterCtx (λ counterCtx (name, type) => do
+          let (ctx, type, typeType, typeLevel) ← infer? reduce counterCtx.field type
+          let dummyCons := counterCtx.dummyName
+          let counterCtx := counterCtx.next
+          -- set dummy arg
+          let (term, level) := (Term.inh type dummyCons [], typeLevel - 1)
+          let ctx := Context.set ctx dummyCons (term, type, level)
+
+          pure (counterCtx.with ctx, (name, type, typeType, typeLevel))
+        )
+
+      let dummyArgCtx := counterCtx.field
+      let (_, bodyTerm, bodyType, bodyLevel) ← infer? reduce dummyArgCtx body
+
+      -- type of Lam is Pi
+      let params := paramsType.map (λ (name, type, _, _) => (name, type))
+      let term := Term.lam params body
+      let type := Term.lam params (.typ body)
+
+      let paramsLevel := paramsType.map (λ (_, _, _, typeLevel) => typeLevel - 1)
+      let level := paramsLevel.foldl max bodyLevel
+
+      pure (ctx, term, type, level)
+
+    | .app cmd args =>
       none
     | _ => none
 

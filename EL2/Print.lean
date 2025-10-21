@@ -27,9 +27,9 @@ mutual
 
 partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
   let contentList: List String := match term with
-    | .inh type method values =>
-      ["inh", ctx.print type, method] ++
-      values.map ctx.print
+    | .inh type cons args =>
+      ["inh", ctx.print type, cons] ++
+      args.map ctx.print
 
     | .typ value =>
       ["typ", ctx.print value]
