@@ -25,16 +25,11 @@ def printList (l: List String): String :=
 
 mutual
 
-partial def PrintCtx.printAnn (ctx: PrintCtx) (x: Ann Term): String :=
-  let contentList: List String := [x.name, ":", ctx.print x.type]
-  printList contentList
-
 partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
   let contentList: List String := match term with
-    | .inh method values type =>
-      ["inh_by", method] ++
-      values.map ctx.print ++
-      [ctx.print type]
+    | .inh type method values =>
+      ["inh", ctx.print type, method] ++
+      values.map ctx.print
 
     | .infer value =>
       ["infer", ctx.print value]
@@ -55,23 +50,19 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
     | .bind name value =>
       ["bind", name, ctx.print value]
 
-
-    | .typ name params level =>
-      ["type", name] ++
-      params.map ctx.print ++
-      [":", s!"U_{level}"]
-
     | .app cmd args =>
       [ctx.print cmd] ++
       args.map ctx.print
 
     | .lam params body =>
-      params.map ctx.printAnn ++
+      params.flatMap (λ (name, type) =>
+        [name, ":", ctx.print type]
+      ) ++
       ["=>", ctx.print body]
 
     | .mat cond cases =>
       ["match", ctx.print cond, "with"] ++
-      cases.map (λ {patCmd, patArgs, value} =>
+      cases.map (λ (patCmd, patArgs, value) =>
 
         "\n" ++ ctx.indentStr ++ printList (
           [patCmd] ++
