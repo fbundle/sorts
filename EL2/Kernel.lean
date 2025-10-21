@@ -3,10 +3,6 @@ import EL2.Util
 
 namespace EL2
 
-class Context Ctx α where
-  insert: Ctx → String → α → Ctx
-  get?: Ctx → String → Option α
-
 def reduceParamsWithName? (params: List (Ann α)) (ctx: Ctx) (f: Ctx → String → α → Option (Ctx × β)): Option (Ctx × List (Ann β)) :=
   Util.optionCtxMap? params ctx ((λ ctx {name, type} => do
     let (ctx, type) ← f ctx name type
@@ -38,7 +34,11 @@ structure InferedTerm where
   type: Term
   deriving Repr, BEq
 
-partial def infer? [Repr Ctx] [Context Ctx InferedTerm] (reduce: Bool) (ctx: Ctx) (term: Term): Option (Ctx × InferedTerm) := do
+class Context Ctx where
+  insert: Ctx → String → InferedTerm → Ctx
+  get?: Ctx → String → Option InferedTerm
+
+partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Term): Option (Ctx × InferedTerm) := do
   -- (ctx: Ctx) - map name -> type
   match term with
     | .inh type =>

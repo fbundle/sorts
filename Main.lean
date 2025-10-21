@@ -112,11 +112,12 @@ def printLines [ToString α] (lines: List α) : IO Unit :=
   lines.forM IO.println
 
 
-def ctx : Std.HashMap String EL2.InferedTerm  := Std.HashMap.emptyWithCapacity
+def Ctx := Std.HashMap String EL2.InferedTerm deriving Repr
+def ctx : Ctx  := Std.HashMap.emptyWithCapacity
 
-instance: EL2.Context (Std.HashMap String α) α where
-  insert (m: Std.HashMap String α) (key: String) (val: α) := m.insert key val
-  get? (m: Std.HashMap String α) (key: String) := m.get? key
+instance: EL2.Context Ctx where
+  insert (m: Ctx) (key: String) (val: EL2.InferedTerm) := m.insert key val
+  get? (m: Ctx) (key: String) := m.get? key
 
 
 def main  : IO Unit := do
