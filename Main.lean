@@ -37,7 +37,7 @@ def termList : List Term := [
     name := "nil", params := [
       {name := "T", type := univ 1},
     ],
-    type := {cmd := "Vec", args := [var "T", var "0"]},
+    type := {cmd := "Vec", args := [var "T", var "zero"]},
   },
   bind_mk {
     name := "append", params := [

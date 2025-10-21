@@ -98,15 +98,16 @@ partial def infer? [Repr Ctx] [Context Ctx InferedTerm] (reduce: Bool) (ctx: Ctx
               type := inferedParamType.term,
               : InferedTerm
             }
-            some (ctx, inferedParamType)
+            some (ctx, ())
           ))
-          dbg_trace s!"5 checking bind_mk {name} {repr typeArgs}"
+          dbg_trace s!"5 checking bind_mk {name} {repr ctx} {repr typeArgs}"
 
           -- resolve return type
           let (ctx, typeArgsInferedTerm) ← Util.optionCtxMap? typeArgs ctx (infer? reduce)
 
           let typeArgsType := typeArgsInferedTerm.map (λ inferedTerm => inferedTerm.type)
-          dbg_trace s!"6 checking bind_mk {name} {repr typeArgsType}"
+
+          dbg_trace s!"6 checking bind_mk {name} {repr typeParams} {repr typeArgsType}"
 
           let _ ← matchParamsArgs? typeParams typeArgsType
 
