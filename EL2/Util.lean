@@ -66,6 +66,20 @@ partial def parseAll (parse: List α → Option (List α × β)) (tokens: List �
 
 def Map (α) (β) [BEq α] [Hashable α] := Std.HashMap α β
 
+structure Counter (α: Type) where
+  field: α
+  count: Nat := 0
+
+def Counter.with (counter: Counter α) (field: β): Counter β := {
+  counter with
+  field := field,
+}
+
+def Counter.next (counter: Counter α): Counter α := {
+  counter with
+  count := counter.count + 1,
+}
+
 
 
 

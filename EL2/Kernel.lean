@@ -13,21 +13,7 @@ structure InferedTerm where
   type: Term
   level: Int
 
-structure Counter (α: Type) where
-  field: α
-  count: Nat := 0
-
-def Counter.with (counter: Counter α) (field: β): Counter β := {
-  counter with
-  field := field,
-}
-
-def Counter.next (counter: Counter α): Counter α := {
-  counter with
-  count := counter.count + 1,
-}
-
-def Counter.dummyName (counter: Counter α): String := s!"dummy_{counter.count}"
+def dummyName (i: Int): String := s!"dummy_{i}"
 
 partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Term): Option (Ctx × InferedTerm) := do
   let isLam? (term: Term): Option (Lam Term) :=
