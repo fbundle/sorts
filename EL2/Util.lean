@@ -21,24 +21,24 @@ def optionMapAll (xs: List α) (f: α → Option β): Option (List β) :=
   else
     ys
 
-partial def optionCtxMap (xs: List α) (ctx: Ctx) (f: Ctx → α → Option (Ctx × β)): Ctx × List β :=
-  let rec loop (ctx: Ctx) (ys: Array β) (listA: List α): Ctx × Array β :=
+partial def statefulMap (xs: List α) (state: State) (f: State → α → Option (State × β)): State × List β :=
+  let rec loop (state: State) (ys: Array β) (listA: List α): State × Array β :=
     match listA with
-      | [] => (ctx, ys)
+      | [] => (state, ys)
       | x :: xs =>
-        match f ctx x with
-          | none => (ctx, ys)
-          | some (ctx, b) => loop ctx (ys.push b) xs
+        match f state x with
+          | none => (state, ys)
+          | some (state, b) => loop state (ys.push b) xs
 
-  let (ctx, ys) := loop ctx #[] xs
-  (ctx, ys.toList)
+  let (state, ys) := loop state #[] xs
+  (state, ys.toList)
 
-def optionCtxMap? (xs: List α) (ctx: Ctx) (f: Ctx → α → Option (Ctx × β)) : Option (Ctx × List β) :=
-  let (ctx, ys) := optionCtxMap xs ctx f
+def statefulMap? (xs: List α) (state: State) (f: State → α → Option (State × β)) : Option (State × List β) :=
+  let (state, ys) := statefulMap xs state f
   if ys.length ≠ xs.length then
     none
   else
-    some (ctx, ys)
+    some (state, ys)
 def applyAtmostOnce {α: Type} {β} (fs: List (α → Option β)) (x: α): Option β :=
   match fs with
     | [] => none
