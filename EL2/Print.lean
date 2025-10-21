@@ -51,8 +51,8 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
       ["bind", name, ctx.print value]
 
     | lam {params, body} =>
-      params.flatMap (λ {name, type} =>
-        [name, ":", ctx.print type]
+      params.map (λ {name, type} =>
+        s!"({name}: {ctx.print type})"
       ) ++
       ["=>", ctx.print body]
 
