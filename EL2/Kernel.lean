@@ -100,7 +100,7 @@ partial def infer? [Repr Ctx] [Context Ctx InferedTerm] (reduce: Bool) (ctx: Ctx
             }
             some (ctx, inferedParamType)
           ))
-          dbg_trace s!"5 checking bind_mk {name} {repr ctx}"
+          dbg_trace s!"5 checking bind_mk {name} {repr typeArgs}"
 
           -- resolve return type
           let (ctx, typeArgsInferedTerm) ← Util.optionCtxMap? typeArgs ctx (infer? reduce)
