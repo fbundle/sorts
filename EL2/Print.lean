@@ -25,64 +25,48 @@ def printList (l: List String): String :=
 
 mutual
 
-partial def PrintCtx.printAnn (ctx: PrintCtx) (x: Ann Term): String :=
-  let contentList: List String := [x.name, ":", ctx.print x.type]
-  printList contentList
-
 partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
   let contentList: List String := match term with
-    | .inh type =>
-      ["inh", ctx.print type]
+    | inh {type, cons, args} =>
+      ["inh", ctx.print type, cons] ++
+      args.map ctx.print
 
-    | .univ level =>
+    | typ {value} =>
+      ["typ", ctx.print value]
+
+    | univ level =>
       [s!"U_{level}"]
 
-    | .var name =>
+    | var name =>
       [name]
 
-    | .lst {init, last} =>
+    | lst {init, last} =>
       if init.length = 0 then
         [ctx.print last]
       else
         let parts := (init ++ [last]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
         ["\n" ++ String.join parts]
 
-    | .bind_val {name, value} =>
-      ["bind_val", name, ctx.print value]
+    | bind {name, value} =>
+      ["bind", name, ctx.print value]
 
-    | .bind_typ {name, params, level} =>
-      ["bind_typ", name] ++
-      params.map ctx.printAnn ++
-      [s!"U_{level}"]
+    | lam {params, body} =>
+      params.flatMap (λ {name, type} =>
+        [name, ":", ctx.print type]
+      ) ++
+      ["=>", ctx.print body]
 
-    | .bind_mk {name, params, type} =>
-      let {cmd, args} := type
-      ["bind_mk", name] ++
-      params.map ctx.printAnn ++
-      ["->"] ++
-      [printList (
-        [cmd] ++
-        args.map ctx.print
-      )]
-
-    | .typ {value} =>
-      ["type", ctx.print value]
-
-    | .app {cmd, args} =>
+    | app {cmd, args} =>
       [ctx.print cmd] ++
       args.map ctx.print
 
-    | .lam {params, body} =>
-      params.map ctx.printAnn ++
-      ["=>", ctx.print body]
-
-    | .mat {cond, cases} =>
+    | mat {cond, cases} =>
       ["match", ctx.print cond, "with"] ++
-      cases.map (λ {pattern, value} =>
+      cases.map (λ {patCmd, patArgs, value} =>
 
         "\n" ++ ctx.indentStr ++ printList (
-          [pattern.cmd] ++
-          pattern.args ++
+          [patCmd] ++
+          patArgs ++
           ["=>", ctx.print value]
         )
       ) ++ ["\n"]
