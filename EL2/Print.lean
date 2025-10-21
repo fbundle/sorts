@@ -27,42 +27,42 @@ mutual
 
 partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
   let contentList: List String := match term with
-    | .inh type cons args =>
+    | inh {type, cons, args} =>
       ["inh", ctx.print type, cons] ++
       args.map ctx.print
 
-    | .typ value =>
+    | typ {value} =>
       ["typ", ctx.print value]
 
-    | .univ level =>
+    | univ level =>
       [s!"U_{level}"]
 
-    | .var name =>
+    | var name =>
       [name]
 
-    | .list init last =>
+    | lst {init, last} =>
       if init.length = 0 then
         [ctx.print last]
       else
         let parts := (init ++ [last]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
         ["\n" ++ String.join parts]
 
-    | .bind name value =>
+    | bind {name, value} =>
       ["bind", name, ctx.print value]
 
-    | .app cmd args =>
-      [ctx.print cmd] ++
-      args.map ctx.print
-
-    | .lam params body =>
-      params.flatMap (λ (name, type) =>
+    | lam {params, body} =>
+      params.flatMap (λ {name, type} =>
         [name, ":", ctx.print type]
       ) ++
       ["=>", ctx.print body]
 
-    | .mat cond cases =>
+    | app {cmd, args} =>
+      [ctx.print cmd] ++
+      args.map ctx.print
+
+    | mat {cond, cases} =>
       ["match", ctx.print cond, "with"] ++
-      cases.map (λ (patCmd, patArgs, value) =>
+      cases.map (λ {patCmd, patArgs, value} =>
 
         "\n" ++ ctx.indentStr ++ printList (
           [patCmd] ++

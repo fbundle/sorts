@@ -9,35 +9,88 @@ def termList : List Term := [
   -- inductive Nat : U_1 where
   --  | zero: inh [] Nat 1
   --  | succ: (n: Nat) => inh [n] Nat 1
-  .bind "Nat" (.inh (.univ 1) "Nat" []),
-  .bind "zero" (.inh (.var "Nat") "zero" []),
-  .bind "succ" (.lam [("n", (.var "Nat"))] (.inh (.var "Nat") "succ" [(.var "n")])),
+  bind {
+    name := "Nat",
+    value := inh {type := univ 1, cons := "Nat", args := []},
+  },
+  bind {
+    name := "zero",
+    value := inh {type := var "Nat", cons := "zero", args := []},
+  },
+  bind {
+    name := "succ",
+    value := lam {
+      params := [{name := "n", type := var "Nat"}],
+      body := inh {type := var "Nat", cons := "succ", args := [var "n"]},
+    },
+  },
 
   -- inductive Vec: U_1 where
   --  | nil: (T: U_1) => inh
-  .bind "Vec" (.lam [("n", (.var "Nat")), ("T", (.univ 1))] (.inh (.univ 1) "Vec" [(.var "n"), (.var "T")])),
-  .bind "nil" (.lam [("T", (.univ 1))] (.inh (.app (.var "Vec") [(.var "zero"), (.var "T")]) "nil" [(.var "T")])),
-  .bind "append" (.lam [
-    ("n", (.var "Nat")),
-    ("T", (.univ 1)),
-    ("vec", (.app (.var "Vec") [(.var "n"), (.var "T")])),
-    ("last", (.var "T")),
-  ] (.inh (.app (.var "Vec") [(.app (.var "succ") [(.var "n")]), (.var "T")]) "append" [(.var "n"), (.var "T"), (.var "vec"), (.var "last")])),
-
+  bind {
+    name := "Vec",
+    value := lam {
+      params := [{name := "n", type := var "Nat"}, {name := "T", type := univ 1}],
+      body := inh {type := univ 1, cons := "Vec", args := [var "n", var "T"]},
+    },
+  },
+  bind {
+    name := "nil",
+    value := lam {
+      params := [{name := "T", type := univ 1}],
+      body := inh {
+        type := app {cmd := var "Vec", args := [var "zero", var "T"]},
+        cons := "nil", args := [var "T"],
+      },
+    },
+  },
+  bind {
+    name := "append",
+    value := lam {
+      params := [
+        {name := "n", type := var "Nat"},
+        {name := "T", type := univ 1},
+        {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
+        {name := "last", type := var "T"},
+      ],
+      body := inh {
+        type := app {cmd := var "Vec", args := [app {cmd := var "succ", args:= [var "n"]}, var "T"]},
+        cons := "append", args := [var "n", var "T", var "vec", var "last"],
+      },
+    },
+  },
   -- code
-  .bind "one" (.app (.var "succ") [(.var "zero")]),
-  .bind "two" (.app (.var "succ") [(.var "one")]),
-  .bind "three" (.app (.var "succ") [(.var "two")]),
+  bind {
+    name := "one",
+    value := app {cmd := var "succ", args := [var "zero"]},
+  },
+  bind {
+    name := "two",
+    value := app {cmd := var "succ", args := [var "one"]},
+  },
+  bind {
+    name := "three",
+    value := app {cmd := var "succ", args := [var "two"]},
+  },
 
-  .bind "append_if_empty" (.lam [
-    ("n", (.var "Nat")),
-    ("T", (.univ 1)),
-    ("vec", (.app (.var "Vec") [(.var "n"), (.var "T")])),
-    ("val", (.var "T")),
-  ] (.mat (.var "n") [
-    ("zero", [], .app (.var "append") [(.var "n"), (.var "T"), (.var "vec"), (.var "val")]),
-    ("succ", ["_"], (.var "vec")),
-  ])),
+  bind {
+    name := "append_if_empty",
+    value := lam {
+      params := [
+        {name := "n", type := var "Nat"},
+        {name := "T", type := univ 1},
+        {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
+        {name := "val", type := var "T"},
+      ],
+      body := mat {
+        cond := var "n",
+        cases := [
+          {patCmd := "zero", patArgs := [], value := app {cmd := var "append", args := [var "n", var "T", var "vec", var "val"]}},
+          {patCmd := "succ", patArgs := ["_"], value := var "vec"},
+        ],
+      },
+    },
+  },
 ]
 
 
@@ -48,4 +101,4 @@ end EL2_EXAMPLE
 def main  : IO Unit := do
   let termList := EL2_EXAMPLE.termList
   -- print program
-  IO.println (EL2.Term.list termList (EL2.Term.univ 0))
+  IO.println (lst {init := termList, last := univ 0})
