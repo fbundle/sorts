@@ -39,6 +39,7 @@ def statefulMap? (xs: List α) (state: State) (f: State → α → Option (State
     none
   else
     some (state, ys)
+
 def applyAtmostOnce {α: Type} {β} (fs: List (α → Option β)) (x: α): Option β :=
   match fs with
     | [] => none
