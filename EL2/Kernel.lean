@@ -33,132 +33,150 @@ partial def matchParamsArgs? [BEq α] (params: List (Ann α)) (argsType: List α
     let tailArgsType := argsType.extract 1
     matchParamsArgs? tailParams tailArgsType
 
-partial def reduceTerm? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) := do
-  match term with
-    | .univ level =>
-      pure (ctx, term)
-    | .var name =>
-      let value ← Context.get? ctx name
-      pure (ctx, value)
-    | _ => sorry
+structure InferedTerm where
+  term: Term
+  type: Term
+  deriving Repr, BEq
 
-
-
-partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) := do
+partial def infer? [Repr Ctx] [Context Ctx InferedTerm] (reduce: Bool) (ctx: Ctx) (term: Term): Option (Ctx × InferedTerm) := do
   -- (ctx: Ctx) - map name -> type
   match term with
     | .inh type =>
-      pure (ctx, type)
+      pure (ctx, {term := term, type := type})
 
     | .univ level =>
-      pure (ctx, .univ (level+1))
+      pure (ctx, {term := term, type := .univ (level+1)})
 
-    | .var n =>
-      let parent: Term ← Context.get? ctx n
-      pure (ctx, parent)
+    | .var name =>
+      let inferedTerm: InferedTerm ← Context.get? ctx name
+      pure (ctx, inferedTerm)
 
     | .lst {init, last} =>
-      let (ctx, _) ← Util.optionCtxMap? init ctx inferType?
-      inferType? ctx last
+      let (ctx, _) ← Util.optionCtxMap? init ctx (infer? reduce)
+      infer? reduce ctx last
 
     | .bind_val {name, value} =>
-      let (ctx, parent) ← inferType? ctx value
-      let ctx := Context.insert ctx name parent
-      pure (ctx, parent)
+      let (ctx, inferedValue) ← infer? reduce ctx value
+      let ctx := Context.insert ctx name inferedValue
+      pure (ctx, inferedValue)
 
     | .bind_typ {name, params, level} =>
-      let (ctx, _) ← reduceParams? params ctx inferType?
+      let (ctx, _) ← reduceParams? params ctx (infer? reduce)
       -- type of type definition is Pi
-      let parent := .lam {
-        params := params,
-        body := .univ level,
+      let inferedTerm: InferedTerm := {
+        term := term,
+        type := .lam {
+          params := params,
+          body := .univ level,
+        },
       }
-      let ctx := Context.insert ctx name parent
-      pure (ctx, parent)
+
+      let ctx := Context.insert ctx name inferedTerm
+      pure (ctx, inferedTerm)
 
     | .bind_mk {name, params, type} =>
 
       dbg_trace s!"1 checking bind_mk {name} {repr params}"
 
-      let (ctx, _) ← reduceParams? params ctx inferType?
+      let (ctx, _) ← reduceParams? params ctx (infer? reduce)
 
       let {cmd := typeName, args := typeArgs} := type
       dbg_trace s!"2 checking bind_mk {name} {repr params}"
 
       match Context.get? ctx typeName with
-        | some (Term.lam typeType) =>
+        | some {term := typeTerm, type := .lam typeType: InferedTerm} =>
           -- type of type is Pi/lam
 
           let {params := typeParams, body := _} := typeType
           dbg_trace s!"4 checking bind_mk {name} {repr typeParams}"
 
           -- set dummy args
-          let (ctx, _) ← reduceParamsWithName? typeParams ctx ((λ ctx name value =>
-            let ctx := Context.insert ctx name value
-            -- in one case, value is (var "Nat")
-            -- TODO possibly need to normalize/reduce this
-            -- reduce = typeInfer? + substitution
-            -- somehow if we use
-            -- mutual
-            -- inferType?
-            -- reduceTerm?
-            -- end
-            -- it causes issue
-            some (ctx, value)
+          let (ctx, _) ← reduceParamsWithName? typeParams ctx ((λ ctx paramName paramType => do
+            let (ctx, inferedParamType) ← infer? true ctx paramType -- for type level, do reduce
+            let ctx := Context.insert ctx paramName {
+              term := .inh inferedParamType.term,
+              type := inferedParamType.term,
+              : InferedTerm
+            }
+            some (ctx, inferedParamType)
           ))
           dbg_trace s!"5 checking bind_mk {name} {repr ctx}"
 
           -- resolve return type
-          let (ctx, typeArgsType) ← Util.optionCtxMap? typeArgs ctx inferType?
+          let (ctx, typeArgsInferedTerm) ← Util.optionCtxMap? typeArgs ctx (infer? reduce)
 
-
+          let typeArgsType := typeArgsInferedTerm.map (λ inferedTerm => inferedTerm.type)
+          dbg_trace s!"6 checking bind_mk {name} {repr typeArgsType}"
 
           let _ ← matchParamsArgs? typeParams typeArgsType
 
 
           -- type of a type constructor is Pi
-          let parent := .lam {
-            params := params,
-            body := .lam typeType,
+          let inferedTerm: InferedTerm := {
+            term := term,
+            type := .lam {
+              params := params,
+              body := .lam typeType,
+            },
           }
-          let ctx := Context.insert ctx name parent
-          pure (ctx, parent)
+          let ctx := Context.insert ctx name inferedTerm
+          pure (ctx, inferedTerm)
         | _ => none
 
     | .typ {value} =>
-      let (ctx, type) ← inferType? ctx value
-      let (ctx, parent) ← inferType? ctx type
-      pure (ctx, parent)
+      let (ctx, inferedValue) ← infer? reduce ctx value
+      infer? reduce ctx inferedValue.type
 
     | .lam {params, body} =>
       -- type of parent is Pi
-      let parent := .lam {
-        params := params,
-        body := .typ {value := body},
-        -- we use typ to create a future type infer object
-        -- normalizing typ will invoke inferType?
+      let inferedTerm: InferedTerm := {
+        term := term,
+        type := .lam {
+          params := params,
+          body := .typ {value := body},
+          -- we use typ to create a future type infer object
+          -- normalizing typ will invoke inferType?
+        },
       }
-      pure (ctx, parent)
+
+      pure (ctx, inferedTerm)
 
     | .app {cmd, args} =>
       dbg_trace s!"1 checking app {repr cmd} {repr args}"
 
-      let (ctx, cmdType) ← inferType? ctx cmd
+      let (ctx, cmdType) ← infer? reduce ctx cmd
       match cmdType with
-        | .lam {params := cmdTypeParams, body := cmdTypeBody} =>
+        | {term := cmdTerm, type := .lam {params := cmdTypeParams, body := cmdTypeBody}} =>
           -- type of bind_typ, bind_mk, lam is lam/Pi
-          let (ctx, argsType) ← Util.optionCtxMap? args ctx inferType?
+          let (ctx, argsInferedTerm) ← Util.optionCtxMap? args ctx (infer? reduce)
+          let argsType := argsInferedTerm.map (λ inferedTerm => inferedTerm.type)
           let _ ← matchParamsArgs? cmdTypeParams argsType
-          -- set dummy args
-          let (ctx, _) ← reduceParamsWithName? cmdTypeParams ctx ((λ ctx name value =>
-            let ctx := Context.insert ctx name value
-            some (ctx, value)
-          ))
-          -- return the type of body given the context
-          pure (ctx, cmdTypeBody)
+
+          if reduce then
+            sorry
+          else
+            -- set dummy args
+            let (ctx, _) ← reduceParamsWithName? cmdTypeParams ctx ((λ ctx paramName paramType => do
+              let (ctx, inferedParamType) ← infer? true ctx paramType -- for type level, do reduce
+              let ctx := Context.insert ctx paramName {
+                term := .inh inferedParamType.term,
+                type := inferedParamType.term,
+                : InferedTerm
+              }
+              some (ctx, inferedParamType)
+            ))
+            -- return the type of body given the context
+            pure (ctx, {
+              term := .inh cmdTypeBody,
+              type := cmdTypeBody,
+            })
+
         | _ => none
     | .mat {cond, cases} =>
-      pure (ctx, .univ 1)
+      pure (ctx, {
+        term := .univ 1,
+        type := .univ 2,
+      })
       -- TODO change it
 
 

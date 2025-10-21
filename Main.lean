@@ -112,12 +112,11 @@ def printLines [ToString α] (lines: List α) : IO Unit :=
   lines.forM IO.println
 
 
+def ctx : Std.HashMap String EL2.InferedTerm  := Std.HashMap.emptyWithCapacity
 
 instance: EL2.Context (Std.HashMap String α) α where
   insert (m: Std.HashMap String α) (key: String) (val: α) := m.insert key val
   get? (m: Std.HashMap String α) (key: String) := m.get? key
-
-def ctx : Std.HashMap String EL2.Term := Std.HashMap.emptyWithCapacity
 
 
 def main  : IO Unit := do
@@ -129,14 +128,14 @@ def main  : IO Unit := do
   IO.println "type checking ..."
   IO.println ""
 
-  let (ctx, typeList) := EL2.Util.optionCtxMap termList ctx EL2.inferType?
-  for (term, type) in List.zip termList typeList do
-    IO.println s!"term: {term}"
-    IO.println s!"type: {type}"
+  let (ctx, inferedTermList) := EL2.Util.optionCtxMap termList ctx (EL2.infer? false)
+  for inferedTerm in inferedTermList do
+    IO.println s!"term: {inferedTerm.term}"
+    IO.println s!"type: {inferedTerm.type}"
     IO.println ""
 
-  if h: typeList.length < termList.length then
-    let nextTerm := termList[typeList.length]'h
+  if h: inferedTermList.length < termList.length then
+    let nextTerm := termList[inferedTermList.length]'h
     IO.println s!"type check error at: {nextTerm}"
   else
     pure ()
