@@ -15,7 +15,7 @@ structure InferedTerm where
 
 def dummyName (i: Int): String := s!"dummy_{i}"
 
-partial def infer? [Repr Ctx] [Context Ctx] (reduce: Bool) (ctx: Ctx) (term: Term): Option (Ctx × InferedTerm) := do
+partial def infer? [Repr Ctx] [Context Ctx] (ctx: Ctx) (term: Term) (reduce: Bool := false): Option (Ctx × InferedTerm) := do
   let isLam? (term: Term): Option (Lam Term) :=
     match term with
       | lam l => some l
