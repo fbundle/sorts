@@ -33,10 +33,23 @@ partial def matchParamsArgs? [BEq α] (params: List (Ann α)) (argsType: List α
     let tailArgsType := argsType.extract 1
     matchParamsArgs? tailParams tailArgsType
 
+partial def reduceTerm? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) := do
+  match term with
+    | .univ level =>
+      pure (ctx, term)
+    | .var name =>
+      let value ← Context.get? ctx name
+      pure (ctx, value)
+    | _ => sorry
+
+
 
 partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) := do
   -- (ctx: Ctx) - map name -> type
   match term with
+    | .inh type =>
+      pure (ctx, type)
+
     | .univ level =>
       pure (ctx, .univ (level+1))
 
@@ -147,9 +160,6 @@ partial def inferType? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Op
     | .mat {cond, cases} =>
       pure (ctx, .univ 1)
       -- TODO change it
-
-partial def reduceTerm? [Repr Ctx] [Context Ctx Term] (ctx: Ctx) (term: Term): Option (Ctx × Term) :=
-  sorry
 
 
 

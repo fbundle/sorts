@@ -59,6 +59,7 @@ structure Typ (α: Type) where
   deriving Repr, BEq
 
 inductive Term where
+  | inh: (type: Term) → Term
   | univ: (level: Int) → Term
   | var: (name: String) → Term
   | lst: Lst Term → Term
