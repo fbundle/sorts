@@ -27,6 +27,7 @@ structure Ann (α: Type) where
 
 structure Lam (α: Type) where
   params: List (Ann α)
+  type: α
   body: α
   deriving Repr, BEq
 

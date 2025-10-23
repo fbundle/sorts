@@ -1,5 +1,6 @@
 import EL2.Term
 import EL2.Util
+import EL2.Print -- for debugging
 
 namespace EL2
 
@@ -22,13 +23,14 @@ def isLam? (term: Term): Option (Lam Term) :=
     | _ => none
 
 mutual
-partial def reduceMany? [Repr F] [Frame F] (frame: F) (termList: List Term): Option (F × List (InferedTerm)) :=
-    Util.statefulMap? termList frame (λ frame term => do
-      let (frame, iterm) ← reduce? frame term
-      pure (frame, iterm)
-    )
+partial def reduceSequential? [Repr F] [Frame F] (frame: F) (termList: List Term): Option (F × List (InferedTerm)) :=
+  -- reduce sequentially so that dependent type is captured properly
+  Util.statefulMap? termList frame (λ frame term => do
+    let (frame, iterm) ← reduce? frame term
+    pure (frame, iterm)
+  )
 
-partial def reduceManyParams? [Repr F] [Frame F] (frame: F) (paramList: List (Ann Term)): Option (F × List (Ann InferedTerm)) :=
+partial def bindParams? [Repr F] [Frame F] (frame: F) (paramList: List (Ann Term)): Option (F × List (Ann InferedTerm)) :=
   Util.statefulMap? paramList frame (λ frame param => do
     let (frame, itype) ← reduce? frame param.type
     pure (frame, {
@@ -37,9 +39,10 @@ partial def reduceManyParams? [Repr F] [Frame F] (frame: F) (paramList: List (An
     })
   )
 
+
 partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × InferedTerm) := do
   let frame := oldFrame -- for update
-
+  dbg_trace s!"# reducing {term} with frame \n{repr frame}"
   match term with
     | univ level =>
       pure (oldFrame, {
@@ -54,7 +57,7 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
 
     | inh x =>
       let (_, iType) ← reduce? frame x.type
-      let (_, iArgs) ← reduceMany? frame x.args
+      let (_, iArgs) ← reduceSequential? frame x.args
       pure (oldFrame, {
         term := inh {
           type := iType.term,
@@ -71,7 +74,7 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       pure (oldFrame, iType)
 
     | lst x =>
-      let (initFrame, _) ← reduceMany? frame x.init
+      let (initFrame, _) ← reduceSequential? frame x.init
       reduce? initFrame x.last
 
     | bind x =>
@@ -79,22 +82,20 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       pure (Frame.set oldFrame x.name iValue, iValue)
 
     | lam x =>
-      let (_, iparams) ← reduceManyParams? frame x.params
-      let state: Util.Counter F := {field := frame, count := 0}
-      let (dummParamState, _) ← Util.statefulMap? iparams state (λ state param =>
-        let field := Frame.set state.field param.name {
-          term := inh {
-            type := param.type.term,
-            cons := dummyName state.count,
-            args := [],
-          },
-          type := param.type.term,
-          level := param.type.level - 1,
-        }
-        pure ({state with field := field, count := state.count + 1}, ())
-      )
-      reduce? dummParamState.field x.body
-    | app x => none
+      let paramsType := x.params.map (λ param => param.type)
+      let (paramsFrame, iParamType) ← reduceSequential? frame paramsType
+      let (_, iType) ← reduce? paramsFrame x.type
+      
+
+      none
+    | app x =>
+      let (_, iCmd) ← reduce? frame x.cmd
+      let (_, iArgs) ← reduceSequential? frame x.args
+      let lamCmd ← isLam? iCmd.term
+      let (_, iParams) ← bindParams? frame lamCmd.params
+
+
+      none
       -- TODO - for level 0, do reduce if only specified for level > 1 reduce
     | mat x => none
 

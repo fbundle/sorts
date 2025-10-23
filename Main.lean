@@ -21,6 +21,7 @@ def termList : List Term := [
     name := "succ",
     value := lam {
       params := [{name := "n", type := var "Nat"}],
+      type := var "Nat",
       body := inh {type := var "Nat", cons := "succ", args := [var "n"]},
     },
   },
@@ -31,6 +32,7 @@ def termList : List Term := [
     name := "Vec",
     value := lam {
       params := [{name := "n", type := var "Nat"}, {name := "T", type := univ 1}],
+      type := univ 1,
       body := inh {type := univ 1, cons := "Vec", args := [var "n", var "T"]},
     },
   },
@@ -38,6 +40,7 @@ def termList : List Term := [
     name := "nil",
     value := lam {
       params := [{name := "T", type := univ 1}],
+      type := app {cmd := var "Vec", args := [var "zero", var "T"]},
       body := inh {
         type := app {cmd := var "Vec", args := [var "zero", var "T"]},
         cons := "nil", args := [var "T"],
@@ -53,6 +56,7 @@ def termList : List Term := [
         {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
         {name := "last", type := var "T"},
       ],
+      type := app {cmd := var "Vec", args := [app {cmd := var "succ", args:= [var "n"]}, var "T"]},
       body := inh {
         type := app {cmd := var "Vec", args := [app {cmd := var "succ", args:= [var "n"]}, var "T"]},
         cons := "append", args := [var "n", var "T", var "vec", var "last"],
@@ -82,6 +86,7 @@ def termList : List Term := [
         {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
         {name := "val", type := var "T"},
       ],
+      type := univ 0, -- TODO make proper dependent type here
       body := mat {
         cond := var "n",
         cases := [

@@ -51,11 +51,11 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
     | bind {name, value} =>
       ["bind", name, ctx.print value]
 
-    | lam {params, body} =>
+    | lam {params, type, body} =>
       params.map (λ {name, type} =>
         s!"({name}: {ctx.print type})"
       ) ++
-      ["=>", ctx.print body]
+      [":", ctx.print type, "=>", ctx.print body]
 
     | app {cmd, args} =>
       [ctx.print cmd] ++
@@ -77,12 +77,14 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
 end
 
 instance : ToString Term where
-  toString (c: Term):= {
+  toString (c: Term) := {
     indentNum := 0,
     indentSize := 2,
     :PrintCtx
   }.print c
 
+instance: Repr Term where
+  reprPrec (term: Term) (prec: Nat): Std.Format := toString term
 
 
 end EL2
