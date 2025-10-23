@@ -45,6 +45,22 @@ partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann
       let iArgs := iArgs.extract 1
       bindParamsWithArgs frame iParams iArgs
 
+partial def matchCases (inhCond: Inh Term) (cases: List (Case Term)): Option (Lst Term) := do
+  let headCase ← cases.head?
+  if inhCond.cons = headCase.patCmd ∧ inhCond.args.length = headCase.patArgs.length then
+    let binds := (List.zip headCase.patArgs inhCond.args).map (λ (name, value) => bind {
+      name := name,
+      value := value,
+    })
+    pure {
+      init := binds,
+      last := headCase.value,
+    }
+  else
+    let cases := cases.extract 1
+    matchCases inhCond cases
+
+
 mutual
 partial def reduceList? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (F × List (InferedTerm)) :=
   -- reuse frame for sequential operations
@@ -168,13 +184,9 @@ partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × Inf
       let (_, iCond) ← reduce? frame x.cond
       let inhCond ← isInh? iCond.term
 
+      let terms ← matchCases inhCond x.cases
 
-
-
-      let (_, iCases) ← reduceCases? frame x.cases
-
-      none
-
+      reduce? frame (lst terms)
 end
 
 partial def fill? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × Term) :=
