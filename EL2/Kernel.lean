@@ -26,21 +26,35 @@ def isSubType (type1: Term) (type2: Term): Bool :=
   type1 == type2
 
 mutual
-partial def reduceSequential? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (F × List (InferedTerm)) :=
-  -- reduce sequentially so that dependent type is captured properly
+partial def reduceList? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (F × List (InferedTerm)) :=
   Util.statefulMap? terms frame (λ frame term => do
     let (frame, iterm) ← reduce? frame term
     pure (frame, iterm)
   )
 
-partial def reduceParamsType? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)): Option (F × List (Ann InferedTerm)) :=
-  Util.statefulMap? params frame (λ frame param => do
+partial def reduceParams? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)): Option (F × List (Ann InferedTerm)) := do
+  let counter := {field := frame, count := 0: Util.Counter F}
+
+  let ⟨counter, iParams⟩ ← Util.statefulMap? params counter ((λ counter param => do
+    let {field := frame, count} := counter
     let (frame, itype) ← reduce? frame param.type
-    pure (frame, {
+    let dummyTerm := inh {
+      type := itype.term,
+      cons := dummyName counter.count,
+      args := [],
+    }
+    let (frame, dummyITerm) ← reduce? frame dummyTerm
+    let frame := Frame.set frame param.name dummyITerm
+    pure ({
+      field := frame,
+      count := count + 1,
+    }, {
       name := param.name,
       type := itype,
     })
-  )
+  ): Util.Counter F → Ann Term → Option (Util.Counter F × Ann InferedTerm))
+
+  pure (counter.field, iParams)
 
 partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann InferedTerm)) (iArgs: List InferedTerm): Option F := do
   if iParams.length = 0 ∧ iArgs.length = 0 then
@@ -60,7 +74,7 @@ partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann
 
 partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × InferedTerm) := do
   let frame := oldFrame -- for update
-  dbg_trace s!"#1 {term} with frame \n{repr frame}"
+  dbg_trace s!"#1 {term}"
   match term with
     | univ level =>
       pure (oldFrame, {
@@ -75,7 +89,7 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
 
     | inh x =>
       let (_, iType) ← reduce? frame x.type
-      let (_, iArgs) ← reduceSequential? frame x.args
+      let (_, iArgs) ← reduceList? frame x.args
       pure (oldFrame, {
         term := inh {
           type := iType.term,
@@ -92,7 +106,7 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       pure (oldFrame, iType)
 
     | lst x =>
-      let (initFrame, _) ← reduceSequential? frame x.init
+      let (initFrame, _) ← reduceList? frame x.init
       reduce? initFrame x.last
 
     | bind x =>
@@ -100,7 +114,7 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       pure (Frame.set oldFrame x.name iValue, iValue)
 
     | lam x =>
-      let (paramsFrame, iParams) ← reduceParamsType? frame x.params
+      let (paramsFrame, iParams) ← reduceParams? frame x.params
       let (_, iType) ← reduce? paramsFrame x.type
 
 
@@ -125,10 +139,10 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
 
     | app x =>
       let (_, iCmd) ← reduce? frame x.cmd
-      let (_, iArgs) ← reduceSequential? frame x.args
+      let (_, iArgs) ← reduceList? frame x.args
       let lamCmd ← isLam? iCmd.term
 
-      let (paramsFrame, iParams) ← reduceParamsType? frame lamCmd.params
+      let (paramsFrame, iParams) ← reduceParams? frame lamCmd.params
       let (_, iType) ← reduce? paramsFrame lamCmd.type
 
       let argsFrame ← bindParamsWithArgs frame iParams iArgs
