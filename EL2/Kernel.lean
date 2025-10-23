@@ -27,11 +27,11 @@ partial def reduceMany? [Repr F] [Frame F] (frame: F) (termList: List Term): Opt
       pure (frame, iterm)
     )
 
-partial def reduceManyAnn? [Repr F] [Frame F] (frame: F) (annList: List (Ann Term)): Option (F × List (Ann InferedTerm)) :=
-  Util.statefulMap? annList frame (λ frame ann => do
-    let (frame, itype) ← reduce? frame ann.type
+partial def reduceManyParams? [Repr F] [Frame F] (frame: F) (paramList: List (Ann Term)): Option (F × List (Ann InferedTerm)) :=
+  Util.statefulMap? paramList frame (λ frame param => do
+    let (frame, itype) ← reduce? frame param.type
     pure (frame, {
-      name := ann.name,
+      name := param.name,
       type := itype,
     })
   )
@@ -78,9 +78,21 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       pure (Frame.set oldFrame x.name iValue, iValue)
 
     | lam x =>
-      let (_, iparams) ← reduceManyAnn? frame x.params
-
-      none
+      let (_, iparams) ← reduceManyParams? frame x.params
+      let state: Util.Counter F := {field := frame, count := 0}
+      let (dummParamState, _) ← Util.statefulMap? iparams state (λ state param =>
+        let field := Frame.set state.field param.name {
+          term := inh {
+            type := param.type.term,
+            cons := dummyName state.count,
+            args := [],
+          },
+          type := param.type.term,
+          level := param.type.level - 1,
+        }
+        pure ({state with field := field, count := state.count + 1}, ())
+      )
+      reduce? dummParamState.field x.body
     | app x => none
       -- TODO - for level 0, do reduce if only specified for level > 1 reduce
     | mat x => none
