@@ -86,7 +86,22 @@ def termList : List Term := [
         {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
         {name := "val", type := var "T"},
       ],
-      type := univ 0, -- TODO make proper dependent type here
+      type := lam {
+        params := [
+          {name := "n", type := var "Nat"},
+          {name := "T", type := univ 1},
+          {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
+          {name := "val", type := var "T"},
+        ],
+        type := univ 1,
+        body := mat {
+          cond :=  var "n",
+          cases := [
+            {patCmd := "zero", patArgs := [], value := app {cmd := var "Vec", args := [var "one"]}},
+            {patCmd := "succ", patArgs := ["_"], value := typ {value := var "vec"}},
+          ]
+        },
+      },
       body := mat {
         cond := var "n",
         cases := [
