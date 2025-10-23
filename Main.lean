@@ -89,8 +89,8 @@ def term : Term := bnd {
         type := mat {
           cond :=  var "n",
           cases := [
-            {patCmd := "zero", patArgs := [], value := app {cmd := var "Vec", args := [var "one"]}},
-            {patCmd := "succ", patArgs := ["_"], value := typ {value := var "vec"}},
+            {patCmd := "zero", patArgs := [], value := app {cmd := var "Vec", args := [var "one", var "T"]}},
+            {patCmd := "succ", patArgs := ["_"], value := typ {value := app {cmd := var "Vec", args := [var "n", var "T"]}}},
           ]
         },
         body := mat {
@@ -125,4 +125,4 @@ def main  : IO Unit := do
 
   match EL2.reduce? frame term with
     | some iterm => IO.println s!"term: {iterm.term}\ntype: {iterm.type}\nlevel: {iterm.level}"
-    | none => return
+    | none => IO.println "error"
