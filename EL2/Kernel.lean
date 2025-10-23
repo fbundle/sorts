@@ -7,6 +7,7 @@ structure InferedTerm where
   term: Term
   type: Term
   level: Int
+  deriving Repr
 
 class Frame F where
   set: F → String → InferedTerm → F

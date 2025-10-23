@@ -93,12 +93,30 @@ def termList : List Term := [
   },
 ]
 
-
-
 end EL2_EXAMPLE
+
+
+instance: EL2.Frame (Std.HashMap String EL2.InferedTerm) where
+  set := Std.HashMap.insert
+  get? := Std.HashMap.get?
+
 
 
 def main  : IO Unit := do
   let termList := EL2_EXAMPLE.termList
   -- print program
   IO.println (lst {init := termList, last := univ 0})
+  -- reduce program
+  let frame: Std.HashMap String EL2.InferedTerm := Std.HashMap.emptyWithCapacity
+  let (frame, itermList) := EL2.Util.statefulMap termList frame (λ frame term => do
+    let (frame, iterm) ← EL2.reduce? frame term
+    pure (frame, iterm)
+  )
+
+  for iterm in itermList do
+    IO.println s!"{repr iterm}"
+
+  if h: termList.length > itermList.length then
+    IO.println s!"failed at {termList[itermList.length]'h}"
+  else
+    return
