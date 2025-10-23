@@ -112,7 +112,7 @@ def term : Term := bnd {
 end EL2_EXAMPLE
 
 
-instance: EL2.Frame (Std.HashMap String EL2.InferedTerm) where
+instance: EL2.Frame (Std.HashMap String α) α where
   set := Std.HashMap.insert
   get? := Std.HashMap.get?
 

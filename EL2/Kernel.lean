@@ -5,15 +5,15 @@ import EL2.Print -- for debugging
 
 namespace EL2
 
+class Frame F α where
+  set: F → String → α → F
+  get?: F → String → Option α
+
 structure InferedTerm where
   term: Term
   type: Term
   level: Int
   deriving Repr
-
-class Frame F where
-  set: F → String → InferedTerm → F
-  get?: F → String → Option InferedTerm
 
 
 def dummyName (i: Int): String := s!"dummy_{i}"
@@ -31,7 +31,7 @@ def isInh? (term: Term): Option (Inh Term) :=
 def isSubType (type1: Term) (type2: Term): Bool :=
   type1 == type2
 
-partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann InferedTerm)) (iArgs: List InferedTerm): Option F := do
+partial def bindParamsWithArgs [Repr F] [Frame F InferedTerm] (frame: F) (iParams: List (Ann InferedTerm)) (iArgs: List InferedTerm): Option F := do
   if iParams.length = 0 ∧ iArgs.length = 0 then
     pure frame
   else
@@ -66,10 +66,10 @@ partial def matchCases (inhCond: Inh Term) (cases: List (Case Term)): Option (Bn
 
 
 mutual
-partial def reduceMany? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (List (InferedTerm)) :=
+partial def reduceMany? [Repr F] [Frame F InferedTerm] (frame: F) (terms: List Term): Option (List (InferedTerm)) :=
   Util.optionMap? terms (reduce? frame)
 
-partial def reduceBnd? [Repr F] [Frame F] (frame: F) (l: Bnd Term): Option InferedTerm := do
+partial def reduceBnd? [Repr F] [Frame F InferedTerm] (frame: F) (l: Bnd Term): Option InferedTerm := do
   let (frame, _) ← Util.statefulMap? l.init frame (λ frame {name, value} => do
     let iValue ← reduce? frame value
     let frame := Frame.set frame name iValue
@@ -77,7 +77,7 @@ partial def reduceBnd? [Repr F] [Frame F] (frame: F) (l: Bnd Term): Option Infer
   )
   reduce? frame l.last
 
-partial def reduceParams? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)): Option (F × List (Ann InferedTerm)) := do
+partial def reduceParams? [Repr F] [Frame F InferedTerm] (frame: F) (params: List (Ann Term)): Option (F × List (Ann InferedTerm)) := do
   -- reduce and bind params with dummy values
   -- reuse frame so that dependent type (Pi, Sigma) is captured
   let counter: F × Int := (frame, 0)
@@ -98,7 +98,7 @@ partial def reduceParams? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)
 
   pure (frame, iParams)
 
-partial def reduceCases? [Repr F] [Frame F] (frame: F) (cases: List (Case Term)): Option (F × List (Case InferedTerm)) := do
+partial def reduceCases? [Repr F] [Frame F InferedTerm] (frame: F) (cases: List (Case Term)): Option (F × List (Case InferedTerm)) := do
   let oldFrame := frame
   let iCases ← Util.optionMap? cases ((λ {patCmd, patArgs, value} => do
     let iValue ← reduce? frame value
@@ -107,7 +107,7 @@ partial def reduceCases? [Repr F] [Frame F] (frame: F) (cases: List (Case Term))
 
   pure (oldFrame, iCases)
 
-partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option InferedTerm := do
+partial def reduce? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
   dbg_trace s!"#1 {term}"
   match term with
     | univ level =>
@@ -196,10 +196,14 @@ partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option InferedTe
       reduce? frame (bnd terms)
 end
 
-partial def fill? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × Term) :=
+partial def fill? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option (F × Term) :=
   -- fill in all the holes
   -- e.g return type
   none
 
+
+
+partial def typeInfer? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
+  none
 
 end EL2
