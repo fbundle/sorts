@@ -202,8 +202,15 @@ partial def fill? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option
   none
 
 
+-- type check
 
-partial def typeInfer? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
-  none
+
+
+structure InferedType where
+  type: Term
+  level: Int
+
+partial def typeInfer? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): List InferedTerm :=
+  []
 
 end EL2
