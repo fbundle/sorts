@@ -33,9 +33,9 @@ partial def reduceList? [Repr F] [Frame F] (frame: F) (terms: List Term): Option
   )
 
 partial def reduceParams? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)): Option (F × List (Ann InferedTerm)) := do
+  -- bind params and reuse frame so that dependent type is capture
   let counter := {field := frame, count := 0: Util.Counter F}
-
-  let ⟨counter, iParams⟩ ← Util.statefulMap? params counter ((λ counter param => do
+  let (counter, iParams) ← Util.statefulMap? params counter ((λ counter param => do
     let {field := frame, count} := counter
     let (frame, itype) ← reduce? frame param.type
     let dummyTerm := inh {
@@ -153,7 +153,10 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
         none
       else
         pure (oldFrame, output)
-    | mat x => none
+    | mat x =>
+      let (_, iCond) ← reduce? frame x.cond
+
+      none
 
 end
 
