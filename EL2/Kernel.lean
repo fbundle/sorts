@@ -27,34 +27,30 @@ def isSubType (type1: Term) (type2: Term): Bool :=
 
 mutual
 partial def reduceList? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (F × List (InferedTerm)) :=
+  -- reuse frame so that dependent type is capture
   Util.statefulMap? terms frame (λ frame term => do
     let (frame, iterm) ← reduce? frame term
     pure (frame, iterm)
   )
 
 partial def reduceParams? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)): Option (F × List (Ann InferedTerm)) := do
-  -- bind params and reuse frame so that dependent type is capture
-  let counter := {field := frame, count := 0: Util.Counter F}
-  let (counter, iParams) ← Util.statefulMap? params counter ((λ counter param => do
-    let {field := frame, count} := counter
+  let counter: F × Int := (frame, 0)
+  let ((frame, count), iParams) ← Util.statefulMap? params counter ((λ (frame, count) param => do
     let (frame, itype) ← reduce? frame param.type
     let dummyTerm := inh {
       type := itype.term,
-      cons := dummyName counter.count,
+      cons := dummyName count,
       args := [],
     }
     let (frame, dummyITerm) ← reduce? frame dummyTerm
     let frame := Frame.set frame param.name dummyITerm
-    pure ({
-      field := frame,
-      count := count + 1,
-    }, {
+    pure ((frame, count + 1), {
       name := param.name,
       type := itype,
     })
-  ): Util.Counter F → Ann Term → Option (Util.Counter F × Ann InferedTerm))
+  ): F × Int → Ann Term → Option ((F × Int) × Ann InferedTerm))
 
-  pure (counter.field, iParams)
+  pure (frame, iParams)
 
 partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann InferedTerm)) (iArgs: List InferedTerm): Option F := do
   if iParams.length = 0 ∧ iArgs.length = 0 then
