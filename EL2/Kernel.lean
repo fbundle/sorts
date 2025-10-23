@@ -167,7 +167,7 @@ partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × Inf
     | mat x =>
       let (_, iCond) ← reduce? frame x.cond
       let inhCond ← isInh? iCond.term
-      
+
 
 
 
@@ -176,6 +176,11 @@ partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × Inf
       none
 
 end
+
+partial def fill? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × Term) :=
+  -- fill in all the holes
+  -- e.g return type
+  none
 
 
 end EL2
