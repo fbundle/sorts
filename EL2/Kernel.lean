@@ -25,6 +25,21 @@ def isLam? (term: Term): Option (Lam Term) :=
 def isSubType (type1: Term) (type2: Term): Bool :=
   type1 == type2
 
+partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann InferedTerm)) (iArgs: List InferedTerm): Option F := do
+  if iParams.length = 0 ∧ iArgs.length = 0 then
+    pure frame
+  else
+    let iParam ← iParams.head?
+    let iArg ← iArgs.head?
+
+    if ¬ isSubType iArg.type iParam.type.term then
+      none
+    else
+      let frame := Frame.set frame iParam.name iArg
+      let iParams := iParams.extract 1
+      let iArgs := iArgs.extract 1
+      bindParamsWithArgs frame iParams iArgs
+  
 mutual
 partial def reduceList? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (F × List (InferedTerm)) :=
   -- reuse frame so that dependent type is capture
@@ -51,21 +66,6 @@ partial def reduceParams? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)
   ): F × Int → Ann Term → Option ((F × Int) × Ann InferedTerm))
 
   pure (frame, iParams)
-
-partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann InferedTerm)) (iArgs: List InferedTerm): Option F := do
-  if iParams.length = 0 ∧ iArgs.length = 0 then
-    pure frame
-  else
-    let iParam ← iParams.head?
-    let iArg ← iArgs.head?
-
-    if ¬ isSubType iArg.type iParam.type.term then
-      none
-    else
-      let frame := Frame.set frame iParam.name iArg
-      let iParams := iParams.extract 1
-      let iArgs := iArgs.extract 1
-      bindParamsWithArgs frame iParams iArgs
 
 
 partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × InferedTerm) := do
