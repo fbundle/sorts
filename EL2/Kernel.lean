@@ -22,6 +22,11 @@ def isLam? (term: Term): Option (Lam Term) :=
     | lam l => some l
     | _ => none
 
+def isInh? (term: Term): Option (Inh Term) :=
+  match term with
+    | inh i => some i
+    | _ => none
+
 def isSubType (type1: Term) (type2: Term): Bool :=
   type1 == type2
 
@@ -39,16 +44,18 @@ partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann
       let iParams := iParams.extract 1
       let iArgs := iArgs.extract 1
       bindParamsWithArgs frame iParams iArgs
-  
+
 mutual
 partial def reduceList? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (F × List (InferedTerm)) :=
-  -- reuse frame so that dependent type is capture
+  -- reuse frame for sequential operations
   Util.statefulMap? terms frame (λ frame term => do
     let (frame, iterm) ← reduce? frame term
     pure (frame, iterm)
   )
 
 partial def reduceParams? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)): Option (F × List (Ann InferedTerm)) := do
+  -- reduce and bind params with dummy values
+  -- reuse frame so that dependent type (Pi, Sigma) is captured
   let counter: F × Int := (frame, 0)
   let ((frame, count), iParams) ← Util.statefulMap? params counter ((λ (frame, count) param => do
     let (frame, itype) ← reduce? frame param.type
@@ -67,9 +74,17 @@ partial def reduceParams? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)
 
   pure (frame, iParams)
 
+partial def reduceCases? [Repr F] [Frame F] (frame: F) (cases: List (Case Term)): Option (F × List (Case InferedTerm)) := do
+  let oldFrame := frame
+  let iCases ← Util.optionMap? cases ((λ {patCmd, patArgs, value} => do
+    let (_, iValue) ← reduce? frame value
+    pure {patCmd := patCmd, patArgs := patArgs, value := iValue}
+  ): Case Term → Option (Case InferedTerm))
 
-partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × InferedTerm) := do
-  let frame := oldFrame -- for update
+  pure (oldFrame, iCases)
+
+partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × InferedTerm) := do
+  let oldFrame := frame -- for update
   dbg_trace s!"#1 {term}"
   match term with
     | univ level =>
@@ -151,6 +166,12 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
         pure (oldFrame, output)
     | mat x =>
       let (_, iCond) ← reduce? frame x.cond
+      let inhCond ← isInh? iCond.term
+      
+
+
+
+      let (_, iCases) ← reduceCases? frame x.cases
 
       none
 

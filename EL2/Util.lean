@@ -14,7 +14,7 @@ def optionMap (xs: List α) (f: α → Option β): List β :=
 
   (loop #[] xs f).toList
 
-def optionMapAll (xs: List α) (f: α → Option β): Option (List β) :=
+def optionMap? (xs: List α) (f: α → Option β): Option (List β) :=
   let ys := optionMap xs f
   if ys.length ≠ xs.length then
     none
