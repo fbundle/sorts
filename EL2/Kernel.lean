@@ -45,7 +45,7 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       pure (oldFrame, {
         term := univ level,
         type := univ level+1,
-        level := level,
+        level := level + 1, -- univ 1 is at level 2, Nat: univ 1, then Nat is at level 1
       })
 
     | var name =>

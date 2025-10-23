@@ -1,5 +1,4 @@
 import EL2.Term
-import EL2.Kernel
 
 
 namespace EL2
@@ -84,9 +83,6 @@ instance : ToString Term where
     :PrintCtx
   }.print c
 
-instance: ToString InferedTerm where
-  toString (iterm: InferedTerm): String :=
-    s!"term: {iterm.term}\ntype: {iterm.type}\nlevel: {iterm.level}"
 
 
 end EL2

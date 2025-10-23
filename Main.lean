@@ -106,7 +106,6 @@ instance: EL2.Frame (Std.HashMap String EL2.InferedTerm) where
   get? := Std.HashMap.get?
 
 
-
 def main  : IO Unit := do
   let termList := EL2_EXAMPLE.termList
   -- print program
@@ -119,7 +118,8 @@ def main  : IO Unit := do
   )
 
   for iterm in itermList do
-    IO.println s!"{iterm}"
+    IO.println s!"term: {iterm.term}\ntype: {iterm.type}\nlevel: {iterm.level}"
+    IO.println ""
 
   if h: termList.length > itermList.length then
     IO.println s!"failed at {termList[itermList.length]'h}"
