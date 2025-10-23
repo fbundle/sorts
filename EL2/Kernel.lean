@@ -47,6 +47,8 @@ partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann
       bindParamsWithArgs frame iParams iArgs
 
 partial def matchCases (inhCond: Inh Term) (cases: List (Case Term)): Option (Bnd Term) := do
+  -- TODO make dummy name match every -> return a list of terms
+  -- TODO make reduce returns a list of terms in typecheck mode
   let headCase ← cases.head?
   if inhCond.cons = headCase.patCmd ∧ inhCond.args.length = headCase.patArgs.length then
     let init: List (Bind Term) := (List.zip headCase.patArgs inhCond.args).map (λ (name, value) => {
