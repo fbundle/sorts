@@ -11,7 +11,7 @@ structure Typ (α: Type) where
   deriving Repr, BEq
 
 structure Lst (α: Type) where
-  init: List α
+  init: List α -- consider changin this into List (Bind α)
   last: α
   deriving Repr, BEq
 
