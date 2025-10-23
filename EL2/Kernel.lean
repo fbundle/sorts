@@ -22,22 +22,39 @@ def isLam? (term: Term): Option (Lam Term) :=
     | lam l => some l
     | _ => none
 
+def isSubType (type1: Term) (type2: Term): Bool := type1 == type2
+
 mutual
-partial def reduceSequential? [Repr F] [Frame F] (frame: F) (termList: List Term): Option (F × List (InferedTerm)) :=
+partial def reduceSequential? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (F × List (InferedTerm)) :=
   -- reduce sequentially so that dependent type is captured properly
-  Util.statefulMap? termList frame (λ frame term => do
+  Util.statefulMap? terms frame (λ frame term => do
     let (frame, iterm) ← reduce? frame term
     pure (frame, iterm)
   )
 
-partial def reduceParamsType? [Repr F] [Frame F] (frame: F) (paramList: List (Ann Term)): Option (F × List (Ann InferedTerm)) :=
-  Util.statefulMap? paramList frame (λ frame param => do
+partial def reduceParamsType? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)): Option (F × List (Ann InferedTerm)) :=
+  Util.statefulMap? params frame (λ frame param => do
     let (frame, itype) ← reduce? frame param.type
     pure (frame, {
       name := param.name,
       type := itype,
     })
   )
+
+partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann InferedTerm)) (iArgs: List InferedTerm): Option F := do
+  if iParams.length = 0 ∧ iArgs.length = 0 then
+    pure frame
+  else
+    let iParam ← iParams.head?
+    let iArg ← iArgs.head?
+
+    if iArg.type != iParam.type.term then
+      none
+    else
+      let frame := Frame.set frame iParam.name iArg
+      let iParams := iParams.extract 1
+      let iArgs := iArgs.extract 1
+      bindParamsWithArgs frame iParams iArgs
 
 
 partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × InferedTerm) := do
@@ -52,7 +69,6 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       })
 
     | var name =>
-      dbg_trace s!"# 1 var {term} with frame \n{repr frame}"
       let iterm ← Frame.get? frame name
       pure (oldFrame, iterm)
 
@@ -111,9 +127,17 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       let (_, iArgs) ← reduceSequential? frame x.args
       let lamCmd ← isLam? iCmd.term
 
+      let (paramsFrame, iParams) ← reduceParamsType? frame lamCmd.params
+      let (_, iType) ← reduce? paramsFrame lamCmd.type
 
-      none
-      -- TODO - for level 0, do reduce if only specified for level > 1 reduce
+      let argsFrame ← bindParamsWithArgs frame iParams iArgs
+
+      let (_, output) ← reduce? argsFrame lamCmd.body
+
+      if output.type != iType.term then
+        none
+      else
+        pure (oldFrame, output)
     | mat x => none
 
 end
