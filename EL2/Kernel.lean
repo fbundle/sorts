@@ -45,7 +45,7 @@ partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann
       let iArgs := iArgs.extract 1
       bindParamsWithArgs frame iParams iArgs
 
-partial def matchCases (inhCond: Inh Term) (cases: List (Case Term)): Option (Lst Term) := do
+partial def matchCases (inhCond: Inh Term) (cases: List (Case Term)): Option (Bnd Term) := do
   let headCase ← cases.head?
   if inhCond.cons = headCase.patCmd ∧ inhCond.args.length = headCase.patArgs.length then
     let init: List (Bind Term) := (List.zip headCase.patArgs inhCond.args).map (λ (name, value) => {
@@ -65,7 +65,7 @@ mutual
 partial def reduceMany? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (List (InferedTerm)) :=
   Util.optionMap? terms (reduce? frame)
 
-partial def reduceLst? [Repr F] [Frame F] (frame: F) (l: Lst Term): Option InferedTerm := do
+partial def reduceBnd? [Repr F] [Frame F] (frame: F) (l: Bnd Term): Option InferedTerm := do
   let (frame, _) ← Util.statefulMap? l.init frame (λ frame {name, value} => do
     let iValue ← reduce? frame value
     let frame := Frame.set frame name iValue
@@ -135,7 +135,7 @@ partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option InferedTe
       let iType ← reduce? frame iValue.type
       pure iType
 
-    | lst x =>
+    | bnd x =>
       let (frame, _) ← Util.statefulMap? x.init frame (λ frame {name, value} => do
         let iValue ← reduce? frame value
         let frame := Frame.set frame name iValue
@@ -189,7 +189,7 @@ partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option InferedTe
 
       let terms ← matchCases inhCond x.cases
 
-      reduce? frame (lst terms)
+      reduce? frame (bnd terms)
 end
 
 partial def fill? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × Term) :=

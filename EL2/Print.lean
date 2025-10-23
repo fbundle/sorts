@@ -41,7 +41,7 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
     | var name =>
       [name]
 
-    | lst {init, last} =>
+    | bnd {init, last} =>
       if init.length = 0 then
         [ctx.print last]
       else

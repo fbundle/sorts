@@ -5,7 +5,7 @@ namespace EL2_EXAMPLE
 open EL2
 
 
-def term : Term := lst {
+def term : Term := bnd {
   init := [
     -- inductive Nat : U_1 where
     --  | zero: inh [] Nat 1
