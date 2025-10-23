@@ -91,6 +91,11 @@ def termList : List Term := [
       },
     },
   },
+
+  app {
+    cmd := var "append_if_empty",
+    args := [var "zero", var "Nat", var "nil", var "one"],
+  },
 ]
 
 end EL2_EXAMPLE
