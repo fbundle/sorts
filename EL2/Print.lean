@@ -41,15 +41,14 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
     | var name =>
       [name]
 
-    | lst {init, last} =>
+    | bnd {init, last} =>
       if init.length = 0 then
         [ctx.print last]
       else
-        let parts := (init ++ [last]).map (λ x => ctx.indentStr ++ (ctx.withIndent.print x) ++ "\n")
-        ["\n" ++ String.join parts]
-
-    | bind {name, value} =>
-      ["bind", name, ctx.print value]
+        let parts := init.map (λ {name, value} =>
+          ctx.indentStr ++ (printList [name, ":=", ctx.print value]) ++ "\n"
+        )
+        ["\n" ++ String.join parts] ++ [ctx.indentStr ++ (ctx.print last) ++ "\n"]
 
     | lam {params, type, body} =>
       params.map (λ {name, type} =>

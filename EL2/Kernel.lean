@@ -45,15 +45,15 @@ partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann
       let iArgs := iArgs.extract 1
       bindParamsWithArgs frame iParams iArgs
 
-partial def matchCases (inhCond: Inh Term) (cases: List (Case Term)): Option (Lst Term) := do
+partial def matchCases (inhCond: Inh Term) (cases: List (Case Term)): Option (Bnd Term) := do
   let headCase ← cases.head?
   if inhCond.cons = headCase.patCmd ∧ inhCond.args.length = headCase.patArgs.length then
-    let binds := (List.zip headCase.patArgs inhCond.args).map (λ (name, value) => bind {
+    let init: List (Bind Term) := (List.zip headCase.patArgs inhCond.args).map (λ (name, value) => {
       name := name,
       value := value,
     })
     pure {
-      init := binds,
+      init := init,
       last := headCase.value,
     }
   else
@@ -62,25 +62,29 @@ partial def matchCases (inhCond: Inh Term) (cases: List (Case Term)): Option (Ls
 
 
 mutual
-partial def reduceList? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (F × List (InferedTerm)) :=
-  -- reuse frame for sequential operations
-  Util.statefulMap? terms frame (λ frame term => do
-    let (frame, iterm) ← reduce? frame term
-    pure (frame, iterm)
+partial def reduceMany? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (List (InferedTerm)) :=
+  Util.optionMap? terms (reduce? frame)
+
+partial def reduceBnd? [Repr F] [Frame F] (frame: F) (l: Bnd Term): Option InferedTerm := do
+  let (frame, _) ← Util.statefulMap? l.init frame (λ frame {name, value} => do
+    let iValue ← reduce? frame value
+    let frame := Frame.set frame name iValue
+    some (frame, iValue)
   )
+  reduce? frame l.last
 
 partial def reduceParams? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)): Option (F × List (Ann InferedTerm)) := do
   -- reduce and bind params with dummy values
   -- reuse frame so that dependent type (Pi, Sigma) is captured
   let counter: F × Int := (frame, 0)
   let ((frame, count), iParams) ← Util.statefulMap? params counter ((λ (frame, count) param => do
-    let (frame, itype) ← reduce? frame param.type
+    let itype ← reduce? frame param.type
     let dummyTerm := inh {
       type := itype.term,
       cons := dummyName count,
       args := [],
     }
-    let (frame, dummyITerm) ← reduce? frame dummyTerm
+    let dummyITerm ← reduce? frame dummyTerm
     let frame := Frame.set frame param.name dummyITerm
     pure ((frame, count + 1), {
       name := param.name,
@@ -93,31 +97,30 @@ partial def reduceParams? [Repr F] [Frame F] (frame: F) (params: List (Ann Term)
 partial def reduceCases? [Repr F] [Frame F] (frame: F) (cases: List (Case Term)): Option (F × List (Case InferedTerm)) := do
   let oldFrame := frame
   let iCases ← Util.optionMap? cases ((λ {patCmd, patArgs, value} => do
-    let (_, iValue) ← reduce? frame value
+    let iValue ← reduce? frame value
     pure {patCmd := patCmd, patArgs := patArgs, value := iValue}
   ): Case Term → Option (Case InferedTerm))
 
   pure (oldFrame, iCases)
 
-partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × InferedTerm) := do
-  let oldFrame := frame -- for update
+partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option InferedTerm := do
   dbg_trace s!"#1 {term}"
   match term with
     | univ level =>
-      pure (oldFrame, {
+      pure {
         term := univ level,
         type := univ level+1,
         level := level + 1, -- univ 1 is at level 2, Nat: univ 1, then Nat is at level 1
-      })
+      }
 
     | var name =>
       let iterm ← Frame.get? frame name
-      pure (oldFrame, iterm)
+      pure iterm
 
     | inh x =>
-      let (_, iType) ← reduce? frame x.type
-      let (_, iArgs) ← reduceList? frame x.args
-      pure (oldFrame, {
+      let iType ← reduce? frame x.type
+      let iArgs ← reduceMany? frame x.args
+      pure {
         term := inh {
           type := iType.term,
           cons := x.cons,
@@ -125,30 +128,30 @@ partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × Inf
         },
         type := iType.term,
         level := iType.level - 1,
-      })
+      }
 
     | typ x =>
-      let (_, iValue) ← reduce? frame x.value
-      let (_, iType) ← reduce? frame iValue.type
-      pure (oldFrame, iType)
+      let iValue ← reduce? frame x.value
+      let iType ← reduce? frame iValue.type
+      pure iType
 
-    | lst x =>
-      let (initFrame, _) ← reduceList? frame x.init
-      reduce? initFrame x.last
-
-    | bind x =>
-      let (_, iValue) ← reduce? frame x.value
-      pure (Frame.set oldFrame x.name iValue, iValue)
+    | bnd x =>
+      let (frame, _) ← Util.statefulMap? x.init frame (λ frame {name, value} => do
+        let iValue ← reduce? frame value
+        let frame := Frame.set frame name iValue
+        some (frame, iValue)
+      )
+      reduce? frame x.last
 
     | lam x =>
       let (paramsFrame, iParams) ← reduceParams? frame x.params
-      let (_, iType) ← reduce? paramsFrame x.type
+      let iType ← reduce? paramsFrame x.type
 
 
       let rParams := iParams.map (λ iparam => {name := iparam.name, type := iparam.type.term : Ann Term})
       let rLevel := (iParams.map (λ iparam => iparam.type.level)).foldl max iType.level
 
-      pure (oldFrame, {
+      pure {
         term := lam {
           params := rParams,
           type := iType.term,
@@ -162,31 +165,31 @@ partial def reduce? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × Inf
           }
         },
         level := rLevel,
-      })
+      }
 
     | app x =>
-      let (_, iCmd) ← reduce? frame x.cmd
-      let (_, iArgs) ← reduceList? frame x.args
+      let iCmd ← reduce? frame x.cmd
+      let iArgs ← reduceMany? frame x.args
       let lamCmd ← isLam? iCmd.term
 
       let (paramsFrame, iParams) ← reduceParams? frame lamCmd.params
-      let (_, iType) ← reduce? paramsFrame lamCmd.type
+      let iType ← reduce? paramsFrame lamCmd.type
 
       let argsFrame ← bindParamsWithArgs frame iParams iArgs
 
-      let (_, output) ← reduce? argsFrame lamCmd.body
+      let output ← reduce? argsFrame lamCmd.body
 
       if ¬ isSubType output.type iType.term then
         none
       else
-        pure (oldFrame, output)
+        pure output
     | mat x =>
-      let (_, iCond) ← reduce? frame x.cond
+      let iCond ← reduce? frame x.cond
       let inhCond ← isInh? iCond.term
 
       let terms ← matchCases inhCond x.cases
 
-      reduce? frame (lst terms)
+      reduce? frame (bnd terms)
 end
 
 partial def fill? [Repr F] [Frame F] (frame: F) (term: Term): Option (F × Term) :=
