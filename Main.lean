@@ -119,7 +119,7 @@ def main  : IO Unit := do
   )
 
   for iterm in itermList do
-    IO.println s!"{repr iterm}"
+    IO.println s!"{iterm}"
 
   if h: termList.length > itermList.length then
     IO.println s!"failed at {termList[itermList.length]'h}"
