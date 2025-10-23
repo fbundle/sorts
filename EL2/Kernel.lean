@@ -22,7 +22,8 @@ def isLam? (term: Term): Option (Lam Term) :=
     | lam l => some l
     | _ => none
 
-def isSubType (type1: Term) (type2: Term): Bool := type1 == type2
+def isSubType (type1: Term) (type2: Term): Bool :=
+  type1 == type2
 
 mutual
 partial def reduceSequential? [Repr F] [Frame F] (frame: F) (terms: List Term): Option (F × List (InferedTerm)) :=
@@ -48,7 +49,7 @@ partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann
     let iParam ← iParams.head?
     let iArg ← iArgs.head?
 
-    if iArg.type != iParam.type.term then
+    if ¬ isSubType iArg.type iParam.type.term then
       none
     else
       let frame := Frame.set frame iParam.name iArg
@@ -134,7 +135,7 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
 
       let (_, output) ← reduce? argsFrame lamCmd.body
 
-      if output.type != iType.term then
+      if ¬ isSubType output.type iType.term then
         none
       else
         pure (oldFrame, output)
