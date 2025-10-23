@@ -1,4 +1,5 @@
 import EL2.Term
+import EL2.TermNot
 import EL2.Util
 import EL2.Print -- for debugging
 
