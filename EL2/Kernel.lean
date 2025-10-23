@@ -15,21 +15,29 @@ class Frame F where
 
 def dummyName (i: Int): String := s!"dummy_{i}"
 
+def isLam? (term: Term): Option (Lam Term) :=
+  match term with
+    | lam l => some l
+    | _ => none
 
-partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × InferedTerm) := do
-  let inferMany? (frame: F) (termList: List Term): Option (F × List (InferedTerm)) :=
+mutual
+partial def reduceMany? [Repr F] [Frame F] (frame: F) (termList: List Term): Option (F × List (InferedTerm)) :=
     Util.statefulMap? termList frame (λ frame term => do
       let (frame, iterm) ← reduce? frame term
       pure (frame, iterm)
     )
 
+partial def reduceManyAnn? [Repr F] [Frame F] (frame: F) (annList: List (Ann Term)): Option (F × List (Ann InferedTerm)) :=
+  Util.statefulMap? annList frame (λ frame ann => do
+    let (frame, itype) ← reduce? frame ann.type
+    pure (frame, {
+      name := ann.name,
+      type := itype,
+    })
+  )
 
+partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × InferedTerm) := do
   let frame := oldFrame -- for update
-
-  let isLam? (term: Term): Option (Lam Term) :=
-    match term with
-      | lam l => some l
-      | _ => none
 
   match term with
     | univ level =>
@@ -45,7 +53,7 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
 
     | inh x =>
       let (_, iType) ← reduce? frame x.type
-      let (_, iArgs) ← inferMany? frame x.args
+      let (_, iArgs) ← reduceMany? frame x.args
       pure (oldFrame, {
         term := inh {
           type := iType.term,
@@ -62,18 +70,22 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       pure (oldFrame, iType)
 
     | lst x =>
-      let (initFrame, _) ← inferMany? frame x.init
+      let (initFrame, _) ← reduceMany? frame x.init
       reduce? initFrame x.last
 
     | bind x =>
       let (_, iValue) ← reduce? frame x.value
       pure (Frame.set oldFrame x.name iValue, iValue)
 
-    | lam x => none
+    | lam x =>
+      let (_, iparams) ← reduceManyAnn? frame x.params
+
+      none
     | app x => none
       -- TODO - for level 0, do reduce if only specified for level > 1 reduce
     | mat x => none
 
+end
 
 
 end EL2
