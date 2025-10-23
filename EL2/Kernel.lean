@@ -59,7 +59,7 @@ partial def bindParamsWithArgs [Repr F] [Frame F] (frame: F) (iParams: List (Ann
 
 partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × InferedTerm) := do
   let frame := oldFrame -- for update
-  dbg_trace s!"# 1 {term} with frame \n{repr frame}"
+  dbg_trace s!"#1 {term} with frame \n{repr frame}"
   match term with
     | univ level =>
       pure (oldFrame, {
