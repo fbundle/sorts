@@ -10,14 +10,14 @@ structure Typ (α: Type) where
   value: α
   deriving Repr, BEq
 
-structure Lst (α: Type) where
-  init: List α -- consider changin this into List (Bind α)
-  last: α
-  deriving Repr, BEq
-
 structure Bind (α: Type) where
   name: String
   value: α
+  deriving Repr, BEq
+
+structure Lst (α: Type) where
+  init: List (Bind α)
+  last: α
   deriving Repr, BEq
 
 structure Ann (α: Type) where
@@ -54,7 +54,6 @@ inductive T (α: Type) where
   | inh: Inh α → T α
   | typ: Typ α → T α
   | lst: Lst α → T α
-  | bind: Bind α → T α
   | lam: Lam α → T α
   | app: App α → T α
   | mat: Mat α → T α
@@ -69,7 +68,6 @@ notation "var" x => Term.t (T.var x)
 notation "inh" x => Term.t (T.inh x)
 notation "typ" x => Term.t (T.typ x)
 notation "lst" x => Term.t (T.lst x)
-notation "bind" x => Term.t (T.bind x)
 notation "lam" x => Term.t (T.lam x)
 notation "app" x => Term.t (T.app x)
 notation "mat" x => Term.t (T.mat x)
