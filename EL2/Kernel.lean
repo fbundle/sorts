@@ -30,7 +30,7 @@ partial def reduceSequential? [Repr F] [Frame F] (frame: F) (termList: List Term
     pure (frame, iterm)
   )
 
-partial def bindParams? [Repr F] [Frame F] (frame: F) (paramList: List (Ann Term)): Option (F × List (Ann InferedTerm)) :=
+partial def reduceParamsType? [Repr F] [Frame F] (frame: F) (paramList: List (Ann Term)): Option (F × List (Ann InferedTerm)) :=
   Util.statefulMap? paramList frame (λ frame param => do
     let (frame, itype) ← reduce? frame param.type
     pure (frame, {
@@ -82,17 +82,33 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       pure (Frame.set oldFrame x.name iValue, iValue)
 
     | lam x =>
-      let paramsType := x.params.map (λ param => param.type)
-      let (paramsFrame, iParamType) ← reduceSequential? frame paramsType
+      let (paramsFrame, iParams) ← reduceParamsType? frame x.params
       let (_, iType) ← reduce? paramsFrame x.type
-      
 
-      none
+
+      let rParams := iParams.map (λ iparam => {name := iparam.name, type := iparam.type.term : Ann Term})
+      let rLevel := (iParams.map (λ iparam => iparam.type.level)).foldl max iType.level
+
+      pure (oldFrame, {
+        term := lam {
+          params := rParams,
+          type := iType.term,
+          body := x.body,
+        },
+        type := lam {
+          params := rParams,
+          type := iType.type,
+          body := typ {
+            value := x.body,
+          }
+        },
+        level := rLevel,
+      })
+
     | app x =>
       let (_, iCmd) ← reduce? frame x.cmd
       let (_, iArgs) ← reduceSequential? frame x.args
       let lamCmd ← isLam? iCmd.term
-      let (_, iParams) ← bindParams? frame lamCmd.params
 
 
       none
