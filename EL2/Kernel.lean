@@ -52,6 +52,7 @@ partial def reduce? [Repr F] [Frame F] (oldFrame: F) (term: Term): Option (F × 
       })
 
     | var name =>
+      dbg_trace s!"# 1 var {term} with frame \n{repr frame}"
       let iterm ← Frame.get? frame name
       pure (oldFrame, iterm)
 
