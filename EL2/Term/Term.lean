@@ -47,7 +47,8 @@ structure Mat (α: Type) where
   deriving Repr, BEq
 
 inductive T (α: Type) where
-  -- | hole: T α -- sorry
+  -- | hole: T α -- like sorry, just to fill in the blank
+  -- | trace: α → α -- print alpha
   | univ: (level: Int) → T α
   | var: (name: String) → T α
   | inh: Inh α → T α
