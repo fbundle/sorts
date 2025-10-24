@@ -135,6 +135,29 @@ partial def reduceBnd? [Repr F] [Frame F InferedTerm] (frame: F) (x: Bnd Term): 
   )
   reduceTerm? frame x.last
 
+partial def reduceLam? [Repr F] [Frame F InferedTerm] (frame: F) (x: Lam Term): Option InferedTerm := do
+  let (paramsFrame, iParams) ← reduceParams? frame x.params
+  let iType ← reduceTerm? paramsFrame x.type
+
+  let rParams := iParams.map (λ iparam => {name := iparam.name, type := iparam.type.term : Ann Term})
+  let rLevel := (iParams.map (λ iparam => iparam.type.level)).foldl max iType.level
+
+  pure {
+    term := lam {
+      params := rParams,
+      type := iType.term,
+      body := x.body,
+    },
+    type := lam {
+      params := rParams,
+      type := iType.type,
+      body := typ {
+        value := x.body,
+      }
+    },
+    level := rLevel,
+  }
+
 partial def reduceTerm? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
   dbg_trace s!"#1 {term}"
   match term with
@@ -147,29 +170,7 @@ partial def reduceTerm? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): 
 
     | bnd x => reduceBnd? frame x
 
-    | lam x =>
-      let (paramsFrame, iParams) ← reduceParams? frame x.params
-      let iType ← reduceTerm? paramsFrame x.type
-
-
-      let rParams := iParams.map (λ iparam => {name := iparam.name, type := iparam.type.term : Ann Term})
-      let rLevel := (iParams.map (λ iparam => iparam.type.level)).foldl max iType.level
-
-      pure {
-        term := lam {
-          params := rParams,
-          type := iType.term,
-          body := x.body,
-        },
-        type := lam {
-          params := rParams,
-          type := iType.type,
-          body := typ {
-            value := x.body,
-          }
-        },
-        level := rLevel,
-      }
+    | lam x => reduceLam? frame x
 
     | app x =>
       let iCmd ← reduceTerm? frame x.cmd
