@@ -14,6 +14,10 @@ structure InferedTerm where
   type: Term
   deriving Repr
 
+instance: ToString InferedTerm where
+  toString (iterm: InferedTerm) :=
+    s!"term: {iterm.term} type {iterm.type}"
+
 def isLam? (term: Term): Option (Lam Term) :=
   match term with
     | lam l => some l
@@ -52,10 +56,12 @@ partial def reduceMany? [Repr F] [Frame F InferedTerm] (frame: F) (terms: List T
 
 partial def reduceUniv? [Repr F] [Frame F InferedTerm] (frame: F) (level: Int): Option InferedTerm := do
   dbg_trace s!"reduce univ {univ level}"
-  pure {
+  let output := {
     term := univ level,
     type := univ level+1,
   }
+  dbg_trace s!"reduce univ ok {output}"
+  pure output
 
 partial def reduceVar? [Repr F] [Frame F InferedTerm] (frame: F) (name: String): Option InferedTerm := do
   dbg_trace s!"reduce var {var name}"
