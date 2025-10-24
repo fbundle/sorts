@@ -62,5 +62,22 @@ inductive Term where
   | t: T Term → Term
   deriving Repr, BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
+notation "univ" x => Term.t (T.univ x)
+notation "var" x => Term.t (T.var x)
+notation "inh" x => Term.t (T.inh x)
+notation "typ" x => Term.t (T.typ x)
+notation "bnd" x => Term.t (T.bnd x)
+notation "lam" x => Term.t (T.lam x)
+notation "app" x => Term.t (T.app x)
+notation "mat" x => Term.t (T.mat x)
+
+class Frame F α where
+  set: F → String → α → F
+  get?: F → String → Option α
+
+structure InferedTerm where
+  term: Term
+  type: Term
+  deriving Repr
 
 end EL2.Term

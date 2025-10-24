@@ -1,6 +1,4 @@
 import EL2.Term.Term
-import EL2.Term.TermNot
-
 
 namespace EL2.Term
 
@@ -86,5 +84,11 @@ instance : ToString Term where
 instance: Repr Term where
   reprPrec (term: Term) (prec: Nat): Std.Format := toString term
 
+instance: ToString InferedTerm where
+  toString (iterm: InferedTerm) :=
+    s!"term: {iterm.term} type: {iterm.type}"
+
+instance: Repr InferedTerm where
+  reprPrec (iterm: InferedTerm) (prec: Nat): Std.Format := toString iterm
 
 end EL2.Term

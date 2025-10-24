@@ -1,22 +1,8 @@
 import EL2.Term.Term
-import EL2.Term.TermNot
-import EL2.Term.Util
 import EL2.Term.Print
+import EL2.Term.Util
 
 namespace EL2.Term
-
-class Frame F α where
-  set: F → String → α → F
-  get?: F → String → Option α
-
-structure InferedTerm where
-  term: Term
-  type: Term
-  deriving Repr
-
-instance: ToString InferedTerm where
-  toString (iterm: InferedTerm) :=
-    s!"term: {iterm.term} type: {iterm.type}"
 
 def isLam? (term: Term): Option (Lam Term) :=
   match term with
