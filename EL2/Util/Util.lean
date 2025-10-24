@@ -1,7 +1,5 @@
 import Std.Data
-namespace EL2
-
-namespace Util
+namespace EL2.Util
 
 def optionMap (xs: List α) (f: α → Option β): List β :=
   let rec loop (ys: Array β) (xs: List α) (f: α → Option β): Array β :=
@@ -90,5 +88,4 @@ def Counter.next (counter: Counter α): Counter α := {
 
 
 
-end Util
-end EL2
+end EL2.Util

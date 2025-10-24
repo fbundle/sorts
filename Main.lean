@@ -1,8 +1,7 @@
 import EL2.EL2
 import Std
 
-namespace EL2_EXAMPLE
-open EL2
+open EL2.Core
 
 
 def term : Term := bnd {
@@ -98,20 +97,17 @@ def term : Term := bnd {
   },
 }
 
-end EL2_EXAMPLE
 
-
-instance: EL2.Frame (Std.HashMap String α) α where
+instance: Frame (Std.HashMap String α) α where
   set := Std.HashMap.insert
   get? := Std.HashMap.get?
 
 def main  : IO Unit := do
-  let term := EL2_EXAMPLE.term
   -- print program
   IO.println s!"[PRINT] {term}"
   -- reduce program
-  let frame: Std.HashMap String EL2.InferedTerm := Std.HashMap.emptyWithCapacity
+  let frame: Std.HashMap String InferedTerm := Std.HashMap.emptyWithCapacity
 
-  match EL2.reduceTerm? frame term with
+  match reduceTerm? frame term with
     | some iterm => IO.println s!"[OK] term: {iterm.term}\ntype: {iterm.type}"
     | none => IO.println "[ERR]"

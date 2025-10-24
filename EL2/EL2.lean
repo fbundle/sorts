@@ -1,4 +1,4 @@
-import EL2.Term
-import EL2.Print
-import EL2.Kernel
-import EL2.TermNot
+import EL2.Core.Term
+import EL2.Core.Print
+import EL2.Core.Kernel
+import EL2.Core.TermNot

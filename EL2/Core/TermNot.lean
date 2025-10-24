@@ -1,6 +1,6 @@
-import EL2.Term
+import EL2.Core.Term
 
-namespace EL2
+namespace EL2.Core
 
 notation "univ" x => Term.t (T.univ x)
 notation "var" x => Term.t (T.var x)
@@ -11,4 +11,4 @@ notation "lam" x => Term.t (T.lam x)
 notation "app" x => Term.t (T.app x)
 notation "mat" x => Term.t (T.mat x)
 
-end EL2
+end EL2.Core
