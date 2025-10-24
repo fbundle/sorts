@@ -157,8 +157,7 @@ def defaultParser :=
     postProcess := infixLeftToRightProcess,
   })
 
-
-
+-- parse a list (a b c) with head
 structure ParseList γ where
   parseHead: List String
   parseList (list: List Form): Option γ
