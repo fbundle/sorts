@@ -49,7 +49,7 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
         let parts := init.map (λ {name, value} =>
           ctx.indentStr ++ (printList [name, ":=", ctx.nextIndent.print value]) ++ "\n"
         )
-        ["\n" ++ String.join parts] ++ [ctx.indentStr ++ (ctx.nextIndent.print last) ++ "\n"]
+        ["\n" ++ String.join parts] ++ [ctx.indentStr ++ (ctx.print last) ++ "\n"]
 
     | lam {params, body} =>
       params.map (λ {name, type} =>
