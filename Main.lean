@@ -123,6 +123,6 @@ def main  : IO Unit := do
   -- reduce program
   let frame: Std.HashMap String EL2.InferedTerm := Std.HashMap.emptyWithCapacity
 
-  match EL2.reduce? frame term with
+  match EL2.reduceTerm? frame term with
     | some iterm => IO.println s!"term: {iterm.term}\ntype: {iterm.type}\nlevel: {iterm.level}"
     | none => IO.println "error"
