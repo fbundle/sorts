@@ -1,6 +1,6 @@
 import EL2.Term.Term
 import EL2.Term.TermNot
-import EL2.Util.Util
+import EL2.Term.Util
 import EL2.Term.Print
 
 namespace EL2.Term
