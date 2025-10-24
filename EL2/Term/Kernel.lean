@@ -14,14 +14,15 @@ def isInh? (term: Term): Option (Inh Term) :=
     | inh i => some i
     | _ => none
 
-def isSubType (type1: Term) (type2: Term): Bool :=
-  type1 == type2
 
 partial def normalizeType [Repr F] [Frame F String] (frame: F) (term: Term): Term :=
   -- TODO
   -- rename all parameters into _name_<count> where count = frame.size save into frame
   -- rename all variables according frame
   term
+
+def isSubType (type1: Term) (type2: Term): Bool :=
+  type1 == type2
 
 partial def matchCases? (inhCond: Inh Term) (cases: List (Case Term)): Option (Bnd Term) := do
   let headCase ← cases.head?
