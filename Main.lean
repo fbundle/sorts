@@ -1,7 +1,7 @@
 import EL2.EL2
 import Std
 
-open EL2.Core
+open EL2.Term
 
 
 def term : Term := bnd {

@@ -1,4 +1,4 @@
-namespace EL2.Core
+namespace EL2.Term
 
 structure Inh (α: Type) where
   type: α
@@ -63,4 +63,4 @@ inductive Term where
   deriving Repr, BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
 
-end EL2.Core
+end EL2.Term

@@ -1,8 +1,8 @@
-import EL2.Core.Term
-import EL2.Core.TermNot
+import EL2.Term.Term
+import EL2.Term.TermNot
 
 
-namespace EL2.Core
+namespace EL2.Term
 
 structure PrintCtx where
   indentNum: Nat
@@ -87,4 +87,4 @@ instance: Repr Term where
   reprPrec (term: Term) (prec: Nat): Std.Format := toString term
 
 
-end EL2.Core
+end EL2.Term

@@ -1,9 +1,9 @@
-import EL2.Core.Term
-import EL2.Core.TermNot
+import EL2.Term.Term
+import EL2.Term.TermNot
 import EL2.Util.Util
-import EL2.Core.Print
+import EL2.Term.Print
 
-namespace EL2.Core
+namespace EL2.Term
 
 class Frame F α where
   set: F → String → α → F
@@ -192,4 +192,4 @@ partial def inferType? [Repr F] [ListFrame F (List InferedTerm)] (frame: F) (ter
 
 end
 
-end EL2.Core
+end EL2.Term
