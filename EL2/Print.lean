@@ -8,7 +8,7 @@ structure PrintCtx where
   indentNum: Nat
   indentSize: Nat
 
-def PrintCtx.withIndent (ctx: PrintCtx): PrintCtx := {
+def PrintCtx.nextIndent (ctx: PrintCtx): PrintCtx := {
   ctx with
   indentNum := ctx.indentNum+1
 }
@@ -47,9 +47,9 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
         [ctx.print last]
       else
         let parts := init.map (λ {name, value} =>
-          ctx.indentStr ++ (printList [name, ":=", ctx.print value]) ++ "\n"
+          ctx.indentStr ++ (printList [name, ":=", ctx.nextIndent.print value]) ++ "\n"
         )
-        ["\n" ++ String.join parts] ++ [ctx.indentStr ++ (ctx.print last) ++ "\n"]
+        ["\n" ++ String.join parts] ++ [ctx.indentStr ++ (ctx.nextIndent.print last) ++ "\n"]
 
     | lam {params, body} =>
       params.map (λ {name, type} =>
@@ -78,7 +78,7 @@ end
 
 instance : ToString Term where
   toString (c: Term) := {
-    indentNum := 0,
+    indentNum := 1,
     indentSize := 2,
     :PrintCtx
   }.print c

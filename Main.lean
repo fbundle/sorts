@@ -94,7 +94,7 @@ def term : Term := bnd {
   ],
   last := app {
     cmd := var "append_if_empty",
-    args := [var "zero", var "Nat", var "nil", var "one"],
+    args := [var "zero", var "Nat", app {cmd := var "nil", args := [var "Nat"]}, var "one"],
   },
 }
 
@@ -108,10 +108,10 @@ instance: EL2.Frame (Std.HashMap String α) α where
 def main  : IO Unit := do
   let term := EL2_EXAMPLE.term
   -- print program
-  IO.println term
+  IO.println s!"[PRINT] {term}"
   -- reduce program
   let frame: Std.HashMap String EL2.InferedTerm := Std.HashMap.emptyWithCapacity
 
   match EL2.reduceTerm? frame term with
-    | some iterm => IO.println s!"term: {iterm.term}\ntype: {iterm.type}"
-    | none => IO.println "error"
+    | some iterm => IO.println s!"[OK] term: {iterm.term}\ntype: {iterm.type}"
+    | none => IO.println "[ERR]"
