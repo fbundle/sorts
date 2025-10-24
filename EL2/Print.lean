@@ -51,11 +51,11 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
         )
         ["\n" ++ String.join parts] ++ [ctx.indentStr ++ (ctx.print last) ++ "\n"]
 
-    | lam {params, type, body} =>
+    | lam {params, body} =>
       params.map (λ {name, type} =>
         s!"({name}: {ctx.print type})"
       ) ++
-      [":", ctx.print type, "=>", ctx.print body]
+      ["=>", ctx.print body]
 
     | app {cmd, args} =>
       [ctx.print cmd] ++

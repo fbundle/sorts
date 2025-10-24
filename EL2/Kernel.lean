@@ -12,7 +12,6 @@ class Frame F α where
 structure InferedTerm where
   term: Term
   type: Term
-  level: Int
   deriving Repr
 
 
@@ -30,21 +29,6 @@ def isInh? (term: Term): Option (Inh Term) :=
 
 def isSubType (type1: Term) (type2: Term): Bool :=
   type1 == type2
-
-partial def bindParamsWithArgs [Repr F] [Frame F InferedTerm] (frame: F) (iParams: List (Ann InferedTerm)) (iArgs: List InferedTerm): Option F := do
-  if iParams.length = 0 ∧ iArgs.length = 0 then
-    pure frame
-  else
-    let iParam ← iParams.head?
-    let iArg ← iArgs.head?
-
-    if ¬ isSubType iArg.type iParam.type.term then
-      none
-    else
-      let frame := Frame.set frame iParam.name iArg
-      let iParams := iParams.extract 1
-      let iArgs := iArgs.extract 1
-      bindParamsWithArgs frame iParams iArgs
 
 partial def matchCases (inhCond: Inh Term) (cases: List (Case Term)): Option (Bnd Term) := do
   -- TODO make dummy name match every -> return a list of terms
@@ -103,7 +87,6 @@ partial def reduceUniv? [Repr F] [Frame F InferedTerm] (frame: F) (level: Int): 
   some {
     term := univ level,
     type := univ level+1,
-    level := level + 1, -- univ 1 is at level 2, Nat: univ 1, then Nat is at level 1
   }
 
 partial def reduceVar? [Repr F] [Frame F InferedTerm] (frame: F) (name: String): Option InferedTerm :=
@@ -119,7 +102,6 @@ partial def reduceInh? [Repr F] [Frame F InferedTerm] (frame: F) (x: Inh Term): 
       args := iArgs.map (λ iterm => iterm.term),
     },
     type := iType.term,
-    level := iType.level - 1,
   }
 
 partial def reduceTyp? [Repr F] [Frame F InferedTerm] (frame: F) (x: Typ Term): Option InferedTerm := do
@@ -136,43 +118,39 @@ partial def reduceBnd? [Repr F] [Frame F InferedTerm] (frame: F) (x: Bnd Term): 
   reduceTerm? frame x.last
 
 partial def reduceLam? [Repr F] [Frame F InferedTerm] (frame: F) (x: Lam Term): Option InferedTerm := do
-  let (paramsFrame, iParams) ← reduceParams? frame x.params
-  let iType ← reduceTerm? paramsFrame x.type
-
-  let rParams := iParams.map (λ iparam => {name := iparam.name, type := iparam.type.term : Ann Term})
-  let rLevel := (iParams.map (λ iparam => iparam.type.level)).foldl max iType.level
-
   pure {
-    term := lam {
-      params := rParams,
-      type := iType.term,
-      body := x.body,
-    },
+    term := lam x,
     type := lam {
-      params := rParams,
-      type := iType.type,
+      params := x.params,
       body := typ {
         value := x.body,
       }
     },
-    level := rLevel,
   }
+
+partial def bindParamsWithArgs? [Repr F] [Frame F InferedTerm] (frame: F) (params: List (Ann Term)) (args: List Term): Option F := do
+  if params.length = 0 ∧ args.length = 0 then
+    pure frame
+  else
+    let param ← params.head?
+    let arg ← args.head?
+
+    let iParamType ← reduceTerm? frame param.type
+    let iArg ← reduceTerm? frame arg
+
+    if ¬ isSubType iArg.type iParamType.term then
+      none
+    else
+      let frame := Frame.set frame param.name iArg
+      let params := params.extract 1
+      let args := args.extract 1
+      bindParamsWithArgs? frame params args
+
 partial def reduceApp? [Repr F] [Frame F InferedTerm] (frame: F) (x: App Term): Option InferedTerm := do
   let iCmd ← reduceTerm? frame x.cmd
-  let iArgs ← reduceMany? frame x.args
   let lamCmd ← isLam? iCmd.term
-
-  let (paramsFrame, iParams) ← reduceParams? frame lamCmd.params
-  let iType ← reduceTerm? paramsFrame lamCmd.type
-
-  let argsFrame ← bindParamsWithArgs frame iParams iArgs
-
-  let output ← reduceTerm? argsFrame lamCmd.body
-
-  if ¬ isSubType output.type iType.term then
-    none
-  else
-    pure output
+  let argFrame ← bindParamsWithArgs? frame lamCmd.params x.args
+  reduceTerm? argFrame lamCmd.body
 
 partial def reduceMat? [Repr F] [Frame F InferedTerm] (frame: F) (x: Mat Term): Option InferedTerm := do
   let iCond ← reduceTerm? frame x.cond

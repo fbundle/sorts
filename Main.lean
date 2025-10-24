@@ -22,7 +22,6 @@ def term : Term := bnd {
       name := "succ",
       value := lam {
         params := [{name := "n", type := var "Nat"}],
-        type := var "Nat",
         body := inh {type := var "Nat", cons := "succ", args := [var "n"]},
       },
     },
@@ -32,7 +31,6 @@ def term : Term := bnd {
       name := "Vec",
       value := lam {
         params := [{name := "n", type := var "Nat"}, {name := "T", type := univ 1}],
-        type := univ 1,
         body := inh {type := univ 1, cons := "Vec", args := [var "n", var "T"]},
       },
     },
@@ -40,7 +38,6 @@ def term : Term := bnd {
       name := "nil",
       value := lam {
         params := [{name := "T", type := univ 1}],
-        type := app {cmd := var "Vec", args := [var "zero", var "T"]},
         body := inh {
           type := app {cmd := var "Vec", args := [var "zero", var "T"]},
           cons := "nil", args := [var "T"],
@@ -56,7 +53,6 @@ def term : Term := bnd {
           {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
           {name := "last", type := var "T"},
         ],
-        type := app {cmd := var "Vec", args := [app {cmd := var "succ", args:= [var "n"]}, var "T"]},
         body := inh {
           type := app {cmd := var "Vec", args := [app {cmd := var "succ", args:= [var "n"]}, var "T"]},
           cons := "append", args := [var "n", var "T", var "vec", var "last"],
@@ -86,13 +82,6 @@ def term : Term := bnd {
           {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
           {name := "val", type := var "T"},
         ],
-        type := mat {
-          cond :=  var "n",
-          cases := [
-            {patCmd := "zero", patArgs := [], value := app {cmd := var "Vec", args := [var "one", var "T"]}},
-            {patCmd := "succ", patArgs := ["_"], value := typ {value := app {cmd := var "Vec", args := [var "n", var "T"]}}},
-          ]
-        },
         body := mat {
           cond := var "n",
           cases := [
@@ -124,5 +113,5 @@ def main  : IO Unit := do
   let frame: Std.HashMap String EL2.InferedTerm := Std.HashMap.emptyWithCapacity
 
   match EL2.reduceTerm? frame term with
-    | some iterm => IO.println s!"term: {iterm.term}\ntype: {iterm.type}\nlevel: {iterm.level}"
+    | some iterm => IO.println s!"term: {iterm.term}\ntype: {iterm.type}"
     | none => IO.println "error"
