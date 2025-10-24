@@ -8,7 +8,7 @@ def term : Term := bnd {
   init := [
     -- inductive Nat : U_1 where
     --  | zero: inh [] Nat 1
-    --  | succ: (n: Nat) => inh [n] Nat 1
+    --  | succ: (n: Nat) => inh Nat succ n
     {
       name := "Nat",
       value := inh {type := univ 1, cons := "Nat", args := []},
@@ -25,7 +25,8 @@ def term : Term := bnd {
       },
     },
     -- inductive Vec: U_1 where
-    --  | nil: (T: U_1) => inh
+    --  | nil: (T: U_1) => inh (Vec zero T) nil T
+    --  | append: (n: Nat) (T: U_1) (vec: Vec n T) (last: T) => inh (Vec (succ n) T) append n T vec last
     {
       name := "Vec",
       value := lam {

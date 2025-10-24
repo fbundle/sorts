@@ -2,8 +2,8 @@ namespace EL2.Term
 
 structure Inh (α: Type) where
   type: α
-  cons: String
-  args: List α
+  cons: String -- cons and args make sure object is constructed uniquely
+  args: List α -- i.e. (inh Nat succ zero) = (inh Nat succ zero) by definition
   deriving Repr, BEq
 
 structure Typ (α: Type) where
