@@ -1,7 +1,7 @@
 import Std.Data
 
 
-namespace Form
+namespace EL2.Form
 
 inductive Form where
   | name: String → Form
@@ -172,4 +172,4 @@ def ParseList.parseForm (pl: ParseList γ) (form: Form) : Option γ :=
         none
     | _ => none
 
-end Form
+end EL2.Form
