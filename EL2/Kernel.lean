@@ -157,6 +157,30 @@ partial def reduceLam? [Repr F] [Frame F InferedTerm] (frame: F) (x: Lam Term): 
     },
     level := rLevel,
   }
+partial def reduceApp? [Repr F] [Frame F InferedTerm] (frame: F) (x: App Term): Option InferedTerm := do
+  let iCmd ← reduceTerm? frame x.cmd
+  let iArgs ← reduceMany? frame x.args
+  let lamCmd ← isLam? iCmd.term
+
+  let (paramsFrame, iParams) ← reduceParams? frame lamCmd.params
+  let iType ← reduceTerm? paramsFrame lamCmd.type
+
+  let argsFrame ← bindParamsWithArgs frame iParams iArgs
+
+  let output ← reduceTerm? argsFrame lamCmd.body
+
+  if ¬ isSubType output.type iType.term then
+    none
+  else
+    pure output
+
+partial def reduceMat? [Repr F] [Frame F InferedTerm] (frame: F) (x: Mat Term): Option InferedTerm := do
+  let iCond ← reduceTerm? frame x.cond
+  let inhCond ← isInh? iCond.term
+
+  let terms ← matchCases inhCond x.cases
+
+  reduceTerm? frame (bnd terms)
 
 partial def reduceTerm? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
   dbg_trace s!"#1 {term}"
@@ -172,29 +196,10 @@ partial def reduceTerm? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): 
 
     | lam x => reduceLam? frame x
 
-    | app x =>
-      let iCmd ← reduceTerm? frame x.cmd
-      let iArgs ← reduceMany? frame x.args
-      let lamCmd ← isLam? iCmd.term
+    | app x => reduceApp? frame x
 
-      let (paramsFrame, iParams) ← reduceParams? frame lamCmd.params
-      let iType ← reduceTerm? paramsFrame lamCmd.type
+    | mat x => reduceMat? frame x
 
-      let argsFrame ← bindParamsWithArgs frame iParams iArgs
-
-      let output ← reduceTerm? argsFrame lamCmd.body
-
-      if ¬ isSubType output.type iType.term then
-        none
-      else
-        pure output
-    | mat x =>
-      let iCond ← reduceTerm? frame x.cond
-      let inhCond ← isInh? iCond.term
-
-      let terms ← matchCases inhCond x.cases
-
-      reduceTerm? frame (bnd terms)
 end
 
 partial def fill? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option (F × Term) :=
