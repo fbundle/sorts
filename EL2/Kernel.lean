@@ -50,16 +50,17 @@ mutual
 partial def reduceMany? [Repr F] [Frame F InferedTerm] (frame: F) (terms: List Term): Option (List (InferedTerm)) :=
   Util.optionMap? terms (reduceTerm? frame)
 
-partial def reduceUniv? [Repr F] [Frame F InferedTerm] (frame: F) (level: Int): Option InferedTerm :=
+partial def reduceUniv? [Repr F] [Frame F InferedTerm] (frame: F) (level: Int): Option InferedTerm := do
   dbg_trace s!"reduce univ {univ level}"
-  some {
+  pure {
     term := univ level,
     type := univ level+1,
   }
 
-partial def reduceVar? [Repr F] [Frame F InferedTerm] (frame: F) (name: String): Option InferedTerm :=
+partial def reduceVar? [Repr F] [Frame F InferedTerm] (frame: F) (name: String): Option InferedTerm := do
   dbg_trace s!"reduce var {var name}"
-  Frame.get? frame name
+  let iterm ← Frame.get? frame name
+  pure iterm
 
 partial def reduceInh? [Repr F] [Frame F InferedTerm] (frame: F) (x: Inh Term): Option InferedTerm := do
   dbg_trace s!"reduce inh {inh x}"
