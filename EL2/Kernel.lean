@@ -187,17 +187,11 @@ partial def reduceTerm? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): 
   match term with
     | univ level => reduceUniv? frame level
     | var name => reduceVar? frame name
-
     | inh x => reduceInh? frame x
-
     | typ x => reduceTyp? frame x
-
     | bnd x => reduceBnd? frame x
-
     | lam x => reduceLam? frame x
-
     | app x => reduceApp? frame x
-
     | mat x => reduceMat? frame x
 
 end
