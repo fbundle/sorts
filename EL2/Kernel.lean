@@ -60,13 +60,13 @@ partial def reduceUniv? [Repr F] [Frame F InferedTerm] (frame: F) (level: Int): 
     term := univ level,
     type := univ level+1,
   }
-  dbg_trace s!"reduce_univ_ok {output}"
+  dbg_trace s!"reduce_univ_ok {univ level} → {output}"
   pure output
 
 partial def reduceVar? [Repr F] [Frame F InferedTerm] (frame: F) (name: String): Option InferedTerm := do
   dbg_trace s!"reduce_var {var name}"
   let output ← Frame.get? frame name
-  dbg_trace s!"reduce_var_ok {output}"
+  dbg_trace s!"reduce_var_ok {var name} → {output}"
   pure output
 
 partial def reduceInh? [Repr F] [Frame F InferedTerm] (frame: F) (x: Inh Term): Option InferedTerm := do
@@ -81,14 +81,14 @@ partial def reduceInh? [Repr F] [Frame F InferedTerm] (frame: F) (x: Inh Term): 
     },
     type := iType.term,
   }
-  dbg_trace s!"reduce_inh_ok {output}"
+  dbg_trace s!"reduce_inh_ok {inh x} → {output}"
   pure output
 
 partial def reduceTyp? [Repr F] [Frame F InferedTerm] (frame: F) (x: Typ Term): Option InferedTerm := do
   dbg_trace s!"reduce_typ {typ x}"
   let iValue ← reduceTerm? frame x.value
   let iType ← reduceTerm? frame iValue.type
-  dbg_trace s!"reduce_typ_ok {iType}"
+  dbg_trace s!"reduce_typ_ok {typ x} → {iType}"
   pure iType
 
 partial def reduceBnd? [Repr F] [Frame F InferedTerm] (frame: F) (x: Bnd Term): Option InferedTerm := do
@@ -99,7 +99,7 @@ partial def reduceBnd? [Repr F] [Frame F InferedTerm] (frame: F) (x: Bnd Term): 
     some (frame, iValue)
   )
   let iLast ← reduceTerm? frame x.last
-  dbg_trace s!"reduce_bnd_ok {iLast}"
+  dbg_trace s!"reduce_bnd_ok {bnd x} → {iLast}"
   pure iLast
 
 partial def reduceLam? [Repr F] [Frame F InferedTerm] (frame: F) (x: Lam Term): Option InferedTerm := do
@@ -113,7 +113,7 @@ partial def reduceLam? [Repr F] [Frame F InferedTerm] (frame: F) (x: Lam Term): 
       }
     },
   }
-  dbg_trace s!"reduce_lam_ok {output}"
+  dbg_trace s!"reduce_lam_ok {lam x} → {output}"
   pure output
 
 partial def bindParamsWithArgs? [Repr F] [Frame F InferedTerm] (frame: F) (params: List (Ann Term)) (args: List Term): Option F := do
@@ -140,7 +140,7 @@ partial def reduceApp? [Repr F] [Frame F InferedTerm] (frame: F) (x: App Term): 
   let lamCmd ← isLam? iCmd.term
   let argFrame ← bindParamsWithArgs? frame lamCmd.params x.args
   let iBody ← reduceTerm? argFrame lamCmd.body
-  dbg_trace s!"reduce_app_ok {iBody}"
+  dbg_trace s!"reduce_app_ok {app x} → {iBody}"
   pure iBody
 
 partial def reduceMat? [Repr F] [Frame F InferedTerm] (frame: F) (x: Mat Term): Option InferedTerm := do
@@ -149,7 +149,7 @@ partial def reduceMat? [Repr F] [Frame F InferedTerm] (frame: F) (x: Mat Term): 
   let inhCond ← isInh? iCond.term
   let terms ← matchCases? inhCond x.cases
   let output ← reduceTerm? frame (bnd terms)
-  dbg_trace s!"reduce_mat_ok {output}"
+  dbg_trace s!"reduce_mat_ok {mat x} → {output}"
   pure output
 
 partial def reduceTerm? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
