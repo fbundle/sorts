@@ -133,7 +133,7 @@ def term : Term := bnd {
   --  cmd := var "append_if_empty",
   --  args := [var "zero", var "Nat", app {cmd := var "nil", args := [var "Nat"]}, var "one"],
   --},
-  last := app {cmd := var "id", args := [var "append_if_empty"]},
+  last := app {cmd := var "id", args := [var "append_if_empty"]}, -- TODO make this works
 }
 
 

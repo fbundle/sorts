@@ -87,6 +87,9 @@ def isSubType (type1: Term) (type2: Term): Option Unit := do
   if nType1 == nType2 then
     pure ()
   else
+    dbg_trace s!"[DBG_TRACE] different type"
+    dbg_trace s!"{nType1}"
+    dbg_trace s!"{nType2}"
     none
 
 mutual
