@@ -48,11 +48,15 @@ structure Mat (α: Type) where
   cases: List (Case α)
   deriving Repr, BEq
 
+structure Hole (α: Type) where
+  type: α
+  deriving Repr, BEq
+
 inductive T (α: Type) where
   -- | hole: T α -- like sorry, just to fill in the blank
   -- | trace: α → α -- print alpha
   | inh: Inh α → T α
-  | typ: Typ α → T α
+  | typ: Typ α → T α -- typ is hole - TODO rename
   | bnd: Bnd α → T α
   | lam: Lam α → T α
   | app: App α → T α
@@ -149,7 +153,6 @@ def Term.optionMap? (term: Term) (f: Term → Option Term): Option Term := do
     | .t x =>
       let y ← x.optionMap? f
       Term.t y
-
 
 
 notation "univ" x => Term.univ x

@@ -133,7 +133,7 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
       let (subCtx, iNamedParams) ← Util.statefulMap? x.params ctx (λ subCtx param => do
         let iType ← inferType? subCtx param.type
         let iParamValue := {
-          term := inh {type := param.type, cons := param.name, args := []},
+          term := typ {value := param.type},
           type := param.type,
           level := iType.level - 1,
           : InferedType
@@ -178,7 +178,6 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
       inferType? subCtx iLamCmd.body
 
     | mat x =>
-      let iCond ← inferType? ctx x.cond
       let casesTypeLevel ← Util.optionMap? x.cases (λ case => do
         let iCmd: InferedType ← Context.get? ctx case.patCmd
         match isLam? iCmd.term with
@@ -213,10 +212,16 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
       let casesLevel := casesTypeLevel.map (λ (type, level) => level)
 
       let level ← casesLevel.max?
+
+      let iCond ← inferType? ctx x.cond
+      let cond := match iCond.term with
+        | typ _ => x.cond
+        | _ => iCond.term
+      dbg_trace s!"[DBG_TRACE] cond {x.cond} → {iCond}"
       pure {
         term := term,
         type := mat {
-          cond := iCond.term,
+          cond := cond,
           cases := casesType,
         },
         level := level,
