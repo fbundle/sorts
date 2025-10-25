@@ -209,7 +209,9 @@ partial def reduceMat? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Mat Term)
   pure output
 
 partial def reduceTerm? [Repr F] [NameMap F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
-  let iterm ← match term with
+    -- TODO - currently normalize term doesn't have access to frame
+  -- so it cannot normalize further things like Nat into (inh U_1 Nat)
+  match term with
     | univ level => reduceUniv? frame level
     | var name => reduceVar? frame name
     | inh x => reduceInh? frame x
@@ -220,14 +222,8 @@ partial def reduceTerm? [Repr F] [NameMap F InferedTerm] (frame: F) (term: Term)
     | mat x => reduceMat? frame x
 
 
-  -- TODO - currently normalize term doesn't have access to frame
-  -- so it cannot normalize further things like Nat into (inh U_1 Nat)
-  let type ← renameTerm emptyNameMap iterm.type
 
-  pure {
-    iterm with
-    type := type,
-  }
+
 
 end
 
