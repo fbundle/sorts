@@ -15,11 +15,79 @@ def isInh? (term: Term): Option (Inh Term) :=
     | _ => none
 
 
-partial def normalizeType [Repr F] [Frame F String] (frame: F) (term: Term): Term :=
+partial def normalizeType [Repr F] [Frame F String] (nameMap: F) (term: Term): Option Term := do
   -- TODO
-  -- rename all parameters into _name_<count> where count = frame.size save into frame
+  -- rename all parameters into _name_<count> where count = nameMap.size save into nameMap
   -- rename all variables according frame
-  term
+  match term with
+    | univ _ => term
+    | var name =>
+      match Frame.get? nameMap name with
+        | none => pure term
+        | some newName => pure (var newName)
+    | inh x =>
+      let nType ← normalizeType nameMap x.type
+      let nArgs ← Util.optionMap? x.args (normalizeType nameMap)
+      pure (inh {
+        type := nType,
+        cons := x.cons,
+        args := nArgs,
+      })
+    | typ x =>
+      let nValue ← normalizeType nameMap x.value
+      pure (typ {
+        value := nValue,
+      })
+    | bnd x =>
+      let nInit ← Util.optionMap? x.init (λ {name, value} => do
+        let nValue ← normalizeType nameMap value
+        pure {
+          name := name,
+          value := nValue,
+          : Bind Term
+        }
+      )
+      let nLast ← normalizeType nameMap x.last
+      pure (bnd {
+        init := nInit
+        last := nLast,
+      })
+
+    | lam x =>
+      let (newNameMap, newParams) ← Util.statefulMap? x.params nameMap (λ nameMap param => do
+        let count := Frame.size (α := String) nameMap
+        let newType ← normalizeType nameMap param.type
+        let newName := s!"_name_{count}"
+        let newNameMap := Frame.set nameMap param.name newName
+        some (newNameMap, {name := newName, type := newType : Ann Term})
+      )
+      let newBody ← normalizeType newNameMap x.body
+      pure (lam {
+        params := newParams,
+        body := newBody,
+      })
+    | app x =>
+      let nCmd ← normalizeType nameMap x.cmd
+      let nArgs ← Util.optionMap? x.args (normalizeType nameMap)
+      pure (app {
+        cmd := nCmd,
+        args := nArgs,
+      })
+    | mat x =>
+      let nCond ← normalizeType nameMap x.cond
+      let nCases ← Util.optionMap? x.cases (λ {patCmd, patArgs, value} => do
+        let nValue ← normalizeType nameMap value
+        pure {
+          patCmd := patCmd,
+          patArgs := patArgs,
+          value := nValue,
+          : Case Term
+        }
+      )
+      pure (mat {
+        cond := nCond,
+        cases := nCases,
+      })
 
 def isSubType (type1: Term) (type2: Term): Bool :=
   type1 == type2
