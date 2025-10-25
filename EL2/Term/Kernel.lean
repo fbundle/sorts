@@ -54,18 +54,40 @@ partial def normalizeType [Repr F] [Frame F String] (nameMap: F) (term: Term): O
       })
 
     | lam x =>
-      let x := Util.statefulMap? x.params nameMap (λ nameMap param => do
-        let x := Frame.size nameMap
+      let (newNameMap, newParams) ← Util.statefulMap? x.params nameMap (λ nameMap param => do
+        let count := Frame.size (α := String) nameMap
         let newType ← normalizeType nameMap param.type
         let newName := s!"_name_{count}"
         let newNameMap := Frame.set nameMap param.name newName
         some (newNameMap, {name := newName, type := newType : Ann Term})
       )
-      term
-
-    | _ => term
-
-
+      let newBody ← normalizeType newNameMap x.body
+      pure (lam {
+        params := newParams,
+        body := newBody,
+      })
+    | app x =>
+      let nCmd ← normalizeType nameMap x.cmd
+      let nArgs ← Util.optionMap? x.args (normalizeType nameMap)
+      pure (app {
+        cmd := nCmd,
+        args := nArgs,
+      })
+    | mat x =>
+      let nCond ← normalizeType nameMap x.cond
+      let nCases ← Util.optionMap? x.cases (λ {patCmd, patArgs, value} => do
+        let nValue ← normalizeType nameMap value
+        pure {
+          patCmd := patCmd,
+          patArgs := patArgs,
+          value := nValue,
+          : Case Term
+        }
+      )
+      pure (mat {
+        cond := nCond,
+        cases := nCases,
+      })
 
 def isSubType (type1: Term) (type2: Term): Bool :=
   type1 == type2
