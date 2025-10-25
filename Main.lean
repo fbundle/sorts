@@ -161,6 +161,6 @@ def main  : IO Unit := do
   let term := renameTerm emptyNameMap term
   IO.println s!"[PRINT_RENAMED] {term}"
   -- reduce program
-  match reduceTerm? emptyFrame term with
+  match inferType? emptyFrame term with
     | some iterm => IO.println s!"[OK]\n\tterm: {iterm.term}\n\ttype: {iterm.type}"
     | none => IO.println "[ERR]"

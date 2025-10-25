@@ -1,6 +1,6 @@
 import EL2.Term.Term
 import Std
-
+import EL2.Term.Print
 
 namespace EL2.Term
 
@@ -60,7 +60,19 @@ partial def renameTerm [Repr M] [Context M String] (nameMap: M) (term: Term): Te
       }
     | _ => term.map (renameTerm nameMap)
 
-
+partial def isSubTypeMany? (type1List: List Term) (type2List: List Term): Option Unit := do
+  if type1List.length = 0 ∧ type2List.length = 0 then
+    pure ()
+  else
+    let type1 ← type1List.head?
+    let type2 ← type2List.head?
+    if type1 != type2 then
+      dbg_trace s!"[DBG_TRACE] different type"
+      dbg_trace s!"type1:\t{type1}"
+      dbg_trace s!"type2:\t{type2}"
+      none
+    else
+      isSubTypeMany? (type1List.extract 1) (type2List.extract 1)
 
 structure InferedType where
   term : Term
@@ -141,15 +153,14 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
       let iLamCmd ← isLam? iCmd.term
       let iArgs ← Util.optionMap? x.args (inferType? ctx)
 
-      if iArgs.map (λ arg => arg.type) != iLamCmd.params.map (λ param => param.type) then
-        none
-      else
-        -- WHNF
-        let (subCtx, _) ← Util.statefulMap? (List.zip iLamCmd.params iArgs) ctx (λ subCtx (param, arg) => do
-          let subCtx := Context.set subCtx param.name arg
-          pure (subCtx, ())
-        )
-        inferType? subCtx iLamCmd.body
+      let _ ← isSubTypeMany? (iArgs.map (λ arg => arg.type)) (iLamCmd.params.map (λ param => param.type))
+
+      -- WHNF
+      let (subCtx, _) ← Util.statefulMap? (List.zip iLamCmd.params iArgs) ctx (λ subCtx (param, arg) => do
+        let subCtx := Context.set subCtx param.name arg
+        pure (subCtx, ())
+      )
+      inferType? subCtx iLamCmd.body
 
     | mat x =>
       let iCond ← inferType? ctx x.cond
