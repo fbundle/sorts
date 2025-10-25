@@ -8,6 +8,16 @@ inductive Form where
   | list: List Form → Form
   deriving Repr
 
+def isName? (form: Form): Option String :=
+  match form with
+    | .name name => some name
+    | _ => none
+
+def isList? (form: Form): Option (List Form) :=
+  match form with
+    | .list list => some list
+    | _ => none
+
 def toString (form: Form) : String :=
   match form with
     | Form.name s => s
