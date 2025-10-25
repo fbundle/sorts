@@ -70,6 +70,7 @@ partial def unwrapTyp (term: Term): Term :=
       term.map unwrapTyp
 
 def isSubType? (argType: Term) (paramType: Term): Option Unit := do
+  -- TODO - to remove these two unwrapTyp
   let argType := unwrapTyp argType
   let paramType := unwrapTyp paramType
   if argType == paramType then
