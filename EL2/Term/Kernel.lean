@@ -225,32 +225,4 @@ partial def reduceTerm? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): 
 
 end
 
-partial def fill? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option (F × Term) :=
-  -- fill in all the holes
-  -- e.g return type
-  none
-
-
--- type check
-
-
-class ListFrame F α where
-  set: F → String → α → F
-  get: F → String → List α
-
-structure InferedType where
-  type: Term
-  level: Int
-
-
-mutual
-
-
-
-partial def inferType? [Repr F] [ListFrame F (List InferedTerm)] (frame: F) (term: Term): List InferedTerm :=
-  -- TODO decompose inferType and reduceTerm
-  []
-
-end
-
 end EL2.Term
