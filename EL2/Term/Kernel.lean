@@ -19,7 +19,6 @@ def isInh? (term: Term): Option (Inh Term) :=
 
 
 partial def normalizeType [Repr M] [NameMap M String] (nameMap: M) (term: Term): Option Term := do
-  -- TODO
   -- rename all parameters into _name_<count> where count = nameNameMap.size save into nameMap
   -- rename all variables according frame
   match term with
