@@ -84,7 +84,7 @@ partial def isSubTypeMany? (type1List: List Term) (type2List: List Term): Option
       isSubTypeMany? (type1List.extract 1) (type2List.extract 1)
 
 structure InferedType where
-  term : Term
+  term : Term -- currently we are using Typ as a hole, next we can replace by Option Term, or make a real hole
   type : Term
   level : Int
 
