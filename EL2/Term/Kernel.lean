@@ -29,19 +29,21 @@ partial def normalizeType? [Repr M] [NameMap M String] (nameMap: M) (term: Term)
       -- unwrap usual types - not complete
       let nValue: Term := match nValue with
         | mat y =>
-          dbg_trace s!"[DBG_TRACE] unwrapping {typ x}"
-          mat {
+          let nValue := mat {
             y with
             cases := y.cases.map (λ case => {
               case with value := typ {value := case.value}
             })
           }
+          dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {nValue}"
+          nValue
         | lam y =>
-          dbg_trace s!"[DBG_TRACE] unwrapping {typ x}"
-          lam {
+          let nValue := lam {
             y with
             body := typ {value := y.body}
           }
+          dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {nValue}"
+          nValue
         | _ => nValue
 
       pure (typ {
