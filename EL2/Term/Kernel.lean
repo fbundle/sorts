@@ -48,7 +48,7 @@ partial def unwrapTyp (term: Term): Term :=
             case with value := typ {value := case.value}
           })
         }
-        --dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
+        dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
         output
       | lam y =>
         let output := lam {
@@ -135,12 +135,12 @@ partial def reduceLam? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Lam Term)
   --dbg_trace s!"[DBG_TRACE] reduce_lam {lam x}"
   let output := {
     term := lam x,
-    type := unwrapTyp (lam {
+    type := lam {
       params := x.params,
-      body := typ {
+      body := unwrapTyp (typ {
         value := x.body,
-      }
-    }),
+      }),
+    },
   }
   --dbg_trace s!"[DBG_TRACE] reduce_lam_ok {lam x} → {output}"
   pure output

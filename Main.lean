@@ -110,7 +110,7 @@ def term : Term := bnd {
       }
     },
     {
-      name := "id_Append",
+      name := "id_AppendIfEmpty",
       value := lam {
         params := [
           {
@@ -142,7 +142,8 @@ def term : Term := bnd {
       }
     },
   ],
-  last := app {cmd := var "id_Append", args := [var "append"]},
+  --last := app {cmd := var "id_AppendIfEmpty", args := [var "append_if_empty"]},
+  last := var "append_if_empty",
   --last := app {
   --  cmd := var "append_if_empty",
   --  args := [var "zero", var "Nat", app {cmd := var "nil", args := [var "Nat"]}, var "one"],
