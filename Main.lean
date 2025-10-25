@@ -100,7 +100,6 @@ def term : Term := bnd {
 
 
 instance: Frame (Std.HashMap String α) α where
-  empty := Std.HashMap.emptyWithCapacity
   size := Std.HashMap.size
   set := Std.HashMap.insert
   get? := Std.HashMap.get?
