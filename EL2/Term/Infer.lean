@@ -84,7 +84,7 @@ partial def isSubTypeMany? (type1List: List Term) (type2List: List Term): Option
       isSubTypeMany? (type1List.extract 1) (type2List.extract 1)
 
 structure InferedType where
-  term : Term -- currently we are using Typ as a hole, next we can replace by Option Term, or make a real hole
+  term : Term -- currently we are using Typ as a hole, next we can replace by Option Term
   type : Term
   level : Int
 
@@ -108,7 +108,15 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
       }
 
     | var name =>
-      Context.get? ctx name
+      let iX: InferedType ← Context.get? ctx name
+      let iTerm := match iX.term with
+          | typ _ => term -- if param then return itself -- TODO change to None
+          | _ => iX.term
+      pure {
+        term := iTerm,
+        type := iX.type,
+        level := iX.level,
+      }
 
     | inh x =>
       let iX ← inferType? ctx x.type
@@ -214,14 +222,11 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
       let level ← casesLevel.max?
 
       let iCond ← inferType? ctx x.cond
-      let cond := match iCond.term with
-        | typ _ => x.cond
-        | _ => iCond.term
       dbg_trace s!"[DBG_TRACE] cond {x.cond} → {iCond}"
       pure {
         term := term,
         type := mat {
-          cond := cond,
+          cond := iCond.term,
           cases := casesType,
         },
         level := level,
