@@ -7,7 +7,7 @@ import Std
 
 namespace EL2.Term
 
-partial def normalizeType [Repr M] [NameMap M String] (nameMap: M) (term: Term): Option Term := do
+partial def normalizeType? [Repr M] [NameMap M String] (nameMap: M) (term: Term): Option Term := do
   -- rename all parameters into _name_<count> where count = nameNameMap.size save into nameMap
   -- rename all variables according frame
   match term with
@@ -17,28 +17,28 @@ partial def normalizeType [Repr M] [NameMap M String] (nameMap: M) (term: Term):
         | none => pure term
         | some newName => pure (var newName)
     | inh x =>
-      let nType ← normalizeType nameMap x.type
-      let nArgs ← Util.optionMap? x.args (normalizeType nameMap)
+      let nType ← normalizeType? nameMap x.type
+      let nArgs ← Util.optionMap? x.args (normalizeType? nameMap)
       pure (inh {
         type := nType,
         cons := x.cons,
         args := nArgs,
       })
     | typ x =>
-      let nValue ← normalizeType nameMap x.value
+      let nValue ← normalizeType? nameMap x.value
       pure (typ {
         value := nValue,
       })
     | bnd x =>
       let nInit ← Util.optionMap? x.init (λ {name, value} => do
-        let nValue ← normalizeType nameMap value
+        let nValue ← normalizeType? nameMap value
         pure {
           name := name,
           value := nValue,
           : Bind Term
         }
       )
-      let nLast ← normalizeType nameMap x.last
+      let nLast ← normalizeType? nameMap x.last
       pure (bnd {
         init := nInit
         last := nLast,
@@ -47,27 +47,27 @@ partial def normalizeType [Repr M] [NameMap M String] (nameMap: M) (term: Term):
     | lam x =>
       let (newNameMap, newParams) ← Util.statefulMap? x.params nameMap (λ nameMap param => do
         let count := NameMap.size (α := String) nameMap
-        let newType ← normalizeType nameMap param.type
+        let newType ← normalizeType? nameMap param.type
         let newName := s!"_name_{count}"
         let newNameMap := NameMap.set nameMap param.name newName
         some (newNameMap, {name := newName, type := newType : Ann Term})
       )
-      let newBody ← normalizeType newNameMap x.body
+      let newBody ← normalizeType? newNameMap x.body
       pure (lam {
         params := newParams,
         body := newBody,
       })
     | app x =>
-      let nCmd ← normalizeType nameMap x.cmd
-      let nArgs ← Util.optionMap? x.args (normalizeType nameMap)
+      let nCmd ← normalizeType? nameMap x.cmd
+      let nArgs ← Util.optionMap? x.args (normalizeType? nameMap)
       pure (app {
         cmd := nCmd,
         args := nArgs,
       })
     | mat x =>
-      let nCond ← normalizeType nameMap x.cond
+      let nCond ← normalizeType? nameMap x.cond
       let nCases ← Util.optionMap? x.cases (λ {patCmd, patArgs, value} => do
-        let nValue ← normalizeType nameMap value
+        let nValue ← normalizeType? nameMap value
         pure {
           patCmd := patCmd,
           patArgs := patArgs,
@@ -82,8 +82,8 @@ partial def normalizeType [Repr M] [NameMap M String] (nameMap: M) (term: Term):
 
 def isSubType (type1: Term) (type2: Term): Option Unit := do
   let emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
-  let nType1 ← normalizeType emptyNameMap type1
-  let nType2 ← normalizeType emptyNameMap type2
+  let nType1 ← normalizeType? emptyNameMap type1
+  let nType2 ← normalizeType? emptyNameMap type2
   if nType1 == nType2 then
     pure ()
   else
