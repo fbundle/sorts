@@ -7,6 +7,12 @@ import Std
 
 namespace EL2.Term
 
+
+-- TODO - decompose into
+-- 1. parameter renaming
+-- 2. typ unwrapping
+-- 3. reduce
+
 def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 
 def unwrapTyp (x: Typ Term): Option Term := do
