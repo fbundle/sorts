@@ -4,6 +4,8 @@ import EL2.Term.Util
 
 namespace EL2.Term
 
+
+
 def isLam? (term: Term): Option (Lam Term) :=
   match term with
     | lam l => some l
@@ -15,14 +17,14 @@ def isInh? (term: Term): Option (Inh Term) :=
     | _ => none
 
 
-partial def normalizeType [Repr F] [Frame F String] (nameMap: F) (term: Term): Option Term := do
+partial def normalizeType [Repr M] [NameMap M String] (nameMap: M) (term: Term): Option Term := do
   -- TODO
-  -- rename all parameters into _name_<count> where count = nameMap.size save into nameMap
+  -- rename all parameters into _name_<count> where count = nameNameMap.size save into nameMap
   -- rename all variables according frame
   match term with
     | univ _ => term
     | var name =>
-      match Frame.get? nameMap name with
+      match NameMap.get? nameMap name with
         | none => pure term
         | some newName => pure (var newName)
     | inh x =>
@@ -55,10 +57,10 @@ partial def normalizeType [Repr F] [Frame F String] (nameMap: F) (term: Term): O
 
     | lam x =>
       let (newNameMap, newParams) ← Util.statefulMap? x.params nameMap (λ nameMap param => do
-        let count := Frame.size (α := String) nameMap
+        let count := NameMap.size (α := String) nameMap
         let newType ← normalizeType nameMap param.type
         let newName := s!"_name_{count}"
-        let newNameMap := Frame.set nameMap param.name newName
+        let newNameMap := NameMap.set nameMap param.name newName
         some (newNameMap, {name := newName, type := newType : Ann Term})
       )
       let newBody ← normalizeType newNameMap x.body
@@ -109,10 +111,10 @@ partial def matchCases? (inhCond: Inh Term) (cases: List (Case Term)): Option (B
 
 
 mutual
-partial def reduceMany? [Repr F] [Frame F InferedTerm] (frame: F) (terms: List Term): Option (List (InferedTerm)) :=
+partial def reduceMany? [Repr F] [NameMap F InferedTerm] (frame: F) (terms: List Term): Option (List (InferedTerm)) :=
   Util.optionMap? terms (reduceTerm? frame)
 
-partial def reduceUniv? [Repr F] [Frame F InferedTerm] (frame: F) (level: Int): Option InferedTerm := do
+partial def reduceUniv? [Repr F] [NameMap F InferedTerm] (frame: F) (level: Int): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_univ {univ level}"
   let output := {
     term := univ level,
@@ -121,13 +123,13 @@ partial def reduceUniv? [Repr F] [Frame F InferedTerm] (frame: F) (level: Int): 
   --dbg_trace s!"[DBG_TRACE] reduce_univ_ok {univ level} → {output}"
   pure output
 
-partial def reduceVar? [Repr F] [Frame F InferedTerm] (frame: F) (name: String): Option InferedTerm := do
+partial def reduceVar? [Repr F] [NameMap F InferedTerm] (frame: F) (name: String): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_var {var name}"
-  let output ← Frame.get? frame name
+  let output ← NameMap.get? frame name
   --dbg_trace s!"[DBG_TRACE] reduce_var_ok {var name} → {output}"
   pure output
 
-partial def reduceInh? [Repr F] [Frame F InferedTerm] (frame: F) (x: Inh Term): Option InferedTerm := do
+partial def reduceInh? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Inh Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_inh {inh x}"
   let iType ← reduceTerm? frame x.type
   let iArgs ← reduceMany? frame x.args
@@ -142,25 +144,25 @@ partial def reduceInh? [Repr F] [Frame F InferedTerm] (frame: F) (x: Inh Term): 
   --dbg_trace s!"[DBG_TRACE] reduce_inh_ok {inh x} → {output}"
   pure output
 
-partial def reduceTyp? [Repr F] [Frame F InferedTerm] (frame: F) (x: Typ Term): Option InferedTerm := do
+partial def reduceTyp? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Typ Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_typ {typ x}"
   let iValue ← reduceTerm? frame x.value
   let iType ← reduceTerm? frame iValue.type
   --dbg_trace s!"[DBG_TRACE] reduce_typ_ok {typ x} → {iType}"
   pure iType
 
-partial def reduceBnd? [Repr F] [Frame F InferedTerm] (frame: F) (x: Bnd Term): Option InferedTerm := do
+partial def reduceBnd? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Bnd Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_bnd {bnd x}"
   let (frame, _) ← Util.statefulMap? x.init frame (λ frame {name, value} => do
     let iValue ← reduceTerm? frame value
-    let frame := Frame.set frame name iValue
+    let frame := NameMap.set frame name iValue
     some (frame, iValue)
   )
   let iLast ← reduceTerm? frame x.last
   --dbg_trace s!"[DBG_TRACE] reduce_bnd_ok {bnd x} → {iLast}"
   pure iLast
 
-partial def reduceLam? [Repr F] [Frame F InferedTerm] (frame: F) (x: Lam Term): Option InferedTerm := do
+partial def reduceLam? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Lam Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_lam {lam x}"
   let output := {
     term := lam x,
@@ -174,7 +176,7 @@ partial def reduceLam? [Repr F] [Frame F InferedTerm] (frame: F) (x: Lam Term): 
   --dbg_trace s!"[DBG_TRACE] reduce_lam_ok {lam x} → {output}"
   pure output
 
-partial def bindParamsWithArgs? [Repr F] [Frame F InferedTerm] (frame: F) (params: List (Ann Term)) (args: List Term): Option F := do
+partial def bindParamsWithArgs? [Repr F] [NameMap F InferedTerm] (frame: F) (params: List (Ann Term)) (args: List Term): Option F := do
   if params.length = 0 ∧ args.length = 0 then
     pure frame
   else
@@ -189,12 +191,12 @@ partial def bindParamsWithArgs? [Repr F] [Frame F InferedTerm] (frame: F) (param
       --dbg_trace s!"[DBG_TRACE] bind_params_with_args type check failed {iArgType} -> {iParamType}"
       none
     else
-      let frame := Frame.set frame param.name iArg
+      let frame := NameMap.set frame param.name iArg
       let params := params.extract 1
       let args := args.extract 1
       bindParamsWithArgs? frame params args
 
-partial def reduceApp? [Repr F] [Frame F InferedTerm] (frame: F) (x: App Term): Option InferedTerm := do
+partial def reduceApp? [Repr F] [NameMap F InferedTerm] (frame: F) (x: App Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_app {app x}"
   let iCmd ← reduceTerm? frame x.cmd
   let lamCmd ← isLam? iCmd.term
@@ -203,7 +205,7 @@ partial def reduceApp? [Repr F] [Frame F InferedTerm] (frame: F) (x: App Term): 
   --dbg_trace s!"[DBG_TRACE] reduce_app_ok {app x} → {iBody}"
   pure iBody
 
-partial def reduceMat? [Repr F] [Frame F InferedTerm] (frame: F) (x: Mat Term): Option InferedTerm := do
+partial def reduceMat? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Mat Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_mat {mat x}"
   let iCond ← reduceTerm? frame x.cond
   let inhCond ← isInh? iCond.term
@@ -212,7 +214,7 @@ partial def reduceMat? [Repr F] [Frame F InferedTerm] (frame: F) (x: Mat Term): 
   --dbg_trace s!"[DBG_TRACE] reduce_mat_ok {mat x} → {output}"
   pure output
 
-partial def reduceTerm? [Repr F] [Frame F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
+partial def reduceTerm? [Repr F] [NameMap F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
   match term with
     | univ level => reduceUniv? frame level
     | var name => reduceVar? frame name

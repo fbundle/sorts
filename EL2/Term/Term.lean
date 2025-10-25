@@ -72,10 +72,11 @@ notation "lam" x => Term.t (T.lam x)
 notation "app" x => Term.t (T.app x)
 notation "mat" x => Term.t (T.mat x)
 
-class Frame F α where
-  size: F → Nat
-  set: F → String → α → F
-  get?: F → String → Option α
+
+class NameMap M α where
+  size: M → Nat
+  set: M → String → α → M
+  get?: M → String → Option α
 
 structure InferedTerm where
   term: Term
