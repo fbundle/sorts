@@ -98,6 +98,13 @@ def term : Term := bnd {
   },
 }
 
+
+def source := "
+(let
+  {Nat := (inh )}
+)
+"
+
 def main  : IO Unit := do
   -- print program
   IO.println s!"[PRINT] {term}"

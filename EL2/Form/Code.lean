@@ -133,8 +133,18 @@ partial def parseApp? (form: Form): Option (App Term) := do
     args := args,
   }
 
+partial def parseUniv? (form: Form): Option Int := do
+  let name ← isName? form
+  if "U_".isPrefixOf name then
+    let levelStr := name.stripPrefix "U_"
+    let level ← levelStr.toInt?
+    pure level
+  else
+    none
+
 partial def parse? (form: Form): Option Term :=
   Util.applyAtMostOnce? form [
+    Util.chain parseUniv? (univ ·),
     Util.chain isName? (var ·),
     Util.chain parseInh? (inh ·),
     Util.chain parseTyp? (typ ·),
