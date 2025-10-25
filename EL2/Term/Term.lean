@@ -69,8 +69,6 @@ inductive Term where
   | t: T Term → Term
   deriving Repr, BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
-
-
 notation "univ" x => Term.univ x
 notation "var" x => Term.var x
 notation "inh" x => Term.t (T.inh x)
@@ -79,6 +77,19 @@ notation "bnd" x => Term.t (T.bnd x)
 notation "lam" x => Term.t (T.lam x)
 notation "app" x => Term.t (T.app x)
 notation "mat" x => Term.t (T.mat x)
+
+inductive ReducedTerm where
+  | univ: (level: Int) → ReducedTerm
+  | t: T ReducedTerm → ReducedTerm
+  deriving Repr, BEq
+
+notation "r_univ" x => ReducedTerm.univ x
+notation "r_inh" x => ReducedTerm.t (T.inh x)
+notation "r_typ" x => ReducedTerm.t (T.typ x)
+notation "r_bnd" x => ReducedTerm.t (T.bnd x)
+notation "r_lam" x => ReducedTerm.t (T.lam x)
+notation "r_app" x => ReducedTerm.t (T.app x)
+notation "r_mat" x => ReducedTerm.t (T.mat x)
 
 structure InferedTerm where
   term: Term
