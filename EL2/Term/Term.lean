@@ -1,3 +1,5 @@
+import EL2.Term.Util
+
 namespace EL2.Term
 
 structure Inh (α: Type) where
@@ -57,9 +59,71 @@ inductive T (α: Type) where
   | mat: Mat α → T α
   deriving Repr, BEq
 
-def T.map? (t: T α) (f: α → Option β) : Option (T β) :=
-  -- TODO implement this
-  sorry
+def T.optionMap? (t: T α) (f: α → Option β) : Option (T β) := do
+  match t with
+    | T.inh x =>
+      let type ← f x.type
+      let args ← Util.optionMap? x.args f
+      T.inh {
+        type := type,
+        cons := x.cons,
+        args := args
+      }
+    | T.typ x =>
+      let value ← f x.value
+      T.typ {
+        value := value,
+      }
+    | T.bnd x =>
+      let init ← Util.optionMap? x.init (λ bind => do
+        let value ← f bind.value
+        pure {
+          name := bind.name,
+          value := value,
+          : Bind β
+        }
+      )
+      let last ← f x.last
+      T.bnd {
+        init := init,
+        last := last,
+      }
+    | T.lam x =>
+      let params ← Util.optionMap? x.params (λ param => do
+        let type ← f param.type
+        pure {
+          name := param.name,
+          type := type,
+          : Ann β
+        }
+      )
+      let body ← f x.body
+      T.lam {
+        params := params,
+        body := body,
+      }
+    | T.app x =>
+      let cmd ← f x.cmd
+      let args ← Util.optionMap? x.args f
+      T.app {
+        cmd := cmd,
+        args := args,
+      }
+    | T.mat x =>
+      let cond ← f x.cond
+      let cases ← Util.optionMap? x.cases (λ case => do
+        let value ← f case.value
+        pure {
+          patCmd := case.patCmd,
+          patArgs := case.patArgs,
+          value := value
+          : Case β
+        }
+      )
+      T.mat {
+        cond := cond,
+        cases := cases,
+      }
 
 
 
