@@ -113,32 +113,41 @@ def term : Term := bnd {
       name := "id_Append",
       value := lam {
         params := [
-          {name := "n", type := var "Nat"},
-          {name := "T", type := univ 1},
-          {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
-          {name := "val", type := var "T"},
+          {
+            name := "f",
+            type := lam {
+              params := [
+                {name := "n", type := var "Nat"},
+                {name := "T", type := univ 1},
+                {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
+                {name := "val", type := var "T"},
+              ],
+              body := mat {
+                cond := var "n",
+                cases := [
+                  {
+                    patCmd := "zero", patArgs := [],
+                    value := app {cmd := var "Vec", args := [app {cmd := var "succ", args := [var "n"]}, var "T"]},
+                  },
+                  {
+                    patCmd := "succ", patArgs := ["_"],
+                    value := app {cmd := var "Vec", args := [var "n", var "T"]},
+                  },
+                ],
+              },
+            },
+          }
         ],
-        body := mat {
-          cond := var "n",
-          cases := [
-            {
-              patCmd := "zero", patArgs := [],
-              value := app {cmd := var "Vec", args := [app {cmd := var "succ", args := [var "n"]}, var "T"]},
-            },
-            {
-              patCmd := "succ", patArgs := ["_"],
-              value := app {cmd := var "Vec", args := [var "n", var "T"]},
-            },
-          ],
-        },
-      },
+        body := var "f",
+      }
     },
   ],
+  last := app {cmd := var "id_Append", args := [var "append"]},
   --last := app {
   --  cmd := var "append_if_empty",
   --  args := [var "zero", var "Nat", app {cmd := var "nil", args := [var "Nat"]}, var "one"],
   --},
-  last := app {cmd := var "id_Succ", args := [var "succ"]},
+  -- last := app {cmd := var "id_Succ", args := [var "succ"]},
   -- last := app {cmd := var "succ", args := [var "zero"]}
 }
 
