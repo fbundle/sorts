@@ -262,6 +262,8 @@ partial def reduceTerm? [Repr F] [NameMap F InferedTerm] (frame: F) (term: Term)
     | mat x => reduceMat? frame x
 
 
+  -- TODO - currently normalize term doesn't have access to frame
+  -- so it cannot normalize further things like Nat into (inh U_1 Nat)
   let type ← normalizeTerm? emptyNameMap iterm.type
 
   pure {
