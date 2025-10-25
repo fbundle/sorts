@@ -93,7 +93,7 @@ def term : Term := bnd {
       },
     },
     {
-      name := "id",
+      name := "id_Nat_to_Nat",
       value := lam {
         params := [
           {
@@ -114,7 +114,7 @@ def term : Term := bnd {
   --  cmd := var "append_if_empty",
   --  args := [var "zero", var "Nat", app {cmd := var "nil", args := [var "Nat"]}, var "one"],
   --},
-  last := app {cmd := var "id", args := [var "succ"]}, -- TODO make this works
+  last := app {cmd := var "id_Nat_to_Nat", args := [var "succ"]}, -- TODO make this works
 }
 
 

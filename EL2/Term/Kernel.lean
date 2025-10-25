@@ -10,7 +10,7 @@ namespace EL2.Term
 def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 
 partial def normalizeType? [Repr M] [NameMap M String] (nameMap: M) (term: Term): Option Term := do
-  -- rename all parameters into _name_<count> where count = nameNameMap.size save into nameMap
+  -- rename all parameters into _<count> where count = nameNameMap.size save into nameMap
   -- rename all variables according frame
   match term with
     | univ _ => term
@@ -75,7 +75,7 @@ partial def normalizeType? [Repr M] [NameMap M String] (nameMap: M) (term: Term)
       let (newNameMap, newParams) ← Util.statefulMap? x.params nameMap (λ nameMap param => do
         let count := NameMap.size (α := String) nameMap
         let newType ← normalizeType? nameMap param.type
-        let newName := s!"_name_{count}"
+        let newName := s!"_{count}"
         let newNameMap := NameMap.set nameMap param.name newName
         some (newNameMap, {name := newName, type := newType : Ann Term})
       )
