@@ -98,8 +98,6 @@ instance: Repr InferedType where
 
 mutual
 partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Term): Option InferedType := do
-  dbg_trace s!"[DBG_TRACE] inferring type for {term} with ctx {repr ctx}"
-
   -- recursively do WHNF and type infer
   match term with
     | univ level =>
