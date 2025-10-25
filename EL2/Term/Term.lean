@@ -49,8 +49,6 @@ structure Mat (α: Type) where
 inductive T (α: Type) where
   -- | hole: T α -- like sorry, just to fill in the blank
   -- | trace: α → α -- print alpha
-  | univ: (level: Int) → T α
-  | var: (name: String) → T α
   | inh: Inh α → T α
   | typ: Typ α → T α
   | bnd: Bnd α → T α
@@ -60,11 +58,13 @@ inductive T (α: Type) where
   deriving Repr, BEq
 
 inductive Term where
+  | univ: (level: Int) → Term
+  | var: (name: String) → Term
   | t: T Term → Term
   deriving Repr, BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
-notation "univ" x => Term.t (T.univ x)
-notation "var" x => Term.t (T.var x)
+notation "univ" x => Term.univ x
+notation "var" x => Term.var x
 notation "inh" x => Term.t (T.inh x)
 notation "typ" x => Term.t (T.typ x)
 notation "bnd" x => Term.t (T.bnd x)
