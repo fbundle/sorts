@@ -2,6 +2,8 @@ import EL2.Term.Term
 import EL2.Term.Print
 import EL2.Term.Util
 import EL2.Term.NameMap
+import Std
+
 
 namespace EL2.Term
 
@@ -90,8 +92,14 @@ partial def normalizeType [Repr M] [NameMap M String] (nameMap: M) (term: Term):
         cases := nCases,
       })
 
-def isSubType (type1: Term) (type2: Term): Bool :=
-  type1 == type2
+def isSubType (type1: Term) (type2: Term): Option Unit := do
+  let emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
+  let nType1 ← normalizeType emptyNameMap type1
+  let nType2 ← normalizeType emptyNameMap type2
+  if nType1 == nType2 then
+    pure ()
+  else
+    none
 
 partial def matchCases? (inhCond: Inh Term) (cases: List (Case Term)): Option (Bnd Term) := do
   let headCase ← cases.head?
@@ -186,14 +194,15 @@ partial def bindParamsWithArgs? [Repr F] [NameMap F InferedTerm] (frame: F) (par
     let iArg ← reduceTerm? frame arg
     let iArgType ← reduceTerm? frame iArg.type
 
-    if ¬ isSubType iArgType.term iParamType.term then
-      --dbg_trace s!"[DBG_TRACE] bind_params_with_args type check failed {iArgType} -> {iParamType}"
-      none
-    else
-      let frame := NameMap.set frame param.name iArg
-      let params := params.extract 1
-      let args := args.extract 1
-      bindParamsWithArgs? frame params args
+    match isSubType iArgType.term iParamType.term with
+      | none =>
+        --dbg_trace s!"[DBG_TRACE] bind_params_with_args type check failed {iArgType} -> {iParamType}"
+        none
+      | some _ =>
+        let frame := NameMap.set frame param.name iArg
+        let params := params.extract 1
+        let args := args.extract 1
+        bindParamsWithArgs? frame params args
 
 partial def reduceApp? [Repr F] [NameMap F InferedTerm] (frame: F) (x: App Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_app {app x}"
