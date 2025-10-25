@@ -53,10 +53,8 @@ structure Hole (α: Type) where
   deriving Repr, BEq
 
 inductive T (α: Type) where
-  -- | hole: T α -- like sorry, just to fill in the blank
-  -- | trace: α → α -- print alpha
   | inh: Inh α → T α
-  | typ: Typ α → T α -- typ is hole - TODO rename
+  | typ: Typ α → T α -- TODO drop
   | bnd: Bnd α → T α
   | lam: Lam α → T α
   | app: App α → T α
