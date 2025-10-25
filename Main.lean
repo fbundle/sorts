@@ -100,28 +100,9 @@ def term : Term := bnd {
             name := "f",
             type := lam {
               params := [
-                {name := "n", type := var "Nat"},
-                {name := "T", type := univ 1},
-                {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
-                {name := "val", type := var "T"},
+                {name := "Nat", type := univ 1},
               ],
-              body := mat {
-                cond := var "n",
-                cases := [
-                  {
-                    patCmd := "zero", patArgs := [], value := app {
-                      cmd := var "Vec",
-                      args := [app {cmd := var "succ", args:=[var "n"]}, var "T"],
-                    },
-                  },
-                  {
-                    patCmd := "succ", patArgs := ["_"], value := app {
-                      cmd := var "Vec",
-                      args := [var "n", var "T"],
-                    },
-                  },
-                ],
-              },
+              body := var "Nat",
             },
           },
         ],
@@ -133,7 +114,7 @@ def term : Term := bnd {
   --  cmd := var "append_if_empty",
   --  args := [var "zero", var "Nat", app {cmd := var "nil", args := [var "Nat"]}, var "one"],
   --},
-  last := app {cmd := var "id", args := [var "append_if_empty"]}, -- TODO make this works
+  last := app {cmd := var "id", args := [var "succ"]}, -- TODO make this works
 }
 
 
