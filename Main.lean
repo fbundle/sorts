@@ -101,7 +101,34 @@ def term : Term := bnd {
 
 def source := "
 (let
-  {Nat := (inh )}
+  {Nat := (inh U_1 Nat)}
+  {zero := (inh Nat zero)}
+  {succ := {{n: Nat} => (inh Nat succ n)} }
+
+  {Vec := {{n: Nat} {T: U_1} => (inh U_1 Vec n T) }}
+  {nil := {{T: U_1} => (inh (Vec zero T) nil T) }}
+  {append := {
+    {n: Nat} {T: U_1}
+    {vec: (Vec n T)} {last: T}
+      =>
+    (inh (Vec (succ n) T) append n T vec last)
+  }}
+
+  {one := succ zero}
+  {two := succ one}
+  {three := succ two}
+
+  {append_if_empty := {
+    {n: Nat} {T: U_1}
+    {vec: (Vec n T)} {val: T}
+      =>
+    (match n
+      {zero => (append n T vec val)}
+      {succ _ => vec}
+    )
+  }}
+
+  (append_if_empty zero Nat (nil Nat) one)
 )
 "
 
