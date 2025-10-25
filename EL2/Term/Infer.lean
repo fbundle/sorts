@@ -181,21 +181,32 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
       let iCond ← inferType? ctx x.cond
       let casesTypeLevel ← Util.optionMap? x.cases (λ case => do
         let iCmd: InferedType ← Context.get? ctx case.patCmd
-        let iLamCmd ← isLam? iCmd.term
-        -- assume term is already renamed
-        let caseLam := lam {
-          params := iLamCmd.params,
-          body := renameCaseFromParams iLamCmd.params case,
-        }
-        let iCaseLam ← inferType? ctx caseLam
-        let iCaseLamType ← isLam? iCaseLam.type
-        let type := iCaseLamType.body
-        pure ({
-          patCmd := case.patCmd,
-          patArgs := case.patArgs,
-          value := type,
-          : Case Term
-        }, iCaseLam.level)
+        match isLam? iCmd.term with
+          | none =>
+            let iValue ← inferType? ctx case.value
+            pure ({
+              patCmd := case.patCmd,
+              patArgs := case.patArgs,
+              value := iValue.type,
+              : Case Term
+            }, iValue.level)
+
+          | some iLamCmd =>
+            -- assume term is already renamed
+            let value := renameCaseFromParams iLamCmd.params case
+            let caseLam := lam {
+              params := iLamCmd.params,
+              body := value,
+            }
+            let iCaseLam ← inferType? ctx caseLam
+            let iCaseLamType ← isLam? iCaseLam.type
+            let type := iCaseLamType.body
+            pure ({
+              patCmd := case.patCmd,
+              patArgs := case.patArgs,
+              value := type,
+              : Case Term
+            }, iCaseLam.level)
       )
 
       let casesType := casesTypeLevel.map (λ (type, level) => type)
