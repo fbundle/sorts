@@ -89,7 +89,7 @@ structure InferedType where
   term : Term -- currently we are using Typ as a hole, next we can replace by Option Term
   type : Term
   level : Int
-  -- ctx [Context Ctx InferedType] : Ctx
+  -- ctx [Context Ctx InferedType] : Ctx -- TODO add context
 
 instance: ToString InferedType where
   toString (iterm: InferedType) :=
