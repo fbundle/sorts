@@ -1,23 +1,14 @@
 namespace EL2.Term.Util
 
-def optionMap (xs: List α) (f: α → Option β): List β :=
-  -- TODO - remove this
-  let rec loop (ys: Array β) (xs: List α) (f: α → Option β): Array β :=
+partial def optionMap? (xs: List α) (f: α → Option β): Option (List β) :=
+  let rec loop (ys: Array β) (xs: List α): Option (List β) :=
     match xs with
-      | [] => ys
+      | [] => some ys.toList
       | x :: xs =>
         match f x with
-          | none => ys
-          | some y => loop (ys.push y) xs f
-
-  (loop #[] xs f).toList
-
-def optionMap? (xs: List α) (f: α → Option β): Option (List β) :=
-  let ys := optionMap xs f
-  if ys.length ≠ xs.length then
-    none
-  else
-    ys
+          | none => none
+          | some y => loop (ys.push y) xs
+  loop #[] xs
 
 partial def statefulMap (xs: List α) (state: State) (f: State → α → State × β): State × List β :=
   let rec loop (ys: Array β) (xs: List α) (state: State): State × List β :=
