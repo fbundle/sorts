@@ -74,6 +74,7 @@ notation "mat" x => Term.t (T.mat x)
 
 class Frame F α where
   empty: F
+  size: F → Nat
   set: F → String → α → F
   get?: F → String → Option α
 
