@@ -7,13 +7,6 @@ import Std
 
 namespace EL2.Term
 
-
--- TODO - decompose into
--- 1. parameter renaming
--- 2. typ unwrapping
--- 3. reduce
-
-
 def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 def emptyFrame: Std.HashMap String InferedTerm := Std.HashMap.emptyWithCapacity
 
@@ -70,9 +63,6 @@ partial def unwrapTyp (term: Term): Term :=
       term.map unwrapTyp
 
 def isSubType? (argType: Term) (paramType: Term): Option Unit := do
-  -- TODO - to remove these two unwrapTyp
-  let argType := unwrapTyp argType
-  let paramType := unwrapTyp paramType
   if argType == paramType then
     pure ()
   else
@@ -145,12 +135,12 @@ partial def reduceLam? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Lam Term)
   --dbg_trace s!"[DBG_TRACE] reduce_lam {lam x}"
   let output := {
     term := lam x,
-    type := lam {
+    type := unwrapTyp (lam {
       params := x.params,
       body := typ {
         value := x.body,
       }
-    },
+    }),
   }
   --dbg_trace s!"[DBG_TRACE] reduce_lam_ok {lam x} → {output}"
   pure output
@@ -210,8 +200,6 @@ partial def reduceMat? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Mat Term)
   pure output
 
 partial def reduceTerm? [Repr F] [NameMap F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
-    -- TODO - currently normalize term doesn't have access to frame
-  -- so it cannot normalize further things like Nat into (inh U_1 Nat)
   match term with
     | univ level => reduceUniv? frame level
     | var name => reduceVar? frame name
