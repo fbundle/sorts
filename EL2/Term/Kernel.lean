@@ -9,6 +9,32 @@ namespace EL2.Term
 
 def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 
+def unwrapTyp (x: Typ Term): Option Term := do
+  match x.value with
+    | inh y =>
+      let output := y.type
+      dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
+      pure output
+    | mat y =>
+      let output := mat {
+        y with
+        cases := y.cases.map (λ case => {
+          case with value := typ {value := case.value}
+        })
+      }
+      dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
+      pure output
+    | lam y =>
+      let output := lam {
+        y with
+        body := typ {value := y.body}
+      }
+      dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
+      pure output
+    | _ =>
+      -- cannot unwrap further
+      none
+
 partial def normalizeType? [Repr M] [NameMap M String] (nameMap: M) (term: Term): Option Term := do
   -- rename all parameters into _<count> where count = nameNameMap.size save into nameMap
   -- rename all variables according frame
@@ -28,33 +54,13 @@ partial def normalizeType? [Repr M] [NameMap M String] (nameMap: M) (term: Term)
       })
     | typ x =>
       let nValue ← normalizeType? nameMap x.value
-      -- unwrap usual types - not complete
-      let output := match nValue with
-        | inh y =>
-          let output := y.type
-          dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
-          output
-        | mat y =>
-          let output := mat {
-            y with
-            cases := y.cases.map (λ case => {
-              case with value := typ {value := case.value}
-            })
-          }
-          dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
-          output
-        | lam y =>
-          let output := lam {
-            y with
-            body := typ {value := y.body}
-          }
-          dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
-          output
-        | _ =>
-          typ {
+      match unwrapTyp {value := nValue} with
+        | some output =>
+          normalizeType? nameMap output
+        | none =>
+          pure (typ {
             value := nValue,
-          }
-      pure output
+          })
 
     | bnd x =>
       let nInit ← Util.optionMap? x.init (λ {name, value} => do
@@ -154,10 +160,15 @@ partial def reduceInh? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Inh Term)
 
 partial def reduceTyp? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Typ Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_typ {typ x}"
+  -- unwrap usual types - put typ as close to leaf as possible - not complete
   let iValue ← reduceTerm? frame x.value
-  let iType ← reduceTerm? frame iValue.type
-  --dbg_trace s!"[DBG_TRACE] reduce_typ_ok {typ x} → {iType}"
-  pure iType
+  match unwrapTyp {value := iValue.term} with
+    | some output => reduceTerm? frame output
+    | none =>
+      -- cannot unwrap further
+      let iType ← reduceTerm? frame iValue.type
+      --dbg_trace s!"[DBG_TRACE] reduce_typ_ok {typ x} → {iType}"
+      pure iType
 
 partial def reduceBnd? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Bnd Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_bnd {bnd x}"
