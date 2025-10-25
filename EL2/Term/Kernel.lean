@@ -46,7 +46,7 @@ partial def unwrapTyp (term: Term): Term :=
       match x.value with
       | inh y =>
         let output := y.type
-        dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
+        --dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
         output
       | mat y =>
         let output := mat {
@@ -55,14 +55,14 @@ partial def unwrapTyp (term: Term): Term :=
             case with value := typ {value := case.value}
           })
         }
-        dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
+        --dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
         output
       | lam y =>
         let output := lam {
           y with
           body := typ {value := y.body}
         }
-        dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
+        --dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
         output
       | _ =>
         term
