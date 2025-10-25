@@ -33,7 +33,7 @@ structure Lam (α: Type) where
   deriving Repr, BEq
 
 structure App (α: Type) where
-  cmd: α
+  cmd: α -- either Var or Lam
   args: List α
   deriving Repr, BEq
 
