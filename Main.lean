@@ -98,12 +98,6 @@ def term : Term := bnd {
   },
 }
 
-
-instance : NameMap (Std.HashMap String α) α where
-  size := Std.HashMap.size
-  set := Std.HashMap.insert
-  get? := Std.HashMap.get?
-
 def main  : IO Unit := do
   -- print program
   IO.println s!"[PRINT] {term}"

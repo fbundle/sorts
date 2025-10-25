@@ -1,10 +1,9 @@
 import EL2.Term.Term
 import EL2.Term.Print
 import EL2.Term.Util
+import EL2.Term.NameMap
 
 namespace EL2.Term
-
-
 
 def isLam? (term: Term): Option (Lam Term) :=
   match term with
