@@ -85,6 +85,7 @@ partial def isSubTypeMany? (type1List: List Term) (type2List: List Term): Option
 
 structure InferedType where
   -- for type safety, we may want to change term: Term into Option ReducedTerm where ReducedTerm doesn't contain any variable
+  -- currently, term was not reduced fully
   term : Term -- currently we are using Typ as a hole, next we can replace by Option Term
   type : Term
   level : Int
