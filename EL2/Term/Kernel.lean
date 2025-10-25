@@ -132,6 +132,7 @@ partial def reduceBnd? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Bnd Term)
   pure iLast
 
 partial def reduceLamWithDummyParams? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Lam Term): Option InferedTerm := do
+  -- this will pass if term is purely constructors
   let (paramFrame, iParamsDummy) ← Util.statefulMap? x.params frame (λ frame param => do
     let iType ← reduceTerm? frame param.type
     let paramDummy := inh {
