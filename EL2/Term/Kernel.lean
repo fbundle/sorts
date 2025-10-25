@@ -185,7 +185,6 @@ partial def reduceApp? [Repr F] [NameMap F InferedTerm] (frame: F) (x: App Term)
   --dbg_trace s!"[DBG_TRACE] reduce_app_ok {app x} → {iBody}"
   pure iBody
 
-
 partial def matchCases? (inhCond: Inh Term) (cases: List (Case Term)): Option (Bnd Term) := do
   let headCase ← cases.head?
   if inhCond.cons = headCase.patCmd ∧ inhCond.args.length = headCase.patArgs.length then
