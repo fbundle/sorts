@@ -131,6 +131,22 @@ partial def reduceBnd? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Bnd Term)
   --dbg_trace s!"[DBG_TRACE] reduce_bnd_ok {bnd x} → {iLast}"
   pure iLast
 
+partial def reduceLamWithDummyParams? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Lam Term): Option InferedTerm := do
+  let (paramFrame, iParamsDummy) ← Util.statefulMap? x.params frame (λ frame param => do
+    let iType ← reduceTerm? frame param.type
+    let paramDummy := inh {
+      type := iType.term,
+      cons := param.name,
+      args := [],
+    }
+    let iParamDummy ← reduceTerm? frame paramDummy
+    let frame := NameMap.set frame param.name iParamDummy
+    pure (frame, iParamDummy)
+  )
+
+  let iBody ← reduceTerm? paramFrame x.body
+  iBody
+
 partial def reduceLam? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Lam Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_lam {lam x}"
   let output := {
@@ -144,6 +160,9 @@ partial def reduceLam? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Lam Term)
   }
   --dbg_trace s!"[DBG_TRACE] reduce_lam_ok {lam x} → {output}"
   pure output
+
+
+
 
 partial def bindParamsWithArgs? [Repr F] [NameMap F InferedTerm] (frame: F) (params: List (Ann Term)) (args: List Term): Option F := do
   if params.length = 0 ∧ args.length = 0 then
@@ -200,9 +219,7 @@ partial def reduceMat? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Mat Term)
   pure output
 
 partial def reduceTerm? [Repr F] [NameMap F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
-  -- TODO - reduce further, currently reduce can't bridger over Lam
-  -- maybe try to reduce Lam with dummy params
-  -- if ok, then reduce the body
+  -- TODO - reduce further, currently reduce can't bridge over Lam
 
   match term with
     | univ level => reduceUniv? frame level
