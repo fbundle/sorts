@@ -14,6 +14,7 @@ instance : Context (Std.HashMap String α) α where
   set := Std.HashMap.insert
   get? := Std.HashMap.get?
 
+
 def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 
 partial def renameTerm [Repr M] [Context M String] (nameMap: M) (term: Term): Term :=
@@ -60,6 +61,14 @@ partial def renameTerm [Repr M] [Context M String] (nameMap: M) (term: Term): Te
       }
     | _ => term.map (renameTerm nameMap)
 
+def renameCaseFromParams (params: List (Ann Term)) (case: Case Term): Term :=
+  let (newNameMap, _) := Util.statefulMap (List.zip case.patArgs params) emptyNameMap (λ nameMap (patArg, param) =>
+    let newNameMap := Context.set nameMap patArg param.name
+    (newNameMap, ())
+  )
+  let newValue := renameTerm newNameMap case.value
+  newValue
+
 partial def isSubTypeMany? (type1List: List Term) (type2List: List Term): Option Unit := do
   if type1List.length = 0 ∧ type2List.length = 0 then
     pure ()
@@ -79,10 +88,18 @@ structure InferedType where
   type : Term
   level : Int
 
+instance: ToString InferedType where
+  toString (iterm: InferedType) :=
+    s!"term: {iterm.term} type: {iterm.type} level: {iterm.level}"
+
+instance: Repr InferedType where
+  reprPrec (iterm: InferedType) (prec: Nat): Std.Format := toString iterm
+
+
 mutual
 partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Term): Option InferedType := do
-  -- rename first -- params, patArgs will be always _0 _1 ...
-  let term := renameTerm emptyNameMap term
+  dbg_trace s!"[DBG_TRACE] inferring type for {term} with ctx {repr ctx}"
+
   -- recursively do WHNF and type infer
   match term with
     | univ level =>
@@ -167,10 +184,10 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
       let casesTypeLevel ← Util.optionMap? x.cases (λ case => do
         let iCmd: InferedType ← Context.get? ctx case.patCmd
         let iLamCmd ← isLam? iCmd.term
-        -- this works since we already renamed everything
+        -- assume term is already renamed
         let caseLam := lam {
           params := iLamCmd.params,
-          body := case.value,
+          body := renameCaseFromParams iLamCmd.params case,
         }
         let iCaseLam ← inferType? ctx caseLam
         let iCaseLamType ← isLam? iCaseLam.type

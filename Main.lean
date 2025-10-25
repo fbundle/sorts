@@ -142,8 +142,8 @@ def term : Term := bnd {
       }
     },
   ],
-  last := app {cmd := var "id_AppendIfEmpty", args := [var "append_if_empty"]},
-  --last := var "append_if_empty",
+  --last := app {cmd := var "id_AppendIfEmpty", args := [var "append_if_empty"]},
+  last := var "append_if_empty",
   --last := app {
   --  cmd := var "append_if_empty",
   --  args := [var "zero", var "Nat", app {cmd := var "nil", args := [var "Nat"]}, var "one"],
@@ -153,7 +153,7 @@ def term : Term := bnd {
 }
 
 
-
+def emptyCtx: Std.HashMap String InferedType := Std.HashMap.emptyWithCapacity
 
 def main  : IO Unit := do
   -- print program
@@ -161,6 +161,6 @@ def main  : IO Unit := do
   let term := renameTerm emptyNameMap term
   IO.println s!"[PRINT_RENAMED] {term}"
   -- reduce program
-  match inferType? emptyFrame term with
+  match inferType? emptyCtx term with
     | some iterm => IO.println s!"[OK]\n\tterm: {iterm.term}\n\ttype: {iterm.type}"
     | none => IO.println "[ERR]"
