@@ -69,15 +69,15 @@ partial def unwrapTyp (term: Term): Term :=
     | _ =>
       term.map unwrapTyp
 
-def isSubType (argType: Term) (paramType: Term): Option Unit := do
-  let nArgType := unwrapTyp argType
-  let nParamType := unwrapTyp paramType
-  if nArgType == nParamType then
+def isSubType? (argType: Term) (paramType: Term): Option Unit := do
+  let argType := unwrapTyp argType
+  let paramType := unwrapTyp paramType
+  if argType == paramType then
     pure ()
   else
     dbg_trace s!"[DBG_TRACE] different type"
-    dbg_trace s!"argType:\t{nArgType}"
-    dbg_trace s!"paramType:\t{nParamType}"
+    dbg_trace s!"argType:\t{argType}"
+    dbg_trace s!"paramType:\t{paramType}"
     none
 
 mutual
@@ -165,7 +165,7 @@ partial def bindParamsWithArgs? [Repr F] [NameMap F InferedTerm] (frame: F) (par
     let iArg ← reduceTerm? frame arg
     let iArgType ← reduceTerm? frame iArg.type
 
-    match isSubType iArgType.term iParamType.term with
+    match isSubType? iArgType.term iParamType.term with
       | none =>
         --dbg_trace s!"[DBG_TRACE] bind_params_with_args type check failed {iArgType} -> {iParamType}"
         none
