@@ -100,7 +100,7 @@ def term : Term := bnd {
             name := "f",
             type := lam {
               params := [
-                {name := "Nat", type := univ 1},
+                {name := "m", type := var "Nat"},
               ],
               body := var "Nat",
             },
@@ -127,5 +127,5 @@ def main  : IO Unit := do
   let frame: Std.HashMap String InferedTerm := Std.HashMap.emptyWithCapacity
 
   match reduceTerm? frame term with
-    | some iterm => IO.println s!"[OK] term: {iterm.term}\ntype: {iterm.type}"
+    | some iterm => IO.println s!"[OK]\n\tterm: {iterm.term}\n\ttype: {iterm.type}"
     | none => IO.println "[ERR]"

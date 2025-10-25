@@ -7,6 +7,8 @@ import Std
 
 namespace EL2.Term
 
+def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
+
 partial def normalizeType? [Repr M] [NameMap M String] (nameMap: M) (term: Term): Option Term := do
   -- rename all parameters into _name_<count> where count = nameNameMap.size save into nameMap
   -- rename all variables according frame
@@ -105,16 +107,15 @@ partial def normalizeType? [Repr M] [NameMap M String] (nameMap: M) (term: Term)
         cases := nCases,
       })
 
-def isSubType (type1: Term) (type2: Term): Option Unit := do
-  let emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
-  let nType1 ← normalizeType? emptyNameMap type1
-  let nType2 ← normalizeType? emptyNameMap type2
-  if nType1 == nType2 then
+def isSubType (argType: Term) (paramType: Term): Option Unit := do
+  let nArgType ← normalizeType? emptyNameMap argType
+  let nParamType ← normalizeType? emptyNameMap paramType
+  if nArgType == nParamType then
     pure ()
   else
     dbg_trace s!"[DBG_TRACE] different type"
-    dbg_trace s!"{nType1}"
-    dbg_trace s!"{nType2}"
+    dbg_trace s!"argType:\t{nArgType}"
+    dbg_trace s!"paramType:\t{nParamType}"
     none
 
 mutual
@@ -238,7 +239,7 @@ partial def reduceMat? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Mat Term)
   pure output
 
 partial def reduceTerm? [Repr F] [NameMap F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
-  match term with
+  let iterm ← match term with
     | univ level => reduceUniv? frame level
     | var name => reduceVar? frame name
     | inh x => reduceInh? frame x
@@ -247,6 +248,14 @@ partial def reduceTerm? [Repr F] [NameMap F InferedTerm] (frame: F) (term: Term)
     | lam x => reduceLam? frame x
     | app x => reduceApp? frame x
     | mat x => reduceMat? frame x
+
+
+  let type ← normalizeType? emptyNameMap iterm.type
+
+  pure {
+    iterm with
+    type := type,
+  }
 
 end
 
