@@ -201,6 +201,8 @@ partial def reduceMat? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Mat Term)
 
 partial def reduceTerm? [Repr F] [NameMap F InferedTerm] (frame: F) (term: Term): Option InferedTerm := do
   -- TODO - reduce further, currently reduce can't bridger over Lam
+  -- maybe try to reduce Lam with dummy params
+  -- if ok, then reduce the body
 
   match term with
     | univ level => reduceUniv? frame level
