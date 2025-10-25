@@ -13,9 +13,6 @@ namespace EL2.Term
 -- 2. typ unwrapping
 -- 3. reduce
 
-def depthFirstSearch (term: T α) (f: α → Option β) : Option (T β) :=
-  -- TODO implement DFS to automate everything
-  sorry
 
 def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 

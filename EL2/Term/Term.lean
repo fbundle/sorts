@@ -57,6 +57,12 @@ inductive T (α: Type) where
   | mat: Mat α → T α
   deriving Repr, BEq
 
+def T.map (t: T α) (f: α → Option β) : Option (T β) :=
+  -- TODO implement this
+  sorry
+
+
+
 inductive Term where
   | univ: (level: Int) → Term
   | var: (name: String) → Term
