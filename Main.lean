@@ -114,8 +114,8 @@ def term : Term := bnd {
   --  cmd := var "append_if_empty",
   --  args := [var "zero", var "Nat", app {cmd := var "nil", args := [var "Nat"]}, var "one"],
   --},
-  -- last := app {cmd := var "id_Nat_to_Nat", args := [var "succ"]},
-  last := app {cmd := var "succ", args := [var "zero"]}
+  last := app {cmd := var "id_Nat_to_Nat", args := [var "succ"]},
+  -- last := app {cmd := var "succ", args := [var "zero"]}
 }
 
 
