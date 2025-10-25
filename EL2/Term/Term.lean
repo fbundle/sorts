@@ -77,4 +77,15 @@ structure InferedTerm where
   type: Term
   deriving Repr
 
+-- util
+def isLam? (term: Term): Option (Lam Term) :=
+  match term with
+    | lam l => some l
+    | _ => none
+
+def isInh? (term: Term): Option (Inh Term) :=
+  match term with
+    | inh i => some i
+    | _ => none
+
 end EL2.Term

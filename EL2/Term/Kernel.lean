@@ -7,17 +7,6 @@ import Std
 
 namespace EL2.Term
 
-def isLam? (term: Term): Option (Lam Term) :=
-  match term with
-    | lam l => some l
-    | _ => none
-
-def isInh? (term: Term): Option (Inh Term) :=
-  match term with
-    | inh i => some i
-    | _ => none
-
-
 partial def normalizeType [Repr M] [NameMap M String] (nameMap: M) (term: Term): Option Term := do
   -- rename all parameters into _name_<count> where count = nameNameMap.size save into nameMap
   -- rename all variables according frame
@@ -99,22 +88,6 @@ def isSubType (type1: Term) (type2: Term): Option Unit := do
     pure ()
   else
     none
-
-partial def matchCases? (inhCond: Inh Term) (cases: List (Case Term)): Option (Bnd Term) := do
-  let headCase ← cases.head?
-  if inhCond.cons = headCase.patCmd ∧ inhCond.args.length = headCase.patArgs.length then
-    let init: List (Bind Term) := (List.zip headCase.patArgs inhCond.args).map (λ (name, value) => {
-      name := name,
-      value := value,
-    })
-    pure {
-      init := init,
-      last := headCase.value,
-    }
-  else
-    let cases := cases.extract 1
-    matchCases? inhCond cases
-
 
 mutual
 partial def reduceMany? [Repr F] [NameMap F InferedTerm] (frame: F) (terms: List Term): Option (List (InferedTerm)) :=
@@ -211,6 +184,22 @@ partial def reduceApp? [Repr F] [NameMap F InferedTerm] (frame: F) (x: App Term)
   let iBody ← reduceTerm? argFrame lamCmd.body
   --dbg_trace s!"[DBG_TRACE] reduce_app_ok {app x} → {iBody}"
   pure iBody
+
+
+partial def matchCases? (inhCond: Inh Term) (cases: List (Case Term)): Option (Bnd Term) := do
+  let headCase ← cases.head?
+  if inhCond.cons = headCase.patCmd ∧ inhCond.args.length = headCase.patArgs.length then
+    let init: List (Bind Term) := (List.zip headCase.patArgs inhCond.args).map (λ (name, value) => {
+      name := name,
+      value := value,
+    })
+    pure {
+      init := init,
+      last := headCase.value,
+    }
+  else
+    let cases := cases.extract 1
+    matchCases? inhCond cases
 
 partial def reduceMat? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Mat Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_mat {mat x}"
