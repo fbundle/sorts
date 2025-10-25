@@ -84,6 +84,7 @@ partial def isSubTypeMany? (type1List: List Term) (type2List: List Term): Option
       isSubTypeMany? (type1List.extract 1) (type2List.extract 1)
 
 structure InferedType where
+  -- for type safety, we may want to change term: Term into Option ReducedTerm where ReducedTerm doesn't contain any variable
   term : Term -- currently we are using Typ as a hole, next we can replace by Option Term
   type : Term
   level : Int
@@ -140,9 +141,10 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
     | lam x =>
       let (subCtx, iNamedParams) ← Util.statefulMap? x.params ctx (λ subCtx param => do
         let iType ← inferType? subCtx param.type
+        dbg_trace s!"[DBG_TRACE] iType {param.type} -> {iType.term}"
         let iParamValue := {
-          term := typ {value := param.type},
-          type := param.type,
+          term := typ {value := iType.term},
+          type := iType.term,
           level := iType.level - 1,
           : InferedType
         }
@@ -176,7 +178,10 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
       let iLamCmd ← isLam? iCmd.term
       let iArgs ← Util.optionMap? x.args (inferType? ctx)
 
-      let _ ← isSubTypeMany? (iArgs.map (λ arg => arg.type)) (iLamCmd.params.map (λ param => param.type))
+      let iArgsType ← Util.optionMap? iArgs (λ iArg => inferType? ctx iArg.type)
+      let iParamsType ← Util.optionMap? iLamCmd.params (λ param => inferType? ctx param.type)
+
+      let _ ← isSubTypeMany? (iArgsType.map (λ iArgType => iArgType.term)) (iParamsType.map (λ iParamType => iParamType.term))
 
       -- WHNF
       let (subCtx, _) ← Util.statefulMap? (List.zip iLamCmd.params iArgs) ctx (λ subCtx (param, arg) => do
@@ -191,10 +196,11 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
         match isLam? iCmd.term with
           | none =>
             let iValue ← inferType? ctx case.value
+            let iType ← inferType? ctx iValue.type
             pure ({
               patCmd := case.patCmd,
               patArgs := case.patArgs,
-              value := iValue.type,
+              value := iType.term,
               : Case Term
             }, iValue.level)
 
@@ -207,11 +213,11 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedType] (ctx: Ctx) (term: Te
             }
             let iCaseLam ← inferType? ctx caseLam
             let iCaseLamType ← isLam? iCaseLam.type
-            let type := iCaseLamType.body
+            let iType ← inferType? ctx iCaseLamType.body
             pure ({
               patCmd := case.patCmd,
               patArgs := case.patArgs,
-              value := type,
+              value := iType.term,
               : Case Term
             }, iCaseLam.level)
       )
