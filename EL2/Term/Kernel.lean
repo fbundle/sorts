@@ -16,114 +16,61 @@ namespace EL2.Term
 
 def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 
-def unwrapTyp (x: Typ Term): Option Term := do
-  match x.value with
-    | inh y =>
-      let output := y.type
-      dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
-      pure output
-    | mat y =>
-      let output := mat {
-        y with
-        cases := y.cases.map (λ case => {
-          case with value := typ {value := case.value}
-        })
-      }
-      dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
-      pure output
-    | lam y =>
-      let output := lam {
-        y with
-        body := typ {value := y.body}
-      }
-      dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
-      pure output
-    | _ =>
-      -- cannot unwrap further
-      none
-
-partial def normalizeTerm? [Repr M] [NameMap M String] (nameMap: M) (term: Term): Option Term := do
+partial def renameTerm [Repr M] [NameMap M String] (nameMap: M) (term: Term): Term :=
   -- rename all parameters into _<count> where count = nameNameMap.size save into nameMap
-  -- rename all variables according frame
+  -- rename all variables according to nameMap
   match term with
-    | univ _ => term
     | var name =>
       match NameMap.get? nameMap name with
-        | none => pure term
-        | some newName => pure (var newName)
-    | inh x =>
-      let nType ← normalizeTerm? nameMap x.type
-      let nArgs ← Util.optionMap? x.args (normalizeTerm? nameMap)
-      pure (inh {
-        type := nType,
-        cons := x.cons,
-        args := nArgs,
-      })
-    | typ x =>
-      let nValue ← normalizeTerm? nameMap x.value
-      match unwrapTyp {value := nValue} with
-        | some output =>
-          normalizeTerm? nameMap output
-
-        | none =>
-          pure (typ {
-            value := nValue,
-          })
-
-    | bnd x =>
-      let nInit ← Util.optionMap? x.init (λ {name, value} => do
-        let nValue ← normalizeTerm? nameMap value
-        pure {
-          name := name,
-          value := nValue,
-          : Bind Term
-        }
-      )
-      let nLast ← normalizeTerm? nameMap x.last
-      pure (bnd {
-        init := nInit
-        last := nLast,
-      })
-
+        | none => term
+        | some newName => var newName
     | lam x =>
-      let (newNameMap, newParams) ← Util.statefulMap? x.params nameMap (λ nameMap param => do
+      let (newNameMap, newParams) := Util.statefulMap x.params nameMap (λ nameMap param =>
         let count := NameMap.size (α := String) nameMap
-        let newType ← normalizeTerm? nameMap param.type
+        let newType := renameTerm nameMap param.type
         let newName := s!"_{count}"
         let newNameMap := NameMap.set nameMap param.name newName
-        some (newNameMap, {name := newName, type := newType : Ann Term})
+        (newNameMap, {name := newName, type := newType : Ann Term})
       )
-      let newBody ← normalizeTerm? newNameMap x.body
-      pure (lam {
+      let newBody := renameTerm newNameMap x.body
+      lam {
         params := newParams,
         body := newBody,
-      })
-    | app x =>
-      let nCmd ← normalizeTerm? nameMap x.cmd
-      let nArgs ← Util.optionMap? x.args (normalizeTerm? nameMap)
-      pure (app {
-        cmd := nCmd,
-        args := nArgs,
-      })
-    | mat x =>
-      let nCond ← normalizeTerm? nameMap x.cond
-      let nCases ← Util.optionMap? x.cases (λ {patCmd, patArgs, value} => do
-        let nValue ← normalizeTerm? nameMap value
-        pure {
-          patCmd := patCmd,
-          patArgs := patArgs,
-          value := nValue,
-          : Case Term
+      }
+    | _ => term.map (renameTerm nameMap)
+
+partial def unwrapTyp (term: Term): Term :=
+  match term with
+    | typ x =>
+      match x.value with
+      | inh y =>
+        let output := y.type
+        dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
+        output
+      | mat y =>
+        let output := mat {
+          y with
+          cases := y.cases.map (λ case => {
+            case with value := typ {value := case.value}
+          })
         }
-      )
-      pure (mat {
-        cond := nCond,
-        cases := nCases,
-      })
+        dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
+        output
+      | lam y =>
+        let output := lam {
+          y with
+          body := typ {value := y.body}
+        }
+        dbg_trace s!"[DBG_TRACE] unwrapping {typ x} -> {output}"
+        output
+      | _ =>
+        term
+    | _ =>
+      term.map unwrapTyp
 
 def isSubType (argType: Term) (paramType: Term): Option Unit := do
-  let nArgType ← normalizeTerm? emptyNameMap argType
-  let nParamType ← normalizeTerm? emptyNameMap paramType
+  let nArgType := unwrapTyp argType
+  let nParamType := unwrapTyp paramType
   if nArgType == nParamType then
     pure ()
   else
@@ -170,13 +117,16 @@ partial def reduceTyp? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Typ Term)
   --dbg_trace s!"[DBG_TRACE] reduce_typ {typ x}"
   -- unwrap usual types - put typ as close to leaf as possible - not complete
   let iValue ← reduceTerm? frame x.value
-  match unwrapTyp {value := iValue.term} with
-    | some output => reduceTerm? frame output
-    | none =>
+  let iType ← reduceTerm? frame iValue.type
+  let unwrappedType := unwrapTyp iType.term
+  match unwrappedType with
+    | typ _ =>
       -- cannot unwrap further
-      let iType ← reduceTerm? frame iValue.type
       --dbg_trace s!"[DBG_TRACE] reduce_typ_ok {typ x} → {iType}"
       pure iType
+    | _ =>
+      -- unwrapped
+      reduceTerm? frame unwrappedType
 
 partial def reduceBnd? [Repr F] [NameMap F InferedTerm] (frame: F) (x: Bnd Term): Option InferedTerm := do
   --dbg_trace s!"[DBG_TRACE] reduce_bnd {bnd x}"
@@ -271,7 +221,7 @@ partial def reduceTerm? [Repr F] [NameMap F InferedTerm] (frame: F) (term: Term)
 
   -- TODO - currently normalize term doesn't have access to frame
   -- so it cannot normalize further things like Nat into (inh U_1 Nat)
-  let type ← normalizeTerm? emptyNameMap iterm.type
+  let type ← renameTerm emptyNameMap iterm.type
 
   pure {
     iterm with

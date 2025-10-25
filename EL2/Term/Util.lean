@@ -1,6 +1,7 @@
 namespace EL2.Term.Util
 
 def optionMap (xs: List α) (f: α → Option β): List β :=
+  -- TODO - remove this
   let rec loop (ys: Array β) (xs: List α) (f: α → Option β): Array β :=
     match xs with
       | [] => ys
@@ -18,23 +19,25 @@ def optionMap? (xs: List α) (f: α → Option β): Option (List β) :=
   else
     ys
 
-partial def statefulMap (xs: List α) (state: State) (f: State → α → Option (State × β)): State × List β :=
-  let rec loop (state: State) (ys: Array β) (listA: List α): State × Array β :=
-    match listA with
-      | [] => (state, ys)
+partial def statefulMap (xs: List α) (state: State) (f: State → α → State × β): State × List β :=
+  let rec loop (ys: Array β) (xs: List α) (state: State): State × List β :=
+    match xs with
+      | [] => (state, ys.toList)
       | x :: xs =>
-        match f state x with
-          | none => (state, ys)
-          | some (state, b) => loop state (ys.push b) xs
+        let (state, y) := f state x
+        loop (ys.push y) xs state
 
-  let (state, ys) := loop state #[] xs
-  (state, ys.toList)
+  loop #[] xs state
+
 
 def statefulMap? (xs: List α) (state: State) (f: State → α → Option (State × β)) : Option (State × List β) :=
-  let (state, ys) := statefulMap xs state f
-  if ys.length ≠ xs.length then
-    none
-  else
-    some (state, ys)
+  let rec loop (ys: Array β) (xs: List α) (state: State): Option (State × List β) :=
+    match xs with
+      | [] => some (state, ys.toList)
+      | x :: xs =>
+        match f state x with
+          | none => none
+          | some (state, y) => loop (ys.push y) xs state
+  loop #[] xs state
 
 end EL2.Term.Util

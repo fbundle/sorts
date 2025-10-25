@@ -125,13 +125,32 @@ def T.optionMap? (t: T α) (f: α → Option β) : Option (T β) := do
         cases := cases,
       }
 
-
-
 inductive Term where
   | univ: (level: Int) → Term
   | var: (name: String) → Term
   | t: T Term → Term
   deriving Repr, BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
+
+def Term.map (term: Term) (f: Term → Term): Term :=
+  match term with
+    | .univ _ => term
+    | .var _ => term
+    | .t x =>
+      match x.optionMap? (λ term => some (f term)) with
+        | none =>
+          dbg_trace "[UNREACHABLE]"
+          term -- unreachable
+        | some y => Term.t y
+
+def Term.optionMap? (term: Term) (f: Term → Option Term): Option Term := do
+  match term with
+    | .univ _ => term
+    | .var _ => term
+    | .t x =>
+      let y ← x.optionMap? f
+      Term.t y
+
+
 
 notation "univ" x => Term.univ x
 notation "var" x => Term.var x

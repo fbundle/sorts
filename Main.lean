@@ -127,6 +127,7 @@ def main  : IO Unit := do
   -- reduce program
   let frame: Std.HashMap String InferedTerm := Std.HashMap.emptyWithCapacity
 
+  let term := renameTerm emptyNameMap term
   match reduceTerm? frame term with
     | some iterm => IO.println s!"[OK]\n\tterm: {iterm.term}\n\ttype: {iterm.type}"
     | none => IO.println "[ERR]"
