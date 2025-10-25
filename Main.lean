@@ -123,13 +123,10 @@ def term : Term := bnd {
 
 def main  : IO Unit := do
   -- print program
-  let term := renameTerm emptyNameMap term
   IO.println s!"[PRINT] {term}"
+  let term := renameTerm emptyNameMap term
+  IO.println s!"[PRINT_RENAMED] {term}"
   -- reduce program
-  let frame: Std.HashMap String InferedTerm := Std.HashMap.emptyWithCapacity
-
-
-
-  match reduceTerm? frame term with
+  match reduceTerm? emptyFrame term with
     | some iterm => IO.println s!"[OK]\n\tterm: {iterm.term}\n\ttype: {iterm.type}"
     | none => IO.println "[ERR]"

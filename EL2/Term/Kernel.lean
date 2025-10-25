@@ -15,6 +15,7 @@ namespace EL2.Term
 
 
 def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
+def emptyFrame: Std.HashMap String InferedTerm := Std.HashMap.emptyWithCapacity
 
 partial def renameTerm [Repr M] [NameMap M String] (nameMap: M) (term: Term): Term :=
   -- rename all parameters into _<count> where count = nameNameMap.size save into nameMap
