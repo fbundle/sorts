@@ -37,4 +37,17 @@ def statefulMap? (xs: List α) (state: State) (f: State → α → Option (State
   else
     some (state, ys)
 
+partial def applyAtMostOnce? {α: Type} {β: Type} (x: α) (fs: List (α → Option β)): Option β :=
+  match fs with
+    | [] => none
+    | f :: fs =>
+      match f x with
+        | none => applyAtMostOnce? x fs
+        | some y => some y
+
+def chain (f: α → Option β) (g: β → Option γ) (a: α): Option γ := do
+  let b ← f a
+  let c ← g b
+  pure c
+
 end EL2.Form.Util

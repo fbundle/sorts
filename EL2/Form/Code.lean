@@ -7,7 +7,7 @@ open EL2.Term
 
 mutual
 
-def parseInh? := {
+partial def parseInh? := {
   parseHead := ["inh"],
   parseList (list: List Form): Option (Inh Term) := do
     let typeForm ← list[0]?
@@ -24,7 +24,7 @@ def parseInh? := {
   : ParseList (Inh Term)
 }.parseForm
 
-def parseTyp? := {
+partial def parseTyp? := {
   parseHead := ["typ"],
   parseList (list: List Form): Option (Typ Term) := do
     let valueForm ← list[0]?
@@ -35,7 +35,7 @@ def parseTyp? := {
   : ParseList (Typ Term)
 }.parseForm
 
-def parseBind? := {
+partial def parseBind? := {
   parseHead := ["lam", ":="],
   parseList (list: List Form): Option (Bind Term) := do
     let nameForm ← list[0]?
@@ -49,7 +49,7 @@ def parseBind? := {
   : ParseList (Bind Term)
 }.parseForm
 
-def parseBnd? := {
+partial def parseBnd? := {
   parseHead := ["let"],
   parseList (list: List Form): Option (Bnd Term) := do
     let initForm := list.extract 0 (list.length - 1)
@@ -63,7 +63,7 @@ def parseBnd? := {
   : ParseList (Bnd Term)
 }.parseForm
 
-def parseAnn? := {
+partial def parseAnn? := {
   parseHead := ["ann", ":"],
   parseList (list: List Form): Option (Ann Term) := do
     let nameForm ← list[0]?
@@ -77,7 +77,7 @@ def parseAnn? := {
   : ParseList (Ann Term)
 }.parseForm
 
-def parseLam? := {
+partial def parseLam? := {
   parseHead := ["lam", "=>"],
   parseList (list :List Form): Option (Lam Term) := do
     let paramsForm := list.extract 0 (list.length - 1)
@@ -91,17 +91,7 @@ def parseLam? := {
   : ParseList (Lam Term)
 }.parseForm
 
-def parseApp? (list: List Form): Option (App Term) := do
-  let cmdForm ← list[0]?
-  let cmd ← parse? cmdForm
-  let argsForm := list.extract 1
-  let args ← Util.optionMap? argsForm parse?
-  pure {
-    cmd := cmd,
-    args := args,
-  }
-
-def parseCase? := {
+partial def parseCase? := {
   parseHead := ["case", "=>"],
   parseList (list: List Form): Option (Case Term) := do
     let patCmdForm ← list[0]?
@@ -118,7 +108,7 @@ def parseCase? := {
   : ParseList (Case Term)
 }.parseForm
 
-def parseMat? := {
+partial def parseMat? := {
   parseHead := ["match"],
   parseList (list: List Form): Option (Mat Term) := do
     let condForm ← list[0]?
@@ -130,13 +120,29 @@ def parseMat? := {
       cases := cases,
     }
   : ParseList (Mat Term)
-}
+}.parseForm
 
-def parse? (form: Form): Option Term :=
+partial def parseApp? (form: Form): Option (App Term) := do
+  let list ← isList? form
+  let cmdForm ← list[0]?
+  let cmd ← parse? cmdForm
+  let argsForm := list.extract 1
+  let args ← Util.optionMap? argsForm parse?
+  pure {
+    cmd := cmd,
+    args := args,
+  }
 
-
-
-  none
+partial def parse? (form: Form): Option Term :=
+  Util.applyAtMostOnce? form [
+    Util.chain isName? (var ·),
+    Util.chain parseInh? (inh ·),
+    Util.chain parseTyp? (typ ·),
+    Util.chain parseBnd? (bnd ·),
+    Util.chain parseLam? (lam ·),
+    Util.chain parseMat? (mat ·),
+    Util.chain parseApp? (app ·),
+  ]
 
 end
 
