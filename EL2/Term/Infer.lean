@@ -32,7 +32,7 @@ structure InferedTerm where
   -- level : level of term
   level: Int
 
-
+-- TODO change Option to Except String
 partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := do
   dbg_trace s!"[DBG_TRACE] infering {term} with ctx {ctxKeys ctx}"
   -- recursively do WHNF and type infer
