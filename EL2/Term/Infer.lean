@@ -24,7 +24,7 @@ def inhEmpty (type: Term) : Term :=
   }
 
 partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) : Option InferedType := do
-  dbg_trace s!"[DBG_TRACE] infering at {term}"
+  --dbg_trace s!"[DBG_TRACE] infering at {term}"
   -- recursively do WHNF and type infer
   let o: Option InferedType := do
     match term with
