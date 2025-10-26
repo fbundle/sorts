@@ -58,7 +58,7 @@ inductive Term where
   | univ: (level: Int) → Term
   | var: (name: String) → Term
   | t: T Term → Term
-  deriving Repr, BEq, Nonempty -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
+  deriving Repr, BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
 
 

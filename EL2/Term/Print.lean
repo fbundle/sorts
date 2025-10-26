@@ -1,5 +1,4 @@
 import EL2.Term.Term
-import EL2.Term.TermUtil
 
 namespace EL2.Term
 

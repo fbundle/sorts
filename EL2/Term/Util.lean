@@ -13,7 +13,4 @@ def statefulMapM [Monad m] (xs: List α) (state: State) (f: State → α → m (
 def statefulMap (xs: List α) (state: State) (f: State → α → State × β): State × List β :=
   Id.run (statefulMapM xs state (λ s x => pure (f s x)))
 
-
-
-
 end EL2.Term.Util

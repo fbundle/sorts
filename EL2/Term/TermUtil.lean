@@ -1,4 +1,5 @@
 import EL2.Term.Term
+import EL2.Term.Print
 import EL2.Term.Util
 import Std
 
@@ -81,30 +82,20 @@ def Term.mapM [Monad m] (term: Term) (f: Term → m Term): m Term := do
 def Term.map (term: Term) (f: Term → Term): Term :=
   Id.run (term.mapM (λ x => pure (f x)))
 
-class Context M α where
-  size: M → Nat
-  set: M → String → α → M
-  get?: M → String → Option α
-
-instance : Context (Std.HashMap String α) α where
-  size := Std.HashMap.size
-  set := Std.HashMap.insert
-  get? := Std.HashMap.get?
 
 def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 
-def dummyName [Context N String] (nameMap: N): String :=
-  let count := Context.size (α := String) nameMap
-  s!"_{count}"
+def dummyName (nameMap: Std.HashMap String String): String :=
+  s!"_{nameMap.size}"
 
-partial def renameTerm? [Repr N] [Context N String] (nameMap: N) (term: Term): Option Term := do
+partial def renameTerm? (nameMap: Std.HashMap String String) (term: Term): Option Term := do
   -- nameMap holds a mapping oldName -> newName
   -- rename all parameters into _<count> where count = nameNameMap.size save into nameMap
   -- rename all match parameters into _<count>
   -- rename all variables according to nameMap
   match term with
     | var oldName =>
-      let newName ← Context.get? nameMap oldName
+      let newName ← nameMap.get? oldName
       pure (var newName)
 
     | lam x =>
@@ -112,7 +103,7 @@ partial def renameTerm? [Repr N] [Context N String] (nameMap: N) (term: Term): O
         let newType ← renameTerm? oldNameMap param.type
 
         let newName := dummyName oldNameMap
-        let newNameMap := Context.set oldNameMap param.name newName
+        let newNameMap := oldNameMap.insert param.name newName
 
         (newNameMap, {name := newName, type := newType : Param Term})
       )
@@ -126,7 +117,7 @@ partial def renameTerm? [Repr N] [Context N String] (nameMap: N) (term: Term): O
       let newCases ← x.cases.mapM (λ case => do
         let (newNameMap, newPatArgs) := Util.statefulMap case.patArgs nameMap (λ oldNameMap patArg =>
           let newName := dummyName oldNameMap
-          let newNameMap := Context.set oldNameMap patArg newName
+          let newNameMap := oldNameMap.insert patArg newName
 
           (newNameMap, newName)
         )
@@ -144,6 +135,30 @@ partial def renameTerm? [Repr N] [Context N String] (nameMap: N) (term: Term): O
       })
 
     | _ => term.mapM (renameTerm? nameMap)
+
+def renameCase? (cons: Lam Term) (case: Case Term): Option (Case Term) := do
+  -- rename case patArgs according to constructor
+  -- return renamed value
+  let (newNameMap, newPatArgs) := Util.statefulMap (List.zip case.patArgs cons.params) emptyNameMap (λ nameMap (patArg, param) =>
+    let newNameMap := nameMap.insert patArg param.name -- rename patArg to paramNam
+    (newNameMap, param.name)
+  )
+  let newValue ← renameTerm? newNameMap case.value
+  pure {
+    patCmd := case.patCmd,
+    patArgs := newPatArgs,
+    value := newValue,
+  }
+
+partial def isSubType? (type1: Term) (type2: Term): Option Unit := do
+  if type1 != type2 then
+    dbg_trace s!"[DBG_TRACE] different type"
+    dbg_trace s!"type1:\t{type1}"
+    dbg_trace s!"type2:\t{type2}"
+    none
+  else
+    pure ()
+
 
 -- util
 def isLam? (term: Term): Option (Lam Term) :=

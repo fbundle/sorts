@@ -153,14 +153,14 @@ def term : Term := bnd {
 }
 
 
-def emptyCtx: Std.HashMap String InferedType := Std.HashMap.emptyWithCapacity
-
 def main  : IO Unit := do
   -- print program
   IO.println s!"[PRINT] {term}"
-  let term := renameTerm emptyNameMap term
-  IO.println s!"[PRINT_RENAMED] {term}"
-  -- reduce program
-  match inferType? emptyCtx term with
-    | some iterm => IO.println s!"[OK]\n\tterm: {iterm.term}\n\ttype: {iterm.type}"
+  match renameTerm? emptyNameMap term with
+    | some term =>
+      IO.println s!"[PRINT_RENAMED] {term}"
+      -- reduce program
+      match infer? ctxEmpty term with
+        | some iterm => IO.println s!"[OK]type: {iterm.typeTerm}"
+        | none => IO.println "[ERR]"
     | none => IO.println "[ERR]"
