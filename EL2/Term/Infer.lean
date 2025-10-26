@@ -90,9 +90,9 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
         let paramsType := iCmd.params.map (λ param => param.type)
         let argsType := iArgs.map (λ iArg => iArg.type)
 
-        let _ ← (List.zip argsType paramsType).mapM (λ (argType, paramType) => do
-          let _ ← isSubType? argType paramType
-          pure ()
+        let _ ← (List.zip argsType paramsType).mapM (λ (type1, type2) => do
+          if isSameType type1 type2 then pure () else
+            none
         )
 
         inferType? ctx (inhEmpty iCmd.body)
