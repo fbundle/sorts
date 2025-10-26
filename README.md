@@ -14,3 +14,5 @@ in the code, it was able to verify that the type of `append_if_empty` matches th
     | succ _ => Vec m T
 )
 ```
+
+if it was a bit smarter, it would know that in the case `zero` parameter `m` equals `zero`, hence it can reduce `succ m` into `one`
