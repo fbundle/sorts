@@ -1,15 +1,9 @@
-import EL2.Term.Util
-
 namespace EL2.Term
 
 structure Inh (α: Type) where
   type: α
   cons: String -- cons and args make sure object is constructed uniquely
   args: List α -- i.e. (inh Nat succ zero) = (inh Nat succ zero) by definition
-  deriving Repr, BEq
-
-structure Typ (α: Type) where
-  value: α
   deriving Repr, BEq
 
 structure Bind (α: Type) where
@@ -22,13 +16,13 @@ structure Bnd (α: Type) where
   last: α
   deriving Repr, BEq
 
-structure Ann (α: Type) where
+structure Param (α: Type) where
   name: String
   type: α
   deriving Repr, BEq
 
 structure Lam (α: Type) where
-  params: List (Ann α)
+  params: List (Param α)
   body: α
   deriving Repr, BEq
 
@@ -54,7 +48,6 @@ structure Hole (α: Type) where
 
 inductive T (α: Type) where
   | inh: Inh α → T α
-  | typ: Typ α → T α -- TODO drop
   | bnd: Bnd α → T α
   | lam: Lam α → T α
   | app: App α → T α
@@ -65,7 +58,7 @@ inductive Term where
   | univ: (level: Int) → Term
   | var: (name: String) → Term
   | t: T Term → Term
-  deriving Repr, BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
+  deriving Repr, BEq, Nonempty -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
 notation "univ" x => Term.univ x
 notation "var" x => Term.var x
@@ -79,20 +72,7 @@ notation "mat" x => Term.t (T.mat x)
 inductive ReducedTerm where
   | univ: (level: Int) → ReducedTerm
   | t: T ReducedTerm → ReducedTerm
-  deriving Repr, BEq
-
-notation "r_univ" x => ReducedTerm.univ x
-notation "r_inh" x => ReducedTerm.t (T.inh x)
-notation "r_typ" x => ReducedTerm.t (T.typ x)
-notation "r_bnd" x => ReducedTerm.t (T.bnd x)
-notation "r_lam" x => ReducedTerm.t (T.lam x)
-notation "r_app" x => ReducedTerm.t (T.app x)
-notation "r_mat" x => ReducedTerm.t (T.mat x)
-
-structure InferedTerm where
-  term: Term
-  type: Term
-  deriving Repr
+  deriving Repr, BEq, Nonempty
 
 -- util
 def isLam? (term: Term): Option (Lam Term) :=

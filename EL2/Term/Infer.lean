@@ -1,66 +1,12 @@
 import EL2.Term.Term
 import EL2.Term.TermUtil
+import EL2.Term.Util
 import Std
 import EL2.Term.Print
 
 namespace EL2.Term
 
-class Context M α where
-  size: M → Nat
-  set: M → String → α → M
-  get?: M → String → Option α
 
-instance : Context (Std.HashMap String α) α where
-  size := Std.HashMap.size
-  set := Std.HashMap.insert
-  get? := Std.HashMap.get?
-
-
-def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
-
-partial def renameTerm [Repr M] [Context M String] (nameMap: M) (term: Term): Term :=
-  -- rename all parameters into _<count> where count = nameNameMap.size save into nameMap
-  -- rename all variables according to nameMap
-  match term with
-    | var name =>
-      match Context.get? nameMap name with
-        | none => term
-        | some newName => var newName
-    | lam x =>
-      let (newNameMap, newParams) := Util.statefulMap x.params nameMap (λ nameMap param =>
-        let count := Context.size (α := String) nameMap
-        let newName := s!"_{count}"
-        let newType := renameTerm nameMap param.type
-        let newNameMap := Context.set nameMap param.name newName
-        (newNameMap, {name := newName, type := newType : Ann Term})
-      )
-      let newBody := renameTerm newNameMap x.body
-      lam {
-        params := newParams,
-        body := newBody,
-      }
-    | mat x =>
-      let newCond := renameTerm nameMap x.cond
-      let newCases := x.cases.map (λ case =>
-        let (newNameMap, newPatArgs) := Util.statefulMap case.patArgs nameMap (λ nameMap patArg =>
-          let count := Context.size (α := String) nameMap
-          let newName := s!"_{count}"
-          let newNameMap := Context.set nameMap patArg newName
-          (newNameMap, newName)
-        )
-        let newValue := renameTerm newNameMap case.value
-        {
-          patCmd := case.patCmd,
-          patArgs := newPatArgs,
-          value := newValue,
-          : Case Term
-        }
-      )
-      mat {
-        cond := newCond,
-        cases := newCases,
-      }
-    | _ => term.map (renameTerm nameMap)
 
 def renameCaseFromParams (params: List (Ann Term)) (case: Case Term): Term :=
   let (newNameMap, _) := Util.statefulMap (List.zip case.patArgs params) emptyNameMap (λ nameMap (patArg, param) =>
