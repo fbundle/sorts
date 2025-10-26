@@ -88,8 +88,6 @@ def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 def dummyName (nameMap: Std.HashMap String String): String :=
   s!"_{nameMap.size}"
 
-def wildcardName := "_"
-
 partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :=
   -- nameMap holds a mapping oldName -> newName
   -- rename all parameters into _<count> where count = nameNameMap.size save into nameMap
@@ -142,8 +140,8 @@ partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :
 def renameCase (cons: Lam Term) (case: Case Term): Case Term :=
   -- rename case patArgs according to constructor
   -- return renamed value
-  let (newNameMap, newPatArgs) := Util.statefulMap (List.zip case.patArgs cons.params) emptyNameMap (λ nameMap (patArg, param) =>
-    let newNameMap := nameMap.insert patArg param.name -- rename patArg to paramNam
+  let (newNameMap, newPatArgs) := Util.statefulMap (List.zip case.patArgs cons.params) emptyNameMap (λ oldNameMap (patArg, param) =>
+    let newNameMap := oldNameMap.insert patArg param.name -- rename patArg to paramNam
     (newNameMap, param.name)
   )
   let newValue := renameTerm newNameMap case.value
