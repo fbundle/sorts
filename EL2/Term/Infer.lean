@@ -34,7 +34,7 @@ structure InferedTerm where
 
 
 partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := do
-  dbg_trace s!"[DBG_TRACE] infering {term}"
+  dbg_trace s!"[DBG_TRACE] infering {term} with ctx {ctxKeys ctx}"
   -- recursively do WHNF and type infer
   match term with
     | univ level =>

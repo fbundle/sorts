@@ -156,11 +156,7 @@ def term : Term := bnd {
 def main  : IO Unit := do
   -- print program
   IO.println s!"[PRINT] {term}"
-  match renameTerm? emptyNameMap term with
-    | some term =>
-      IO.println s!"[PRINT_RENAMED] {term}"
-      -- reduce program
-      match infer? ctxEmpty term with
-        | some iterm => IO.println s!"[OK]type: {iterm.typeTerm}"
-        | none => IO.println "[ERR]"
+  -- reduce program
+  match infer? ctxEmpty term with
+    | some iterm => IO.println s!"[OK]type: {iterm.typeTerm}"
     | none => IO.println "[ERR]"
