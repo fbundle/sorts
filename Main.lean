@@ -161,8 +161,8 @@ def ctxEmpty : Std.HashMap String InferedType := Std.HashMap.emptyWithCapacity
 
 def main  : IO Unit := do
   -- print program
-  IO.println s!"[PRINT] {term}"
+  IO.println s!"[PRINT]\n{term}"
   -- reduce program
   match inferType? ctxEmpty term with
-    | some iterm => IO.println s!"[OK]type: {iterm.type}"
+    | some iterm => IO.println s!"[OK] type:\n{iterm.type}"
     | none => IO.println "[ERR]"
