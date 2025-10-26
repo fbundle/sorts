@@ -82,11 +82,5 @@ instance : ToString Term where
 instance: Repr Term where
   reprPrec (term: Term) (_: Nat): Std.Format := toString term
 
-instance : ToString ReducedTerm where
-  toString := toString ∘ ReducedTerm.toTerm
-
-instance: Repr ReducedTerm where
-  reprPrec (term: ReducedTerm) (_: Nat): Std.Format := toString term
-
 
 end EL2.Term

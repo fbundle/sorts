@@ -6,7 +6,7 @@ import EL2.Term.Print
 
 namespace EL2.Term
 
-def renameCase? (cons: Lam ReducedTerm Term) (case: Case Term): Option (Case Term) := do
+def renameCase? (cons: Lam Term) (case: Case Term): Option (Case Term) := do
   -- rename case patArgs according to constructor
   -- return renamed value
   let (newNameMap, newPatArgs) := Util.statefulMap (List.zip case.patArgs cons.params) emptyNameMap (λ nameMap (patArg, param) =>
@@ -29,26 +29,22 @@ partial def isSubType? (type1: Term) (type2: Term): Option Unit := do
   else
     pure ()
 
+structure FutureTerm where
+  ctx [Context Ctx Term]: Ctx
+  term: Term
+
 structure InferedTerm where
-  term?: Option ReducedTerm
-  type: Term
+  term?: Option Term
+  type: FutureTerm
   level: Int
-
-structure LazyInferedTerm where
-  -- TODO, for future add context when term is not reduced
-  term: Option Term
-  type: Term
-  level: Int
-  ctx [Context Ctx InferedType] : Ctx
-
 
 instance: ToString InferedTerm where
   toString (iterm: InferedTerm) :=
     match iterm.term? with
       | none =>
-        s!"term: none type: {iterm.type} level: {iterm.level}"
+        s!"term: none type: {iterm.type.term} level: {iterm.level}"
       | some term =>
-        s!"term: {term} type: {iterm.type} level: {iterm.level}"
+        s!"term: {term} type: {iterm.type.term} level: {iterm.level}"
 
 instance: Repr InferedTerm where
   reprPrec (iterm: InferedTerm) (_: Nat): Std.Format := toString iterm
@@ -60,7 +56,7 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedTerm] (ctx: Ctx) (term: Te
   match term with
     | univ level =>
       pure {
-        term? := ReducedTerm.univ level,
+        term? := term,
         type := univ (level + 1),
         level := level + 1, -- U_1 is at level 2
       }
@@ -73,7 +69,7 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedTerm] (ctx: Ctx) (term: Te
       let iArgs ← x.args.mapM (inferType? ctx)
 
       pure {
-        term? := r_inh {
+        term? := inh {
           type := ← iType.term?,
           cons := x.cons,
           args := ← iArgs.mapM (λ iArg => iArg.term?),
@@ -112,16 +108,16 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedTerm] (ctx: Ctx) (term: Te
         pure {
           name := name,
           type := ← iType.term?,
-          : Param ReducedTerm
+          : Param Term
         }
       )
 
       pure {
-        term? := r_lam {
+        term? := lam {
           params := newParams,
           body := x.body,
         },
-        type := r_lam {
+        type := lam {
           params := newParams,
           body := iBody.type,
         },
@@ -131,7 +127,7 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedTerm] (ctx: Ctx) (term: Te
     | app x =>
       -- infer
       let iCmd ← inferType? ctx x.cmd
-      let iLam ← isReducedTermLam? (← iCmd.term?)
+      let iLam ← isLam? (← iCmd.term?)
       let iArgs ← x.args.mapM (inferType? ctx)
       -- type check
       let iArgsType ← iArgs.mapM (λ iArg => inferType? ctx iArg.type)
@@ -151,7 +147,7 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedTerm] (ctx: Ctx) (term: Te
       let casesTypeLevel ← x.cases.mapM (λ case => do
         let iCmd: InferedTerm ← Context.get? ctx case.patCmd
         let iCmdTerm ← iCmd.term?
-        match isReducedTermLam? iCmdTerm with
+        match isLam? iCmdTerm with
           | none => -- case is not a lambda
             let iValue ← inferType? ctx case.value
             let iType ← inferType? ctx iValue.type
@@ -166,17 +162,17 @@ partial def inferType? [Repr Ctx] [Context Ctx InferedTerm] (ctx: Ctx) (term: Te
             -- rename case
             let case ← renameCase? iLam case
             -- convert case to lambda to reuse inferType?
-            let caseLam := r_lam {
+            let iCase ← inferType? ctx (lam {
               params := iLam.params,
               body := case.value,
-            }
-            let iCaseLam ← inferType? ctx caseLam
-            let iCaseLamType ← isTermLam? iCaseLam.type
-            let iType ← inferType? ctx iCaseLamType.body
+            })
+            let iCaseLamType ← isLam? iCase.type
+            -- let iType ← inferType? ctx iCaseLamType.body
+            let iTypeTerm := iCaseLamType.body
             pure ({
               patCmd := case.patCmd,
               patArgs := case.patArgs,
-              value := iType.term,
+              value := iTypeTerm,
               : Case Term
             }, iCaseLam.level)
       )

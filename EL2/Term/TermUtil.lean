@@ -5,11 +5,11 @@ import Std
 
 namespace EL2.Term
 
-def T.mapM [Monad m] (t: T α β) (fa: α → m γ) (fb: β → m δ) : m (T γ δ) := do
+def T.mapM [Monad m] (t: T α) (f: α → m β) : m (T β) := do
   match t with
     | T.inh x =>
-      let type ← fa x.type
-      let args ← x.args.mapM fa
+      let type ← f x.type
+      let args ← x.args.mapM f
       pure (T.inh {
         type := type,
         cons := x.cons,
@@ -17,48 +17,48 @@ def T.mapM [Monad m] (t: T α β) (fa: α → m γ) (fb: β → m δ) : m (T γ 
       })
     | T.bnd x =>
       let init ← x.init.mapM (λ bind => do
-        let value ← fa bind.value
+        let value ← f bind.value
         pure {
           name := bind.name,
           value := value,
-          : Bind γ
+          : Bind β
         }
       )
-      let last ← fa x.last
+      let last ← f x.last
       pure (T.bnd {
         init := init,
         last := last,
       })
     | T.lam x =>
       let params ← x.params.mapM (λ param => do
-        let type ← fa param.type
+        let type ← f param.type
         pure {
           name := param.name,
           type := type,
-          : Param γ
+          : Param β
         }
       )
-      let body ← fb x.body
+      let body ← f x.body
       pure (T.lam {
         params := params,
         body := body,
       })
     | T.app x =>
-      let cmd ← fa x.cmd
-      let args ← x.args.mapM fa
+      let cmd ← f x.cmd
+      let args ← x.args.mapM f
       pure (T.app {
         cmd := cmd,
         args := args,
       })
     | T.mat x =>
-      let cond ← fa x.cond
+      let cond ← f x.cond
       let cases ← x.cases.mapM (λ case => do
-        let value ← fa case.value
+        let value ← f case.value
         pure {
           patCmd := case.patCmd,
           patArgs := case.patArgs,
           value := value
-          : Case γ
+          : Case β
         }
       )
       pure (T.mat {
@@ -66,33 +66,20 @@ def T.mapM [Monad m] (t: T α β) (fa: α → m γ) (fb: β → m δ) : m (T γ 
         cases := cases,
       })
 
-def T.map (t: T α β) (fa: α → γ) (fb: β → δ): T γ δ :=
-  Id.run (t.mapM (λ x => pure (fa x)) (λ y => pure (fb y)))
+def T.map (t: T α) (f: α → β) : T β :=
+  Id.run (t.mapM (λ x => pure (f x)))
 
 def Term.mapM [Monad m] (term: Term) (f: Term → m Term): m Term := do
   match term with
     | .univ _ => pure term
     | .var _ => pure term
     | .t x =>
-      let y ← x.mapM f f
+      let y ← x.mapM f
       pure (Term.t y)
 
 
 def Term.map (term: Term) (f: Term → Term): Term :=
   Id.run (term.mapM (λ x => pure (f x)))
-
-partial def ReducedTerm.toTerm (reducedTerm: ReducedTerm): Term :=
-  match reducedTerm with
-    | .univ level => Term.univ level
-    | .pi x =>
-      let y := (T.lam x).map ReducedTerm.toTerm ReducedTerm.toTerm
-      Term.t y
-    | .t x =>
-      let y := x.map ReducedTerm.toTerm id
-      Term.t y
-
-instance: Coe ReducedTerm Term where
-  coe rt := rt.toTerm
 
 class Context M α where
   size: M → Nat
@@ -159,15 +146,9 @@ partial def renameTerm? [Repr N] [Context N String] (nameMap: N) (term: Term): O
     | _ => term.mapM (renameTerm? nameMap)
 
 -- util
-def isTermLam? (term: Term): Option (Lam Term Term) :=
+def isLam? (term: Term): Option (Lam Term) :=
   match term with
-    | .t (.lam x) => some x
+    | lam x => some x
     | _ => none
-
-def isReducedTermLam? (term: ReducedTerm): Option (Lam ReducedTerm Term) :=
-  match term with
-    | .t (.lam x) => some x
-    | _ => none
-
 
 namespace EL2.Term

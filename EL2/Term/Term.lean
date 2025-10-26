@@ -26,11 +26,6 @@ structure Lam (α: Type) where
   body: α
   deriving Repr, BEq
 
-structure Pi (α: Type) where -- Pi is the type of Lam
-  params: List α
-  body: α
-  deriving Repr, BEq
-
 structure App (α: Type) where
   cmd: α
   args: List α
