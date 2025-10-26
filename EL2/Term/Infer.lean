@@ -16,7 +16,13 @@ structure InferedType where
   level: Int -- level of term
   deriving Repr
 
--- TODO change Option to Except String
+def inhEmpty (type: Term) : Term :=
+  inh {
+    type := type,
+    cons := "",
+    args := []
+  }
+
 partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) : Option InferedType := do
   dbg_trace s!"[DBG_TRACE] infering at {term}"
   -- recursively do WHNF and type infer
@@ -50,11 +56,7 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
       | lam x =>
         let (subCtx, iValues) ← Util.statefulMapM x.params ctx (λ subCtx param => do
           -- dummy value
-          let value := inh {
-            type := param.type,
-            cons := "",
-            args := []
-          }
+          let value := inhEmpty param.type
           let iValue ← inferType? subCtx value
           let subCtx := Map.set subCtx param.name iValue
 
@@ -94,11 +96,7 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
           pure ()
         )
 
-        inferType? ctx (inh {
-          type := iLam.body,
-          cons := "",
-          args := []
-        })
+        inferType? ctx (inhEmpty iLam.body)
 
       | mat x =>
         let iCases: List (Case InferedType) ← x.cases.mapM (λ case => do
