@@ -156,9 +156,7 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
 
 
 
-partial def inferReducedType? [Repr Frame] [Map Frame String] [Repr Ctx] [Map Ctx InferedType] (frame: Frame) (ctx: Ctx) (term: Term) : Option InferedType :=
-  -- similar to inferType? but do β-reduction on type
-  sorry
+-- TODO think of some way to reduce type and reduce in general
 
 
 end EL2.Term
