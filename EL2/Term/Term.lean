@@ -42,10 +42,6 @@ structure Mat (α: Type) where
   cases: List (Case α)
   deriving Repr, BEq
 
-structure Hole (α: Type) where
-  type: α
-  deriving Repr, BEq
-
 inductive T (α: Type) where
   | inh: Inh α → T α
   | bnd: Bnd α → T α
@@ -55,7 +51,7 @@ inductive T (α: Type) where
   deriving Repr, BEq
 
 inductive Term where
-  | univ: (level: Int) → Term
+  | univ: (level: Nat) → Term
   | var: (name: String) → Term
   | t: T Term → Term
   deriving Repr, BEq -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==

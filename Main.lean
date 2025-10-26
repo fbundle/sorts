@@ -158,5 +158,5 @@ def main  : IO Unit := do
   IO.println s!"[PRINT] {term}"
   -- reduce program
   match infer? ctxEmpty term with
-    | some iterm => IO.println s!"[OK]type: {iterm.typeTerm}"
+    | some iterm => IO.println s!"[OK]type: {iterm.type}"
     | none => IO.println "[ERR]"

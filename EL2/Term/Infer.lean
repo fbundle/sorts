@@ -24,26 +24,26 @@ def ctxSet (ctx: Ctx α) (name: String) (value: α): Ctx α :=
 
 def ctxSize (ctx: Ctx α): Int := ctx.length
 
-structure InferedTerm where
-  -- term? : resolved value of term
-  term?: Option Term
-  -- typeCtx and typeTerm : recipe to resolve typeTerm
-  typeCtx: Ctx InferedTerm
-  typeTerm: Term
-  -- level : level of term
-  level: Int -- change to Nat
+structure InferedType where
+  type: Term -- type of term
+  level: Nat -- level of term
+
+def typLevel (level: Nat): Nat := level + 1
+def inhLevel (level: Nat): Option Nat :=
+  match level with
+    | 0 => none
+    | _ => some (level - 1)
+
 
 -- TODO change Option to Except String
-partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := do
+partial def infer? (ctx: Ctx InferedType) (term: Term) : Option InferedType := do
   -- recursively do WHNF and type infer
-  let o: Option InferedTerm := do
+  let o: Option InferedType := do
     match term with
       | univ level =>
         pure {
-          term? := term,
-          typeCtx := ctx,
-          typeTerm := univ (level + 1),
-          level := level + 1, -- U_1 is at level 2
+          type := univ typLevel level,
+          level := typLevel level,-- U_1 is at level 2
         }
 
       | var name =>
@@ -51,18 +51,9 @@ partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := d
 
       | inh x =>
         let iType ← infer? ctx x.type
-        let iArgs ← x.args.mapM (infer? ctx)
-        let term ← iType.term?
-        let args ← iArgs.mapM (λ iArg => iArg.term?)
         pure {
-          term? := inh {
-            type := term,
-            cons := x.cons,
-            args := args,
-          },
-          typeCtx := ctx,
-          typeTerm := x.type,
-          level := iType.level - 1,
+          type := x.type,
+          level := ← inhLevel iType.level
         }
 
       | bnd x =>
@@ -75,45 +66,34 @@ partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := d
         infer? subCtx x.last
 
       | lam x =>
-        let (subCtx, iNamedParamsType) ← Util.statefulMapM x.params ctx (λ subCtx param => do
-          let iParamType ← infer? subCtx param.type
-          let iParamValue := {
-            term? := none, -- dummy param
-            -- TODO - for other functions
-            -- if resolved value have none term?
-            -- return none term? as well
-            typeCtx := subCtx,
-            typeTerm := param.type,
-            level := iParamType.level - 1,
-            : InferedTerm
+        let (subCtx, iValues) ← Util.statefulMapM x.params ctx (λ subCtx param => do
+          -- dummy value
+          let value := inh {
+            type := param.type,
+            cons := "",
+            args := []
           }
-          let subCtx := ctxSet subCtx param.name iParamValue
+          let iValue ← infer? subCtx value
+          let subCtx := ctxSet subCtx param.name iValue
 
-          pure (subCtx, (param.name, iParamType))
+          pure (subCtx, iValue)
         )
 
         let iBody ← infer? subCtx x.body
-        let lamLevel := (iNamedParamsType.map (λ (name, iParamType) => iParamType.level)).foldl max (iBody.level + 1)
+        let lamLevel := (iValues.map (λ iValue => iValue.level)).foldl max (iBody.level)
 
-        let newParams ← iNamedParamsType.mapM (λ (name, iType) => do
-          pure {
-            name := name,
-            type := ← iType.term?,
+        let newParams := (List.zip x.params iValues).map (λ (param, iValue) =>
+          {
+            name := param.name,
+            type := iValue.type,
             : Param Term
           }
         )
+
         pure {
-          term? := lam {
+          type := lam {
             params := newParams,
-            body := x.body,
-          },
-          -- TODO - think
-          -- with subCtx we can resolve typeTerm.body immediately
-          -- TODO change to ctx, iBody.typeTerm
-          typeCtx := subCtx,
-          typeTerm := lam {
-            params := newParams,
-            body := iBody.typeTerm,
+            body := iBody.type,
           },
           level := lamLevel,
         }
@@ -121,15 +101,11 @@ partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := d
       | app x =>
         -- infer
         let iCmd ← infer? ctx x.cmd
-        let iLam ← isLam? (← iCmd.term?)
+        let iLam ← isLam? iCmd.type
         let iArgs ← x.args.mapM (infer? ctx)
         -- type check
-        let iParamsType ← iLam.params.mapM (λ param => infer? ctx param.type)
-        let paramsType ← iParamsType.mapM (λ iParam => iParam.term?)
-        let paramsType := iLam.params.map (λ param => param.type) -- TODO remove if the code doesn't work
-
-        let iArgsType ← iArgs.mapM (λ iArg => infer? iArg.typeCtx iArg.typeTerm)
-        let argsType ← iArgsType.mapM (λ iArg => iArg.term?)
+        let paramsType := iLam.params.map (λ param => param.type)
+        let argsType := iArgs.map (λ iArg => iArg.type)
 
         let _ ← (List.zip argsType paramsType).mapM (λ (argType, paramType) => do
           let _ ← isSubType? argType paramType
@@ -143,65 +119,53 @@ partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := d
         infer? subCtx iLam.body
 
       | mat x =>
-        let caseTypeLevels: List (Case Term × Case Term × Int) ← x.cases.mapM (λ case => do
-          let iCmd: InferedTerm ← ctxGet? ctx case.patCmd
-          let iCmdTerm ← iCmd.term?
-          match isLam? iCmdTerm with
+        let iCases: List (Case InferedType) ← x.cases.mapM (λ case => do
+          let iCmd ← ctxGet? ctx case.patCmd
+          match isLam? iCmd.type with
             | none => -- case is not a lambda - resolve directly
               let iValue ← infer? ctx case.value
-              let iType ← infer? iValue.typeCtx iValue.typeTerm
-              pure (
-                {
-                  patCmd := case.patCmd,
-                  patArgs := case.patArgs,
-                  value := ← iValue.term?,
-                },
-                {
-                  patCmd := case.patCmd,
-                  patArgs := case.patArgs,
-                  value := ← iType.term?,
-                },
-                iValue.level,
-              )
+              pure {
+                patCmd := case.patCmd,
+                patArgs := case.patArgs,
+                value := iValue,
+              }
 
             | some iLam => -- case is lambda
               -- rename case to match iLam
-              let case ← renameCase? iLam case
+              let newCase ← renameCase? iLam case
               -- convert case to lambda to reuse infer?
-              let iCaseLam ← infer? ctx (lam {
+              let iValueLam1 := lam {
                 params := iLam.params,
-                body := case.value,
-              })
-              -- iCaseLamType is a Pi type (iLam.params) -> typeof case.value
-              let iCaseLamPi ← infer? iCaseLam.typeCtx iCaseLam.typeTerm
-              let valueType := (← isLam? (← iCaseLamPi.term?)).body
+                body := newCase.value,
+              }
+              let iValueLam2 ← infer? ctx iValueLam1
+              -- iValueLam2 is a Pi type (iLam.params) -> typeof case.value
+              let iValueLam3 ← isLam? iValueLam2.type
+              let iValue := iValueLam3.body
 
-              pure (
-                case,
-                {
-                  patCmd := case.patCmd,
-                  patArgs := case.patArgs,
-                  value := valueType,
-                },
-                iCaseLam.level,
-                )
+              pure {
+                patCmd := newCase.patCmd,
+                patArgs := newCase.patArgs,
+                value := {
+                  type := iValue,
+                  level := iValueLam2.level,
+                }
+              }
         )
-
-        -- list of pairs to pair of lists
-        let (cases, types, levels) := caseTypeLevels.foldr (λ (x, y, z) (xs, ys, zs)  => (x :: xs, y :: ys, z ::  zs)) ([], [], [])
-        let level ← levels.max? -- fail if no case
         let iCond ← infer? ctx x.cond
+        let level := (iCases.map (λ iCase => iCase.value.level)).foldl max iCond.level
 
         pure {
-          term? := mat {
-            cond := ← iCond.term?,
-            cases := cases,
-          },
-          typeCtx := ctx, -- types is resolved, this is not important
-          typeTerm := mat {
-            cond := ← iCond.term?,
-            cases := types,
-          },
+          type := mat {
+            cond := x.cond,
+            cases := iCases.map (λ iCase =>
+              {
+                patCmd := iCase.patCmd,
+                patArgs := iCase.patArgs,
+                value := iCase.value.type,
+              }
+            ),
+          }
           level := level,
         }
 
