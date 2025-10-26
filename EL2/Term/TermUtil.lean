@@ -152,7 +152,7 @@ def renameParamsWithCase (params: List (Param Term)) (patArgs: List String): Lis
   )
   newParams
 
-partial def isSameType (type1: Term) (type2: Term): Bool :=
+partial def isSubType (type1: Term) (type2: Term): Bool :=
   if type1 == type2 then True else
     dbg_trace s!"[DBG_TRACE] different type"
     dbg_trace s!"type1:\t{type1}"

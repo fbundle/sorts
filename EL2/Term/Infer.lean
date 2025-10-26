@@ -91,7 +91,7 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
         let argsType := iArgs.map (λ iArg => iArg.type)
 
         let _ ← (List.zip argsType paramsType).mapM (λ (type1, type2) => do
-          if isSameType type1 type2 then pure () else
+          if isSubType type1 type2 then pure () else
             none
         )
 
