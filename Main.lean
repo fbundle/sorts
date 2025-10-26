@@ -117,21 +117,21 @@ def term : Term := bnd {
             name := "f",
             type := lam {
               params := [
-                {name := "n", type := var "Nat"},
+                {name := "m", type := var "Nat"},
                 {name := "T", type := univ 1},
-                {name := "vec", type := app {cmd := var "Vec", args := [var "n", var "T"]}},
+                {name := "vec", type := app {cmd := var "Vec", args := [var "m", var "T"]}},
                 {name := "val", type := var "T"},
               ],
               body := mat {
-                cond := var "n",
+                cond := var "m",
                 cases := [
                   {
                     patCmd := "zero", patArgs := [],
-                    value := app {cmd := var "Vec", args := [app {cmd := var "succ", args := [var "n"]}, var "T"]},
+                    value := app {cmd := var "Vec", args := [app {cmd := var "succ", args := [var "m"]}, var "T"]},
                   },
                   {
                     patCmd := "succ", patArgs := ["_"],
-                    value := app {cmd := var "Vec", args := [var "n", var "T"]},
+                    value := app {cmd := var "Vec", args := [var "m", var "T"]},
                   },
                 ],
               },
