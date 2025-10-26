@@ -84,10 +84,10 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
       | app x =>
         -- infer
         let iCmd ← inferType? ctx x.cmd
-        let iLam ← isLam? iCmd.type
+        let iCmd ← isLam? iCmd.type
         let iArgs ← x.args.mapM (inferType? ctx)
         -- type check
-        let paramsType := iLam.params.map (λ param => param.type)
+        let paramsType := iCmd.params.map (λ param => param.type)
         let argsType := iArgs.map (λ iArg => iArg.type)
 
         let _ ← (List.zip argsType paramsType).mapM (λ (argType, paramType) => do
@@ -95,7 +95,7 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
           pure ()
         )
 
-        inferType? ctx (inhEmpty iLam.body)
+        inferType? ctx (inhEmpty iCmd.body)
 
       | mat x =>
         let iCases: List (Case InferedType) ← x.cases.mapM (λ case => do
@@ -109,9 +109,9 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
                 value := iValue,
               }
 
-            | some iLam => -- case is lambda
+            | some iCmd => -- case is lambda
               -- rename case to match iLam
-              let newParams := renameParamsWithCase iLam.params case.patArgs
+              let newParams := renameParamsWithCase iCmd.params case.patArgs
               -- convert case to lambda to reuse inferType?
               let iValueLam1 := lam {
                 params := newParams,
