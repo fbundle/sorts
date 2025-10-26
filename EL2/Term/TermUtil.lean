@@ -88,6 +88,7 @@ def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 def dummyName (nameMap: Std.HashMap String String): String :=
   s!"_{nameMap.size}"
 
+def wildcardName := "_"
 
 partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :=
   -- nameMap holds a mapping oldName -> newName
