@@ -109,6 +109,7 @@ partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := d
           },
           -- TODO - think
           -- with subCtx we can resolve typeTerm.body immediately
+          -- TODO change to ctx, iBody.typeTerm
           typeCtx := subCtx,
           typeTerm := lam {
             params := newParams,
