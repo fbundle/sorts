@@ -9,10 +9,8 @@ The goal of this project is to implement minimal dependent type
 in the code, it was able to verify that the type of `append_if_empty` matches the dependent type 
 ```lean
 (m: Nat) (T: U_1) (vec: Vec m T) (val: T): (
-  match n with
+  match m with
     | zero => Vec (succ m) T
     | succ _ => Vec m T
 )
 ```
-
-if it was a bit smarter, it would know that in the case `zero` parameter `m` equals `zero`, hence it can reduce `succ m` into `one`
