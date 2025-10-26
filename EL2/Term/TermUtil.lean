@@ -140,7 +140,7 @@ partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :
 def renameParamsWithCase (params: List (Param Term)) (patArgs: List String): List (Param Term) :=
   -- given patArgs and constructor
   -- rename the param and type of constructor to match patArgs
-  let (newNameMap, newParams) := Util.statefulMap (List.zip patArgs params) emptyNameMap (λ oldNameMap (patArg, param) =>
+  let (_, newParams) := Util.statefulMap (List.zip patArgs params) emptyNameMap (λ oldNameMap (patArg, param) =>
     let newType := renameTerm oldNameMap param.type
     let newName := patArg
     let newNameMap := oldNameMap.insert param.name newName
