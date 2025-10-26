@@ -11,17 +11,17 @@ class Map M α where
   set: M → String → α → M
   get?: M → String → Option α
 
-structure InferedType where
-  type: Term -- type of term
-  level: Int -- level of term
-  deriving Repr
-
 def inhEmpty (type: Term) : Term :=
   inh {
     type := type,
     cons := "",
     args := []
   }
+
+structure InferedType where
+  type: Term -- type of term
+  level: Int -- level of term
+  deriving Repr
 
 partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) : Option InferedType := do
   -- recursively type infer (probably will do WHNF)
@@ -154,6 +154,11 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
       none
     | some v => pure v
 
+
+
+partial def inferReducedType? [Repr Frame] [Map Frame String] [Repr Ctx] [Map Ctx InferedType] (frame: Frame) (ctx: Ctx) (term: Term) : Option InferedType :=
+  -- similar to inferType? but do β-reduction on type
+  sorry
 
 
 end EL2.Term
