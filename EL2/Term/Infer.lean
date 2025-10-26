@@ -96,6 +96,8 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
         let paramsType := iLam.params.map (λ param => param.type)
         let argsType := iArgs.map (λ iArg => iArg.type)
 
+        dbg_trace s!"typechecking {repr argsType} {repr paramsType}"
+
         let _ ← (List.zip argsType paramsType).mapM (λ (argType, paramType) => do
           let _ ← isSubType? argType paramType
           pure ()
