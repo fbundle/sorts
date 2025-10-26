@@ -148,19 +148,21 @@ def term : Term := bnd {
   --  cmd := var "append_if_empty",
   --  args := [var "zero", var "Nat", app {cmd := var "nil", args := [var "Nat"]}, var "one"],
   --},
-  -- last := app {cmd := var "id_Succ", args := [var "succ"]},
+  --last := app {cmd := var "id_Succ", args := [var "succ"]},
   -- last := app {cmd := var "succ", args := [var "zero"]}
 }
+instance : Map (Std.HashMap String α) α where
+  size := Std.HashMap.size
+  set := Std.HashMap.insert
+  get? := Std.HashMap.get?
 
 
-
+def ctxEmpty : Std.HashMap String InferedType := Std.HashMap.emptyWithCapacity
 
 def main  : IO Unit := do
   -- print program
   IO.println s!"[PRINT] {term}"
-  let term := renameTerm emptyNameMap term
-  IO.println s!"[PRINT_RENAMED] {term}"
   -- reduce program
-  match reduceTerm? emptyFrame term with
-    | some iterm => IO.println s!"[OK]\n\tterm: {iterm.term}\n\ttype: {iterm.type}"
+  match inferType? ctxEmpty term with
+    | some iterm => IO.println s!"[OK]type: {iterm.type}"
     | none => IO.println "[ERR]"

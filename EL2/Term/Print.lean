@@ -31,9 +31,6 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
       ["inh", ctx.print type, cons] ++
       args.map ctx.print
 
-    | typ {value} =>
-      ["typ", ctx.print value]
-
     | univ level =>
       [s!"U_{level}"]
 
@@ -82,13 +79,7 @@ instance : ToString Term where
   }.print c
 
 instance: Repr Term where
-  reprPrec (term: Term) (prec: Nat): Std.Format := toString term
+  reprPrec (term: Term) (_: Nat): Std.Format := toString term
 
-instance: ToString InferedTerm where
-  toString (iterm: InferedTerm) :=
-    s!"term: {iterm.term} type: {iterm.type}"
-
-instance: Repr InferedTerm where
-  reprPrec (iterm: InferedTerm) (prec: Nat): Std.Format := toString iterm
 
 end EL2.Term
