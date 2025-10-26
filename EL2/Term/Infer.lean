@@ -110,7 +110,7 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
               }
 
             | some iCmd => -- case is lambda
-              -- rename case to match iLam
+              -- make new set of params according to patArgs
               let newParams := renameParamsWithCase iCmd.params case.patArgs
               -- convert case to lambda to reuse inferType?
               let iValueLam1 := lam {
