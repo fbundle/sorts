@@ -12,11 +12,12 @@ def ctxEmpty {α}: Ctx α := []
 def ctxGet? (ctx: Ctx α) (name: String): Option α :=
   match ctx with
     | [] => none
-    | (key, value) :: ctx =>
+    | (key, value) :: tail =>
       if name = key then
         some value
       else
-        ctxGet? ctx key
+        ctxGet? tail name
+
 def ctxKeys (ctx: Ctx α): List String := ctx.map (λ (key, value) => key)
 def ctxSet (ctx: Ctx α) (name: String) (value: α): Ctx α :=
   (name, value) :: ctx
@@ -51,11 +52,13 @@ partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := d
       | inh x =>
         let iType ← infer? ctx x.type
         let iArgs ← x.args.mapM (infer? ctx)
+        let term ← iType.term?
+        let args ← iArgs.mapM (λ iArg => iArg.term?)
         pure {
           term? := inh {
-            type := ← iType.term?,
+            type := term,
             cons := x.cons,
-            args := ← iArgs.mapM (λ iArg => iArg.term?),
+            args := args,
           },
           typeCtx := ctx,
           typeTerm := x.type,
