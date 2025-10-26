@@ -151,12 +151,18 @@ def term : Term := bnd {
   --last := app {cmd := var "id_Succ", args := [var "succ"]},
   -- last := app {cmd := var "succ", args := [var "zero"]}
 }
+instance : Map (Std.HashMap String α) α where
+  size := Std.HashMap.size
+  set := Std.HashMap.insert
+  get? := Std.HashMap.get?
 
+
+def ctxEmpty : Std.HashMap String InferedType := Std.HashMap.emptyWithCapacity
 
 def main  : IO Unit := do
   -- print program
   IO.println s!"[PRINT] {term}"
   -- reduce program
-  match infer? ctxEmpty term with
+  match inferType? ctxEmpty term with
     | some iterm => IO.println s!"[OK]type: {iterm.type}"
     | none => IO.println "[ERR]"
