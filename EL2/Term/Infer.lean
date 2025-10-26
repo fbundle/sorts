@@ -16,16 +16,9 @@ structure InferedType where
   level: Int -- level of term
   deriving Repr
 
-def InferedType.inh (it: InferedType) (cons: String := "") (args: List Term := []): Term :=
-  inh {
-    type := it.type,
-    cons := cons,
-    args := args,
-  }
-
-
 -- TODO change Option to Except String
 partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) : Option InferedType := do
+  dbg_trace s!"[DBG_TRACE] infering at {term}"
   -- recursively do WHNF and type infer
   let o: Option InferedType := do
     match term with
@@ -96,18 +89,16 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
         let paramsType := iLam.params.map (λ param => param.type)
         let argsType := iArgs.map (λ iArg => iArg.type)
 
-        dbg_trace s!"typechecking {repr argsType} {repr paramsType}"
-
         let _ ← (List.zip argsType paramsType).mapM (λ (argType, paramType) => do
           let _ ← isSubType? argType paramType
           pure ()
         )
-        -- WHNF
-        let (subCtx, _) ← Util.statefulMapM (List.zip iLam.params iArgs) ctx (λ subCtx (param, arg) => do
-          let subCtx := Map.set subCtx param.name arg
-          pure (subCtx, ())
-        )
-        inferType? subCtx iLam.body
+
+        inferType? ctx (inh {
+          type := iLam.body,
+          cons := "",
+          args := []
+        })
 
       | mat x =>
         let iCases: List (Case InferedType) ← x.cases.mapM (λ case => do
