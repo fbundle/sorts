@@ -111,11 +111,11 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
 
             | some iLam => -- case is lambda
               -- rename case to match iLam
-              let newCase := renameCase iLam case
+              let newParams := renameParamsWithCase iLam.params case.patArgs
               -- convert case to lambda to reuse inferType?
               let iValueLam1 := lam {
-                params := iLam.params,
-                body := newCase.value,
+                params := newParams,
+                body := case.value,
               }
               let iValueLam2 ← inferType? ctx iValueLam1
               -- iValueLam2 is a Pi type (iLam.params) -> typeof case.value
@@ -123,8 +123,8 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
               let iValue := iValueLam3.body
 
               pure {
-                patCmd := newCase.patCmd,
-                patArgs := newCase.patArgs,
+                patCmd := case.patCmd,
+                patArgs := case.patArgs,
                 value := {
                   type := iValue,
                   level := iValueLam2.level,

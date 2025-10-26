@@ -137,19 +137,20 @@ partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :
 
     | _ => term.map (renameTerm nameMap)
 
-def renameCase (cons: Lam Term) (case: Case Term): Case Term :=
-  -- rename case patArgs according to constructor
-  -- return renamed value
-  let (newNameMap, newPatArgs) := Util.statefulMap (List.zip case.patArgs cons.params) emptyNameMap (λ oldNameMap (patArg, param) =>
-    let newNameMap := oldNameMap.insert patArg param.name -- rename patArg to paramNam
-    (newNameMap, param.name)
+def renameParamsWithCase (params: List (Param Term)) (patArgs: List String): List (Param Term) :=
+  -- given patArgs and constructor
+  -- rename the param and type of constructor to match patArgs
+  let (newNameMap, newParams) := Util.statefulMap (List.zip patArgs params) emptyNameMap (λ oldNameMap (patArg, param) =>
+    let newType := renameTerm oldNameMap param.type
+    let newName := patArg
+    let newNameMap := oldNameMap.insert param.name newName
+    (newNameMap, {
+      name := newName,
+      type := newType,
+      : Param Term
+    })
   )
-  let newValue := renameTerm newNameMap case.value
-  {
-    patCmd := case.patCmd,
-    patArgs := newPatArgs,
-    value := newValue,
-  }
+  newParams
 
 partial def isSubType? (type1: Term) (type2: Term): Option Unit := do
   if type1 != type2 then
