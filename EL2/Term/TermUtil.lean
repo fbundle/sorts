@@ -88,63 +88,65 @@ def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 def dummyName (nameMap: Std.HashMap String String): String :=
   s!"_{nameMap.size}"
 
-partial def renameTerm? (nameMap: Std.HashMap String String) (term: Term): Option Term := do
+
+partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :=
   -- nameMap holds a mapping oldName -> newName
   -- rename all parameters into _<count> where count = nameNameMap.size save into nameMap
   -- rename all match parameters into _<count>
   -- rename all variables according to nameMap
   match term with
     | var oldName =>
-      let newName ← nameMap.get? oldName
-      pure (var newName)
+      match nameMap.get? oldName with
+        | some newName => var newName
+        | none => var oldName
 
     | lam x =>
-      let (newNameMap, newParams) ← Util.statefulMapM x.params nameMap (λ oldNameMap param => do
-        let newType ← renameTerm? oldNameMap param.type
+      let (newNameMap, newParams) := Util.statefulMap x.params nameMap (λ oldNameMap param =>
+        let newType := renameTerm oldNameMap param.type
 
         let newName := dummyName oldNameMap
         let newNameMap := oldNameMap.insert param.name newName
 
         (newNameMap, {name := newName, type := newType : Param Term})
       )
-      let newBody ← renameTerm? newNameMap x.body
-      pure (lam {
+      let newBody := renameTerm newNameMap x.body
+      lam {
         params := newParams,
         body := newBody,
-      })
+      }
     | mat x =>
-      let newCond ← renameTerm? nameMap x.cond
-      let newCases ← x.cases.mapM (λ case => do
+      let newCond := renameTerm nameMap x.cond
+      let newCases := x.cases.map (λ case =>
         let (newNameMap, newPatArgs) := Util.statefulMap case.patArgs nameMap (λ oldNameMap patArg =>
           let newName := dummyName oldNameMap
           let newNameMap := oldNameMap.insert patArg newName
 
           (newNameMap, newName)
         )
-        let newValue ← renameTerm? newNameMap case.value
-        pure {
+        let newValue := renameTerm newNameMap case.value
+        {
           patCmd := case.patCmd,
           patArgs := newPatArgs,
           value := newValue,
           : Case Term
         }
       )
-      pure (mat {
+      mat {
         cond := newCond,
         cases := newCases,
-      })
+      }
 
-    | _ => term.mapM (renameTerm? nameMap)
+    | _ => term.map (renameTerm nameMap)
 
-def renameCase? (cons: Lam Term) (case: Case Term): Option (Case Term) := do
+def renameCase (cons: Lam Term) (case: Case Term): Case Term :=
   -- rename case patArgs according to constructor
   -- return renamed value
   let (newNameMap, newPatArgs) := Util.statefulMap (List.zip case.patArgs cons.params) emptyNameMap (λ nameMap (patArg, param) =>
     let newNameMap := nameMap.insert patArg param.name -- rename patArg to paramNam
     (newNameMap, param.name)
   )
-  let newValue ← renameTerm? newNameMap case.value
-  pure {
+  let newValue := renameTerm newNameMap case.value
+  {
     patCmd := case.patCmd,
     patArgs := newPatArgs,
     value := newValue,

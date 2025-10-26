@@ -24,7 +24,6 @@ def inhEmpty (type: Term) : Term :=
   }
 
 partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) : Option InferedType := do
-  --dbg_trace s!"[DBG_TRACE] infering at {term}"
   -- recursively type infer (probably will do WHNF)
   let o: Option InferedType := do
     match term with
@@ -112,7 +111,7 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
 
             | some iLam => -- case is lambda
               -- rename case to match iLam
-              let newCase ← renameCase? iLam case
+              let newCase := renameCase iLam case
               -- convert case to lambda to reuse inferType?
               let iValueLam1 := lam {
                 params := iLam.params,
