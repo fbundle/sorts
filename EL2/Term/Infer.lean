@@ -31,7 +31,7 @@ structure InferedTerm where
   typeCtx: Ctx InferedTerm
   typeTerm: Term
   -- level : level of term
-  level: Int
+  level: Int -- change to Nat
 
 -- TODO change Option to Except String
 partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := do
@@ -79,6 +79,9 @@ partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := d
           let iParamType ← infer? subCtx param.type
           let iParamValue := {
             term? := none, -- dummy param
+            -- TODO - for other functions
+            -- if resolved value have none term?
+            -- return none term? as well
             typeCtx := subCtx,
             typeTerm := param.type,
             level := iParamType.level - 1,
