@@ -17,7 +17,7 @@ def ctxGet? (ctx: Ctx α) (name: String): Option α :=
         some value
       else
         ctxGet? ctx key
-
+def ctxKeys (ctx: Ctx α): List String := ctx.map (λ (key, value) => key)
 def ctxSet (ctx: Ctx α) (name: String) (value: α): Ctx α :=
   (name, value) :: ctx
 
@@ -34,6 +34,7 @@ structure InferedTerm where
 
 
 partial def infer? (ctx: Ctx InferedTerm) (term: Term) : Option InferedTerm := do
+  dbg_trace s!"[DBG_TRACE] infering {term}"
   -- recursively do WHNF and type infer
   match term with
     | univ level =>
