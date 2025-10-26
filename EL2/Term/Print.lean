@@ -1,4 +1,5 @@
 import EL2.Term.Term
+import EL2.Term.TermUtil
 
 namespace EL2.Term
 
@@ -79,6 +80,13 @@ instance : ToString Term where
   }.print c
 
 instance: Repr Term where
-  reprPrec (term: Term) (prec: Nat): Std.Format := toString term
+  reprPrec (term: Term) (_: Nat): Std.Format := toString term
+
+instance : ToString ReducedTerm where
+  toString := toString ∘ ReducedTerm.toTerm
+
+instance: Repr ReducedTerm where
+  reprPrec (term: ReducedTerm) (_: Nat): Std.Format := toString term
+
 
 end EL2.Term

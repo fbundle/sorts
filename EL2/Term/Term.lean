@@ -26,8 +26,13 @@ structure Lam (α: Type) where
   body: α
   deriving Repr, BEq
 
+structure Pi (α: Type) where -- Pi is the type of Lam
+  params: List α
+  body: α
+  deriving Repr, BEq
+
 structure App (α: Type) where
-  cmd: α -- either Var or Lam
+  cmd: α
   args: List α
   deriving Repr, BEq
 
@@ -60,6 +65,8 @@ inductive Term where
   | t: T Term → Term
   deriving Repr, BEq, Nonempty -- BEq is computationally equal == DecidableEq is logical equal = and strictly stronger than ==
 
+
+
 notation "univ" x => Term.univ x
 notation "var" x => Term.var x
 notation "inh" x => Term.t (T.inh x)
@@ -68,21 +75,5 @@ notation "bnd" x => Term.t (T.bnd x)
 notation "lam" x => Term.t (T.lam x)
 notation "app" x => Term.t (T.app x)
 notation "mat" x => Term.t (T.mat x)
-
-inductive ReducedTerm where
-  | univ: (level: Int) → ReducedTerm
-  | t: T ReducedTerm → ReducedTerm
-  deriving Repr, BEq, Nonempty
-
--- util
-def isLam? (term: Term): Option (Lam Term) :=
-  match term with
-    | lam l => some l
-    | _ => none
-
-def isInh? (term: Term): Option (Inh Term) :=
-  match term with
-    | inh i => some i
-    | _ => none
 
 end EL2.Term
