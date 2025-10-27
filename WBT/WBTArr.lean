@@ -39,7 +39,7 @@ partial def WBTArr.set? (a: WBTArr α) (i: Nat) (x: α): Option (WBTArr α) :=
             | none => none
             | some l1 =>
               let n1 := makeNode n.entry l1 n.right?
-              balance δ n1
+              some (balance δ n1)
         else if i = leftWeight then
           let n1 := makeNode x n.left? n.right?
           some n1
@@ -48,7 +48,7 @@ partial def WBTArr.set? (a: WBTArr α) (i: Nat) (x: α): Option (WBTArr α) :=
             | none => none
             | some r1 =>
               let n1 := makeNode n.entry n.left? r1
-              balance δ n1
+              some (balance δ n1)
         else
           none
 
@@ -69,13 +69,13 @@ partial def WBTArr.insert? (a: WBTArr α) (i: Nat) (x: α): Option (WBTArr α) :
             | none => none
             | some l1 =>
               let n1 := makeNode n.entry l1 n.right?
-              balance δ n1
+              some (balance δ n1)
         else if i ≤ 1 + leftWeight + rightWeight then
           match loop n.right? (i - 1 - leftWeight) with
             | none => none
             | some r1 =>
               let n1 := makeNode n.entry n.left? r1
-              balance δ n1
+              some (balance δ n1)
         else
           none
 
@@ -92,7 +92,7 @@ partial def WBTArr.delete? (a: WBTArr α) (i: Nat) : Option (WBTArr α) :=
             | none => none
             | some l1 =>
               let n1 := makeNode n.entry l1 n.right?
-              balance δ n1
+              some (balance δ n1)
         else if i = leftWeight then
           if leftWeight = 0 then
             n.right?
@@ -103,13 +103,13 @@ partial def WBTArr.delete? (a: WBTArr α) (i: Nat) : Option (WBTArr α) :=
               | some newEntry =>
                 let l1 := loop n.left? (leftWeight - 1)
                 let n1 := makeNode newEntry l1 n.right?
-                balance δ n1
+                some (balance δ n1)
         else if i < 1 + leftWeight + rightWeight then
           match loop n.right? (i - 1 - leftWeight) with
             | none => none
             | some r1 =>
               let n1 := makeNode n.entry n.left? r1
-              balance δ n1
+              some (balance δ n1)
         else
           none
   some {node? := loop a.node? i}
@@ -128,7 +128,7 @@ partial def WBTArr.mapM [Monad m] (a: WBTArr α) (f: α → m β): m (WBTArr β)
         let entry ← f n.entry
         let left? ← loop n.left?
         let right? ← loop n.right?
-        pure $ makeNode entry left? right?
+        pure (makeNode entry left? right?)
 
   let node? ← loop a.node?
   pure {node? := node? : WBTArr β}
