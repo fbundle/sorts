@@ -114,12 +114,6 @@ partial def WBTArr.delete? (a: WBTArr α) (i: Nat) : Option (WBTArr α) :=
           none
   some {node? := loop a.node? i}
 
-partial def WBTArr.merge (a: WBTArr α) (b: WBTArr α): WBTArr α :=
-  sorry
-
-partial def WBTArr.split? (a: WBTArr α) (i: Nat): (WBTArr α) × (WBTArr α) :=
-  sorry
-
 partial def WBTArr.mapM [Monad m] (a: WBTArr α) (f: α → m β): m (WBTArr β) := do
   let rec loop (n?: Option (Node α)): m (Option (Node β)) := do
     match n? with

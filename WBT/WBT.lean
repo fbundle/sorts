@@ -47,6 +47,20 @@ partial def cmp (δ: Nat) (n: Option (Node α)): Ordering :=
       else
         Ordering.eq
 
+partial def cmpWeak (δ: Nat) (n: Option (Node α)): Ordering :=
+  match n with
+    | none => Ordering.eq
+    | some n =>
+      let (l, r) := (weight n.left?, weight n.right?)
+      if l + r ≤ 1 then
+        Ordering.eq
+      else if (l > δ * r + 1) then
+        Ordering.gt -- left heavy
+      else if (δ * l + 1 < r) then
+        Ordering.lt -- right heavy
+      else
+        Ordering.eq
+
 def rightRotate (n: Node α): Node α :=
   -- right rotate
   --         n
@@ -125,6 +139,7 @@ def balanceThm (δ: Nat) (n: Node α):
   δ ≥ 3
   → Ordering.eq = cmp δ n.left?
   → Ordering.eq = cmp δ n.right?
+  → Ordering.eq = cmpWeak δ (some n)
   → Ordering.eq = cmp δ (some (balance δ n))
   := sorry
 
