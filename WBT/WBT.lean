@@ -33,7 +33,19 @@ def makeNode (entry: α) (left?: Option (Node α)) (right?: Option (Node α)): N
     right? := right?,
   }
 
-
+partial def cmp (δ: Nat) (n: Option (Node α)): Ordering :=
+  match n with
+    | none => Ordering.eq
+    | some n =>
+      let (l, r) := (weight n.left?, weight n.right?)
+      if l + r ≤ 1 then
+        Ordering.eq
+      else if (l > δ * r) then
+        Ordering.gt -- left heavy
+      else if (δ * l < r) then
+        Ordering.lt -- right heavy
+      else
+        Ordering.eq
 
 def rightRotate (n: Node α): Option (Node α) :=
   -- right rotate
@@ -76,20 +88,6 @@ def leftRotate (n: Node α): Option (Node α) :=
       let n1 := makeNode n.entry l? rl?
       let r1 := makeNode r.entry n1 rr?
       r1
-
-partial def cmp (δ: Nat) (n: Option (Node α)): Ordering :=
-  match n with
-    | none => Ordering.eq
-    | some n =>
-      let (l, r) := (weight n.left?, weight n.right?)
-      if l + r ≤ 1 then
-        Ordering.eq
-      else if (l > δ * r) then
-        Ordering.gt -- left heavy
-      else if (δ * l < r) then
-        Ordering.lt -- right heavy
-      else
-        Ordering.eq
 
 partial def balance (δ: Nat) (n: Node α): Option (Node α) := do
   -- assuming δ ≥ 3
