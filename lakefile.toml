@@ -3,10 +3,10 @@ version = "0.1.0"
 defaultTargets = ["Main.lean"]
 
 [[lean_lib]]
-name = "EL"
+name = "EL2"
 
 [[lean_lib]]
-name = "EL2"
+name = "WBT"
 
 [[lean_exe]]
 name = "Main.lean"
