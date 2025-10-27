@@ -47,7 +47,7 @@ partial def cmp (δ: Nat) (n: Option (Node α)): Ordering :=
       else
         Ordering.eq
 
-def rightRotate (n: Node α): Option (Node α) :=
+def rightRotate (n: Node α): Node α :=
   -- right rotate
   --         n
   --   l           r
@@ -58,17 +58,15 @@ def rightRotate (n: Node α): Option (Node α) :=
   --         l
   --   ll          n
   --             lr r
-  match n.left? with
-    | none => none
-    | some l =>
-      let r? := n.right?
-      let (ll?, lr?) := (l.left?, l.right?)
+  let l := n.left?.get sorry
+  let r? := n.right?
+  let (ll?, lr?) := (l.left?, l.right?)
 
-      let n1 := makeNode n.entry lr? r?
-      let l1 := makeNode l.entry ll? n1
-      l1
+  let n1 := makeNode n.entry lr? r?
+  let l1 := makeNode l.entry ll? n1
+  l1
 
-def leftRotate (n: Node α): Option (Node α) :=
+def leftRotate (n: Node α): Node α :=
   -- left rotate
   --         n
   --   l           r
@@ -79,52 +77,46 @@ def leftRotate (n: Node α): Option (Node α) :=
   --         r
   --   n          rr
   --  l rl
-  match n.right? with
-    | none => none
-    | some r =>
-      let l? := n.left?
-      let (rl?, rr?) := (r.left?, r.right?)
+  let r := n.right?.get sorry
+  let l? := n.left?
+  let (rl?, rr?) := (r.left?, r.right?)
 
-      let n1 := makeNode n.entry l? rl?
-      let r1 := makeNode r.entry n1 rr?
-      r1
+  let n1 := makeNode n.entry l? rl?
+  let r1 := makeNode r.entry n1 rr?
+  r1
 
-partial def balance (δ: Nat) (n: Node α): Option (Node α) := do
+partial def balance (δ: Nat) (n: Node α): Node α :=
   -- assuming δ ≥ 3
   -- assuming the two subtrees n.left and n.right are balanced
   -- double rotation is necessary - see `why_double_rotation.jpeg`
   match cmp δ (some n) with
     | Ordering.eq => n
     | Ordering.gt => -- left heavy
-      let n1 ← rightRotate n
+      let n1 := rightRotate n
       if cmp δ (some n1) = Ordering.eq then
         n1
       else
         -- not balanced after one single rotation
         -- because lr too heavy
         -- double rotation effectively split lr in half
-        match n.left? with
-          | none => none
-          | some l =>
-            let l1 ← leftRotate l
-            let n2 := makeNode n.entry l1 n.right?
-            let n3 := rightRotate n2
-            n3
+        let l := n.left?.get sorry
+        let l1 := leftRotate l
+        let n2 := makeNode n.entry l1 n.right?
+        let n3 := rightRotate n2
+        n3
     | Ordering.lt => -- right heavy
-      let n1 ← leftRotate n
+      let n1 := leftRotate n
       if cmp δ (some n1) = Ordering.eq then
         n1
       else
         -- not balanced after one single rotation
         -- because rl too heavy
         -- double rotation effectively split rl in half
-        match n.right? with
-          | none => none
-          | some r =>
-            let r1 ←  rightRotate r
-            let n2 := makeNode n.entry n.left? r1
-            let n3 := leftRotate n2
-            n3
+        let r := n.right?.get sorry
+        let r1 := rightRotate r
+        let n2 := makeNode n.entry n.left? r1
+        let n3 := leftRotate n2
+        n3
 
 -- theorem for _balance_once
 -- assuming the two subtrees n.left and n.right are balanced
@@ -133,11 +125,7 @@ def balanceThm (δ: Nat) (n: Node α):
   δ ≥ 3
   → Ordering.eq = cmp δ n.left?
   → Ordering.eq = cmp δ n.right?
-  → (
-    match balance δ n with
-      | none => false
-      | some n1 => Ordering.eq = cmp δ (some n1)
-  )
+  → Ordering.eq = cmp δ (some (balance δ n))
   := sorry
 
 def δ := 3
