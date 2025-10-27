@@ -4,6 +4,7 @@ namespace WBT
 
 
 
+-- TODO potentially let cmp hashed α so that the tree will be more balanced
 structure WBTMap (α: Type u) (β: Type v) (cmp: α → α → Ordering) where
   node? : Option (Node (α × β))
 
