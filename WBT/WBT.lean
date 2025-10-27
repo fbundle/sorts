@@ -35,7 +35,7 @@ def makeNode (entry: α) (left?: Option (Node α)) (right?: Option (Node α)): N
 
 
 
-def rightRotate (n: Node α) (hl: n.left?.isSome): Node α :=
+def rightRotate (n: Node α): Node α :=
   -- right rotate
   --         n
   --   l           r
@@ -46,14 +46,14 @@ def rightRotate (n: Node α) (hl: n.left?.isSome): Node α :=
   --         l
   --   ll          n
   --             lr r
-  let (l, r?) := (n.left?.get hl, n.right?)
+  let (l, r?) := (n.left?.get sorry, n.right?)
   let (ll?, lr?) := (l.left?, l.right?)
 
   let n1 := makeNode n.entry lr? r?
   let l1 := makeNode l.entry ll? n1
   l1
 
-def leftRotate (n: Node α) (hr: n.right?.isSome): Node α :=
+def leftRotate (n: Node α): Node α :=
   -- left rotate
   --         n
   --   l           r
@@ -64,20 +64,14 @@ def leftRotate (n: Node α) (hr: n.right?.isSome): Node α :=
   --         r
   --   n          rr
   --  l rl
-  let (l?, r) := (n.left?, n.right?.get hr)
+  let (l?, r) := (n.left?, n.right?.get sorry)
   let (rl?, rr?) := (r.left?, r.right?)
 
   let n1 := makeNode n.entry l? rl?
   let r1 := makeNode r.entry n1 rr?
   r1
 
-
-
-
-
-
-
-partial def strongCmp (δ: Nat) (n: Option (Node α)): Ordering :=
+partial def cmp (δ: Nat) (n: Option (Node α)): Ordering :=
   match n with
     | none => Ordering.eq
     | some n =>
@@ -85,77 +79,50 @@ partial def strongCmp (δ: Nat) (n: Option (Node α)): Ordering :=
       if l + r ≤ 1 then
         Ordering.eq
       else if (l > δ * r) then
-        Ordering.gt
+        Ordering.gt -- left heavy
       else if (δ * l < r) then
-        Ordering.lt
+        Ordering.lt -- right heavy
       else
         Ordering.eq
 
-partial def weakCmp (δ: Nat) (n: Option (Node α)): Ordering :=
-  match n with
-    | none => Ordering.eq
-    | some n =>
-      let (l, r) := (weight n.left?, weight n.right?)
-      if l + r ≤ 1 then
-        Ordering.eq
-      else if (l > δ * r + 1) then
-        Ordering.gt
-      else if (δ * l + 1 < r) then
-        Ordering.lt
-      else
-        Ordering.eq
-
-partial def rotateAtMostOnce (δ: Nat) (n: Node α): Node α :=
+partial def balance (δ: Nat) (n: Node α): Node α :=
   -- assuming δ ≥ 3
   -- assuming the two subtrees n.left and n.right are balanced
-  -- a single rotation is sufficient to make the whole tree balanced
-  let (l, r) := (n.left?, n.right?)
-  match strongCmp δ (some n) with
-    | Ordering.gt =>
-      -- right rotate
-      --         n
-      --   l           r
-      -- ll lr
-      --
-      --      becomes
-      --
-      --         l
-      --   ll          n
-      --             lr r
-      let l := l.get sorry -- add proof from leftHeavy
-      let (ll, lr) := (l.left?, l.right?)
-      let n1 := makeNode n.entry lr r
-      let n1 := rotateAtMostOnce δ n1
-      let l1 := makeNode l.entry ll n1
-      l1
-    | Ordering.lt =>
-      -- left rotate
-      --         n
-      --   l           r
-      --             rl rr
-      --
-      --      becomes
-      --
-      --         r
-      --   n          rr
-      --  l rl
-      let r := r.get sorry -- TODO -- add proof from _right_heavy
-      let (rl, rr) := (r.left?, r.right?)
-      let n1 := makeNode n.entry l rl
-      let n1 := rotateAtMostOnce δ n1
-      let r1 := makeNode r.entry n1 rr
-      r1
+  match cmp δ (some n) with
     | Ordering.eq => n
+    | Ordering.gt => -- left heavy
+      let n1 := rightRotate n
+      if cmp δ (some n1) = Ordering.eq then
+        n1
+      else
+        -- not balanced after one single rotation
+        -- double rotation
+        let l := n.left?.get sorry
+        let l1 := leftRotate l
+        let n2 := makeNode n.entry l1 n.right?
+        let n3 := rightRotate n1
+        n3
+    | Ordering.lt => -- right heavy
+      let n1 := leftRotate n
+      if cmp δ (some n1) = Ordering.eq then
+        n1
+      else
+        -- not balanced after one single rotation
+        -- double rotation
+        let r := n.right?.get sorry
+        let r1 := rightRotate r
+        let n2 := makeNode n.entry n.left? r1
+        let n3 := leftRotate n1
+        n3
 
 -- theorem for _balance_once
 -- assuming the two subtrees n.left and n.right are balanced
 -- with δ ≥ 3, a single rotation is sufficient to make the whole tree balanced
 def balanceThm (δ: Nat) (n: Node α):
   δ ≥ 3
-  → Ordering.eq = strongCmp δ n.left?
-  → Ordering.eq = strongCmp δ n.right?
-  → Ordering.eq = weakCmp δ (some n)
-  → Ordering.eq = strongCmp δ (some (rotateAtMostOnce δ n))
+  → Ordering.eq = cmp δ n.left?
+  → Ordering.eq = cmp δ n.right?
+  → Ordering.eq = cmp δ (some (balance δ n))
   := sorry
 
 end WBT
