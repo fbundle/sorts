@@ -9,9 +9,10 @@ structure WBTMap (α: Type u) (β: Type v) (cmp: α → α → Ordering) where
 
 -- the whole purpose of this self-balancing tree is to do this
 private structure A where
-  value : Nat
+  val : Nat
   -- this only works for List, Array and don't work for Std.HashMap and Lean.RBTree
-  neighbours : WBTMap String A compare
+  map : WBTMap String A compare
+
 
 
 
