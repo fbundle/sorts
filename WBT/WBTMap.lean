@@ -14,8 +14,8 @@ partial def WBTMap.get? (map: WBTMap α β cmp) (key: α): Option β := do
   let (eKey, eVal) := node.entry
   match cmp key eKey with
     | Ordering.eq => pure eVal
-    | Ordering.lt => WBTMap.get? (cmp := cmp) {node? := node.left} key
-    | Ordering.gt => WBTMap.get? (cmp := cmp) {node? := node.right} key
+    | Ordering.lt => WBTMap.get? (cmp := cmp) {node? := node.left?} key
+    | Ordering.gt => WBTMap.get? (cmp := cmp) {node? := node.right?} key
 
 partial def WBTMap.set (map: WBTMap α β cmp) (key: α) (val: β): WBTMap α β cmp :=
   match map.node? with
@@ -25,18 +25,18 @@ partial def WBTMap.set (map: WBTMap α β cmp) (key: α) (val: β): WBTMap α β
       let (eKey, _) := node.entry
       match cmp key eKey with
         | Ordering.eq =>
-          {node? := makeNode (key, val) node.left node.right}
+          {node? := makeNode (key, val) node.left? node.right?}
         | Ordering.lt =>
-          let newLeft := (WBTMap.set (cmp := cmp) {node? := node.left} key val).node?
-          {node? := makeNode node.entry newLeft node.right}
+          let newLeft := (WBTMap.set (cmp := cmp) {node? := node.left?} key val).node?
+          {node? := makeNode node.entry newLeft node.right?}
         | Ordering.gt =>
-          let newRight := (WBTMap.set (cmp := cmp) {node? := node.right} key val).node?
-          {node? := makeNode node.entry node.left newRight}
+          let newRight := (WBTMap.set (cmp := cmp) {node? := node.right?} key val).node?
+          {node? := makeNode node.entry node.left? newRight}
 
 partial def WBTMap.del (map: WBTMap α β cmp) (key: α) (val: β): WBTMap α β cmp :=
   match map.node? with
     | none => {node? := none}
-    | some node =>
+    | some node =>ßß
       sorry
 
 -- all these for this
@@ -44,8 +44,12 @@ structure A where
   val: Nat
   map: WBTMap String A compare
 
-def x0 : WBTMap Nat String compare := WBTMap.empty
-def x1 := x0.set 123 "123"
+def x :=
+  let y : WBTMap Nat String compare := WBTMap.empty
+  let y := y.set 123 "123"
+  let y := y.set 456 "123"
+  let y := y.set 456 "123"
+  y
 
 #eval x.entries
 
