@@ -97,7 +97,7 @@ partial def balance (δ: Nat) (n: Node α): Node α :=
       else
         -- not balanced after one single rotation
         -- because lr too heavy
-        -- double rotation
+        -- double rotation effectively split lr in half
         let l := n.left?.get sorry
         let l1 := leftRotate l
         let n2 := makeNode n.entry l1 n.right?
@@ -110,7 +110,7 @@ partial def balance (δ: Nat) (n: Node α): Node α :=
       else
         -- not balanced after one single rotation
         -- because rl too heavy
-        -- double rotation
+        -- double rotation effectively split rl in half
         let r := n.right?.get sorry
         let r1 := rightRotate r
         let n2 := makeNode n.entry n.left? r1
