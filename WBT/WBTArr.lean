@@ -154,6 +154,6 @@ partial def WBTArr.fromList (xs: List α): WBTArr α :=
 def WBTArr.fromArray (xs: Array α): WBTArr α :=
   WBTArr.fromList xs.toList
 
-#eval WBTArr.fromArray (Array.replicate 99999 1)
+#eval WBTArr.fromArray (Array.replicate 999 1)
 
 end WBT

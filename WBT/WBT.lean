@@ -24,6 +24,11 @@ def height (n?: Option (Node α)): Nat :=
     | none => 0
     | some n => n.height
 
+
+instance: Repr (Node α) where
+  reprPrec (n: Node α) (_: Nat): Std.Format :=
+    s!"Node(w={n.weight}, h={n.height}, lw={weight n.left?}, rw={weight n.right?}, lh={height n.left?}, rh={height n.right?})"
+
 def makeNode (entry: α) (left?: Option (Node α)) (right?: Option (Node α)): Node α :=
   {
     weight := 1 + weight left? + weight right?,
@@ -52,7 +57,7 @@ partial def cmpWeak (δ: Nat) (n: Option (Node α)): Ordering :=
     | none => Ordering.eq
     | some n =>
       let (l, r) := (weight n.left?, weight n.right?)
-      if l + r ≤ 1 then
+      if l + r ≤ 2 then
         Ordering.eq
       else if (l > δ * r + 1) then
         Ordering.gt -- left heavy
@@ -103,34 +108,42 @@ partial def balance (δ: Nat) (n: Node α): Node α :=
   -- assuming δ ≥ 3
   -- assuming the two subtrees n.left and n.right are balanced
   -- double rotation is necessary - see `why_double_rotation.jpeg`
-  match cmp δ (some n) with
-    | Ordering.eq => n
-    | Ordering.gt => -- left heavy
-      let n1 := rightRotate n
-      if cmp δ (some n1) = Ordering.eq then
-        n1
-      else
-        -- not balanced after one single rotation
-        -- because lr too heavy
-        -- double rotation effectively split lr in half
-        let l := n.left?.get sorry
-        let l1 := leftRotate l
-        let n2 := makeNode n.entry l1 n.right?
-        let n3 := rightRotate n2
-        n3
-    | Ordering.lt => -- right heavy
-      let n1 := leftRotate n
-      if cmp δ (some n1) = Ordering.eq then
-        n1
-      else
-        -- not balanced after one single rotation
-        -- because rl too heavy
-        -- double rotation effectively split rl in half
-        let r := n.right?.get sorry
-        let r1 := rightRotate r
-        let n2 := makeNode n.entry n.left? r1
-        let n3 := leftRotate n2
-        n3
+  let n1 :=
+    match cmp δ (some n) with
+      | Ordering.eq => n
+      | Ordering.gt => -- left heavy
+        let n1 := rightRotate n
+        if cmp δ (some n1) = Ordering.eq then
+          n1
+        else
+          -- not balanced after one single rotation
+          -- because lr too heavy
+          -- double rotation effectively split lr in half
+          let l := n.left?.get sorry
+          let l1 := leftRotate l
+          let n2 := makeNode n.entry l1 n.right?
+          let n3 := rightRotate n2
+          n3
+      | Ordering.lt => -- right heavy
+        let n1 := leftRotate n
+        if cmp δ (some n1) = Ordering.eq then
+          n1
+        else
+          -- not balanced after one single rotation
+          -- because rl too heavy
+          -- double rotation effectively split rl in half
+          let r := n.right?.get sorry
+          let r1 := rightRotate r
+          let n2 := makeNode n.entry n.left? r1
+          let n3 := leftRotate n2
+          n3
+
+  -- dbg
+  if Ordering.eq ≠ cmp δ (some n1) then
+    dbg_trace s!"[DBG_TRACE] output_not_eq {repr n1}"
+    n1
+  else
+    n1
 
 -- theorem for _balance_once
 -- assuming the two subtrees n.left and n.right are balanced
