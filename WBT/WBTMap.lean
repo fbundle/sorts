@@ -9,12 +9,12 @@ structure WBTMap (α: Type u) (β: Type v) (cmp: α → α → Ordering) where
 
 -- as Lean enforces type to be strictly positive, sometimes recursive structure doesn't work
 -- e.g
--- private structure A where
+-- structure A where
 --   val : Nat
 --   map : Std.HashMap String A compare
 
 -- e.g
--- private structure A where
+-- structure A where
 --   val : Nat
 --   map : Lean.RBTree String A compare
 
