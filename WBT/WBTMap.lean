@@ -5,34 +5,42 @@ structure Node (α: Type u) (β: Type v) (cmp: α → α → Ordering): Type (ma
   height: Nat
   key: α
   val: β
-  left: Option (Node α β cmp)
-  right: Option (Node α β cmp)
+  left?: Option (Node α β cmp)
+  right?: Option (Node α β cmp)
 
-def weight (node?: Option (Node α β cmp)): Nat :=
-  match node? with
+def weight (n?: Option (Node α β cmp)): Nat :=
+  match n? with
     | none => 0
-    | some node => node.weight
+    | some n => n.weight
 
-def height (node?: Option (Node α β cmp)): Nat :=
-  match node? with
+def height (n?: Option (Node α β cmp)): Nat :=
+  match n? with
     | none => 0
-    | some node => node.height
+    | some n => n.height
 
-def leftHeavy (δ: Nat) (node: Node α β cmp): Bool :=
-  let (l, r) := (weight node.left, weight node.right)
-  (l + r ≥ 2) ∧ (l > δ * r)
+partial def balanceCond (δ: Nat) (n?: Option (Node α β cmp)): Ordering :=
+  match n? with
+    | none => Ordering.eq
+    | some n =>
+      let (l, r) := (weight n.left?, weight n.right?)
+      if l + r < 2 then
+        Ordering.eq
+      else
+        sorry
 
-def rightHeavy (δ: Nat) (node: Node α β cmp): Bool :=
-  let (l, r) := (weight node.left, weight node.right)
-  (l + r ≥ 2) ∧ (δ * l < r)
 
-partial def balanceCond (δ: Nat) (node?: Option (Node α β cmp)): Bool :=
-  match node? with
-    | none => true
-    | some node =>
-      ¬ ((leftHeavy δ node) ∨ (rightHeavy δ node))
-      ∧
-      balanceCond δ node.left ∧ balanceCond δ node.right
+-- δ ll ≥ lr
+-- δ r + 1 ≥ 1 + ll + lr > δ r -- not too imbalanced might be (δ r + something)
+
+-- 1 + ll + lr + r ≤ (δ + 1) r + 1
+-- 1 + lr + r ≤ (δ + 1) r - ll + 1
+--            < (δ + 1) (1 + ll + lr) / δ - ll + 1
+--            ≤ 1 + (δ + 1)/δ + (δ + 1) lr /δ + 1/δ ll
+--            ≤ 1 + (δ + 1)/δ + (δ + 1) ll + 1/δ ll
+-- choose δ = 3
+-- => 1 + lr + r ≤ 3 ll
+
+
 
 def makeNode (key: α) (val: β) (left: Option (Node α β cmp)) (right: Option (Node α β cmp)): Node α β cmp :=
   {
