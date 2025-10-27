@@ -7,6 +7,8 @@ structure WBTMap (α: Type u) (β: Type v) (cmp: α → α → Ordering): Type (
 
 def WBTMap.empty {α: Type u} {β: Type v} {cmp: α → α → Ordering}: WBTMap α β cmp := {node? := none}
 
+def WBTMap.entries (map: WBTMap α β cmp): List (α × β) := iterate map.node?
+
 partial def WBTMap.get? (map: WBTMap α β cmp) (key: α): Option β := do
   let node ← map.node?
   let (eKey, eVal) := node.entry
@@ -41,5 +43,10 @@ partial def WBTMap.del (map: WBTMap α β cmp) (key: α) (val: β): WBTMap α β
 structure A where
   val: Nat
   map: WBTMap String A compare
+
+def x0 : WBTMap Nat String compare := WBTMap.empty
+def x1 := x0.set 123 "123"
+
+#eval x.entries
 
 end WBT

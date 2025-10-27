@@ -7,6 +7,13 @@ structure Node (α: Type u) where
   left: Option (Node α)
   right: Option (Node α)
 
+partial def iterate (n: Option (Node α)): List α :=
+  match n with
+    | none => []
+    | some n =>
+      let (l, r) := (iterate n.left, iterate n.right)
+      l ++ [n.entry] ++ r
+
 def weight (n: Option (Node α)): Nat :=
   match n with
     | none => 0
@@ -16,7 +23,6 @@ def height (n: Option (Node α)): Nat :=
   match n with
     | none => 0
     | some n => n.height
-
 
 def makeNode (entry: α) (left: Option (Node α)) (right: Option (Node α)): Node α :=
   {
