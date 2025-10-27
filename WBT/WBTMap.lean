@@ -5,6 +5,8 @@ namespace WBT
 structure WBTMap (α: Type u) (β: Type v) (cmp: α → α → Ordering): Type (max u v) where
   node?: Option (Node (α × β))
 
+def WBTMap.empty {α: Type u} {β: Type v} {cmp: α → α → Ordering}: WBTMap α β cmp := {node? := none}
+
 partial def WBTMap.get? (map: WBTMap α β cmp) (key: α): Option β := do
   let node ← map.node?
   let (eKey, eVal) := node.entry
@@ -18,7 +20,7 @@ partial def WBTMap.set (map: WBTMap α β cmp) (key: α) (val: β): WBTMap α β
     | none =>
       {node? := makeNode (key, val) none none}
     | some node =>
-      let (eKey, eVal) := node.entry
+      let (eKey, _) := node.entry
       match cmp key eKey with
         | Ordering.eq =>
           {node? := makeNode (key, val) node.left node.right}
@@ -30,13 +32,10 @@ partial def WBTMap.set (map: WBTMap α β cmp) (key: α) (val: β): WBTMap α β
           {node? := makeNode node.entry node.left newRight}
 
 partial def WBTMap.del (map: WBTMap α β cmp) (key: α) (val: β): WBTMap α β cmp :=
-  sorry
-
-
-
-
-
-
+  match map.node? with
+    | none => {node? := none}
+    | some node =>
+      sorry
 
 -- all these for this
 structure A where
