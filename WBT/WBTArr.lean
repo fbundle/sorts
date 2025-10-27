@@ -12,7 +12,6 @@ partial def WBTArr.toArray (a: WBTArr α): Array α :=
 
 def WBTArr.size (a: WBTArr α): Nat := weight a.node?
 
-
 partial def WBTArr.get? (a: WBTArr α) (i: Nat): Option α :=
   let rec loop (n?: Option (Node α)) (i: Nat): Option α :=
     match n? with
@@ -122,6 +121,23 @@ partial def WBTArr.delete? (a: WBTArr α) (i: Nat) : Option (WBTArr α) :=
           none
   some {node? := loop a.node? i}
 
+partial def WBTArr.merge (a: WBTArr α) (b: WBTArr α): WBTArr α :=
+  sorry
 
+partial def WBTArr.split? (a: WBTArr α) (i: Nat): (WBTArr α) × (WBTArr α) :=
+  sorry
+
+partial def WBTArr.mapM [Monad m] (a: WBTArr α) (f: α → m β): m (WBTArr β) := do
+  let rec loop (n?: Option (Node α)): m (Option (Node β)) := do
+    match n? with
+      | none => pure none
+      | some n =>
+        let entry ← f n.entry
+        let left? ← loop n.left?
+        let right? ← loop n.right?
+        pure $ makeNode entry left? right?
+
+  let node? ← loop a.node?
+  pure {node? := node? : WBTArr β}
 
 end WBT
