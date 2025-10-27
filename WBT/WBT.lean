@@ -38,6 +38,9 @@ def makeNode (entry: α) (left?: Option (Node α)) (right?: Option (Node α)): N
     right? := right?,
   }
 
+instance [Inhabited α]: Inhabited (Node α) where
+  default := makeNode default none none
+
 partial def cmp (δ: Nat) (n: Option (Node α)): Ordering :=
   match n with
     | none => Ordering.eq
@@ -65,6 +68,26 @@ partial def cmpWeak (δ: Nat) (n: Option (Node α)): Ordering :=
         Ordering.lt -- right heavy
       else
         Ordering.eq
+
+partial def balanceCond (δ: Nat) (n: Option (Node α)): Bool :=
+    match n with
+    | none => true
+    | some n =>
+      (balanceCond δ n.left?)
+        ∧
+      (balanceCond δ n.right?)
+        ∧
+      (Ordering.eq = cmp δ (some n))
+
+partial def weakBalanceCond (δ: Nat) (n: Option (Node α)): Bool :=
+    match n with
+    | none => true
+    | some n =>
+      (weakBalanceCond δ n.left?)
+        ∧
+      (weakBalanceCond δ n.right?)
+        ∧
+      (Ordering.eq = cmpWeak δ (some n))
 
 def rightRotate (n: Node α): Node α :=
   -- right rotate
@@ -139,9 +162,13 @@ partial def balance (δ: Nat) (n: Node α): Node α :=
           n3
 
   -- dbg
-  if Ordering.eq ≠ cmp δ (some n1) then
+  if ¬ (balanceCond δ (some n1)) then
     dbg_trace s!"[DBG_TRACE] output_not_eq {repr n1}"
-    n1
+    if ¬ (weakBalanceCond δ (some n)) then
+      dbg_trace s!"[DBG_TRACE] input_not_weak_eq {repr n}"
+      n1
+    else
+      n1
   else
     n1
 
@@ -150,10 +177,10 @@ partial def balance (δ: Nat) (n: Node α): Node α :=
 -- with δ ≥ 3, a single rotation is sufficient to make the whole tree balanced
 def balanceThm (δ: Nat) (n: Node α):
   δ ≥ 3
-  → Ordering.eq = cmp δ n.left?
-  → Ordering.eq = cmp δ n.right?
+  → balanceCond δ n.left?
+  → balanceCond δ n.right?
   → Ordering.eq = cmpWeak δ (some n)
-  → Ordering.eq = cmp δ (some (balance δ n))
+  → balanceCond δ (some (balance δ n))
   := sorry
 
 def δ := 3
