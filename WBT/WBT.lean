@@ -94,7 +94,7 @@ partial def cmp (δ: Nat) (n: Option (Node α)): Ordering :=
 partial def balance (δ: Nat) (n: Node α): Option (Node α) := do
   -- assuming δ ≥ 3
   -- assuming the two subtrees n.left and n.right are balanced
-  -- double rotation is necessary - see why_double_rotation.jpeg
+  -- double rotation is necessary - see `why_double_rotation.jpeg`
   match cmp δ (some n) with
     | Ordering.eq => n
     | Ordering.gt => -- left heavy
