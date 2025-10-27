@@ -7,12 +7,12 @@ structure Node (α: Type u) where
   left?: Option (Node α)
   right?: Option (Node α)
 
-partial def iterate (n?: Option (Node α)): List α :=
+partial def iterate (n?: Option (Node α)): Array α :=
   match n? with
-    | none => []
+    | none => #[]
     | some n =>
       let (l, r) := (iterate n.left?, iterate n.right?)
-      l ++ [n.entry] ++ r
+      l ++ #[n.entry] ++ r
 
 def weight (n?: Option (Node α)): Nat :=
   match n? with
@@ -124,5 +124,7 @@ def balanceThm (δ: Nat) (n: Node α):
   → Ordering.eq = cmp δ n.right?
   → Ordering.eq = cmp δ (some (balance δ n))
   := sorry
+
+def δ := 3
 
 end WBT
