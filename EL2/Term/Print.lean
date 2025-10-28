@@ -61,16 +61,14 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
       printList ( [ctx.print cmd] ++ args.map ctx.print )
 
     | mat {cond, cases} =>
-      let matchCtx := ctx.next
-      let caseCtx := ctx.next.next
+      let caseCtx := ctx.next
       let casesStrList := cases.map (λ {patCmd, patArgs, value} =>
         caseCtx.indentStr ++ patCmd ++ " " ++ (String.join (patArgs.intersperse " "))
         ++  " => " ++ (caseCtx.print value) ++ "\n"
       )
 
-      "\n" ++ matchCtx.indentStr ++ "match " ++ (ctx.print cond) ++ " with" ++ "\n"
+      "match " ++ (ctx.print cond) ++ " with" ++ "\n"
       ++ (String.join casesStrList)
-      ++ matchCtx.indentStr
 end
 
 instance : ToString Term where
