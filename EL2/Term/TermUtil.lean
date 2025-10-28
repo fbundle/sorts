@@ -22,7 +22,10 @@ end EL2.Util
 
 namespace EL2.Term
 
-
+class Map M α where
+  size: M → Nat
+  set: M → String → α → M
+  get?: M → String → Option α
 
 def T.mapM [Monad m] (t: T α) (f: α → m β) : m (T β) := do
   match t with

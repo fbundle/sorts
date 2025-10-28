@@ -66,10 +66,4 @@ notation "lam" x => Term.t (T.lam x)
 notation "app" x => Term.t (T.app x)
 notation "mat" x => Term.t (T.mat x)
 
-
-class Map M α where
-  size: M → Nat
-  set: M → String → α → M
-  get?: M → String → Option α
-
 end EL2.Term
