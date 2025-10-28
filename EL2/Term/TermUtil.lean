@@ -1,9 +1,28 @@
 import EL2.Term.Term
 import EL2.Term.Print
-import EL2.Term.Util
+
 import Std
 
+namespace EL2.Util
+
+def statefulMapM [Monad m] (xs: List α) (state: State) (f: State → α → m (State × β)) : m (State × List β) :=
+  let rec loop (ys: Array β) (xs: List α) (state: State): m (State × List β) := do
+    match xs with
+      | [] => pure (state, ys.toList)
+      | x :: xs =>
+        let (state, y) ← f state x
+        loop (ys.push y) xs state
+
+  loop #[] xs state
+
+def statefulMap (xs: List α) (state: State) (f: State → α → State × β): State × List β :=
+  Id.run (statefulMapM xs state (λ s x => pure (f s x)))
+
+end EL2.Util
+
 namespace EL2.Term
+
+
 
 def T.mapM [Monad m] (t: T α) (f: α → m β) : m (T β) := do
   match t with
