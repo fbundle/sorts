@@ -32,6 +32,17 @@ def WBTMap.length (m: WBTMap α β cmp): Nat :=
 def WBTMap.depth (m: WBTMap α β cmp): Nat :=
   Node.height m.node?
 
+instance: Coe (Option (Node.Node (α × β))) (WBTMap α β cmp) where
+  coe (node?: Option (Node.Node (α × β))): WBTMap α β cmp := {node? := node?}
+
+def WBTMap.empty : WBTMap α β cmp :=
+  {node? := none}
+
+partial def WBTMap.toArray (m: WBTMap α β cmp): Array (α × β) :=
+  Node.iterate m.node?
+
+def WBTArr.toList (m: WBTMap α β cmp): List (α × β) :=
+  m.toArray.toList
 
 
 
