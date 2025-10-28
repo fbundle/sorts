@@ -78,7 +78,7 @@ def T.mapM [Monad m] (t: T α) (f: α → m β) : m (T β) := do
       let cases ← x.cases.mapM (λ case => do
         let value ← f case.value
         pure {
-          patCmd := case.patCmd,
+          patCons := case.patCons,
           patArgs := case.patArgs,
           value := value
           : Case β
@@ -146,7 +146,7 @@ partial def Term.normalizeName (term: Term) (nameMap: Std.HashMap String String 
         )
         let newValue := case.value.normalizeName newNameMap
         {
-          patCmd := case.patCmd,
+          patCons := case.patCons,
           patArgs := newPatArgs,
           value := newValue,
           : Case Term

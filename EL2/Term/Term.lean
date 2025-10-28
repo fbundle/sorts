@@ -32,7 +32,7 @@ structure App (α: Type) where
   deriving Repr, BEq
 
 structure Case (α: Type) where
-  patCmd: String
+  patCons: String
   patArgs: List String
   value: α
   deriving Repr, BEq

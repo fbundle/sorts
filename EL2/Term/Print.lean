@@ -62,8 +62,8 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
 
     | mat {cond, cases} =>
       let caseCtx := ctx.next
-      let casesStrList := cases.map (λ {patCmd, patArgs, value} =>
-        caseCtx.indentStr ++ patCmd ++ " " ++ (String.join (patArgs.intersperse " "))
+      let casesStrList := cases.map (λ {patCons, patArgs, value} =>
+        caseCtx.indentStr ++ patCons ++ " " ++ (String.join (patArgs.intersperse " "))
         ++  " => " ++ (caseCtx.print value) ++ "\n"
       )
 

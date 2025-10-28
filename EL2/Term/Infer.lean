@@ -45,19 +45,19 @@ partial def inferTypeParams? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (params
     })
   )
 partial def inferTypeCase? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (case: Case Term): Option (Case InferedType) := do
-  let iCmd: InferedType ← Map.get? ctx case.patCmd
-  match isLam? iCmd.type with
+  let iCons: InferedType ← Map.get? ctx case.patCons
+  match isLam? iCons.type with
     | none => -- case is not a lambda - resolve directly
       let iValue ← inferType? ctx case.value
       pure {
-        patCmd := case.patCmd,
+        patCons := case.patCons,
         patArgs := case.patArgs,
         value := iValue,
       }
 
-    | some iCmd => -- case is lambda
+    | some iCons => -- case is lambda
       -- make new set of params according to patArgs
-      let newParams := renameParamsWithCase iCmd.params case.patArgs
+      let newParams := renameParamsWithCase iCons.params case.patArgs
       -- convert case to lambda to reuse inferType?
       let matLam := lam {
         params := newParams,
@@ -68,7 +68,7 @@ partial def inferTypeCase? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (case: Ca
       let valueType := (← isLam? iMatLam.type).body
 
       pure {
-        patCmd := case.patCmd,
+        patCons := case.patCons,
         patArgs := case.patArgs,
         value := {
           type := valueType,
@@ -147,7 +147,7 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
             cond := x.cond,
             cases := iCases.map (λ iCase =>
               {
-                patCmd := iCase.patCmd,
+                patCons := iCase.patCons,
                 patArgs := iCase.patArgs,
                 value := iCase.value.type,
               }

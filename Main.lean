@@ -87,8 +87,8 @@ def term : Term :=
           body := mat {
             cond := var "n",
             cases := [
-              {patCmd := "zero", patArgs := [], value := app {cmd := var "append", args := [var "n", var "T", var "vec", var "val"]}},
-              {patCmd := "succ", patArgs := ["_"], value := var "vec"},
+              {patCons := "zero", patArgs := [], value := app {cmd := var "append", args := [var "n", var "T", var "vec", var "val"]}},
+              {patCons := "succ", patArgs := ["_"], value := var "vec"},
             ],
           },
         },
@@ -127,11 +127,11 @@ def term : Term :=
                   cond := var "m",
                   cases := [
                     {
-                      patCmd := "zero", patArgs := [],
+                      patCons := "zero", patArgs := [],
                       value := app {cmd := var "Vec", args := [app {cmd := var "succ", args := [var "m"]}, var "T"]},
                     },
                     {
-                      patCmd := "succ", patArgs := ["_"],
+                      patCons := "succ", patArgs := ["_"],
                       value := app {cmd := var "Vec", args := [var "m", var "T"]},
                     },
                   ],
