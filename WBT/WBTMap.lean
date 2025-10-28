@@ -85,6 +85,18 @@ partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cm
           let n1 := Node.makeNode n.entry n.left? r1.node?
           pure (WBTMap.fromNode (Node.balance Node.δ n1))
 
+def WBTMap.del (m: WBTMap α β cmp) (key: α): WBTMap α β cmp :=
+  match m.del? key with
+    | none => m
+    | some m => m
+
+#eval (WBTMap.empty: WBTMap Nat String compare)
+  |> (·.set 1 "1")
+  |> (·.set 2 "2")
+  |> (·.set 3 "3")
+  |> (·.del 2)
+  |> (·.del 1)
+
 -- as Lean enforces type to be strictly positive, sometimes recursive structure doesn't work
 -- e.g
 -- structure A where
