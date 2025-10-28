@@ -6,24 +6,6 @@ namespace WBT
 structure WBTMap (α: Type u) (β: Type v) (cmp: α → α → Ordering) where
   node? : Option (Node.Node (α × β))
 
--- as Lean enforces type to be strictly positive, sometimes recursive structure doesn't work
--- e.g
--- structure A where
---   val : Nat
---   map : Std.HashMap String A compare
-
--- e.g
--- structure A where
---   val : Nat
---   map : Lean.RBTree String A compare
-
--- somehow, List (String × A) and Array (String × A) work but it requires O(n) look up time
-
--- the whole purpose of this self-balancing tree is to do this
-private structure A where
-  val : Nat
-  map : WBTMap String A compare
-
 def WBTMap.fromNode (node?: Option (Node.Node (α × β))): WBTMap α β cmp :=
   {node? := node?}
 
@@ -103,15 +85,22 @@ partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cm
           let n1 := Node.makeNode n.entry n.left? r1.node?
           pure (WBTMap.fromNode (Node.balance Node.δ n1))
 
-private def x: Option (WBTMap Nat String compare) := do
-  let y: WBTMap Nat String compare := WBTMap.empty
-  let y := y.set 1 "1"
-  let y := y.set 2 "2"
-  let y := y.set 3 "3"
-  let y ← y.del? 2
-  pure y
+-- as Lean enforces type to be strictly positive, sometimes recursive structure doesn't work
+-- e.g
+-- structure A where
+--   val : Nat
+--   map : Std.HashMap String A compare
 
+-- e.g
+-- structure A where
+--   val : Nat
+--   map : Lean.RBTree String A compare
 
-#eval x.get!
+-- somehow, List (String × A) and Array (String × A) work but it requires O(n) look up time
+
+-- the whole purpose of this self-balancing tree is to do this
+private structure A where
+  val : Nat
+  map : WBTMap String A compare
 
 end WBT
