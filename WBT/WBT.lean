@@ -1,4 +1,4 @@
-namespace WBT
+namespace WBT.Node
 
 structure Node (α: Type u) where
   weight: Nat
@@ -185,4 +185,4 @@ def balanceThm (δ: Nat) (n: Node α):
 
 def δ := 3
 
-end WBT
+end WBT.Node

@@ -26,6 +26,8 @@ private structure A where
   val : Nat
   map : WBTMap String A compare
 
+-- def WBTMap.length (m: WBTMap α β cmp)
+
 
 
 
