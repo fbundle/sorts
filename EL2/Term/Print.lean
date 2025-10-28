@@ -43,17 +43,12 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
       if init.length = 0 then
         ctx.print last
       else
-        let letCtx := ctx.next
-        let partCtx := ctx.next.next
-
         let initStrList := init.map (λ {name, value} =>
-          partCtx.indentStr ++ (printList [name, ":=", partCtx.print value] (withParens := false)) ++ "\n"
+          ctx.indentStr ++ "let " ++ (printList [name, ":=", ctx.print value] (withParens := false)) ++ "\n"
         )
-        let lastStr := partCtx.indentStr ++ (partCtx.print last) ++ "\n"
+        let lastStr := ctx.indentStr ++ (ctx.print last) ++ "\n"
 
-        "\n" ++ letCtx.indentStr ++ "let" ++ "\n"
-        ++ (String.join (initStrList ++ [lastStr]))
-        ++ letCtx.indentStr
+        String.join (initStrList ++ [lastStr])
 
     | lam {params, body} =>
       printList (
