@@ -24,6 +24,9 @@ partial def reduce? [Repr Ctx] [Map Ctx ReducedTerm] (ctx: Ctx) (term: Term) : O
           level := level + 1,-- U_1 is at level 2
           : ReducedTerm
         }
+      | var name =>
+        Map.get? ctx name
+
       | _ => none
 
     sorry
