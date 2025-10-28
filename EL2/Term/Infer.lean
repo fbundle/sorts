@@ -26,11 +26,20 @@ structure InferedType where
 partial def isSubType (iType1: InferedType) (iType2: InferedType): Bool :=
   let type1 := renameTerm emptyNameMap iType1.type
   let type2 := renameTerm emptyNameMap iType2.type
-  if type1 == type2 then True else
-    dbg_trace s!"[DBG_TRACE] different type"
-    dbg_trace s!"type1:\t{type1}"
-    dbg_trace s!"type2:\t{type2}"
-    false
+  match type2 with
+    | univ _ =>
+      if iType1.level ≤ iType2.level then
+        true
+      else
+        false
+    | _ =>
+      if type1 == type2 then
+        True
+      else
+        dbg_trace s!"[DBG_TRACE] different type"
+        dbg_trace s!"type1:\t{type1}"
+        dbg_trace s!"type2:\t{type2}"
+        false
 
 mutual
 
