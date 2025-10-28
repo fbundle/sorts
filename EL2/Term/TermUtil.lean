@@ -81,13 +81,12 @@ def Term.mapM [Monad m] (term: Term) (f: Term → m Term): m Term := do
 def Term.map (term: Term) (f: Term → Term): Term :=
   Id.run (term.mapM (λ x => pure (f x)))
 
-
 def emptyNameMap: Std.HashMap String String := Std.HashMap.emptyWithCapacity
 
 def dummyName (nameMap: Std.HashMap String String): String :=
   s!"_{nameMap.size}"
 
-partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :=
+partial def Term.normalizeName (term: Term) (nameMap: Std.HashMap String String := emptyNameMap) : Term :=
   -- nameMap holds a mapping oldName -> newName
   -- rename all parameters into _<count> where count = nameNameMap.size save into nameMap
   -- rename all match parameters into _<count>
@@ -100,20 +99,20 @@ partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :
 
     | lam x =>
       let (newNameMap, newParams) := Util.statefulMap x.params nameMap (λ oldNameMap param =>
-        let newType := renameTerm oldNameMap param.type
+        let newType := param.type.normalizeName oldNameMap
 
         let newName := dummyName oldNameMap
         let newNameMap := oldNameMap.insert param.name newName
 
         (newNameMap, {name := newName, type := newType : Ann Term})
       )
-      let newBody := renameTerm newNameMap x.body
+      let newBody := x.body.normalizeName newNameMap
       lam {
         params := newParams,
         body := newBody,
       }
     | mat x =>
-      let newCond := renameTerm nameMap x.cond
+      let newCond := x.cond.normalizeName nameMap
       let newCases := x.cases.map (λ case =>
         let (newNameMap, newPatArgs) := Util.statefulMap case.patArgs nameMap (λ oldNameMap patArg =>
           let newName := dummyName oldNameMap
@@ -121,7 +120,7 @@ partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :
 
           (newNameMap, newName)
         )
-        let newValue := renameTerm newNameMap case.value
+        let newValue := case.value.normalizeName newNameMap
         {
           patCmd := case.patCmd,
           patArgs := newPatArgs,
@@ -134,13 +133,13 @@ partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :
         cases := newCases,
       }
 
-    | _ => term.map (renameTerm nameMap)
+    | _ => term.map (·.normalizeName nameMap)
 
 def renameParamsWithCase (params: List (Ann Term)) (patArgs: List String): List (Ann Term) :=
   -- given patArgs and constructor
   -- rename the param and type of constructor to match patArgs
   let (_, newParams) := Util.statefulMap (List.zip patArgs params) emptyNameMap (λ oldNameMap (patArg, param) =>
-    let newType := renameTerm oldNameMap param.type
+    let newType := param.type.normalizeName oldNameMap
     let newName := patArg
     let newNameMap := oldNameMap.insert param.name newName
     (newNameMap, {

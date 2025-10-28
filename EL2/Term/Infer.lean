@@ -18,8 +18,8 @@ structure InferedType where
   deriving Repr
 
 partial def isSubType (iType1: InferedType) (iType2: InferedType): Bool :=
-  let type1 := renameTerm emptyNameMap iType1.type
-  let type2 := renameTerm emptyNameMap iType2.type
+  let type1 := iType1.type.normalizeName
+  let type2 := iType2.type.normalizeName
   match type2 with
     | univ _ =>
       if iType1.level ≤ iType2.level then
