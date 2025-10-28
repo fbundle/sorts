@@ -61,7 +61,6 @@ inductive Term where
 notation "univ" x => Term.univ x
 notation "var" x => Term.var x
 notation "inh" x => Term.t (T.inh x)
-notation "typ" x => Term.t (T.typ x)
 notation "bnd" x => Term.t (T.bnd x)
 notation "lam" x => Term.t (T.lam x)
 notation "app" x => Term.t (T.app x)
