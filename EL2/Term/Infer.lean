@@ -130,21 +130,20 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
               -- make new set of params according to patArgs
               let newParams := renameParamsWithCase iCmd.params case.patArgs
               -- convert case to lambda to reuse inferType?
-              let iValueLam1 := lam {
+              let matLam := lam {
                 params := newParams,
                 body := case.value,
               }
-              let iValueLam2 ← inferType? ctx iValueLam1
-              -- iValueLam2 is a Pi type (iLam.params) -> typeof case.value
-              let iValueLam3 ← isLam? iValueLam2.type
-              let iValue := iValueLam3.body
+              let iMatLam ← inferType? ctx matLam
+              -- iMatLam is a Pi type (newParams) -> typeof case.value
+              let valueType := (← isLam? iMatLam.type).body
 
               pure {
                 patCmd := case.patCmd,
                 patArgs := case.patArgs,
                 value := {
-                  type := iValue,
-                  level := iValueLam2.level,
+                  type := valueType,
+                  level := iMatLam.level,
                 }
               }
         )
@@ -171,7 +170,6 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
       none
     | some v =>
       pure v
-
 end
 
 -- TODO think of some way to reduce type and reduce in general
