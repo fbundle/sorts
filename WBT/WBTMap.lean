@@ -44,7 +44,7 @@ partial def WBTMap.toArray (m: WBTMap α β cmp): Array (α × β) :=
 
 instance [Repr α] [Repr β]: Repr (WBTMap α β cmp) where
   reprPrec (m: WBTMap α β cmp) (_: Nat): Std.Format :=
-    s!"WBTArr {repr m.toArray}"
+    s!"WBTMap {repr m.toArray}"
 
 instance: Inhabited (WBTMap α β cmp) where
   default := WBTMap.empty
@@ -64,24 +64,23 @@ partial def WBTMap.get? (m: WBTMap α β cmp) (key: α): Option β :=
 
 partial def WBTMap.set (m: WBTMap α β cmp) (key: α) (val: β): WBTMap α β cmp :=
   match m.node? with
-    | none => WBTMap.fromNode $ Node.makeNode (key, val) none none
+    | none => WBTMap.fromNode (Node.makeNode (key, val) none none)
     | some n =>
       let (ekey, _) := n.entry
       match cmp key ekey with
         | Ordering.lt =>
           let l1 := WBTMap.set (cmp := cmp) (WBTMap.fromNode n.left?) key val
           let n1 := Node.makeNode n.entry l1.node? n.right?
-          WBTMap.fromNode $ Node.balance Node.δ n1
+          WBTMap.fromNode (Node.balance Node.δ n1)
         | Ordering.eq =>
           let n1 := Node.makeNode (key, val) n.left? n.right?
-          WBTMap.fromNode $ Node.balance Node.δ n1
+          WBTMap.fromNode (Node.balance Node.δ n1)
         | Ordering.gt =>
           let r1 := WBTMap.set (cmp := cmp) (WBTMap.fromNode n.right?) key val
           let n1 := Node.makeNode n.entry n.left? r1.node?
-          WBTMap.fromNode $ Node.balance Node.δ n1
+          WBTMap.fromNode (Node.balance Node.δ n1)
 
-partial def WBTMap.del? [Repr α] [Repr β] (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cmp) := do
-  dbg_trace s!"deleting from {repr m} key {repr key}"
+partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cmp) := do
   match m.node? with
     | none => none
     | some n =>
@@ -90,7 +89,7 @@ partial def WBTMap.del? [Repr α] [Repr β] (m: WBTMap α β cmp) (key: α): Opt
         | Ordering.lt =>
           let l1 ← WBTMap.del? (cmp := cmp) (WBTMap.fromNode n.left?) key
           let n1 := Node.makeNode n.entry l1.node? n.right?
-          pure (WBTMap.fromNode $ Node.balance Node.δ n1)
+          pure (WBTMap.fromNode (Node.balance Node.δ n1))
         | Ordering.eq =>
           match n.right? with
             | none => pure (WBTMap.fromNode n.left?)
@@ -98,11 +97,11 @@ partial def WBTMap.del? [Repr α] [Repr β] (m: WBTMap α β cmp) (key: α): Opt
               let (rMinKey, rMinVal) ← WBTMap.min? (cmp := cmp) (WBTMap.fromNode r)
               let r1 ← WBTMap.del? (α := α) (β := β) (cmp := cmp) (WBTMap.fromNode r) rMinKey
               let n1 := Node.makeNode (rMinKey, rMinVal) n.left? r1.node?
-              pure (WBTMap.fromNode $ Node.balance Node.δ n1)
+              pure (WBTMap.fromNode (Node.balance Node.δ n1))
         | Ordering.gt =>
           let r1 ← WBTMap.del? (cmp := cmp) (WBTMap.fromNode n.right?) key
           let n1 := Node.makeNode n.entry n.left? r1.node?
-          pure (WBTMap.fromNode $ Node.balance Node.δ n1)
+          pure (WBTMap.fromNode (Node.balance Node.δ n1))
 
 private def x: Option (WBTMap Nat String compare) := do
   let y: WBTMap Nat String compare := WBTMap.empty
