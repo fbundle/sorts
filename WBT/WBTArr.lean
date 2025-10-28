@@ -115,9 +115,7 @@ partial def WBTArr.mapM [Monad m] (a: WBTArr α) (f: α → m β): m (WBTArr β)
   pure {node? := node? : WBTArr β}
 
 def WBTArr.push (a: WBTArr α) (x: α): WBTArr α :=
-  match a.insert? a.length x with
-    | none => sorry
-    | some a => a
+  (a.insert? a.length x).get sorry
 
 partial def WBTArr.fromList (xs: List α): WBTArr α :=
   let rec loop (a: WBTArr α) (xs: List α): WBTArr α :=
@@ -131,5 +129,7 @@ partial def WBTArr.fromList (xs: List α): WBTArr α :=
 def WBTArr.fromArray (xs: Array α): WBTArr α :=
   WBTArr.fromList xs.toList
 
+
+#eval balanceCond 3 (WBTArr.fromArray (Array.replicate 1000 1)).node?
 
 end WBT

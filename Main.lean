@@ -161,8 +161,6 @@ instance : Map (Std.HashMap String α) α where
 
 def ctxEmpty : Std.HashMap String InferedType := Std.HashMap.emptyWithCapacity
 
-def ok := balanceCond 3 (WBTArr.fromArray (Array.replicate 1000 1)).node?
-
 def main  : IO Unit := do
   -- print program
   IO.println s!"[PRINT]\n{term}"
