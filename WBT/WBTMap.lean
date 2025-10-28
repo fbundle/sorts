@@ -58,7 +58,7 @@ partial def WBTMap.get? (m: WBTMap α β cmp) (key: α): Option β :=
         | Ordering.lt =>
           WBTMap.get? (cmp := cmp) n.left? key
         | Ordering.eq =>
-          eval
+          some eval
         | Ordering.gt =>
           WBTMap.get? (cmp := cmp) n.right? key
 
@@ -80,7 +80,8 @@ partial def WBTMap.set (m: WBTMap α β cmp) (key: α) (val: β): WBTMap α β c
           let n1 := Node.makeNode n.entry n.left? r1.node?
           Node.balance Node.δ n1
 
-partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cmp) := do
+partial def WBTMap.del? [Repr α] [Repr β] (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cmp) := do
+  dbg_trace s!"deleting from {repr m} key {repr key}"
   match m.node? with
     | none => none
     | some n =>
@@ -89,26 +90,26 @@ partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cm
         | Ordering.lt =>
           let l1 ← WBTMap.del? (cmp := cmp) n.left? key
           let n1 := Node.makeNode n.entry l1.node? n.right?
-          Node.balance Node.δ n1
+          pure (Node.balance Node.δ n1)
         | Ordering.eq =>
           match n.right? with
-            | none => n.left?
+            | none => pure n.left?
             | some r => -- by default, remove from the right
               let (rMinKey, rMinVal) ← WBTMap.min? (cmp := cmp) r
               let r1 ← WBTMap.del? (α := α) (β := β) (cmp := cmp) r rMinKey
               let n1 := Node.makeNode (rMinKey, rMinVal) n.left? r1.node?
-              Node.balance Node.δ n1
+              pure (Node.balance Node.δ n1)
         | Ordering.gt =>
           let r1 ← WBTMap.del? (cmp := cmp) n.right? key
           let n1 := Node.makeNode n.entry n.left? r1.node?
-          Node.balance Node.δ n1
+          pure (Node.balance Node.δ n1)
 
 private def x: Option (WBTMap Nat String compare) := do
   let y: WBTMap Nat String compare := WBTMap.empty
   let y := y.set 1 "1"
   let y := y.set 2 "2"
   let y := y.set 3 "3"
-  --let y ← y.del? 2
+  let y ← y.del? 2
   pure y
 
 
