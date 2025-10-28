@@ -5,8 +5,6 @@ import Std
 open EL2.Term
 open WBT
 
-
-
 def term : Term :=
   let x := bnd {
     init := [
@@ -163,12 +161,12 @@ instance : Map (Std.HashMap String α) α where
   get? := Std.HashMap.get?
 
 
-def ctxEmpty : Std.HashMap String InferedType := Std.HashMap.emptyWithCapacity
+def ctxEmpty : Std.HashMap String Infer.InferedType := Std.HashMap.emptyWithCapacity
 
 def main  : IO Unit := do
   -- print program
   -- IO.println s!"[PRINT]\n{term}"
   -- reduce program
-  match inferType? ctxEmpty term with
-    | some iterm => IO.println s!"[OK] type:\n{iterm.type}"
+  match Infer.inferType? ctxEmpty term with
+    | some it => IO.println s!"[OK] type:\n{it.type}"
     | none => IO.println "[ERR]"

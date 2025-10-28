@@ -3,12 +3,7 @@ import EL2.Term.TermUtil
 import EL2.Term.Util
 import EL2.Term.Print
 
-namespace EL2.Term
-
-class Map M α where
-  size: M → Nat
-  set: M → String → α → M
-  get?: M → String → Option α
+namespace EL2.Term.Infer
 
 def inhEmpty (type: Term) : Term :=
   inh {
@@ -175,4 +170,4 @@ end
 -- TODO think of some way to reduce type and reduce in general
 
 
-end EL2.Term
+end EL2.Term.Infer
