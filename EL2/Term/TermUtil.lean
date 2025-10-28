@@ -111,6 +111,7 @@ partial def Term.normalizeName (term: Term) (nameMap: Std.HashMap String String 
         params := newParams,
         body := newBody,
       }
+
     | mat x =>
       let newCond := x.cond.normalizeName nameMap
       let newCases := x.cases.map (λ case =>
