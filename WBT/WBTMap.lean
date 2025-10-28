@@ -103,4 +103,15 @@ partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cm
           let n1 := Node.makeNode n.entry n.left? r1.node?
           Node.balance Node.δ n1
 
+private def x: Option (WBTMap Nat String compare) := do
+  let y: WBTMap Nat String compare := WBTMap.empty
+  let y := y.set 1 "1"
+  let y := y.set 2 "2"
+  let y := y.set 3 "3"
+  let y ← y.del? 2
+  pure y
+
+
+#eval x
+
 end WBT
