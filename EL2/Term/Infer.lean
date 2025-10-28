@@ -152,7 +152,9 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
     | none =>
       dbg_trace s!"[DBG_TRACE] failed at {term} with ctx {repr ctx}"
       none
-    | some v => pure v
+    | some v =>
+      dbg_trace s!"[DBG_TRACE] type of {term} is {repr v}"
+      pure v
 
 
 

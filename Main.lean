@@ -150,8 +150,6 @@ def term : Term := bnd {
   --  cmd := var "append_if_empty",
   --  args := [var "zero", var "Nat", app {cmd := var "nil", args := [var "Nat"]}, var "one"],
   --},
-  --last := app {cmd := var "id_Succ", args := [var "succ"]},
-  -- last := app {cmd := var "succ", args := [var "zero"]}
 }
 instance : Map (Std.HashMap String α) α where
   size := Std.HashMap.size
