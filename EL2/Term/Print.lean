@@ -48,11 +48,8 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
         ++ ctx.nextIndent.indentStr ++ ")"
 
     | lam {params, body} =>
-
-
-
       printList (
-        params.map (
+        ["λ"] ++ params.map (
           λ {name, type} => s!"({name}: {ctx.print type})"
         ) ++ ["=>", ctx.print body]
       )
