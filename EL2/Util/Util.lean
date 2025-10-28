@@ -1,4 +1,3 @@
-import Std.Data
 namespace EL2.Util
 
 def applyAtmostOnce {α: Type} {β} (fs: List (α → Option β)) (x: α): Option β :=
@@ -25,8 +24,6 @@ partial def parseAll (parse: List α → Option (List α × β)) (tokens: List �
   let (remaining, items) := loop #[] tokens
   {remaining := remaining, items := items.toList}
 
-
-def Map (α) (β) [BEq α] [Hashable α] := Std.HashMap α β
 
 structure Counter (α: Type) where
   field: α

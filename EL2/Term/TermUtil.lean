@@ -3,7 +3,6 @@ import EL2.Term.Print
 import EL2.Term.Util
 import Std
 
-
 namespace EL2.Term
 
 def T.mapM [Monad m] (t: T α) (f: α → m β) : m (T β) := do
