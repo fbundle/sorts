@@ -36,7 +36,7 @@ def T.mapM [Monad m] (t: T α) (f: α → m β) : m (T β) := do
         pure {
           name := param.name,
           type := type,
-          : Param β
+          : Ann β
         }
       )
       let body ← f x.body
@@ -106,7 +106,7 @@ partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :
         let newName := dummyName oldNameMap
         let newNameMap := oldNameMap.insert param.name newName
 
-        (newNameMap, {name := newName, type := newType : Param Term})
+        (newNameMap, {name := newName, type := newType : Ann Term})
       )
       let newBody := renameTerm newNameMap x.body
       lam {
@@ -137,7 +137,7 @@ partial def renameTerm (nameMap: Std.HashMap String String) (term: Term): Term :
 
     | _ => term.map (renameTerm nameMap)
 
-def renameParamsWithCase (params: List (Param Term)) (patArgs: List String): List (Param Term) :=
+def renameParamsWithCase (params: List (Ann Term)) (patArgs: List String): List (Ann Term) :=
   -- given patArgs and constructor
   -- rename the param and type of constructor to match patArgs
   let (_, newParams) := Util.statefulMap (List.zip patArgs params) emptyNameMap (λ oldNameMap (patArg, param) =>
@@ -147,19 +147,10 @@ def renameParamsWithCase (params: List (Param Term)) (patArgs: List String): Lis
     (newNameMap, {
       name := newName,
       type := newType,
-      : Param Term
+      : Ann Term
     })
   )
   newParams
-
-partial def isSubType (type1: Term) (type2: Term): Bool :=
-  let type1 := renameTerm emptyNameMap type1
-  let type2 := renameTerm emptyNameMap type2
-  if type1 == type2 then True else
-    dbg_trace s!"[DBG_TRACE] different type"
-    dbg_trace s!"type1:\t{type1}"
-    dbg_trace s!"type2:\t{type2}"
-    false
 
 
 -- util

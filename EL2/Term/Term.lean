@@ -16,13 +16,13 @@ structure Bnd (α: Type) where
   last: α
   deriving Repr, BEq
 
-structure Param (α: Type) where
+structure Ann (α: Type) where
   name: String
   type: α
   deriving Repr, BEq
 
 structure Lam (α: Type) where
-  params: List (Param α)
+  params: List (Ann α)
   body: α
   deriving Repr, BEq
 

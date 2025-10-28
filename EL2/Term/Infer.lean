@@ -23,6 +23,25 @@ structure InferedType where
   level: Int -- level of term
   deriving Repr
 
+partial def isSubType (iType1: InferedType) (iType2: InferedType): Bool :=
+  let type1 := renameTerm emptyNameMap iType1.type
+  let type2 := renameTerm emptyNameMap iType2.type
+  if type1 == type2 then True else
+    dbg_trace s!"[DBG_TRACE] different type"
+    dbg_trace s!"type1:\t{type1}"
+    dbg_trace s!"type2:\t{type2}"
+    false
+
+mutual
+
+partial def inferTypeParams? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (params: List (Ann Term)): Option (Ctx × List InferedType) :=
+  Util.statefulMapM params ctx (λ subCtx param => do
+    let paramValue := inhEmpty param.type -- dummy value
+    let iParamValue ← inferType? subCtx paramValue
+    let subCtx := Map.set subCtx param.name iParamValue
+    pure (subCtx, iParamValue)
+  )
+
 partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) : Option InferedType := do
   -- recursively type infer (probably will do WHNF)
   let o: Option InferedType := do
@@ -53,23 +72,15 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
         inferType? subCtx x.last
 
       | lam x =>
-        let (subCtx, iValues) ← Util.statefulMapM x.params ctx (λ subCtx param => do
-          -- dummy value
-          let value := inhEmpty param.type
-          let iValue ← inferType? subCtx value
-          let subCtx := Map.set subCtx param.name iValue
-
-          pure (subCtx, iValue)
-        )
-
+        let (subCtx, iParamValues) ← inferTypeParams? ctx x.params
         let iBody ← inferType? subCtx x.body
-        let lamLevel := (iValues.map (λ iValue => iValue.level)).foldl max (iBody.level)
+        let lamLevel := (iParamValues.map (λ iValue => iValue.level)).foldl max (iBody.level)
 
-        let newParams := (List.zip x.params iValues).map (λ (param, iValue) =>
+        let newParams := (List.zip x.params iParamValues).map (λ (param, iParamValue) =>
           {
             name := param.name,
-            type := iValue.type,
-            : Param Term
+            type := iParamValue.type,
+            : Ann Term
           }
         )
 
@@ -87,11 +98,10 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
         let iCmd ← isLam? iCmd.type
         let iArgs ← x.args.mapM (inferType? ctx)
         -- type check
-        let paramsType := iCmd.params.map (λ param => param.type)
-        let argsType := iArgs.map (λ iArg => iArg.type)
+        let (_, iParamValues) ← inferTypeParams? ctx iCmd.params
 
-        let _ ← (List.zip argsType paramsType).mapM (λ (type1, type2) => do
-          if isSubType type1 type2 then pure () else
+        let _ ← (List.zip iArgs iParamValues).mapM (λ (iType1, iType2) => do
+          if isSubType iType1 iType2 then pure () else
             none
         )
 
@@ -156,7 +166,7 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
       dbg_trace s!"[DBG_TRACE] type of {term} is {repr v}"
       pure v
 
-
+end
 
 -- TODO think of some way to reduce type and reduce in general
 
