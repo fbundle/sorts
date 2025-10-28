@@ -38,31 +38,27 @@ partial def WBTArr.get? (a: WBTArr α) (i: Nat): Option α :=
           none
   loop a.node? i
 
-partial def WBTArr.set? (a: WBTArr α) (i: Nat) (x: α): Option (WBTArr α) :=
+partial def WBTArr.set? (a: WBTArr α) (i: Nat) (x: α): WBTArr α :=
   let rec loop (n?: Option (Node α)) (i: Nat): Option (Node α) :=
     match n? with
       | none => none
       | some n =>
         let (leftWeight, rightWeight) := (weight n.left?, weight n.right?)
         if i < leftWeight then
-          match loop n.left? i with
-            | none => none
-            | some l1 =>
-              let n1 := makeNode n.entry l1 n.right?
-              some (balance δ n1)
+          let l1 := loop n.left? i
+          let n1 := makeNode n.entry l1 n.right?
+          balance δ n1
         else if i = leftWeight then
           let n1 := makeNode x n.left? n.right?
           some n1
         else if i < 1 + leftWeight + rightWeight then
-          match loop n.right? (i - 1 - leftWeight) with
-            | none => none
-            | some r1 =>
-              let n1 := makeNode n.entry n.left? r1
-              some (balance δ n1)
+          let r1 := loop n.right? (i - 1 - leftWeight)
+          let n1 := makeNode n.entry n.left? r1
+          balance δ n1
         else
           none
 
-  some {node? := loop a.node? i}
+  {node? := loop a.node? i}
 
 partial def WBTArr.insert? (a: WBTArr α) (i: Nat) (x: α): Option (WBTArr α) :=
   let rec loop (n?: Option (Node α)) (i: Nat): Option (Node α) :=
