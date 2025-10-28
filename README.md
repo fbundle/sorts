@@ -4,7 +4,7 @@ The goal of this project is to implement minimal dependent type
 
 ## the first time EL2 can type check dependent type
 
-![screenshot1.png](https://raw.githubusercontent.com/fbundle/sorts/refs/heads/master/assets/screenshot1.png)
+![screenshot1.png](https://raw.githubusercontent.com/fbundle/sorts/refs/heads/master/screenshots/screenshot1.png)
 
 in the code, it was able to verify that the type of `append_if_empty` matches the dependent type 
 ```lean
