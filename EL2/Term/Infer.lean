@@ -165,6 +165,7 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
 end
 
 -- TODO think of some way to reduce type and reduce in general
+-- because we currently can only compare two types if they're reduced
 
 
 end EL2.Term.Infer
