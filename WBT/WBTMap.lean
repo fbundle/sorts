@@ -24,7 +24,8 @@ private structure A where
   val : Nat
   map : WBTMap String A compare
 
-def WBTMap.min (m: WBTMap α β cmp): Option α :=
+def WBTMap.min? (m: WBTMap α β cmp): Option (α × β) :=
+  Node.left m.node?
 
 def WBTMap.length (m: WBTMap α β cmp): Nat :=
   Node.weight m.node?
@@ -93,11 +94,13 @@ partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cm
           match n.right? with
             | none => n.left?
             | some r => -- by default, remove from the right
-              let e ← WBTMap.get? (cmp := cmp) r key
-              let r1 ← WBTMap
-
-          sorry
-        | Ordering.gt => sorry
-
+              let (rMinKey, rMinVal) ← WBTMap.min? (cmp := cmp) r
+              let r1 ← WBTMap.del? (α := α) (β := β) (cmp := cmp) r rMinKey
+              let n1 := Node.makeNode (rMinKey, rMinVal) n.left? r1.node?
+              Node.balance Node.δ n1
+        | Ordering.gt =>
+          let r1 ← WBTMap.del? (cmp := cmp) n.right? key
+          let n1 := Node.makeNode n.entry n.left? r1.node?
+          Node.balance Node.δ n1
 
 end WBT
