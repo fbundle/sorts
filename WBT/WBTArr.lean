@@ -26,6 +26,9 @@ instance [Repr α]: Repr (WBTArr α) where
   reprPrec (a: WBTArr α) (_: Nat): Std.Format :=
     s!"WBTMap {repr a.toArray}"
 
+instance : Inhabited (WBTArr α) where
+  default := WBTArr.empty
+
 partial def WBTArr.get? (a: WBTArr α) (i: Nat): Option α :=
   match a.node? with
     | none => none
@@ -115,7 +118,7 @@ partial def WBTArr.mapM [Monad m] (a: WBTArr α) (f: α → m β): m (WBTArr β)
   pure {node? := node? : WBTArr β}
 
 def WBTArr.push (a: WBTArr α) (x: α): WBTArr α :=
-  (a.insert? a.length x).get sorry
+  (a.insert? a.length x).get!
 
 partial def WBTArr.fromList (xs: List α): WBTArr α :=
   let rec loop (a: WBTArr α) (xs: List α): WBTArr α :=

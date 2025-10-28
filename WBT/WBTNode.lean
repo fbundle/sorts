@@ -139,7 +139,7 @@ partial def wbtBalance (δ: Nat) (n: Node α): Node α :=
   -- assuming the two subtrees n.left and n.right are balanced
   -- do single rotation or double rotation to rebalance the tree
   -- double rotation is necessary - see `why_double_rotation.jpeg`
-  -- TODO fill in all the sorry
+  -- will be be sufficient for merge and split? TODO
   let n1 :=
     match cmp δ (some n) with
       | Ordering.eq => n
@@ -181,14 +181,18 @@ partial def wbtBalance (δ: Nat) (n: Node α): Node α :=
   else
     n1
 
--- theorem for _balance_once
--- assuming the two subtrees n.left and n.right are balanced
--- with δ ≥ 3, a single rotation is sufficient to make the whole tree balanced
-def wbtBalanceThm (δ: Nat) (n: Node α):
+def wbtBalanceThmWeak (δ: Nat) (n: Node α):
   δ ≥ 3
   → balanceCond δ n.left?
   → balanceCond δ n.right?
   → Ordering.eq = cmpWeak δ (some n)
+  → balanceCond δ (some (wbtBalance δ n))
+  := sorry
+
+def wbtBalanceThm (δ: Nat) (n: Node α):
+  δ ≥ 3
+  → balanceCond δ n.left?
+  → balanceCond δ n.right?
   → balanceCond δ (some (wbtBalance δ n))
   := sorry
 

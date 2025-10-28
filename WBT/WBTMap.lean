@@ -30,6 +30,9 @@ instance [Repr α] [Repr β]: Repr (WBTMap α β cmp) where
 instance: Inhabited (WBTMap α β cmp) where
   default := WBTMap.empty
 
+instance: Inhabited (WBTMap α β cmp) where
+  default := WBTMap.empty
+
 partial def WBTMap.get? (m: WBTMap α β cmp) (key: α): Option β :=
   match m.node? with
     | none => none
