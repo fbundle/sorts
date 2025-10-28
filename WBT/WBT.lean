@@ -24,6 +24,13 @@ def height (n?: Option (Node α)): Nat :=
     | none => 0
     | some n => n.height
 
+partial def left (n?: Option (Node α)): Option α :=
+  match n? with
+    | none => none
+    | some n =>
+      match n.left? with
+        | none => n.entry
+        | some l => left l
 
 instance: Repr (Node α) where
   reprPrec (n: Node α) (_: Nat): Std.Format :=

@@ -24,6 +24,8 @@ private structure A where
   val : Nat
   map : WBTMap String A compare
 
+def WBTMap.min (m: WBTMap α β cmp): Option α :=
+
 def WBTMap.length (m: WBTMap α β cmp): Nat :=
   Node.weight m.node?
 
@@ -46,10 +48,56 @@ instance [Repr α]: Repr (WBTMap α β cmp) where
   reprPrec (m: WBTMap α β cmp) (_: Nat): Std.Format :=
     s!"WBTArr(l={m.length}, d={m.depth})"
 
+partial def WBTMap.get? (m: WBTMap α β cmp) (key: α): Option β :=
+  match m.node? with
+    | none => none
+    | some n =>
+      let (ekey, eval) := n.entry
+      match cmp key ekey with
+        | Ordering.lt =>
+          WBTMap.get? (cmp := cmp) n.left? key
+        | Ordering.eq =>
+          eval
+        | Ordering.gt =>
+          WBTMap.get? (cmp := cmp) n.right? key
 
+partial def WBTMap.set (m: WBTMap α β cmp) (key: α) (val: β): WBTMap α β cmp :=
+  match m.node? with
+    | none => Node.makeNode (key, val) none none
+    | some n =>
+      let (ekey, _) := n.entry
+      match cmp key ekey with
+        | Ordering.lt =>
+          let l1 := WBTMap.set (cmp := cmp) n.left? key val
+          let n1 := Node.makeNode n.entry l1.node? n.right?
+          Node.balance Node.δ n1
+        | Ordering.eq =>
+          let n1 := Node.makeNode (key, val) n.left? n.right?
+          Node.balance Node.δ n1
+        | Ordering.gt =>
+          let r1 := WBTMap.set (cmp := cmp) n.right? key val
+          let n1 := Node.makeNode n.entry n.left? r1.node?
+          Node.balance Node.δ n1
 
+partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cmp) := do
+  match m.node? with
+    | none => none
+    | some n =>
+      let (ekey, _) := n.entry
+      match cmp key ekey with
+        | Ordering.lt =>
+          let l1 ← WBTMap.del? (cmp := cmp) n.left? key
+          let n1 := Node.makeNode n.entry l1.node? n.right?
+          Node.balance Node.δ n1
+        | Ordering.eq =>
+          match n.right? with
+            | none => n.left?
+            | some r => -- by default, remove from the right
+              let e ← WBTMap.get? (cmp := cmp) r key
+              let r1 ← WBTMap
 
-
+          sorry
+        | Ordering.gt => sorry
 
 
 end WBT
