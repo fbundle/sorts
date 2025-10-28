@@ -99,7 +99,6 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
         let iArgs ← x.args.mapM (inferType? ctx)
         -- type check
         let (_, iParamValues) ← inferTypeParams? ctx iCmd.params
-
         let _ ← (List.zip iArgs iParamValues).mapM (λ (iType1, iType2) => do
           if isSubType iType1 iType2 then pure () else
             none
