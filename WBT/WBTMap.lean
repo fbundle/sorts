@@ -42,12 +42,12 @@ def WBTMap.empty : WBTMap α β cmp :=
 partial def WBTMap.toArray (m: WBTMap α β cmp): Array (α × β) :=
   Node.iterate m.node?
 
-def WBTArr.toList (m: WBTMap α β cmp): List (α × β) :=
-  m.toArray.toList
-
 instance [Repr α]: Repr (WBTMap α β cmp) where
   reprPrec (m: WBTMap α β cmp) (_: Nat): Std.Format :=
     s!"WBTArr(l={m.length}, d={m.depth})"
+
+instance: Inhabited (WBTMap α β cmp) where
+  default := WBTMap.empty
 
 partial def WBTMap.get? (m: WBTMap α β cmp) (key: α): Option β :=
   match m.node? with
@@ -108,10 +108,10 @@ private def x: Option (WBTMap Nat String compare) := do
   let y := y.set 1 "1"
   let y := y.set 2 "2"
   let y := y.set 3 "3"
-  let y ← y.del? 2
+  --let y ← y.del? 2
   pure y
 
 
-#eval x
+#eval (x.get!).toArray
 
 end WBT
