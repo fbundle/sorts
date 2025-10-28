@@ -52,7 +52,7 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
 
     | lam {params, body} =>
       printList (
-        ["λ"] ++ params.map (
+        ["fun"] ++ params.map (
           λ {name, type} => s!"({name}: {ctx.print type})"
         ) ++ ["=>", ctx.print body]
       )
