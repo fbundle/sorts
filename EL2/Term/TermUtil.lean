@@ -27,6 +27,8 @@ class Map M α where
   set: M → String → α → M
   get?: M → String → Option α
 
+-- NOTE - if m is an applicative functor (weaker than monad)
+-- then this is literally Traversable
 def T.mapM [Monad m] (t: T α) (f: α → m β) : m (T β) := do
   match t with
     | T.inh x =>
