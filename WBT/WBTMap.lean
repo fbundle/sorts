@@ -96,6 +96,7 @@ def WBTMap.del (m: WBTMap α β cmp) (key: α): WBTMap α β cmp :=
   |> (·.set 3 "3")
   |> (·.del 2)
   |> (·.del 1)
+  |> (·.del 3)
 
 -- as Lean enforces type to be strictly positive, sometimes recursive structure doesn't work
 -- e.g
