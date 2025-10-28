@@ -53,14 +53,14 @@ partial def WBTMap.set (m: WBTMap α β cmp) (key: α) (val: β): WBTMap α β c
         | Ordering.lt =>
           let l1 := WBTMap.set (cmp := cmp) (WBTMap.fromNode n.left?) key val
           let n1 := Node.makeNode n.entry l1.node? n.right?
-          WBTMap.fromNode (Node.balance Node.δ n1)
+          WBTMap.fromNode (Node.wbtBalance Node.δ n1)
         | Ordering.eq =>
           let n1 := Node.makeNode (key, val) n.left? n.right?
-          WBTMap.fromNode (Node.balance Node.δ n1)
+          WBTMap.fromNode (Node.wbtBalance Node.δ n1)
         | Ordering.gt =>
           let r1 := WBTMap.set (cmp := cmp) (WBTMap.fromNode n.right?) key val
           let n1 := Node.makeNode n.entry n.left? r1.node?
-          WBTMap.fromNode (Node.balance Node.δ n1)
+          WBTMap.fromNode (Node.wbtBalance Node.δ n1)
 
 partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cmp) := do
   match m.node? with
@@ -71,7 +71,7 @@ partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cm
         | Ordering.lt =>
           let l1 ← WBTMap.del? (cmp := cmp) (WBTMap.fromNode n.left?) key
           let n1 := Node.makeNode n.entry l1.node? n.right?
-          pure (WBTMap.fromNode (Node.balance Node.δ n1))
+          pure (WBTMap.fromNode (Node.wbtBalance Node.δ n1))
         | Ordering.eq =>
           match n.right? with
             | none => pure (WBTMap.fromNode n.left?)
@@ -79,11 +79,11 @@ partial def WBTMap.del? (m: WBTMap α β cmp) (key: α): Option (WBTMap α β cm
               let (rMinKey, rMinVal) ← WBTMap.min? (cmp := cmp) (WBTMap.fromNode r)
               let r1 ← WBTMap.del? (α := α) (β := β) (cmp := cmp) (WBTMap.fromNode r) rMinKey
               let n1 := Node.makeNode (rMinKey, rMinVal) n.left? r1.node?
-              pure (WBTMap.fromNode (Node.balance Node.δ n1))
+              pure (WBTMap.fromNode (Node.wbtBalance Node.δ n1))
         | Ordering.gt =>
           let r1 ← WBTMap.del? (cmp := cmp) (WBTMap.fromNode n.right?) key
           let n1 := Node.makeNode n.entry n.left? r1.node?
-          pure (WBTMap.fromNode (Node.balance Node.δ n1))
+          pure (WBTMap.fromNode (Node.wbtBalance Node.δ n1))
 
 def WBTMap.del (m: WBTMap α β cmp) (key: α): WBTMap α β cmp :=
   match m.del? key with

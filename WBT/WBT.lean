@@ -134,9 +134,10 @@ def leftRotate (n: Node α) (hr: n.right?.isSome): Node α :=
   let r1 := makeNode r.entry n1 rr?
   r1
 
-partial def balance (δ: Nat) (n: Node α): Node α :=
+partial def wbtBalance (δ: Nat) (n: Node α): Node α :=
   -- assuming δ ≥ 3
   -- assuming the two subtrees n.left and n.right are balanced
+  -- do single rotation or double rotation to rebalance the tree
   -- double rotation is necessary - see `why_double_rotation.jpeg`
   let n1 :=
     match cmp δ (some n) with
@@ -182,12 +183,12 @@ partial def balance (δ: Nat) (n: Node α): Node α :=
 -- theorem for _balance_once
 -- assuming the two subtrees n.left and n.right are balanced
 -- with δ ≥ 3, a single rotation is sufficient to make the whole tree balanced
-def balanceThm (δ: Nat) (n: Node α):
+def wbtBalanceThm (δ: Nat) (n: Node α):
   δ ≥ 3
   → balanceCond δ n.left?
   → balanceCond δ n.right?
   → Ordering.eq = cmpWeak δ (some n)
-  → balanceCond δ (some (balance δ n))
+  → balanceCond δ (some (wbtBalance δ n))
   := sorry
 
 def δ := 3

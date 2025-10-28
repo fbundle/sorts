@@ -48,14 +48,14 @@ partial def WBTArr.set? (a: WBTArr α) (i: Nat) (x: α): Option (WBTArr α) := d
       if i < leftWeight then
         let l1 ← WBTArr.set? (WBTArr.fromNode n.left?) i x
         let n1 := Node.makeNode n.entry l1.node? n.right?
-        pure (WBTArr.fromNode (Node.balance Node.δ n1))
+        pure (WBTArr.fromNode (Node.wbtBalance Node.δ n1))
       else if i = leftWeight then
         let n1 := Node.makeNode x n.left? n.right?
-        pure (WBTArr.fromNode (Node.balance Node.δ n1))
+        pure (WBTArr.fromNode (Node.wbtBalance Node.δ n1))
       else if i < 1 + leftWeight + rightWeight then
         let r1 ← WBTArr.set? (WBTArr.fromNode n.right?) (i - 1 - leftWeight) x
         let n1 := Node.makeNode n.entry n.left? r1.node?
-        pure (WBTArr.fromNode (Node.balance Node.δ n1))
+        pure (WBTArr.fromNode (Node.wbtBalance Node.δ n1))
       else
         none
 
@@ -68,11 +68,11 @@ partial def WBTArr.insert? (a: WBTArr α) (i: Nat) (x: α): Option (WBTArr α) :
       if i ≤ leftWeight then
         let l1 ← WBTArr.insert? (WBTArr.fromNode n.left?) i x
         let n1 := Node.makeNode n.entry l1.node? n.right?
-        pure (WBTArr.fromNode (Node.balance Node.δ n1))
+        pure (WBTArr.fromNode (Node.wbtBalance Node.δ n1))
       else if i ≤ 1 + leftWeight + rightWeight then
         let r1 ← WBTArr.insert? (WBTArr.fromNode n.right?) (i - 1 - leftWeight) x
         let n1 := Node.makeNode n.entry n.left? r1.node?
-        pure (WBTArr.fromNode (Node.balance Node.δ n1))
+        pure (WBTArr.fromNode (Node.wbtBalance Node.δ n1))
       else
         none
 
@@ -84,7 +84,7 @@ partial def WBTArr.delete? (a: WBTArr α) (i: Nat) : Option (WBTArr α) := do
       if i < leftWeight then
         let l1 ← WBTArr.delete? (WBTArr.fromNode n.left?) i
         let n1 := Node.makeNode n.entry l1.node? n.right?
-        pure (WBTArr.fromNode (Node.balance Node.δ n1))
+        pure (WBTArr.fromNode (Node.wbtBalance Node.δ n1))
       else if i = leftWeight then
         match n.right? with
           | none => pure (WBTArr.fromNode n.left?)
@@ -92,11 +92,11 @@ partial def WBTArr.delete? (a: WBTArr α) (i: Nat) : Option (WBTArr α) := do
             let x ← WBTArr.get? (WBTArr.fromNode r) 0
             let r1 ← WBTArr.delete? (WBTArr.fromNode r) 0
             let n1 := Node.makeNode x n.left? r1.node?
-            pure (WBTArr.fromNode (Node.balance Node.δ n1))
+            pure (WBTArr.fromNode (Node.wbtBalance Node.δ n1))
       else if i < 1 + leftWeight + rightWeight then
         let r1 ← WBTArr.delete? (WBTArr.fromNode n.right?) (i - 1 - leftWeight)
         let n1 := Node.makeNode n.entry n.left? r1.node?
-        pure (WBTArr.fromNode (Node.balance Node.δ n1))
+        pure (WBTArr.fromNode (Node.wbtBalance Node.δ n1))
       else
         none
 
