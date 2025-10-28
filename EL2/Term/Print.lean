@@ -6,22 +6,25 @@ structure PrintCtx where
   indentNum: Nat
   indentSize: Nat
 
-def PrintCtx.nextIndent (ctx: PrintCtx): PrintCtx := {
-  ctx with
-  indentNum := ctx.indentNum+1
+def PrintCtx.next (ctx: PrintCtx): PrintCtx := {
+  indentNum := ctx.indentNum+1,
+  indentSize := ctx.indentSize,
 }
 
 def PrintCtx.indentStr (ctx: PrintCtx): String :=
   String.mk (List.replicate (ctx.indentNum * ctx.indentSize) ' ')
 
 
-def printList (l: List String): String :=
+def printList (l: List String) (withParens: Bool := true): String :=
   match l with
     | [] => ""
     | x :: [] => x
     | _ =>
       let content := String.join (l.intersperse " ")
-      "(" ++ content ++ ")"
+      if withParens then
+        "(" ++ content ++ ")"
+      else
+        content
 
 mutual
 
@@ -38,14 +41,17 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
       if init.length = 0 then
         ctx.print last
       else
-        let initStrList := init.map (λ {name, value} =>
-          ctx.nextIndent.nextIndent.indentStr ++ (printList [name, ":=", ctx.nextIndent.print value]) ++ "\n"
-        )
-        let lastStr := ctx.nextIndent.nextIndent.indentStr ++ (ctx.nextIndent.print last) ++ "\n"
+        let letCtx := ctx.next
+        let partCtx := ctx.next.next
 
-        "\n" ++ ctx.nextIndent.indentStr ++ "(" ++ "let" ++ "\n"
+        let initStrList := init.map (λ {name, value} =>
+          partCtx.indentStr ++ (printList [name, ":=", partCtx.print value] (withParens := false)) ++ "\n"
+        )
+        let lastStr := partCtx.indentStr ++ (partCtx.print last) ++ "\n"
+
+        "\n" ++ letCtx.indentStr ++ "(" ++ "let" ++ "\n"
         ++ (String.join (initStrList ++ [lastStr]))
-        ++ ctx.nextIndent.indentStr ++ ")"
+        ++ letCtx.indentStr ++ ")"
 
     | lam {params, body} =>
       printList (
@@ -58,14 +64,16 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
       printList ( [ctx.print cmd] ++ args.map ctx.print )
 
     | mat {cond, cases} =>
+      let matchCtx := ctx.next
+      let caseCtx := ctx.next.next
       let casesStrList := cases.map (λ {patCmd, patArgs, value} =>
-        ctx.nextIndent.nextIndent.indentStr ++ patCmd ++ " " ++ (String.join (patArgs.intersperse " "))
-        ++  " => " ++ (ctx.nextIndent.print value) ++ "\n"
+        caseCtx.indentStr ++ patCmd ++ " " ++ (String.join (patArgs.intersperse " "))
+        ++  " => " ++ (caseCtx.print value) ++ "\n"
       )
 
-      "\n" ++ ctx.nextIndent.indentStr ++ "(" ++ "match " ++ (ctx.print cond) ++ " with" ++ "\n"
+      "\n" ++ matchCtx.indentStr ++ "(" ++ "match " ++ (ctx.print cond) ++ " with" ++ "\n"
       ++ (String.join casesStrList)
-      ++ ctx.nextIndent.indentStr ++ ")"
+      ++ matchCtx.indentStr ++ ")"
 end
 
 instance : ToString Term where
