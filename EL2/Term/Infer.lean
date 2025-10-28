@@ -42,13 +42,47 @@ partial def isSubType (iType1: InferedType) (iType2: InferedType): Bool :=
 
 mutual
 
-partial def inferTypeParams? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (params: List (Ann Term)): Option (Ctx × List InferedType) :=
+partial def inferTypeParams? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (params: List (Ann Term)): Option (Ctx × List (Bind InferedType)) :=
   Util.statefulMapM params ctx (λ subCtx param => do
     let paramValue := inhEmpty param.type -- dummy value
     let iParamValue ← inferType? subCtx paramValue
     let subCtx := Map.set subCtx param.name iParamValue
-    pure (subCtx, iParamValue)
+    pure (subCtx, {
+      name := param.name,
+      value := iParamValue,
+    })
   )
+partial def inferTypeCase? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (case: Case Term): Option (Case InferedType) := do
+  let iCmd: InferedType ← Map.get? ctx case.patCmd
+  match isLam? iCmd.type with
+    | none => -- case is not a lambda - resolve directly
+      let iValue ← inferType? ctx case.value
+      pure {
+        patCmd := case.patCmd,
+        patArgs := case.patArgs,
+        value := iValue,
+      }
+
+    | some iCmd => -- case is lambda
+      -- make new set of params according to patArgs
+      let newParams := renameParamsWithCase iCmd.params case.patArgs
+      -- convert case to lambda to reuse inferType?
+      let matLam := lam {
+        params := newParams,
+        body := case.value,
+      }
+      let iMatLam ← inferType? ctx matLam
+      -- iMatLam is a Pi type (newParams) -> typeof case.value
+      let valueType := (← isLam? iMatLam.type).body
+
+      pure {
+        patCmd := case.patCmd,
+        patArgs := case.patArgs,
+        value := {
+          type := valueType,
+          level := iMatLam.level,
+        },
+      }
 
 partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) : Option InferedType := do
   -- recursively type infer (probably will do WHNF)
@@ -80,14 +114,14 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
         inferType? subCtx x.last
 
       | lam x =>
-        let (subCtx, iParamValues) ← inferTypeParams? ctx x.params
+        let (subCtx, iParams) ← inferTypeParams? ctx x.params
         let iBody ← inferType? subCtx x.body
-        let lamLevel := (iParamValues.map (λ iValue => iValue.level)).foldl max (iBody.level)
+        let lamLevel := (iParams.map (λ iParam => iParam.value.level)).foldl max (iBody.level)
 
-        let newParams := (List.zip x.params iParamValues).map (λ (param, iParamValue) =>
+        let newParams := (List.zip x.params iParams).map (λ (param, iParam) =>
           {
             name := param.name,
-            type := iParamValue.type,
+            type := iParam.value.type,
             : Ann Term
           }
         )
@@ -106,47 +140,16 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
         let iCmd ← isLam? iCmd.type
         let iArgs ← x.args.mapM (inferType? ctx)
         -- type check
-        let (_, iParamValues) ← inferTypeParams? ctx iCmd.params
-        let _ ← (List.zip iArgs iParamValues).mapM (λ (iType1, iType2) => do
-          if isSubType iType1 iType2 then pure () else
+        let (_, iParams) ← inferTypeParams? ctx iCmd.params
+        let _ ← (List.zip iArgs iParams).mapM (λ (iArg, iParam) => do
+          if isSubType iArg iParam.value then pure () else
             none
         )
 
         inferType? ctx (inhEmpty iCmd.body)
 
       | mat x =>
-        let iCases: List (Case InferedType) ← x.cases.mapM (λ case => do
-          let iCmd: InferedType ← Map.get? ctx case.patCmd
-          match isLam? iCmd.type with
-            | none => -- case is not a lambda - resolve directly
-              let iValue ← inferType? ctx case.value
-              pure {
-                patCmd := case.patCmd,
-                patArgs := case.patArgs,
-                value := iValue,
-              }
-
-            | some iCmd => -- case is lambda
-              -- make new set of params according to patArgs
-              let newParams := renameParamsWithCase iCmd.params case.patArgs
-              -- convert case to lambda to reuse inferType?
-              let matLam := lam {
-                params := newParams,
-                body := case.value,
-              }
-              let iMatLam ← inferType? ctx matLam
-              -- iMatLam is a Pi type (newParams) -> typeof case.value
-              let valueType := (← isLam? iMatLam.type).body
-
-              pure {
-                patCmd := case.patCmd,
-                patArgs := case.patArgs,
-                value := {
-                  type := valueType,
-                  level := iMatLam.level,
-                }
-              }
-        )
+        let iCases: List (Case InferedType) ← x.cases.mapM (inferTypeCase? ctx)
         let iCond ← inferType? ctx x.cond
         let level := (iCases.map (λ iCase => iCase.value.level)).foldl max iCond.level
 
