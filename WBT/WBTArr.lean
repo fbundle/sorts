@@ -131,6 +131,5 @@ partial def WBTArr.fromList (xs: List α): WBTArr α :=
 def WBTArr.fromArray (xs: Array α): WBTArr α :=
   WBTArr.fromList xs.toList
 
-#eval balanceCond 3 (WBTArr.fromArray (Array.replicate 1000 1)).node?
 
 end WBT

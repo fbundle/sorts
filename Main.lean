@@ -1,7 +1,9 @@
 import EL2.EL2
+import WBT.WBTArr
 import Std
 
 open EL2.Term
+open WBT
 
 
 
@@ -158,6 +160,8 @@ instance : Map (Std.HashMap String α) α where
 
 
 def ctxEmpty : Std.HashMap String InferedType := Std.HashMap.emptyWithCapacity
+
+def ok := balanceCond 3 (WBTArr.fromArray (Array.replicate 1000 1)).node?
 
 def main  : IO Unit := do
   -- print program
