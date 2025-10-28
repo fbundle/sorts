@@ -26,54 +26,54 @@ def printList (l: List String): String :=
 mutual
 
 partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
-  let contentList: List String := match term with
+  match term with
     | inh {type, cons, args} =>
-      ["inh", ctx.print type, cons] ++
-      args.map ctx.print
+      printList (["inh", ctx.print type, cons] ++ args.map ctx.print)
 
-    | univ level =>
-      [s!"U_{level}"]
+    | univ level => s!"U_{level}"
 
-    | var name =>
-      [name]
+    | var name => name
 
     | bnd {init, last} =>
       if init.length = 0 then
-        [ctx.print last]
+        ctx.print last
       else
-        let parts := init.map (λ {name, value} =>
-          ctx.indentStr ++ (printList [name, ":=", ctx.nextIndent.print value]) ++ "\n"
+        let initStrList := init.map (λ {name, value} =>
+          ctx.nextIndent.nextIndent.indentStr ++ (printList [name, ":=", ctx.nextIndent.print value]) ++ "\n"
         )
-        ["let"] ++ ["\n" ++ String.join parts] ++ [ctx.indentStr ++ (ctx.print last) ++ "\n"]
+        let lastStr := ctx.nextIndent.nextIndent.indentStr ++ (ctx.nextIndent.print last) ++ "\n"
+
+        "\n" ++ ctx.nextIndent.indentStr ++ "(" ++ "let" ++ "\n"
+        ++ (String.join (initStrList ++ [lastStr]))
+        ++ ctx.nextIndent.indentStr ++ ")"
 
     | lam {params, body} =>
-      params.map (λ {name, type} =>
-        s!"({name}: {ctx.print type})"
-      ) ++
-      ["=>", ctx.print body]
+
+
+
+      printList (
+        params.map (
+          λ {name, type} => s!"({name}: {ctx.print type})"
+        ) ++ ["=>", ctx.print body]
+      )
 
     | app {cmd, args} =>
-      [ctx.print cmd] ++
-      args.map ctx.print
+      printList ( [ctx.print cmd] ++ args.map ctx.print )
 
     | mat {cond, cases} =>
-      ["match", ctx.print cond, "with"] ++
-      cases.map (λ {patCmd, patArgs, value} =>
+      let casesStrList := cases.map (λ {patCmd, patArgs, value} =>
+        ctx.nextIndent.nextIndent.indentStr ++ patCmd ++ (String.join (patArgs.intersperse " "))
+        ++  "=>" ++ (ctx.nextIndent.print value) ++ "\n"
+      )
 
-        "\n" ++ ctx.indentStr ++ printList (
-          [patCmd] ++
-          patArgs ++
-          ["=>", ctx.print value]
-        )
-      ) ++ ["\n"]
-
-  printList contentList
-
+      "\n" ++ ctx.nextIndent.indentStr ++ "(" ++ "match " ++ (ctx.print cond) ++ " with" ++ "\n"
+      ++ (String.join casesStrList)
+      ++ ctx.nextIndent.indentStr ++ ")"
 end
 
 instance : ToString Term where
   toString (c: Term) := {
-    indentNum := 1,
+    indentNum := 0,
     indentSize := 2,
     :PrintCtx
   }.print c
