@@ -49,9 +49,9 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
         )
         let lastStr := partCtx.indentStr ++ (partCtx.print last) ++ "\n"
 
-        "\n" ++ letCtx.indentStr ++ "(" ++ "let" ++ "\n"
+        "\n" ++ letCtx.indentStr ++ "let" ++ "\n"
         ++ (String.join (initStrList ++ [lastStr]))
-        ++ letCtx.indentStr ++ ")"
+        ++ letCtx.indentStr
 
     | lam {params, body} =>
       printList (
@@ -71,9 +71,9 @@ partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
         ++  " => " ++ (caseCtx.print value) ++ "\n"
       )
 
-      "\n" ++ matchCtx.indentStr ++ "(" ++ "match " ++ (ctx.print cond) ++ " with" ++ "\n"
+      "\n" ++ matchCtx.indentStr ++ "match " ++ (ctx.print cond) ++ " with" ++ "\n"
       ++ (String.join casesStrList)
-      ++ matchCtx.indentStr ++ ")"
+      ++ matchCtx.indentStr
 end
 
 instance : ToString Term where
