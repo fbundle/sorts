@@ -28,6 +28,8 @@ def printList (l: List String) (withParens: Bool := true): String :=
 
 mutual
 
+
+
 partial def PrintCtx.print (ctx: PrintCtx) (term: Term): String :=
   match term with
     | inh {type, cons, args} =>
