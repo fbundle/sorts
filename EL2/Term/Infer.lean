@@ -118,13 +118,10 @@ partial def inferType? [Repr Ctx] [Map Ctx InferedType] (ctx: Ctx) (term: Term) 
         let iBody ← inferType? subCtx x.body
         let lamLevel := (iParams.map (λ iParam => iParam.value.level)).foldl max (iBody.level)
 
-        let newParams := (List.zip x.params iParams).map (λ (param, iParam) =>
-          {
-            name := param.name,
-            type := iParam.value.type,
-            : Ann Term
-          }
-        )
+        let newParams: List (Ann Term) := (List.zip x.params iParams).map (λ (param, iParam) => {
+          name := param.name,
+          type := iParam.value.type,
+        })
 
         pure {
           type := lam {
