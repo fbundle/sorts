@@ -1,8 +1,7 @@
-import WBT.WBT
+import WBT.WBTNode
 
 namespace WBT
 
--- TODO potentially let cmp hashed α so that the tree will be more balanced
 structure WBTMap (α: Type u) (β: Type v) (cmp: α → α → Ordering) where
   node? : Option (Node.Node (α × β))
 
@@ -115,5 +114,7 @@ def WBTMap.del (m: WBTMap α β cmp) (key: α): WBTMap α β cmp :=
 private structure A where
   val : Nat
   map : WBTMap String A compare
+
+-- TODO implement merge and split operations
 
 end WBT

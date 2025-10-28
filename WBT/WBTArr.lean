@@ -1,4 +1,4 @@
-import WBT.WBT
+import WBT.WBTNode
 
 namespace WBT
 
@@ -131,5 +131,7 @@ def WBTArr.fromArray (xs: Array α): WBTArr α :=
 
 
 #eval (WBTArr.fromArray (Array.replicate 1000 1)).node?
+
+-- TODO implement merge and split operations
 
 end WBT

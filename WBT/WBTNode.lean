@@ -139,6 +139,7 @@ partial def wbtBalance (δ: Nat) (n: Node α): Node α :=
   -- assuming the two subtrees n.left and n.right are balanced
   -- do single rotation or double rotation to rebalance the tree
   -- double rotation is necessary - see `why_double_rotation.jpeg`
+  -- TODO fill in all the sorry
   let n1 :=
     match cmp δ (some n) with
       | Ordering.eq => n
