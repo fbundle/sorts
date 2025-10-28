@@ -13,9 +13,5 @@ def statefulMapM [Monad m] (xs: List α) (state: State) (f: State → α → m (
 def statefulMap (xs: List α) (state: State) (f: State → α → State × β): State × List β :=
   Id.run (statefulMapM xs state (λ s x => pure (f s x)))
 
-def liftExcept (o: Option β) (e: α): Except α β :=
-  match o with
-    | some v => Except.ok v
-    | none => Except.error e
 
 end EL2.Term.Util
