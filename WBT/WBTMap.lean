@@ -6,7 +6,7 @@ namespace WBT
 
 -- TODO potentially let cmp hashed α so that the tree will be more balanced
 structure WBTMap (α: Type u) (β: Type v) (cmp: α → α → Ordering) where
-  node? : Option (Node (α × β))
+  node? : Option (Node.Node (α × β))
 
 -- as Lean enforces type to be strictly positive, sometimes recursive structure doesn't work
 -- e.g
@@ -26,7 +26,13 @@ private structure A where
   val : Nat
   map : WBTMap String A compare
 
--- def WBTMap.length (m: WBTMap α β cmp)
+def WBTMap.length (m: WBTMap α β cmp): Nat :=
+  Node.weight m.node?
+
+def WBTMap.depth (m: WBTMap α β cmp): Nat :=
+  Node.height m.node?
+
+
 
 
 
