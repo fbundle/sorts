@@ -39,7 +39,7 @@ instance: Repr (Node α) where
 def makeNode (entry: α) (left?: Option (Node α)) (right?: Option (Node α)): Node α :=
   {
     weight := 1 + weight left? + weight right?,
-    height := 1 + max (weight left?) (weight right?),
+    height := 1 + max (height left?) (height right?),
     entry := entry,
     left? := left?,
     right? := right?,
