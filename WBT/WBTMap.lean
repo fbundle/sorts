@@ -2,8 +2,6 @@ import WBT.WBT
 
 namespace WBT
 
-
-
 -- TODO potentially let cmp hashed α so that the tree will be more balanced
 structure WBTMap (α: Type u) (β: Type v) (cmp: α → α → Ordering) where
   node? : Option (Node.Node (α × β))
@@ -43,6 +41,10 @@ partial def WBTMap.toArray (m: WBTMap α β cmp): Array (α × β) :=
 
 def WBTArr.toList (m: WBTMap α β cmp): List (α × β) :=
   m.toArray.toList
+
+instance [Repr α]: Repr (WBTMap α β cmp) where
+  reprPrec (m: WBTMap α β cmp) (_: Nat): Std.Format :=
+    s!"WBTArr(l={m.length}, d={m.depth})"
 
 
 
