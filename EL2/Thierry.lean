@@ -33,7 +33,7 @@ inductive Exp where
   -- application
   | app: (cmd: Exp) → (arg: Exp) → Exp
   -- λ abstraction
-  | abs: (name: String) → Exp
+  | abs: (name: String) → (body: Exp) → Exp
   -- let binding: let name: type := value
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
   -- Π type
@@ -55,21 +55,21 @@ abbrev Env := Ctx Val
 
 -- a short way of writing the whnf algorithm
 mutual
-def app? (u: Val) (v: Val): Except String Val := do
-  match u with
-    | Val.clos env (Exp.abs x e) => eval? (update env x v) e
-    | _ => Val.app u v
+partial def app? (cmd: Val) (arg: Val): Except String Val := do
+  match cmd with
+    | Val.clos env (Exp.abs name body) => eval? (env.update name arg) body
+    | _ => pure (Val.app cmd arg)
 
-def eval? (env: Env) (e: Exp): Except String Val := do
-  match e with
+partial def eval? (env: Env) (exp: Exp): Except String Val := do
+  match exp with
     | Exp.var name =>
       env.lookup? name
     | Exp.app cmd arg =>
       app? (← eval? env cmd) (← eval? env arg)
     | Exp.bnd name value _ body =>
       eval? (env.update name (← eval? env value)) body
-    | Exp.type => some Val.type
-    | _ => Val.clos env e
+    | Exp.type => pure Val.type
+    | _ => pure (Val.clos env exp)
 
   sorry
 
