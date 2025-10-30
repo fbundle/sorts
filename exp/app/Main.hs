@@ -35,6 +35,7 @@ eval :: Env -> Exp -> Val
 app u v =
   case u of
     VClos env (Abs x e) -> eval (update env x v) e
+    _ -> VApp u v
 
 eval env e =
   case e of
