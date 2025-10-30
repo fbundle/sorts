@@ -34,4 +34,9 @@ inductive Val where
   | app: (cmd: Val) → (arg: Val) → Val
   | clos: (env: Env Val) → (term: Exp) → Val
 
+-- a short way of writing the whnf algorithm
+
+
+
+
 end EL2.Thierry
