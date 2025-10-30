@@ -2,16 +2,21 @@
 
 namespace EL2.Thierry
 
+def lift (e: α) (o: Option β): Except α β :=
+  match o with
+    | none => Except.error e
+    | some v => Except.ok v
+
 structure Ctx α where
   list: List (String × α)
   deriving Repr
 
-partial def Ctx.lookup? (ctx: Ctx α) (name: String): Option α :=
+partial def Ctx.lookup? [Repr α] (ctx: Ctx α) (name: String): Except String α :=
   match ctx.list with
-    | [] => none
+    | [] => Except.error s!"name {name} not found in {repr ctx}"
     | (key, val) :: list =>
       if name = key then
-        some val
+        Except.ok val
       else
         {list := list: Ctx α}.lookup? name
 
@@ -33,6 +38,7 @@ inductive Exp where
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
   -- Π type
   | pi:  (name: String) → (type: Exp) → (body: Exp) → Exp
+  deriving Repr
 
 inductive Val where
   -- type_0 type_1 ...
@@ -43,16 +49,28 @@ inductive Val where
   | app: (cmd: Val) → (arg: Val) → Val
   -- with closure
   | clos: (ctx: Ctx Val) → (term: Exp) → Val
+  deriving Repr
 
 abbrev Env := Ctx Val
 
 -- a short way of writing the whnf algorithm
-
 mutual
-def app (u: Val) (v: Val): Val :=
-  sorry
+def app? (u: Val) (v: Val): Except String Val := do
+  match u with
+    | Val.clos env (Exp.abs x e) => eval? (update env x v) e
+    | _ => Val.app u v
 
-def eval (env: Env) (e: Exp): Val :=
+def eval? (env: Env) (e: Exp): Except String Val := do
+  match e with
+    | Exp.var name =>
+      env.lookup? name
+    | Exp.app cmd arg =>
+      app? (← eval? env cmd) (← eval? env arg)
+    | Exp.bnd name value _ body =>
+      eval? (env.update name (← eval? env value)) body
+    | Exp.type => some Val.type
+    | _ => Val.clos env e
+
   sorry
 
 end
