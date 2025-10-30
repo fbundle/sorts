@@ -8,11 +8,11 @@ data Exp = Type         -- type
   | Var Id              -- variable
   | App Exp Exp         -- application
   | Abs Id Exp          -- abstraction
-  | Let Id Exp Exp Exp  -- let binding (?? name value type return)
+  | Let Id Exp Exp Exp  -- let binding (name value type body)
   | Pi Id Exp Exp       -- pi type
 
 data Val = VType        -- type
-  | VGen Int            -- ??
+  | VGen Int            -- universe
   | VApp Val Val        -- application
   | VClos Env Exp       -- closure
 
