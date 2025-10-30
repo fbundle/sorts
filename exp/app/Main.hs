@@ -1,6 +1,6 @@
 module Main where
 
-import Prelude hiding (lookup)
+import Prelude hiding (id, lookup)
 
 type Id = String
 
@@ -48,7 +48,7 @@ eval env e =
 whnf :: Val -> Val
 whnf v =
   case v of
-    VApp u w      -> app (whnf u) (whnf v)
+    VApp u w      -> app (whnf u) (whnf w) -- original: VApp u w -> app (whnf u) (whnf v)
     VClos env e   -> eval env e       -- wouldn't return the same thing?
     _             -> v
 
