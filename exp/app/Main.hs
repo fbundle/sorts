@@ -78,21 +78,67 @@ eqVal (k, u1, u2) =
     _ -> False
 
 -- type checking and type inference
+checkExp :: (Int, Env, Env) -> Exp -> Val -> Bool
+inferExp :: (Int, Env, Env) -> Exp -> Val
+checkType :: (Int, Env, Env) -> Exp -> Bool
 
+checkType (k, rho, gamma) e = checkExp (k, rho, gamma) e VType
+checkExp (k, rho, gamma) e v =
+  case e of 
+    Abs x n ->
+      case whnf v of
+        VClos env (Pi y a b) ->
+          let v = VGen k
+          in checkExp ( k+1,
+                        update rho x v,
+                        update gamma x (VClos env a)
+                      )
+                      n (VClos (update env y v) b)
+        _ -> error "expected Pi"
+    Pi x a b ->
+      case whnf v of 
+        VType ->  checkType (k, rho, gamma) a
+                  &&
+                  checkType  ( k,
+                              update rho x (VGen k),
+                              update gamma x (VClos rho a)
+                            ) b
+        _ -> error "expected Type"
+    Let x e1 e2 e3 ->
+      checkType (k, rho, gamma) e2 
+      &&
+      checkExp  ( k,
+                  update rho x (eval rho e1),
+                  update gamma x (eval rho e2)
+                ) e3 v
+    _ -> eqVal (k, inferExp (k, rho, gamma) e, v)
 
+inferExp (k, rho, gamma) e = 
+  case e of
+    Var id -> lookup id gamma
+    App e1 e2 ->
+      case whnf (inferExp (k, rho, gamma) e1) of
+        VClos env (Pi x a b) ->
+          if checkExp (k, rho, gamma) e2 (VClos env a) then
+            VClos (update env x (VClos rho e2)) b
+          else
+            error "application error"
+        _ -> error "application, expected Pi"
+    Type -> VType
+    _ -> error "cannot infer type"
 
+typecheck :: Exp -> Exp -> Bool
+typecheck m a =
+  checkType (0, [], []) a
+  &&
+  checkExp (0, [], []) m (VClos [] a)
 
-
-
-
-
-
-
-
-
-
-
+test :: Bool
+test = typecheck  (Abs "A" (Abs "x" (Var "x")))
+                  (Pi "A" Type (Pi "x" (Var "A") (Var "A")))
 
 
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = print test
+
+
