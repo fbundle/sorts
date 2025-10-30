@@ -2,23 +2,23 @@
 
 namespace EL2.Thierry
 
-structure Env α where
+structure Ctx α where
   list: List (String × α)
   deriving Repr
 
-partial def Env.lookup? (env: Env α) (name: String): Option α :=
-  match env.list with
+partial def Ctx.lookup? (ctx: Ctx α) (name: String): Option α :=
+  match ctx.list with
     | [] => none
     | (key, val) :: list =>
       if name = key then
         some val
       else
-        {list := list: Env α}.lookup? name
+        {list := list: Ctx α}.lookup? name
 
-partial def Env.update (env: Env α) (name: String) (val: α): Env α :=
-  {list := (name, val) :: env.list}
+partial def Ctx.update (ctx: Ctx α) (name: String) (val: α): Ctx α :=
+  {list := (name, val) :: ctx.list}
 
-def emptyEnv: Env α := {list := []}
+def emptyCtx: Ctx α := {list := []}
 
 inductive Exp where
   -- type_0 type_1 ...
@@ -42,10 +42,20 @@ inductive Val where
   -- application
   | app: (cmd: Val) → (arg: Val) → Val
   -- with closure
-  | clos: (env: Env Val) → (term: Exp) → Val
+  | clos: (ctx: Ctx Val) → (term: Exp) → Val
+
+abbrev Env := Ctx Val
 
 -- a short way of writing the whnf algorithm
 
+mutual
+def app (u: Val) (v: Val): Val :=
+  sorry
+
+def eval (env: Env) (e: Exp): Val :=
+  sorry
+
+end
 
 
 
