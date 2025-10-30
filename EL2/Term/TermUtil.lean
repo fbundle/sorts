@@ -18,6 +18,24 @@ def statefulMapM [Monad m] (xs: List α) (state: State) (f: State → α → m (
 def statefulMap (xs: List α) (state: State) (f: State → α → State × β): State × List β :=
   Id.run (statefulMapM xs state (λ s x => pure (f s x)))
 
+structure Ctx α where
+  list: List (String × α)
+  deriving Repr
+
+partial def Ctx.get? (ctx: Ctx α) (name: String): Option α :=
+  match ctx.list with
+    | [] => none
+    | (key, val) :: list =>
+      if name = key then
+        some val
+      else
+        {list := list: Ctx α}.get? name
+
+partial def Ctx.set (ctx: Ctx α) (name: String) (val: α): Ctx α :=
+  {list := (name, val) :: ctx.list}
+
+def emptyCtx: Ctx α := {list := []}
+
 end EL2.Util
 
 namespace EL2.Term
