@@ -74,10 +74,17 @@ partial def eval? (env: Env) (exp: Exp): Except String Val := do
     | Exp.type => pure Val.type
     | _ => pure (Val.clos env exp)
 
-  sorry
-
 end
 
+partial def whnf? (val: Val): Except String Val := do
+  match val with
+    | Val.app u w =>
+      let rU ← whnf? u
+      let rW ← whnf? w
+      app? rU rW
+    | Val.clos env e =>
+      eval? env e
+    | _ => pure val
 
 
 end EL2.Thierry
