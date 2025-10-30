@@ -6,16 +6,16 @@ structure Env α where
   list: List (String × α)
   deriving Repr
 
-partial def Env.get? (env: Env α) (name: String): Option α :=
+partial def Env.lookup? (env: Env α) (name: String): Option α :=
   match env.list with
     | [] => none
     | (key, val) :: list =>
       if name = key then
         some val
       else
-        {list := list: Env α}.get? name
+        {list := list: Env α}.lookup? name
 
-partial def Env.set (env: Env α) (name: String) (val: α): Env α :=
+partial def Env.update (env: Env α) (name: String) (val: α): Env α :=
   {list := (name, val) :: env.list}
 
 def emptyEnv: Env α := {list := []}
