@@ -44,7 +44,7 @@ inductive Val where
   -- type_0 type_1 ...
   | type: Val
   -- generic value at level
-  | gen: (level: Int) → Val
+  | gen: (i: Nat) → Val
   -- application
   | app: (cmd: Val) → (arg: Val) → Val
   -- with closure
@@ -69,13 +69,10 @@ partial def eval? (env: Env) (exp: Exp): Except String Val := do
       env.lookup? name
 
     | Exp.app cmd arg =>
-      let cmdVal ← eval? env cmd
-      let argVal ← eval? env arg
-      app? cmdVal argVal
+      app? (← eval? env cmd) (← eval? env arg)
 
     | Exp.bnd name val _ body =>
-      let valVal ← eval? env val
-      eval? (env.update name valVal) body
+      eval? (env.update name (← eval? env val)) body
 
     | Exp.type => pure Val.type
 
@@ -86,14 +83,47 @@ end
 partial def whnf? (val: Val): Except String Val := do
   match val with
     | Val.app u w =>
-      let rU ← whnf? u
-      let rW ← whnf? w
-      app? rU rW
+      app? (← whnf? u) (← whnf? w)
 
     | Val.clos env e =>
       eval? env e
 
     | _ => pure val
+
+-- the conversion algorithm; the integer is
+-- used to represent the introduction of a fresh variable
+
+partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Except String Bool := do
+  let wU1 ← whnf? u1
+  let wU2 ← whnf? u2
+  match (wU1, wU2) with
+    | (Val.type, Val.type) => pure true
+
+    | (Val.app t1 w1, Val.app t2 w2) =>
+      pure ((← eqVal? k t1 t2) ∧ (← eqVal? k w1 w2))
+
+    | (Val.gen k1, Val.gen k2) =>
+      pure (k1 == k2)
+
+    | (Val.clos env1 (Exp.abs x1 e1), Val.clos env2 (Exp.abs x2 e2)) =>
+      let v := Val.gen k
+      eqVal? (k + 1)
+        (Val.clos (env1.update x1 v) e1)
+        (Val.clos (env2.update x2 v) e2)
+
+    | (Val.clos env1 (Exp.pi x1 a1 b1), Val.clos env2 (Exp.pi x2 a2 b2)) =>
+      let v := Val.gen k
+      pure (
+        (← eqVal? k (Val.clos env1 a1) (Val.clos env2 a2))
+          ∧
+        (← eqVal? (k + 1)
+          (Val.clos (env1.update x1 v) b1)
+          (Val.clos (env2.update x2 v) b2)
+        )
+      )
+    | _ => pure false
+
+-- type checking and type inference
 
 
 end EL2.Thierry
