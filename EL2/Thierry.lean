@@ -8,7 +8,7 @@ structure Ctx α where
 
 partial def Ctx.lookup? [Repr α] (ctx: Ctx α) (name: String): Except String α :=
   match ctx.list with
-    | [] => Except.error s!"name {name} not found in {repr ctx}"
+    | [] => Except.error s!"name_not_found {name} in {repr ctx}"
     | (key, val) :: list =>
       if name = key then
         Except.ok val
