@@ -12,7 +12,7 @@ data Exp = Type         -- type
   | Pi Id Exp Exp       -- pi type
 
 data Val = VType        -- type
-  | VGen Int            -- universe
+  | VGen Int            -- generic value at level
   | VApp Val Val        -- application
   | VClos Env Exp       -- closure
 
