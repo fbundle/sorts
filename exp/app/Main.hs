@@ -100,7 +100,7 @@ checkExp (k, rho, gamma) e v =
       case whnf v of 
         VType ->  checkType (k, rho, gamma) a
                   &&
-                  checkType  ( k,
+                  checkType  ( k + 1,
                               update rho x (VGen k),
                               update gamma x (VClos rho a)
                             ) b
