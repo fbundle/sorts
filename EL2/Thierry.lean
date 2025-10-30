@@ -68,8 +68,9 @@ partial def eval? (env: Env) (exp: Exp): Except String Val := do
       let cmdVal ← eval? env cmd
       let argVal ← eval? env arg
       app? cmdVal argVal
-    | Exp.bnd name value _ body =>
-      eval? (env.update name (← eval? env value)) body
+    | Exp.bnd name val _ body =>
+      let valVal ← eval? env val
+      eval? (env.update name valVal) body
     | Exp.type => pure Val.type
     | _ => pure (Val.clos env exp)
 
