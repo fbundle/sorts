@@ -57,21 +57,28 @@ abbrev Env := Ctx Val
 mutual
 partial def app? (cmd: Val) (arg: Val): Except String Val := do
   match cmd with
-    | Val.clos env (Exp.abs name body) => eval? (env.update name arg) body
-    | _ => pure (Val.app cmd arg)
+    | Val.clos env (Exp.abs name body) =>
+      eval? (env.update name arg) body
+
+    | _ =>
+      pure (Val.app cmd arg)
 
 partial def eval? (env: Env) (exp: Exp): Except String Val := do
   match exp with
     | Exp.var name =>
       env.lookup? name
+
     | Exp.app cmd arg =>
       let cmdVal ← eval? env cmd
       let argVal ← eval? env arg
       app? cmdVal argVal
+
     | Exp.bnd name val _ body =>
       let valVal ← eval? env val
       eval? (env.update name valVal) body
+
     | Exp.type => pure Val.type
+
     | _ => pure (Val.clos env exp)
 
 end
@@ -82,8 +89,10 @@ partial def whnf? (val: Val): Except String Val := do
       let rU ← whnf? u
       let rW ← whnf? w
       app? rU rW
+
     | Val.clos env e =>
       eval? env e
+
     | _ => pure val
 
 
