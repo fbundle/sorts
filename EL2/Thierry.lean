@@ -37,7 +37,7 @@ inductive Exp where
 inductive Val where
   -- type_0 type_1 ...
   | type: Val
-  -- generic value
+  -- generic value at level
   | gen: (level: Int) → Val
   -- application
   | app: (cmd: Val) → (arg: Val) → Val
