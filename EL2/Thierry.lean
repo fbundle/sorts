@@ -2,11 +2,6 @@
 
 namespace EL2.Thierry
 
-def lift (e: α) (o: Option β): Except α β :=
-  match o with
-    | none => Except.error e
-    | some v => Except.ok v
-
 structure Ctx α where
   list: List (String × α)
   deriving Repr
