@@ -245,7 +245,12 @@ def test4 :=
   inferExp? emptyCtx
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
 
+def test5 :=
+  inferExp? emptyCtx
+    (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
+
 #eval test1   -- should be some true
 #eval test2  -- should be some (Val.typ 1)
 #eval test3  -- should be some true
 #eval test4  -- should be some (Val.typ 1)
+#eval test5  --  we didn't support this
