@@ -1,6 +1,6 @@
 -- adapted from (Thierry Coquand - An algorithm for type-checking dependent types)
 
-namespace EL2.Thierry
+namespace EL2.Coquand
 
 structure Ctx α where
   list: List (String × α)
@@ -41,7 +41,7 @@ inductive Exp where
 inductive Val where
   -- type_0 type_1 ...
   | type: Val
-  -- generic value at level
+  -- generic value
   | gen: (i: Nat) → Val
   -- application
   | app: (cmd: Val) → (arg: Val) → Val
@@ -198,4 +198,4 @@ private def test :=
 
 #eval test
 
-end EL2.Thierry
+end EL2.Coquand
