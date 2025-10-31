@@ -23,7 +23,6 @@ partial def Map.update (map: Map α) (name: String) (val: α): Map α :=
 
 def emptyMap: Map α := {list := []}
 
-
 inductive Exp where
   -- typ 0 is type of small types: Nat, Pi, etc.
   -- typ 0 is at level 2
@@ -129,22 +128,33 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
 -- type checking and type inference
 
 structure Ctx where
+  maxN: Nat
   k: Nat
   ρ : Map Val -- name -> value
   Γ: Map Val -- name -> type
   deriving Repr
 
 def Ctx.bind (ctx: Ctx) (name: String) (val: Val) (type: Val) : Ctx := {
-  k := ctx.k,
+  ctx with
   ρ := ctx.ρ.update name val,
   Γ := ctx.Γ.update name type,
 }
 
 def Ctx.intro (ctx: Ctx) (name: String) (type: Val) : Ctx × Val :=
   let val := Val.gen ctx.k
-  (ctx.bind name val type, val)
+  ({
+    ctx with
+    k := ctx.k + 1,
+    ρ := ctx.ρ.update name val,
+    Γ := ctx.Γ.update name type,
+  }, val)
 
-def emptyCtx: Ctx := {k := 0, ρ := emptyMap, Γ := emptyMap}
+def emptyCtx: Ctx := {
+  maxN := 20, -- max level for Typ
+  k := 0,
+  ρ := emptyMap,
+  Γ := emptyMap,
+}
 
 mutual
 
@@ -211,9 +221,8 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
           | _ => none
 
       | Exp.bnd name value type body =>
+        let _ ← typLevel? ctx type ctx.maxN
         pure (
-          (let _ := ← typLevel? ctx type 10; true) -- type must be a valid Val.typ
-            ∧
           (← checkExp? ctx value (Val.clos ctx.ρ type))
             ∧
           (
