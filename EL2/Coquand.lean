@@ -1,7 +1,7 @@
 -- adapted from (Thierry Coquand - An algorithm for type-checking dependent types)
 -- the algorithm is able to type check dependently-typed λ-calculus
 
-namespace EL2.Coquand
+namespace EL2.CoquandLegacy
 
 structure Map α where
   list: List (String × α)
@@ -218,4 +218,4 @@ private def test :=
 
 #eval test
 
-end EL2.Coquand
+namespace EL2.CoquandLegacy

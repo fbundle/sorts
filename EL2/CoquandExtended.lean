@@ -1,7 +1,8 @@
--- adapted from (Thierry Coquand - An algorithm for type-checking dependent types)
+-- extended from (Thierry Coquand - An algorithm for type-checking dependent types)
 -- the algorithm is able to type check dependently-typed λ-calculus
+-- with type universe (type_0, type_1, ...)
 
--- added type universe (type_0, type_1, ...)
+namespace EL2.Coquand
 
 structure Map α where
   list: List (String × α)
@@ -154,7 +155,6 @@ def emptyCtx: Ctx := {
   Γ := emptyMap,
 }
 
--- Extract universe level from a type value
 def getUnivLevel? (val: Val): Option Nat := do
   match ← whnf? val with
     | Val.typ n => pure n
@@ -163,41 +163,48 @@ def getUnivLevel? (val: Val): Option Nat := do
 mutual
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
-  match exp with
-    | Exp.var name => ctx.Γ.lookup? name
+  let val?: Option Val := do
+    match exp with
+      | Exp.var name => ctx.Γ.lookup? name
 
-    | Exp.app cmd arg =>
-      match (← whnf? (← inferExp? ctx cmd)) with
-        | Val.clos env (Exp.pi name type body) =>
-          if ← checkExp? ctx arg (Val.clos env type) then
-            pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
-          else
-            none
+      | Exp.app cmd arg =>
+        match (← whnf? (← inferExp? ctx cmd)) with
+          | Val.clos env (Exp.pi name type body) =>
+            if ← checkExp? ctx arg (Val.clos env type) then
+              pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
+            else
+              none
 
-        | _ => none
+          | _ => none
 
-    | Exp.typ n => pure (Val.typ (n + 1))
+      | Exp.typ n => pure (Val.typ (n + 1))
 
-    | Exp.pi name type body =>
-      let typeType ← inferExp? ctx type
-      let i ← getUnivLevel? typeType
-      let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-      let bodyType ← inferExp? subCtx body
-      let j ← getUnivLevel? bodyType
-      pure (Val.typ (max i j))
+      | Exp.pi name type body =>
+        let typeType ← inferExp? ctx type
+        let i ← getUnivLevel? typeType
+        let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
+        let bodyType ← inferExp? subCtx body
+        let j ← getUnivLevel? bodyType
+        pure (Val.typ (max i j))
 
-    | Exp.bnd name value type body =>
-      let typeType ← inferExp? ctx type
-      let _ ← getUnivLevel? typeType
-      if ¬ (← checkExp? ctx value (Val.clos ctx.ρ type))
-        then none
-      else
-        inferExp? (ctx.bind name
-          (← whnf? (Val.clos ctx.ρ value))
-          (← whnf? (Val.clos ctx.ρ type))
-        ) body
+      | Exp.bnd name value type body =>
+        let typeType ← inferExp? ctx type
+        let _ ← getUnivLevel? typeType
+        if ¬ (← checkExp? ctx value (Val.clos ctx.ρ type))
+          then none
+        else
+          inferExp? (ctx.bind name
+            (← whnf? (Val.clos ctx.ρ value))
+            (← whnf? (Val.clos ctx.ρ type))
+          ) body
 
-    | _ => none
+      | _ => none
+
+  match val? with
+    | some val => val
+    | none =>
+      dbg_trace s!"[DBG_TRACE] inferExp? {repr ctx}\n\texp = {repr exp}"
+      none
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   match exp with
