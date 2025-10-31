@@ -175,6 +175,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 partial def typLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
   -- suppose type of exp is typeN for some 0 ≤ N ≤ maxN
   -- find N
+  -- TODO - optimize this
   let rec loop (n: Nat): Option Nat := do
     let b ← checkExp? ctx exp (Val.typ n)
     if b = true then
