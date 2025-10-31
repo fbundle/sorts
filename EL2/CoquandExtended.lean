@@ -163,6 +163,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
           | _ => none
       | Exp.typ n => Val.typ (n + 1)
+      -- TODO implement for inference rules
       | _ => none
 
   match val? with
@@ -232,12 +233,13 @@ end
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
   checkExp? emptyCtx m (Val.clos emptyMap a)
 
-private def test :=
+def test :=
   typeCheck
     (Exp.lam "A" (Exp.lam "x" (Exp.var "x")))
     (Exp.pi "B" (Exp.typ 0) (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
-private def test1 :=
+def test1 :=
   inferExp? emptyCtx (Exp.pi "B" (Exp.typ 0) (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
 #eval test
+#eval test1
