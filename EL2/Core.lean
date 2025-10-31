@@ -211,6 +211,11 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
             checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
           | _ => none
 
+      -- TODO add more type check
+      -- should be able to handle those cases like
+      -- (λx.x)y
+      -- or ensure it won't happen in constructing exp
+
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
 
