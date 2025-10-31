@@ -2,7 +2,6 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...)
 
-namespace EL2.Coquand
 
 structure Map α where
   list: List (String × α)
@@ -166,6 +165,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer the type of exp
   let val?: Option Val := do
     match exp with
+      | Exp.typ n => pure (Val.typ (n + 1))
       | Exp.var name => ctx.Γ.lookup? name
 
       | Exp.app cmd arg =>
@@ -178,26 +178,11 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
           | _ => none
 
-      | Exp.typ n => pure (Val.typ (n + 1))
-
       | Exp.pi name type body =>
-        let typeType ← inferExp? ctx type
-        let i ← getUnivLevel? typeType
-        let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-        let bodyType ← inferExp? subCtx body
-        let j ← getUnivLevel? bodyType
-        pure (Val.typ (max i j))
-
-      | Exp.bnd name value type body =>
-        let typeType ← inferExp? ctx type
-        let _ ← getUnivLevel? typeType
-        if ¬ (← checkExp? ctx value (Val.clos ctx.ρ type))
-          then none
-        else
-          inferExp? (ctx.bind name
-            (← whnf? (Val.clos ctx.ρ value))
-            (← whnf? (Val.clos ctx.ρ type))
-          ) body
+          let i ← getUnivLevel? (← inferExp? ctx type)
+          let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
+          let j ← getUnivLevel? (← inferExp? subCtx body)
+          pure (Val.typ (max i j))
 
       | _ => none
 
@@ -218,9 +203,19 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
             checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
           | _ => none
 
-      | _ => do
-        let infType ← inferExp? ctx exp
-        eqVal? ctx.k infType val
+      | Exp.bnd name value type body =>
+        let _ ← getUnivLevel? (← inferExp? ctx type)
+        pure (
+          (← checkExp? ctx value (Val.clos ctx.ρ type))
+            ∧
+          (← checkExp? (ctx.bind name
+            (← whnf? (Val.clos ctx.ρ value))
+            (← whnf? (Val.clos ctx.ρ type))
+          ) body val)
+        )
+
+      | _ => eqVal? ctx.k (← inferExp? ctx exp) val
+
   if b? = true then
     b?
   else
