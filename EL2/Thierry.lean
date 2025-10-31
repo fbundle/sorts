@@ -4,11 +4,13 @@ namespace EL2.Thierry
 
 structure Ctx α where
   list: List (String × α)
-  deriving Repr
+
+instance [Repr α]: Repr (Ctx α) where
+  reprPrec (ctx: Ctx α) (_: Nat): Std.Format := repr ctx.list
 
 partial def Ctx.lookup? [Repr α] (ctx: Ctx α) (name: String): Except String α :=
   match ctx.list with
-    | [] => Except.error s!"name_not_found {name} in {repr ctx}"
+    | [] => Except.error s!"Ctx.lookup?: name_not_found {name} in {repr ctx}"
     | (key, val) :: list =>
       if name = key then
         Except.ok val
@@ -19,6 +21,7 @@ partial def Ctx.update (ctx: Ctx α) (name: String) (val: α): Ctx α :=
   {list := (name, val) :: ctx.list}
 
 def emptyCtx: Ctx α := {list := []}
+
 
 inductive Exp where
   -- type_0 type_1 ...
@@ -137,7 +140,7 @@ partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except Strin
             ρ.update x v,
             γ.update x (Val.clos env a),
           ) n (Val.clos (env.update y v) b)
-        | _ => Except.error "expected Pi"
+        | _ => Except.error s!"checkExp?: expected Pi {repr kργ} {repr e} {repr v}"
     | Exp.pi x a b =>
       match v with
         | Val.type =>
