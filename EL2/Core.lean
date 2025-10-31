@@ -52,6 +52,7 @@ inductive Exp where
   -- technically we can encode these
   -- but adding them make it easier to do pattern matching later
   -- TODO - add (Eq, refl) for equality for Vec N T = (l: List T) × (N: Nat) × (h: l.length = N)
+  -- and refl a term of {T: Type} → (Eq T T)
   deriving Repr
 
 inductive Val where
