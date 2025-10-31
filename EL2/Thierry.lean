@@ -180,6 +180,7 @@ partial def inferExp? (kργ: Nat × Env × Env) (e: Exp): Option Val := do
           else
             none
         | _ => none
+    | Exp.type => Val.type
     | _ => none
 end
 
