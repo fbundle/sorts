@@ -213,7 +213,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
 
       -- TODO add more type check
       -- should be able to handle those cases like
-      -- (λx.x)y
+      -- (λx.x)y -> x[x := y]
       -- or ensure it won't happen in constructing exp
 
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
