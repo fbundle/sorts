@@ -162,16 +162,16 @@ partial def checkExp? (ctx: Ctx) (e: Exp) (v: Val): Option Bool := do
 
     | (Exp.pi x a b, Val.type) =>
       if ¬ (← checkType? ctx a) then
-        false
+        pure false
       else
         let (subCtx, _) := ctx.intro x (Val.clos ctx.ρ a)
         checkType? subCtx b
 
     | (Exp.bnd x e1 e2 e3, _) =>
       if ¬ (← checkType? ctx e2) then
-        false
+        pure false
       else if ¬ (← checkExp? ctx e1 (Val.clos ctx.ρ e2)) then
-        false
+        pure false
       else
         checkExp? (ctx.bind x
           (← whnf? (Val.clos ctx.ρ e1))
@@ -197,11 +197,12 @@ partial def inferExp? (ctx: Ctx) (e: Exp): Option Val := do
 end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
-  pure (
-    (← checkType? emptyCtx a)
-      ∧
-    (← checkExp? emptyCtx m (Val.clos emptyMap a))
-  )
+  if ¬ (← checkType? emptyCtx a) then
+    pure false
+  else if ¬ (← checkExp? emptyCtx m (Val.clos emptyMap a)) then
+    pure false
+  else
+    pure true
 
 private def test :=
   typeCheck
