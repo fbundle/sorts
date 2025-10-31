@@ -163,6 +163,7 @@ def getUnivLevel? (val: Val): Option Nat := do
 mutual
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
+  -- infer the type of exp
   let val?: Option Val := do
     match exp with
       | Exp.var name => ctx.Γ.lookup? name
@@ -207,17 +208,24 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
       none
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
-  match exp with
-    | Exp.lam name1 body1 =>
-      match ← whnf? val with
-        | Val.clos env2 (Exp.pi name2 type2 body2) =>
-          let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
-          checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
-        | _ => none
+  -- check if type of exp is val
+  let b? : Option Bool := do
+    match exp with
+      | Exp.lam name1 body1 =>
+        match ← whnf? val with
+          | Val.clos env2 (Exp.pi name2 type2 body2) =>
+            let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
+            checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
+          | _ => none
 
-    | _ => do
-      let infType ← inferExp? ctx exp
-      eqVal? ctx.k infType val
+      | _ => do
+        let infType ← inferExp? ctx exp
+        eqVal? ctx.k infType val
+  if b? = true then
+    b?
+  else
+    dbg_trace s!"[DBG_TRACE] checkExp? {repr ctx}\n\texp = {repr exp}\n\tval = {repr val}"
+    b?
 
 end
 
