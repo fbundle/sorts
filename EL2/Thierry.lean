@@ -8,12 +8,12 @@ structure Ctx α where
 instance [Repr α]: Repr (Ctx α) where
   reprPrec (ctx: Ctx α) (_: Nat): Std.Format := repr ctx.list
 
-partial def Ctx.lookup? [Repr α] (ctx: Ctx α) (name: String): Except String α :=
+partial def Ctx.lookup? [Repr α] (ctx: Ctx α) (name: String): Option α :=
   match ctx.list with
-    | [] => Except.error s!"Ctx.lookup?: name_not_found {name} in {repr ctx}"
+    | [] => none
     | (key, val) :: list =>
       if name = key then
-        Except.ok val
+        some val
       else
         {list := list: Ctx α}.lookup? name
 
@@ -53,7 +53,7 @@ abbrev Env := Ctx Val
 
 -- a short way of writing the whnf algorithm
 mutual
-partial def app? (cmd: Val) (arg: Val): Except String Val := do
+partial def app? (cmd: Val) (arg: Val): Option Val := do
   match cmd with
     | Val.clos env (Exp.abs name body) =>
       eval? (env.update name arg) body
@@ -61,7 +61,7 @@ partial def app? (cmd: Val) (arg: Val): Except String Val := do
     | _ =>
       pure (Val.app cmd arg)
 
-partial def eval? (env: Env) (exp: Exp): Except String Val := do
+partial def eval? (env: Env) (exp: Exp): Option Val := do
   match exp with
     | Exp.var name =>
       env.lookup? name
@@ -78,7 +78,7 @@ partial def eval? (env: Env) (exp: Exp): Except String Val := do
 
 end
 
-partial def whnf? (val: Val): Except String Val := do
+partial def whnf? (val: Val): Option Val := do
   match val with
     | Val.app u w =>
       app? (← whnf? u) (← whnf? w)
@@ -91,7 +91,7 @@ partial def whnf? (val: Val): Except String Val := do
 -- the conversion algorithm; the integer is
 -- used to represent the introduction of a fresh variable
 
-partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Except String Bool := do
+partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
   let wU1 ← whnf? u1
   let wU2 ← whnf? u2
   match (wU1, wU2) with
@@ -124,10 +124,10 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Except String Bool := do
 -- type checking and type inference
 mutual
 
-partial def checkType? (kργ: Nat × Env × Env) (e: Exp): Except String Bool :=
+partial def checkType? (kργ: Nat × Env × Env) (e: Exp): Option Bool :=
   checkExp? kργ e Val.type
 
-partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except String Bool := do
+partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool := do
   let (k, ρ, γ) := kργ
   let v ← whnf? v
   match e with
@@ -140,7 +140,7 @@ partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except Strin
             ρ.update x v,
             γ.update x (Val.clos env a),
           ) n (Val.clos (env.update y v) b)
-        | _ => Except.error s!"checkExp?: expected Pi {repr kργ} {repr e} {repr v}"
+        | _ => none
     | Exp.pi x a b =>
       match v with
         | Val.type =>
@@ -154,7 +154,7 @@ partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except Strin
               ) b
             )
           )
-        | _ => Except.error s!"checkExp?: expected Type {repr kργ} {repr e} {repr v}"
+        | _ => none
 
     | Exp.bnd x e1 e2 e3 =>
       pure (
@@ -168,7 +168,7 @@ partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except Strin
       )
     | _ => eqVal? k (← inferExp? (k, ρ, γ) e) v
 
-partial def inferExp? (kργ: Nat × Env × Env) (e: Exp): Except String Val := do
+partial def inferExp? (kργ: Nat × Env × Env) (e: Exp): Option Val := do
   let (k, ρ, γ) := kργ
   match e with
     | Exp.var name => γ.lookup? name
@@ -178,12 +178,12 @@ partial def inferExp? (kργ: Nat × Env × Env) (e: Exp): Except String Val := 
           if ← checkExp? (k, ρ, γ) e2 (Val.clos env a) then
             pure (Val.clos (env.update x (Val.clos ρ e2)) b)
           else
-            Except.error s!"inferExp?: application error {repr kργ} {repr e}"
-        | _ => Except.error s!"inferExp?: application, expected Pi {repr kργ} {repr e}"
-    | _ => Except.error s!"inferExp?: cannot infer type {repr kργ} {repr e}"
+            none
+        | _ => none
+    | _ => none
 end
 
-def typeCheck (m: Exp) (a: Exp): Except String Bool := do
+def typeCheck (m: Exp) (a: Exp): Option Bool := do
   pure (
     (← checkType? (0, emptyCtx, emptyCtx) a)
     ∧
