@@ -148,7 +148,7 @@ def emptyCtx: Ctx := {k := 0, ρ := emptyMap, Γ := emptyMap}
 mutual
 
 partial def inferTyp? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
-  -- suppose type of exp is typeN
+  -- suppose type of exp is typeN for some 0 ≤ N ≤ maxN
   -- find N
   let rec loop (n: Nat): Option Nat := do
     let b ← checkExp? ctx exp (Val.typ n)
@@ -159,8 +159,30 @@ partial def inferTyp? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
       none
     else
       loop (n + 1)
-
   loop 0
+
+partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
+  -- infer type of expr e
+  let val?: Option Val := do
+    match exp with
+      | Exp.var name => ctx.Γ.lookup? name
+      | Exp.app cmd arg =>
+        match (← whnf? (← inferExp? ctx cmd)) with
+          | Val.clos env (Exp.pi name type body) =>
+            if ← checkExp? ctx arg (Val.clos env type) then
+              pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
+            else
+              none
+
+          | _ => none
+      | Exp.typ0 => Val.typ 1
+      | _ => none
+
+  match val? with
+    | some val => pure val
+    | none =>
+      dbg_trace s!"[DBG_TRACE] inferExp? {repr ctx}\n\t{repr exp}"
+      none
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if expr e is of type v
@@ -204,29 +226,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
     dbg_trace s!"[DBG_TRACE] checkExp? {repr ctx}\n\t{repr exp} \n\t{repr val}"
     b?
 
-partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
-  -- infer type of expr e
-  let val?: Option Val := do
-    match exp with
-      | Exp.var name => ctx.Γ.lookup? name
-      | Exp.app cmd arg =>
-        match (← whnf? (← inferExp? ctx cmd)) with
-          | Val.clos env (Exp.pi name type body) =>
-            if ← checkExp? ctx arg (Val.clos env type) then
-              pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
-            else
-              none
-
-          | _ => none
-      | Exp.typ0 => Val.typ 1
-      | _ => none
-
-  match val? with
-    | some val => pure val
-    | none =>
-      dbg_trace s!"[DBG_TRACE] inferExp? {repr ctx}\n\t{repr exp}"
-      none
-
 end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
@@ -236,5 +235,8 @@ private def test :=
   typeCheck
     (Exp.abs "A" (Exp.abs "x" (Exp.var "x")))
     (Exp.pi "B" Exp.typ0 (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
+
+private def test1 :=
+  inferExp? emptyCtx (Exp.pi "B" Exp.typ0 (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
 #eval test
