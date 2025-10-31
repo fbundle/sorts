@@ -150,6 +150,22 @@ mutual
 partial def checkType? (ctx: Ctx) (e: Exp): Option Bool :=
   checkExp? ctx e Val.typ
 
+partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
+  -- infer type of expr e
+  match exp with
+    | Exp.var name => ctx.Γ.lookup? name
+    | Exp.app cmd arg =>
+      match (← whnf? (← inferExp? ctx cmd)) with
+        | Val.clos env (Exp.pi name type body) =>
+          if ← checkExp? ctx arg (Val.clos env type) then
+            pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
+          else
+            none
+
+        | _ => none
+    | Exp.typ => Val.typ
+    | _ => none
+
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if expr e is of type v
   match exp with
@@ -187,21 +203,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
 
     | _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
-partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
-  -- infer type of expr e
-  match exp with
-    | Exp.var name => ctx.Γ.lookup? name
-    | Exp.app cmd arg =>
-      match (← whnf? (← inferExp? ctx cmd)) with
-        | Val.clos env (Exp.pi name type body) =>
-          if ← checkExp? ctx arg (Val.clos env type) then
-            pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
-          else
-            none
-
-        | _ => none
-    | Exp.typ => Val.typ
-    | _ => none
 end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
