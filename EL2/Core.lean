@@ -183,7 +183,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
           | _ => none
 
-      | _ => none -- ignore these infer
+      | _ => none -- ignore these
 
 partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
