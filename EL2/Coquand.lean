@@ -227,27 +227,27 @@ def typeCheck (m: Exp) (a: Exp): Option Bool := do
   checkExp? emptyCtx m (Val.clos emptyMap a)
 
 -- Test: id function at Type_0
-def test :=
+def test1 :=
   typeCheck
     (Exp.lam "B" (Exp.lam "y" (Exp.var "y")))
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
 
 -- Test: infer type of polymorphic id type
-def test1 :=
+def test2 :=
   inferExp? emptyCtx
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
 
 -- Test: Type_0 : Type_1
-def test2 :=
+def test3 :=
   checkExp? emptyCtx (Exp.typ 0) (Val.typ 1)
 
 -- Test: impredicative encoding (System F style)
 -- ∀ A:Type_0. A → A should have type Type_1
-def test3 :=
+def test4 :=
   inferExp? emptyCtx
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
 
-#eval test   -- should be some true
-#eval test1  -- should be some (Val.typ 1)
-#eval test2  -- should be some true
-#eval test3  -- should be some (Val.typ 1)
+#eval test1   -- should be some true
+#eval test2  -- should be some (Val.typ 1)
+#eval test3  -- should be some true
+#eval test4  -- should be some (Val.typ 1)
