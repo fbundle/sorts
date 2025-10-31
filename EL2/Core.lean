@@ -258,13 +258,13 @@ def test2 :=
 
 
 def test3 :=
-  checkExp? emptyCtx (Exp.typ 0) (Val.typ 1)
+  typeCheck (Exp.typ 0) (Exp.typ 1)
 
 
 def test4 :=
-  checkExp? emptyCtx
+  typeCheck
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
-    (Val.typ 1)
+    (Exp.typ 1)
 
 
 def test5 :=
@@ -282,5 +282,5 @@ namespace EL2.Core.Internal
 
 namespace EL2.Core
 def Exp := Internal.Exp
-
+def typeCheck := Internal.typeCheck
 namespace EL2.Core
