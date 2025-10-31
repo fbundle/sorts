@@ -163,19 +163,6 @@ def getUnivLevel? (val: Val): Option Nat := do
 
 mutual
 
-partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
-  -- check if type of exp is val
-  traceOpt s!"[DBG_TRACE] checkExp? {repr ctx}\n\texp = {repr exp}\n\tval = {repr val}" do
-    match exp with
-      | Exp.lam name1 body1 =>
-        match ← whnf? val with
-          | Val.clos env2 (Exp.pi name2 type2 body2) =>
-            let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
-            checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
-          | _ => none
-
-      | _ => eqVal? ctx.k (← inferExp? ctx exp) val
-
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer the type of exp
@@ -211,6 +198,21 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
           ) body
 
       | Exp.lam _ _ => none -- cannot infer lam
+
+partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
+  -- check if type of exp is val
+  traceOpt s!"[DBG_TRACE] checkExp? {repr ctx}\n\texp = {repr exp}\n\tval = {repr val}" do
+    match exp with
+      | Exp.lam name1 body1 =>
+        match ← whnf? val with
+          | Val.clos env2 (Exp.pi name2 type2 body2) =>
+            let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
+            checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
+          | _ => none
+
+      | _ => eqVal? ctx.k (← inferExp? ctx exp) val
+
+
 end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
