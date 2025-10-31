@@ -24,7 +24,7 @@ def emptyMap: Map α := {list := []}
 
 
 inductive Exp where
-  -- type_0 type_1 ...
+  -- type_*
   | type: Exp
   -- variable
   | var: (name: String) → Exp
@@ -34,7 +34,7 @@ inductive Exp where
   | abs: (name: String) → (body: Exp) → Exp
   -- let binding: let name: type := value
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
-  -- Π type
+  -- Π type: Π (name: type) body
   | pi:  (name: String) → (type: Exp) → (body: Exp) → Exp
   deriving Repr
 
@@ -89,6 +89,7 @@ partial def whnf? (val: Val): Option Val := do
     | _ => pure val
 
 -- the conversion algorithm; the integer is used to represent the introduction of a fresh variable
+-- definitional equality
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
   let b: Option Bool := do
     let wU1 ← whnf? u1
@@ -128,58 +129,66 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
 
 -- type checking and type inference
 
+structure Ctx where
+  k: Nat
+  ρ: Env -- name -> value
+  Γ: Env -- name -> type
+
+def Ctx.bind (ctx: Ctx) (name: String) (val: Val) (typ: Val) : Ctx :=
+  {
+    k := ctx.k,
+    ρ := ctx.ρ.update name val,
+    Γ := ctx.Γ.update name typ,
+  }
+
+def Ctx.intro (ctx: Ctx) (name: String) (typ: Val) : Ctx × Val :=
+  let val := Val.gen ctx.k
+  (ctx.bind name val typ, val)
+
+def emptyCtx: Ctx := {k := 0, ρ := emptyMap, Γ := emptyMap}
+
 
 mutual
 
-partial def checkType? (kρΓ: Nat × Env × Env) (e: Exp): Option Bool :=
-  checkExp? kρΓ e Val.type
+partial def checkType? (ctx: Ctx) (e: Exp): Option Bool :=
+  checkExp? ctx e Val.type
 
-partial def checkExp? (kρΓ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool := do
-  let (k, ρ, Γ) := kρΓ
+partial def checkExp? (ctx: Ctx) (e: Exp) (v: Val): Option Bool := do
+  -- check if expr e is of type v
   match (e, ← whnf? v) with
     | (Exp.abs x n, Val.clos env (Exp.pi y a b)) =>
-      let v := Val.gen k
-      checkExp? (
-        k + 1,
-        ρ.update x v,
-        Γ.update x (Val.clos env a),
-      ) n (Val.clos (env.update y v) b)
+      let (subCtx, v) := ctx.intro x (Val.clos env a)
+      checkExp? subCtx n (Val.clos (env.update y v) b)
 
     | (Exp.pi x a b, Val.type) =>
-      pure (
-        (← checkType? (k, ρ, Γ) a)
-          ∧
-        (← checkType? (
-            k + 1,
-            ρ.update x (Val.gen k),
-            Γ.update x (Val.clos ρ a),
-          ) b
-        )
-      )
+      if ¬ (← checkType? ctx a) then
+        false
+      else
+        let (subCtx, _) := ctx.intro x (Val.clos ctx.ρ a)
+        checkType? subCtx b
 
     | (Exp.bnd x e1 e2 e3, _) =>
-      pure (
-        (← checkExp? (k, ρ, Γ) e1 (Val.clos ρ e2))
-          ∧
-        (← checkType? (k, ρ, Γ) e2)
-          ∧
-        (← checkExp? (
-          k,
-          ρ.update x (← whnf? (Val.clos ρ e1)),
-          Γ.update x (← whnf? (Val.clos ρ e2)),
-        ) e3 v)
-      )
-    | _ => eqVal? k (← inferExp? (k, ρ, Γ) e) v
+      if ¬ (← checkType? ctx e2) then
+        false
+      else if ¬ (← checkExp? ctx e1 (Val.clos ctx.ρ e2)) then
+        false
+      else
+        checkExp? (ctx.bind x
+          (← whnf? (Val.clos ctx.ρ e1))
+          (← whnf? (Val.clos ctx.ρ e2))
+        ) e3 v
 
-partial def inferExp? (kρΓ: Nat × Env × Env) (e: Exp): Option Val := do
-  let (k, ρ, Γ) := kρΓ
+    | _ => eqVal? ctx.k (← inferExp? ctx e) v
+
+partial def inferExp? (ctx: Ctx) (e: Exp): Option Val := do
+  -- infer type of expr e
   match e with
-    | Exp.var name => Γ.lookup? name
+    | Exp.var name => ctx.Γ.lookup? name
     | Exp.app e1 e2 =>
-      match (← whnf? (← inferExp? (k, ρ, Γ) e1)) with
+      match (← whnf? (← inferExp? ctx e1)) with
         | Val.clos env (Exp.pi x a b) =>
-          if ← checkExp? (k, ρ, Γ) e2 (Val.clos env a) then
-            pure (Val.clos (env.update x (Val.clos ρ e2)) b)
+          if ← checkExp? ctx e2 (Val.clos env a) then
+            pure (Val.clos (env.update x (Val.clos ctx.ρ e2)) b)
           else
             none
         | _ => none
@@ -189,9 +198,9 @@ end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
   pure (
-    (← checkType? (0, emptyMap, emptyMap) a)
+    (← checkType? emptyCtx a)
     ∧
-    (← checkExp? (0, emptyMap, emptyMap) m (Val.clos emptyMap a))
+    (← checkExp? emptyCtx m (Val.clos emptyMap a))
   )
 
 private def test :=
