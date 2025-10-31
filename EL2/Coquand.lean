@@ -2,6 +2,8 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...)
 
+namespace EL2.Coquand
+
 def traceOpt (err: String) (o: Option α): Option α :=
   match o with
     | some v => some v
@@ -243,3 +245,5 @@ def test4 :=
 #eval test2  -- should be some (Val.typ 1)
 #eval test3  -- should be some true
 #eval test4  -- should be some (Val.typ 1)
+
+end EL2.Coquand
