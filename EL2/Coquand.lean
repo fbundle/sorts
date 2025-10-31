@@ -152,24 +152,26 @@ partial def checkType? (ctx: Ctx) (e: Exp): Option Bool :=
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if expr e is of type v
-  match (exp, ← whnf? val) with
-    | (Exp.abs name1 body1, Val.clos env2 (Exp.pi name2 type2 body2)) =>
-      let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
-      checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
+  match exp with
+    | Exp.abs name1 body1 =>
+      match ← whnf? val with
+        | Val.clos env2 (Exp.pi name2 type2 body2) =>
+          let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
+          checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
+        | _ => none
 
-    | (Exp.abs name1 body1, _) => none
+    | Exp.pi name type body =>
+      match ← whnf? val with
+        | Val.typ =>
+          let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
+          pure (
+            (← checkType? ctx type)
+              ∧
+            (← checkType? subCtx body)
+          )
+        | _ => none
 
-    | (Exp.pi name type body, Val.typ) =>
-      let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-      pure (
-        (← checkType? ctx type)
-          ∧
-        (← checkType? subCtx body)
-      )
-
-    | (Exp.pi name type body, _) => none
-
-    | (Exp.bnd name value type body, _) =>
+    | Exp.bnd name value type body =>
       pure (
         (← checkType? ctx type)
           ∧
@@ -185,17 +187,18 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
 
     | _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
-partial def inferExp? (ctx: Ctx) (e: Exp): Option Val := do
+partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer type of expr e
-  match e with
+  match exp with
     | Exp.var name => ctx.Γ.lookup? name
-    | Exp.app e1 e2 =>
-      match (← whnf? (← inferExp? ctx e1)) with
-        | Val.clos env (Exp.pi x a b) =>
-          if ← checkExp? ctx e2 (Val.clos env a) then
-            pure (Val.clos (env.update x (Val.clos ctx.ρ e2)) b)
+    | Exp.app cmd arg =>
+      match (← whnf? (← inferExp? ctx cmd)) with
+        | Val.clos env (Exp.pi name type body) =>
+          if ← checkExp? ctx arg (Val.clos env type) then
+            pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
           else
             none
+
         | _ => none
     | Exp.typ => Val.typ
     | _ => none
