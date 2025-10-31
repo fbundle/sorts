@@ -1,4 +1,5 @@
 -- adapted from (Thierry Coquand - An algorithm for type-checking dependent types)
+-- the algorithm is able to type check dependently-typed λ-calculus
 
 namespace EL2.Coquand
 
