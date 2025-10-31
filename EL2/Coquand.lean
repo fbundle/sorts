@@ -2,25 +2,25 @@
 
 namespace EL2.Coquand
 
-structure Ctx α where
+structure Map α where
   list: List (String × α)
 
-instance [Repr α]: Repr (Ctx α) where
-  reprPrec (ctx: Ctx α) (_: Nat): Std.Format := repr ctx.list
+instance [Repr α]: Repr (Map α) where
+  reprPrec (map: Map α) (_: Nat): Std.Format := repr map.list
 
-partial def Ctx.lookup? [Repr α] (ctx: Ctx α) (name: String): Option α :=
-  match ctx.list with
+partial def Map.lookup? [Repr α] (map: Map α) (name: String): Option α :=
+  match map.list with
     | [] => none
     | (key, val) :: list =>
       if name = key then
         some val
       else
-        {list := list: Ctx α}.lookup? name
+        {list := list: Map α}.lookup? name
 
-partial def Ctx.update (ctx: Ctx α) (name: String) (val: α): Ctx α :=
-  {list := (name, val) :: ctx.list}
+partial def Map.update (map: Map α) (name: String) (val: α): Map α :=
+  {list := (name, val) :: map.list}
 
-def emptyCtx: Ctx α := {list := []}
+def emptyMap: Map α := {list := []}
 
 
 inductive Exp where
@@ -46,10 +46,10 @@ inductive Val where
   -- application
   | app: (cmd: Val) → (arg: Val) → Val
   -- with closure - a future value - evaluated by eval?
-  | clos: (ctx: Ctx Val) → (term: Exp) → Val
+  | clos: (map: Map Val) → (term: Exp) → Val
   deriving Repr
 
-abbrev Env := Ctx Val
+abbrev Env := Map Val
 
 -- a short way of writing the whnf algorithm
 mutual
@@ -88,9 +88,7 @@ partial def whnf? (val: Val): Option Val := do
 
     | _ => pure val
 
--- the conversion algorithm; the integer is
--- used to represent the introduction of a fresh variable
-
+-- the conversion algorithm; the integer is used to represent the introduction of a fresh variable
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
   let b: Option Bool := do
     let wU1 ← whnf? u1
@@ -129,6 +127,8 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
     b
 
 -- type checking and type inference
+
+
 mutual
 
 partial def checkType? (kρΓ: Nat × Env × Env) (e: Exp): Option Bool :=
@@ -189,9 +189,9 @@ end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
   pure (
-    (← checkType? (0, emptyCtx, emptyCtx) a)
+    (← checkType? (0, emptyMap, emptyMap) a)
     ∧
-    (← checkExp? (0, emptyCtx, emptyCtx) m (Val.clos emptyCtx a))
+    (← checkExp? (0, emptyMap, emptyMap) m (Val.clos emptyMap a))
   )
 
 private def test :=
