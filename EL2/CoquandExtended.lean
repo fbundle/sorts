@@ -150,11 +150,13 @@ def Ctx.intro (ctx: Ctx) (name: String) (type: Val) : Ctx × Val :=
 
 def emptyCtx: Ctx := {k := 0, ρ := emptyMap, Γ := emptyMap}
 
-
 mutual
 
-partial def checkStar? (ctx: Ctx) (e: Exp): Option Bool :=
-  checkExp? ctx e Val.star
+partial def checkStar? (ctx: Ctx) (exp: Exp): Option Bool :=
+  let b?: Option Bool := checkExp? ctx exp Val.star
+  if b? = true then b? else
+    dbg_trace s!"[DBG_TRACE] checkStar? \n\texp = {repr exp}\n\tctx = {repr ctx}"
+    b?
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if expr e is of type v
@@ -194,7 +196,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
 
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
   if b? = true then b? else
-    dbg_trace s!"[DBG_TRACE] checkExp? {repr exp} {repr val} {repr ctx}"
+    dbg_trace s!"[DBG_TRACE] checkExp? {repr ctx}\n\t{repr exp} \n\t{repr val}"
     b?
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
@@ -217,7 +219,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   match val? with
     | some val => pure val
     | none =>
-      dbg_trace s!"[DBG_TRACE] inferExp? {repr exp} {repr ctx}"
+      dbg_trace s!"[DBG_TRACE] inferExp? {repr ctx}\n\t{repr exp}"
       none
 
 end
