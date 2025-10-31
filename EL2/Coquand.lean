@@ -124,11 +124,13 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
 -- type checking and type inference
 mutual
 
-partial def checkType? (kργ: Nat × Env × Env) (e: Exp): Option Bool :=
-  checkExp? kργ e Val.type
 
-partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool := do
-  let (k, ρ, γ) := kργ
+
+partial def checkType? (kρΓ: Nat × Env × Env) (e: Exp): Option Bool :=
+  checkExp? kρΓ e Val.type
+
+partial def checkExp? (kρΓ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool := do
+  let (k, ρ, Γ) := kρΓ
   let v ← whnf? v
   match e with
     | Exp.abs x n =>
@@ -138,19 +140,19 @@ partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool 
           checkExp? (
             k+1,
             ρ.update x v,
-            γ.update x (Val.clos env a),
+            Γ.update x (Val.clos env a),
           ) n (Val.clos (env.update y v) b)
         | _ => none
     | Exp.pi x a b =>
       match v with
         | Val.type =>
           pure (
-            (← checkType? (k, ρ, γ) a)
+            (← checkType? (k, ρ, Γ) a)
               ∧
             (← checkType? (
                 k + 1,
                 ρ.update x (Val.gen k),
-                γ.update x (Val.clos ρ a),
+                Γ.update x (Val.clos ρ a),
               ) b
             )
           )
@@ -158,24 +160,24 @@ partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool 
 
     | Exp.bnd x e1 e2 e3 =>
       pure (
-        (← checkType? (k, ρ, γ) e2)
+        (← checkType? (k, ρ, Γ) e2)
           ∧
         (← checkExp? (
           k,
           ρ.update x (← eval? ρ e1),
-          γ.update x (← eval? ρ e2),
+          Γ.update x (← eval? ρ e2),
         ) e3 v)
       )
-    | _ => eqVal? k (← inferExp? (k, ρ, γ) e) v
+    | _ => eqVal? k (← inferExp? (k, ρ, Γ) e) v
 
-partial def inferExp? (kργ: Nat × Env × Env) (e: Exp): Option Val := do
-  let (k, ρ, γ) := kργ
+partial def inferExp? (kρΓ: Nat × Env × Env) (e: Exp): Option Val := do
+  let (k, ρ, Γ) := kρΓ
   match e with
-    | Exp.var name => γ.lookup? name
+    | Exp.var name => Γ.lookup? name
     | Exp.app e1 e2 =>
-      match (← whnf? (← inferExp? (k, ρ, γ) e1)) with
+      match (← whnf? (← inferExp? (k, ρ, Γ) e1)) with
         | Val.clos env (Exp.pi x a b) =>
-          if ← checkExp? (k, ρ, γ) e2 (Val.clos env a) then
+          if ← checkExp? (k, ρ, Γ) e2 (Val.clos env a) then
             pure (Val.clos (env.update x (Val.clos ρ e2)) b)
           else
             none
