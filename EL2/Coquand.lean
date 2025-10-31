@@ -199,7 +199,7 @@ end
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
   pure (
     (← checkType? emptyCtx a)
-    ∧
+      ∧
     (← checkExp? emptyCtx m (Val.clos emptyMap a))
   )
 
