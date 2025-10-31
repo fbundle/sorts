@@ -134,6 +134,7 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
 -- type checking and type inference
 
 structure Ctx where
+  maxN: Nat
   k: Nat
   ρ : Map Val -- name -> value
   Γ: Map Val -- name -> type
@@ -141,7 +142,7 @@ structure Ctx where
 
 def Ctx.bind (ctx: Ctx) (name: String) (val: Val) (type: Val) : Ctx :=
   {
-    k := ctx.k,
+    ctx with
     ρ := ctx.ρ.update name val,
     Γ := ctx.Γ.update name type,
   }
@@ -149,24 +150,21 @@ def Ctx.bind (ctx: Ctx) (name: String) (val: Val) (type: Val) : Ctx :=
 def Ctx.intro (ctx: Ctx) (name: String) (type: Val) : Ctx × Val :=
   let val := Val.gen ctx.k
   ({
+    ctx with
     k := ctx.k + 1,
     ρ := ctx.ρ.update name val,
     Γ := ctx.Γ.update name type,
   }, val)
 
 def emptyCtx: Ctx := {
+  maxN := 5,
   k := 0,
   ρ := emptyMap,
   Γ := emptyMap,
 }
 
-def getUnivLevel? (val: Val): Option Nat := do
-  match ← whnf? val with
-    | Val.typ n => pure n
-    | _ => none
 
 mutual
-
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer the type of exp
@@ -185,23 +183,19 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
           | _ => none
 
-      | Exp.pi name type body =>
-          let i ← getUnivLevel? (← inferExp? ctx type)
-          let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-          let j ← getUnivLevel? (← inferExp? subCtx body)
-          pure (Val.typ (max i j))
+      | _ => none -- ignore these infer
 
-      | Exp.bnd name value type body =>
-        let _ ← getUnivLevel? (← inferExp? ctx type)
-        if ¬ ((← checkExp? ctx value (Val.clos ctx.ρ type))) then
-          none
-        else
-          inferExp? (ctx.bind name
-            (← whnf? (Val.clos ctx.ρ value))
-            (← whnf? (Val.clos ctx.ρ type))
-          ) body
-
-      | Exp.lam _ _ => none -- cannot infer lam
+partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+  let rec loop (n: Nat): Option Nat := do
+    if n > maxN then
+      none
+    else
+      let b ← checkExp? ctx exp (Val.typ n)
+      if b then
+        pure n
+      else
+        loop (n + 1)
+  loop 0
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if type of exp is val
@@ -214,13 +208,26 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
             checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
           | _ => none
 
-      -- TODO add more type check
-      -- should be able to handle those cases like
-      -- (λx.x)y -> x[x := y]
-      -- or ensure it won't happen in constructing exp
-      -- this can be solved easily by adding all cases
+      | Exp.pi name type body =>
+        match val with
+          | Val.typ n =>
+            let i ← checkTypLevel? ctx type n
+            let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
+            let j ← checkTypLevel? subCtx body n
+            pure (n = (max i j))
+          | _ => none
 
-      -- or making a single function with signature
+      | Exp.bnd name value type body =>
+        let _ ← checkTypLevel? ctx type ctx.maxN
+        if ¬ ((← checkExp? ctx value (Val.clos ctx.ρ type))) then
+          none
+        else
+          checkExp? (ctx.bind name
+            (← whnf? (Val.clos ctx.ρ value))
+            (← whnf? (Val.clos ctx.ρ type))
+          ) body val
+
+      -- TODO making a single function with signature
       -- Ctx → Exp → Option Val → Option Val
       -- that can do both inference and type check
 
@@ -232,33 +239,35 @@ end
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
   checkExp? emptyCtx m (Val.clos emptyMap a)
 
--- Test: id function at Type_0
+
 def test1 :=
   typeCheck
     (Exp.lam "B" (Exp.lam "y" (Exp.var "y")))
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
 
--- Test: infer type of polymorphic id type
 def test2 :=
-  inferExp? emptyCtx
+  checkExp? emptyCtx
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
+    (Val.typ 1)
 
--- Test: Type_0 : Type_1
+
 def test3 :=
   checkExp? emptyCtx (Exp.typ 0) (Val.typ 1)
 
--- Test: impredicative encoding (System F style)
--- ∀ A:Type_0. A → A should have type Type_1
+
 def test4 :=
-  inferExp? emptyCtx
+  checkExp? emptyCtx
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
+    (Val.typ 1)
+
 
 def test5 :=
-  inferExp? emptyCtx
+  checkExp? emptyCtx
     (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
+    (Val.typ 0)
 
-#eval test1   -- should be some true
-#eval test2  -- should be some (Val.typ 1)
-#eval test3  -- should be some true
-#eval test4  -- should be some (Val.typ 1)
-#eval test5  --  we didn't support this
+#eval test1
+#eval test2
+#eval test3
+#eval test4
+#eval test5
