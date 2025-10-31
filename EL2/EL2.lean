@@ -1,1 +1,1 @@
-import EL2.CoquandExtended
+import EL2.Coquand

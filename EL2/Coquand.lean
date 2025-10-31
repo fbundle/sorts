@@ -134,15 +134,20 @@ structure Ctx where
   Γ: Map Val -- name -> type
   deriving Repr
 
-def Ctx.bind (ctx: Ctx) (name: String) (val: Val) (type: Val) : Ctx := {
-  k := ctx.k + 1, -- increase variable count to avoid collisions
-  ρ := ctx.ρ.update name val,
-  Γ := ctx.Γ.update name type,
-}
+def Ctx.bind (ctx: Ctx) (name: String) (val: Val) (type: Val) : Ctx :=
+  {
+    k := ctx.k,
+    ρ := ctx.ρ.update name val,
+    Γ := ctx.Γ.update name type,
+  }
 
 def Ctx.intro (ctx: Ctx) (name: String) (type: Val) : Ctx × Val :=
   let val := Val.gen ctx.k
-  (ctx.bind name val type, val)
+  ({
+    k := ctx.k + 1,
+    ρ := ctx.ρ.update name val,
+    Γ := ctx.Γ.update name type,
+  }, val)
 
 def emptyCtx: Ctx := {
   k := 0,
