@@ -177,7 +177,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
       | Exp.app cmd arg =>
         -- for Exp.app, cmd should be typ, var, or app
         -- TODO possibly annotated term ann (x: T)
-        -- so that we can do (λx.x : A -> A) y
+        -- so that we can do (λx.x : A → A)y instead of let z : A → A := λx.x in y
         match (← whnf? (← inferExp? ctx cmd)) with
           | Val.clos env (Exp.pi name type body) =>
             if ← checkExp? ctx arg (Val.clos env type) then
