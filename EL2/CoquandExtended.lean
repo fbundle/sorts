@@ -25,11 +25,12 @@ def emptyMap: Map α := {list := []}
 
 
 inductive Exp where
-  -- typ0 is type of small types: Nat, Pi, etc.
-  -- typ0 is at level 2
+  -- typ 0 is type of small types: Nat, Pi, etc.
+  -- typ 0 is at level 2
+  -- typ N is at level N + 2
   -- small types are at level 1
   -- terms are at level 0
-  | typ0: Exp
+  | typ : (n: Nat) → Exp
   -- variable
   | var: (name: String) → Exp
   -- application
@@ -65,7 +66,7 @@ partial def app? (cmd: Val) (arg: Val): Option Val := do
 
 partial def eval? (env: Map Val) (exp: Exp): Option Val := do
   match exp with
-    | Exp.typ0 => pure (Val.typ 0)
+    | Exp.typ n => pure (Val.typ n)
 
     | Exp.var name =>
       env.lookup? name
@@ -161,7 +162,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
               none
 
           | _ => none
-      | Exp.typ0 => Val.typ 1
+      | Exp.typ n => Val.typ (n + 1)
       | _ => none
 
   match val? with
@@ -234,9 +235,9 @@ def typeCheck (m: Exp) (a: Exp): Option Bool := do
 private def test :=
   typeCheck
     (Exp.lam "A" (Exp.lam "x" (Exp.var "x")))
-    (Exp.pi "B" Exp.typ0 (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
+    (Exp.pi "B" (Exp.typ 0) (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
 private def test1 :=
-  inferExp? emptyCtx (Exp.pi "B" Exp.typ0 (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
+  inferExp? emptyCtx (Exp.pi "B" (Exp.typ 0) (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
 #eval test
