@@ -241,6 +241,9 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
 end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
+  -- typeCheck
+  -- some false - type check error
+  -- none - parse error
   checkExp? emptyCtx m (Val.clos emptyMap a)
 
 def test1 :=
