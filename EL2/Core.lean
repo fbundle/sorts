@@ -217,6 +217,10 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
       -- or ensure it won't happen in constructing exp
       -- this can be solved easily by adding all cases
 
+      -- or making a single function with signature
+      -- Ctx → Exp → Option Val → Option Val
+      -- that can do both inference and type check
+
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
 
