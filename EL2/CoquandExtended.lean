@@ -128,7 +128,6 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
 -- type checking and type inference
 
 structure Ctx where
-  maxN: Nat
   k: Nat
   ρ : Map Val -- name -> value
   Γ: Map Val -- name -> type
@@ -150,7 +149,6 @@ def Ctx.intro (ctx: Ctx) (name: String) (type: Val) : Ctx × Val :=
   }, val)
 
 def emptyCtx: Ctx := {
-  maxN := 20, -- max level for Typ
   k := 0,
   ρ := emptyMap,
   Γ := emptyMap,
