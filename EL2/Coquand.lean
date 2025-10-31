@@ -25,7 +25,7 @@ def emptyMap: Map α := {list := []}
 
 
 inductive Exp where
-  -- type_*
+  -- type_0 type_1 ...
   | type: Exp
   -- variable
   | var: (name: String) → Exp
