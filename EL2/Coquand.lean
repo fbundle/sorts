@@ -47,10 +47,8 @@ inductive Val where
   -- application
   | app: (cmd: Val) → (arg: Val) → Val
   -- with closure - a future value - evaluated by eval?
-  | clos: (map: Map Val) → (term: Exp) → Val
+  | clos: (map: Map Val) → (exp: Exp) → Val
   deriving Repr
-
-abbrev Env := Map Val
 
 -- a short way of writing the whnf algorithm
 mutual
@@ -62,8 +60,10 @@ partial def app? (cmd: Val) (arg: Val): Option Val := do
     | _ =>
       pure (Val.app cmd arg)
 
-partial def eval? (env: Env) (exp: Exp): Option Val := do
+partial def eval? (env: Map Val) (exp: Exp): Option Val := do
   match exp with
+    | Exp.type => pure Val.type
+
     | Exp.var name =>
       env.lookup? name
 
@@ -73,51 +73,48 @@ partial def eval? (env: Env) (exp: Exp): Option Val := do
     | Exp.bnd name val _ body =>
       eval? (env.update name (← eval? env val)) body
 
-    | Exp.type => pure Val.type
-
     | _ => pure (Val.clos env exp)
-
 end
 
 partial def whnf? (val: Val): Option Val := do
   match val with
-    | Val.app u w =>
-      app? (← whnf? u) (← whnf? w)
+    | Val.app cmd arg =>
+      app? (← whnf? cmd) (← whnf? arg)
 
-    | Val.clos env e =>
-      eval? env e
+    | Val.clos env exp =>
+      eval? env exp
 
     | _ => pure val
 
--- the conversion algorithm; the integer is used to represent the introduction of a fresh variable
 -- definitional equality
+-- the conversion algorithm; the integer is used to represent the introduction of a fresh variable
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
   let b: Option Bool := do
-    let wU1 ← whnf? u1
-    let wU2 ← whnf? u2
-    match (wU1, wU2) with
-      | (Val.type, Val.type) => pure true
+    match (← whnf? u1, ← whnf? u2) with
+      | (Val.type, Val.type) =>
+        pure true
 
-      | (Val.app t1 w1, Val.app t2 w2) =>
-        pure ((← eqVal? k t1 t2) ∧ (← eqVal? k w1 w2))
+      | (Val.app cmd1 arg1, Val.app cmd2 arg2) =>
+        pure ((← eqVal? k cmd1 cmd2) ∧ (← eqVal? k arg1 arg2))
 
       | (Val.gen k1, Val.gen k2) =>
         pure (k1 == k2)
 
-      | (Val.clos env1 (Exp.abs x1 e1), Val.clos env2 (Exp.abs x2 e2)) =>
+      | (Val.clos env1 (Exp.abs name1 body1), Val.clos env2 (Exp.abs name2 body2)) =>
         let v := Val.gen k
         eqVal? (k + 1)
-          (Val.clos (env1.update x1 v) e1)
-          (Val.clos (env2.update x2 v) e2)
+          (Val.clos (env1.update name1 v) body1)
+          (Val.clos (env2.update name2 v) body2)
 
-      | (Val.clos env1 (Exp.pi x1 a1 b1), Val.clos env2 (Exp.pi x2 a2 b2)) =>
+      | (Val.clos env1 (Exp.pi name1 type1 body1), Val.clos env2 (Exp.pi name2 type2 body2)) =>
         let v := Val.gen k
         pure (
-          (← eqVal? k (Val.clos env1 a1) (Val.clos env2 a2))
+          (← eqVal? k (Val.clos env1 type1) (Val.clos env2 type2))
             ∧
-          (← eqVal? (k + 1)
-            (Val.clos (env1.update x1 v) b1)
-            (Val.clos (env2.update x2 v) b2)
+          (
+            ← eqVal? (k + 1)
+            (Val.clos (env1.update name1 v) body1)
+            (Val.clos (env2.update name2 v) body2)
           )
         )
       | _ => pure false
@@ -132,8 +129,8 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
 
 structure Ctx where
   k: Nat
-  ρ: Env -- name -> value
-  Γ: Env -- name -> type
+  ρ : Map Val -- name -> value
+  Γ: Map Val -- name -> type
 
 def Ctx.bind (ctx: Ctx) (name: String) (val: Val) (typ: Val) : Ctx :=
   {
