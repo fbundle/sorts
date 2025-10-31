@@ -121,10 +121,10 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Except String Bool := do
 -- type checking and type inference
 mutual
 
-partial def checkType (kργ: Nat × Env × Env) (e: Exp): Except String Bool :=
-  checkExp kργ e Val.type
+partial def checkType? (kργ: Nat × Env × Env) (e: Exp): Except String Bool :=
+  checkExp? kργ e Val.type
 
-partial def checkExp (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except String Bool := do
+partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except String Bool := do
   let (k, ρ, γ) := kργ
   let v ← whnf? v
   match e with
@@ -132,7 +132,7 @@ partial def checkExp (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except String
       match v with
         | Val.clos env (Exp.pi y a b) =>
           let v := Val.gen k
-          checkExp (
+          checkExp? (
             k+1,
             ρ.update x v,
             γ.update x (Val.clos env a),
@@ -141,16 +141,51 @@ partial def checkExp (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except String
     | Exp.pi x a b =>
       match v with
         | Val.type =>
-
-
-          sorry
+          pure (
+            (← checkType? (k, ρ, γ) a)
+              ∧
+            (← checkType? (
+                k + 1,
+                ρ.update x (Val.gen k),
+                γ.update x (Val.clos ρ a),
+              ) b
+            )
+          )
         | _ => Except.error "expected Type"
 
     | Exp.bnd x e1 e2 e3 =>
-      sorry
-    | _ => sorry
+      pure (
+        (← checkType? (k, ρ, γ) e2)
+          ∧
+        (← checkExp? (
+          k,
+          ρ.update x (← eval? ρ e1),
+          γ.update x (← eval? ρ e2),
+        ) e3 v)
+      )
+    | _ => eqVal? k (← inferExp? (k, ρ, γ) e) v
 
+partial def inferExp? (kργ: Nat × Env × Env) (e: Exp): Except String Val := do
+  let (k, ρ, γ) := kργ
+  match e with
+    | Exp.var name => γ.lookup? name
+    | Exp.app e1 e2 =>
+      match (← whnf? (← inferExp? (k, ρ, γ) e1)) with
+        | Val.clos env (Exp.pi x a b) =>
+          if ← checkExp? (k, ρ, γ) e2 (Val.clos env a) then
+            pure (Val.clos (env.update x (Val.clos ρ e2)) b)
+          else
+            Except.error "application error"
+        | _ => Except.error "application, expected Pi"
+    | _ => Except.error "cannot infer type"
 end
+
+def typeCheck (m: Exp) (a: Exp): Except String Bool := do
+  pure (
+    (← checkType? (0, emptyCtx, emptyCtx) a)
+    ∧
+    (← checkExp? (0, emptyCtx, emptyCtx) m (Val.clos emptyCtx a))
+  )
 
 
 end EL2.Thierry
