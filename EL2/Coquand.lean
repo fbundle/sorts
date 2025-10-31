@@ -163,9 +163,7 @@ partial def checkExp? (kρΓ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool 
           ∧
         (← checkExp? (
           k,
-          -- ρ.update x (← eval? ρ e1),
           ρ.update x (← whnf? (Val.clos ρ e1)),
-          -- Γ.update x (← eval? ρ e2),
           Γ.update x (← whnf? (Val.clos ρ e2)),
         ) e3 v)
       )
