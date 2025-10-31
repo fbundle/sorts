@@ -148,6 +148,8 @@ def emptyCtx: Ctx := {k := 0, ρ := emptyMap, Γ := emptyMap}
 mutual
 
 partial def inferTyp? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+  -- suppose type of exp is type0, type1, ..., typeN
+  -- find N
   let rec loop (n: Nat): Option Nat := do
     let b ← checkExp? ctx exp (Val.typ n)
     if b = true then
