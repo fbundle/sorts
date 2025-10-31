@@ -35,10 +35,10 @@ inductive Exp where
   -- application
   | app: (cmd: Exp) → (arg: Exp) → Exp
   -- λ abstraction
-  | abs: (name: String) → (body: Exp) → Exp
+  | lam: (name: String) → (body: Exp) → Exp
   -- let binding: let name: type := value
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
-  -- Π type: Π (name: type) body
+  -- Π type: Π (name: type) body - type of abs
   | pi:  (name: String) → (type: Exp) → (body: Exp) → Exp
   deriving Repr
 
@@ -57,7 +57,7 @@ inductive Val where
 mutual
 partial def app? (cmd: Val) (arg: Val): Option Val := do
   match cmd with
-    | Val.clos env (Exp.abs name body) =>
+    | Val.clos env (Exp.lam name body) =>
       eval? (env.update name arg) body
 
     | _ =>
@@ -102,7 +102,7 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
       | (Val.gen k1, Val.gen k2) =>
         pure (k1 = k2)
 
-      | (Val.clos env1 (Exp.abs name1 body1), Val.clos env2 (Exp.abs name2 body2)) =>
+      | (Val.clos env1 (Exp.lam name1 body1), Val.clos env2 (Exp.lam name2 body2)) =>
         let v := Val.gen k
         eqVal? (k + 1)
           (Val.clos (env1.update name1 v) body1)
@@ -147,20 +147,6 @@ def emptyCtx: Ctx := {k := 0, ρ := emptyMap, Γ := emptyMap}
 
 mutual
 
-partial def inferTyp? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
-  -- suppose type of exp is typeN for some 0 ≤ N ≤ maxN
-  -- find N
-  let rec loop (n: Nat): Option Nat := do
-    let b ← checkExp? ctx exp (Val.typ n)
-    if b = true then
-      pure n
-    else if n = maxN then
-      dbg_trace s!"[DBG_TRACE] checkTyp? \n\texp = {repr exp}\n\tctx = {repr ctx}\n\t n = {maxN}"
-      none
-    else
-      loop (n + 1)
-  loop 0
-
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer type of expr e
   let val?: Option Val := do
@@ -184,11 +170,25 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
       dbg_trace s!"[DBG_TRACE] inferExp? {repr ctx}\n\t{repr exp}"
       none
 
+partial def typLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+  -- suppose type of exp is typeN for some 0 ≤ N ≤ maxN
+  -- find N
+  let rec loop (n: Nat): Option Nat := do
+    let b ← checkExp? ctx exp (Val.typ n)
+    if b = true then
+      pure n
+    else if n = maxN then
+      dbg_trace s!"[DBG_TRACE] checkTyp? \n\texp = {repr exp}\n\tctx = {repr ctx}\n\t n = {maxN}"
+      none
+    else
+      loop (n + 1)
+  loop 0
+
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if expr e is of type v
   let b?: Option Bool := do
     match exp with
-      | Exp.abs name1 body1 =>
+      | Exp.lam name1 body1 =>
         match ← whnf? val with
           | Val.clos env2 (Exp.pi name2 type2 body2) =>
             let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
@@ -199,8 +199,8 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
         match ← whnf? val with
           | Val.typ n =>
             let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-            let typeN ← inferTyp? ctx type n
-            let bodyN ← inferTyp? subCtx body n
+            let typeN ← typLevel? ctx type n
+            let bodyN ← typLevel? subCtx body n
             if n ≠ max typeN bodyN then
               pure false
             else
@@ -209,7 +209,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
 
       | Exp.bnd name value type body =>
         pure (
-          (let _ := ← inferTyp? ctx type 10; true) -- type must be a valid Val.typ
+          (let _ := ← typLevel? ctx type 10; true) -- type must be a valid Val.typ
             ∧
           (← checkExp? ctx value (Val.clos ctx.ρ type))
             ∧
@@ -233,7 +233,7 @@ def typeCheck (m: Exp) (a: Exp): Option Bool := do
 
 private def test :=
   typeCheck
-    (Exp.abs "A" (Exp.abs "x" (Exp.var "x")))
+    (Exp.lam "A" (Exp.lam "x" (Exp.var "x")))
     (Exp.pi "B" Exp.typ0 (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
 private def test1 :=
