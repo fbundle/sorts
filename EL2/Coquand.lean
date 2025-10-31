@@ -45,7 +45,7 @@ inductive Val where
   | gen: (i: Nat) → Val
   -- application
   | app: (cmd: Val) → (arg: Val) → Val
-  -- with closure
+  -- with closure - a future value - evaluated by eval?
   | clos: (ctx: Ctx Val) → (term: Exp) → Val
   deriving Repr
 
@@ -164,8 +164,10 @@ partial def checkExp? (kρΓ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool 
           ∧
         (← checkExp? (
           k,
-          ρ.update x (← eval? ρ e1),
-          Γ.update x (← eval? ρ e2),
+          -- ρ.update x (← eval? ρ e1),
+          ρ.update x (← whnf? (Val.clos ρ e1)),
+          -- Γ.update x (← eval? ρ e2),
+          Γ.update x (← whnf? (Val.clos ρ e2)),
         ) e3 v)
       )
     | _ => eqVal? k (← inferExp? (k, ρ, Γ) e) v
