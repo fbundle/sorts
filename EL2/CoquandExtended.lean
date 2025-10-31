@@ -156,100 +156,91 @@ def emptyCtx: Ctx := {
   Γ := emptyMap,
 }
 
+-- Extract universe level from a type value
+def getUnivLevel? (val: Val): Option Nat := do
+  match ← whnf? val with
+    | Val.typ n => pure n
+    | _ => none
+
 mutual
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
-  -- infer type of expr e
-  let val?: Option Val := do
-    match exp with
-      | Exp.var name => ctx.Γ.lookup? name
-      | Exp.app cmd arg =>
-        match (← whnf? (← inferExp? ctx cmd)) with
-          | Val.clos env (Exp.pi name type body) =>
-            if ← checkExp? ctx arg (Val.clos env type) then
-              pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
-            else
-              none
+  match exp with
+    | Exp.var name => ctx.Γ.lookup? name
 
-          | _ => none
-      | Exp.typ n => Val.typ (n + 1)
-      -- TODO implement for inference rules
-      | _ => none
+    | Exp.app cmd arg =>
+      match (← whnf? (← inferExp? ctx cmd)) with
+        | Val.clos env (Exp.pi name type body) =>
+          if ← checkExp? ctx arg (Val.clos env type) then
+            pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
+          else
+            none
 
-  match val? with
-    | some val => pure val
-    | none =>
-      dbg_trace s!"[DBG_TRACE] inferExp? {repr ctx}\n\t{repr exp}"
-      none
+        | _ => none
 
-partial def typLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
-  -- suppose type of exp is typeN for some 0 ≤ N ≤ maxN
-  -- find N
-  -- TODO - optimize this
-  let rec loop (n: Nat): Option Nat := do
-    let b ← checkExp? ctx exp (Val.typ n)
-    if b = true then
-      pure n
-    else if n = maxN then
-      dbg_trace s!"[DBG_TRACE] checkTyp? \n\texp = {repr exp}\n\tctx = {repr ctx}\n\t n = {maxN}"
-      none
-    else
-      loop (n + 1)
-  loop 0
+    | Exp.typ n => pure (Val.typ (n + 1))
+
+    | Exp.pi name type body =>
+      let typeType ← inferExp? ctx type
+      let i ← getUnivLevel? typeType
+      let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
+      let bodyType ← inferExp? subCtx body
+      let j ← getUnivLevel? bodyType
+      pure (Val.typ (max i j))
+
+    | Exp.bnd name value type body =>
+      let typeType ← inferExp? ctx type
+      let _ ← getUnivLevel? typeType
+      if ¬ (← checkExp? ctx value (Val.clos ctx.ρ type))
+        then none
+      else
+        inferExp? (ctx.bind name
+          (← whnf? (Val.clos ctx.ρ value))
+          (← whnf? (Val.clos ctx.ρ type))
+        ) body
+
+    | _ => none
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
-  -- check if expr e is of type v
-  let b?: Option Bool := do
-    match exp with
-      | Exp.lam name1 body1 =>
-        match ← whnf? val with
-          | Val.clos env2 (Exp.pi name2 type2 body2) =>
-            let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
-            checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
-          | _ => none
+  match exp with
+    | Exp.lam name1 body1 =>
+      match ← whnf? val with
+        | Val.clos env2 (Exp.pi name2 type2 body2) =>
+          let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
+          checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
+        | _ => none
 
-      | Exp.pi name type body =>
-        match ← whnf? val with
-          | Val.typ n =>
-            let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-            let typeN ← typLevel? ctx type n
-            let bodyN ← typLevel? subCtx body n
-            if n ≠ max typeN bodyN then
-              pure false
-            else
-              pure true
-          | _ => none
-
-      | Exp.bnd name value type body =>
-        let _ ← typLevel? ctx type ctx.maxN
-        pure (
-          (← checkExp? ctx value (Val.clos ctx.ρ type))
-            ∧
-          (
-            ← checkExp? (ctx.bind name
-              (← whnf? (Val.clos ctx.ρ value))
-              (← whnf? (Val.clos ctx.ρ type))
-            ) body val
-          )
-        )
-
-      | _ => eqVal? ctx.k (← inferExp? ctx exp) val
-  if b? = true then b? else
-    dbg_trace s!"[DBG_TRACE] checkExp? {repr ctx}\n\t{repr exp} \n\t{repr val}"
-    b?
+    | _ => do
+      let infType ← inferExp? ctx exp
+      eqVal? ctx.k infType val
 
 end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
   checkExp? emptyCtx m (Val.clos emptyMap a)
 
+-- Test: id function at Type_0
 def test :=
   typeCheck
-    (Exp.lam "A" (Exp.lam "x" (Exp.var "x")))
-    (Exp.pi "B" (Exp.typ 0) (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
+    (Exp.lam "B" (Exp.lam "y" (Exp.var "y")))
+    (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
 
+-- Test: infer type of polymorphic id type
 def test1 :=
-  inferExp? emptyCtx (Exp.pi "B" (Exp.typ 0) (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
+  inferExp? emptyCtx
+    (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
 
-#eval test
-#eval test1
+-- Test: Type_0 : Type_1
+def test2 :=
+  checkExp? emptyCtx (Exp.typ 0) (Val.typ 1)
+
+-- Test: impredicative encoding (System F style)
+-- ∀ A:Type_0. A → A should have type Type_1
+def test3 :=
+  inferExp? emptyCtx
+    (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
+
+#eval test   -- should be some true
+#eval test1  -- should be some (Val.typ 1)
+#eval test2  -- should be some true
+#eval test3  -- should be some (Val.typ 1)
