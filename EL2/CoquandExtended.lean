@@ -27,8 +27,8 @@ def emptyMap: Map α := {list := []}
 
 
 inductive Exp where
-  -- type_0 type_1 ...
-  | typ: Exp
+  -- star = type_0 which is type of Nat, Pi, etc.
+  | star: Exp
   -- variable
   | var: (name: String) → Exp
   -- application
@@ -42,8 +42,10 @@ inductive Exp where
   deriving Repr
 
 inductive Val where
-  -- type_0 type_1 ...
-  | typ: Val
+  -- star = type_0
+  | star: Val
+  -- box = type_1
+  | box : Val
   -- generic value
   | gen: (i: Nat) → Val
   -- application
