@@ -159,6 +159,8 @@ partial def checkExp? (kρΓ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool 
 
     | (Exp.bnd x e1 e2 e3, _) =>
       pure (
+        (← checkExp? (k, ρ, Γ) e1 (Val.clos ρ e2))
+          ∧
         (← checkType? (k, ρ, Γ) e2)
           ∧
         (← checkExp? (
