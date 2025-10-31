@@ -92,34 +92,41 @@ partial def whnf? (val: Val): Option Val := do
 -- used to represent the introduction of a fresh variable
 
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
-  let wU1 ← whnf? u1
-  let wU2 ← whnf? u2
-  match (wU1, wU2) with
-    | (Val.type, Val.type) => pure true
+  let b: Option Bool := do
+    let wU1 ← whnf? u1
+    let wU2 ← whnf? u2
+    match (wU1, wU2) with
+      | (Val.type, Val.type) => pure true
 
-    | (Val.app t1 w1, Val.app t2 w2) =>
-      pure ((← eqVal? k t1 t2) ∧ (← eqVal? k w1 w2))
+      | (Val.app t1 w1, Val.app t2 w2) =>
+        pure ((← eqVal? k t1 t2) ∧ (← eqVal? k w1 w2))
 
-    | (Val.gen k1, Val.gen k2) =>
-      pure (k1 == k2)
+      | (Val.gen k1, Val.gen k2) =>
+        pure (k1 == k2)
 
-    | (Val.clos env1 (Exp.abs x1 e1), Val.clos env2 (Exp.abs x2 e2)) =>
-      let v := Val.gen k
-      eqVal? (k + 1)
-        (Val.clos (env1.update x1 v) e1)
-        (Val.clos (env2.update x2 v) e2)
+      | (Val.clos env1 (Exp.abs x1 e1), Val.clos env2 (Exp.abs x2 e2)) =>
+        let v := Val.gen k
+        eqVal? (k + 1)
+          (Val.clos (env1.update x1 v) e1)
+          (Val.clos (env2.update x2 v) e2)
 
-    | (Val.clos env1 (Exp.pi x1 a1 b1), Val.clos env2 (Exp.pi x2 a2 b2)) =>
-      let v := Val.gen k
-      pure (
-        (← eqVal? k (Val.clos env1 a1) (Val.clos env2 a2))
-          ∧
-        (← eqVal? (k + 1)
-          (Val.clos (env1.update x1 v) b1)
-          (Val.clos (env2.update x2 v) b2)
+      | (Val.clos env1 (Exp.pi x1 a1 b1), Val.clos env2 (Exp.pi x2 a2 b2)) =>
+        let v := Val.gen k
+        pure (
+          (← eqVal? k (Val.clos env1 a1) (Val.clos env2 a2))
+            ∧
+          (← eqVal? (k + 1)
+            (Val.clos (env1.update x1 v) b1)
+            (Val.clos (env2.update x2 v) b2)
+          )
         )
-      )
-    | _ => pure false
+      | _ => pure false
+
+  if b = false then
+    dbg_trace s!"eqVal? failed: {repr u1} {repr u2}"
+    b
+  else
+    b
 
 -- type checking and type inference
 mutual
@@ -198,7 +205,7 @@ def typeCheck (m: Exp) (a: Exp): Option Bool := do
 private def test :=
   typeCheck
     (Exp.abs "A" (Exp.abs "x" (Exp.var "x")))
-    (Exp.pi "A" Exp.type (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
+    (Exp.pi "B" Exp.type (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
 #eval test
 
