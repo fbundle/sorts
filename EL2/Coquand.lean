@@ -144,6 +144,7 @@ partial def checkExp? (kρΓ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool 
         ρ.update x v,
         Γ.update x (Val.clos env a),
       ) n (Val.clos (env.update y v) b)
+
     | (Exp.pi x a b, Val.type) =>
       pure (
         (← checkType? (k, ρ, Γ) a)
