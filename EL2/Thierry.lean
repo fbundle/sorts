@@ -187,5 +187,11 @@ def typeCheck (m: Exp) (a: Exp): Except String Bool := do
     (← checkExp? (0, emptyCtx, emptyCtx) m (Val.clos emptyCtx a))
   )
 
+private def test :=
+  typeCheck
+    (Exp.abs "A" (Exp.abs "x" (Exp.var "x")))
+    (Exp.pi "A" Exp.type (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
+
+#eval test
 
 end EL2.Thierry
