@@ -233,10 +233,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
             (← whnf? (Val.clos ctx.ρ type))
           ) body val
 
-      -- TODO making a single function with signature
-      -- Ctx → Exp → Option Val → Option Val
-      -- that can do both inference and type check
-
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
 
