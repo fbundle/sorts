@@ -41,12 +41,15 @@ inductive Exp where
   | var: (name: String) → Exp
   -- application
   | app: (cmd: Exp) → (arg: Exp) → Exp
-  -- λ abstraction
-  | lam: (name: String) → (body: Exp) → Exp
   -- let binding: let name: type := value
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
+  -- λ abstraction
+  | lam: (name: String) → (body: Exp) → Exp
   -- Π type: Π (name: type) body - type of abs
   | pi:  (name: String) → (type: Exp) → (body: Exp) → Exp
+  -- TODO - add pair sigma fst snd
+  -- technically we can encode these
+  -- but adding them make it easier to do pattern matching later
   deriving Repr
 
 inductive Val where
