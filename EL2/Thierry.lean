@@ -119,6 +119,38 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Except String Bool := do
     | _ => pure false
 
 -- type checking and type inference
+mutual
+
+partial def checkType (kργ: Nat × Env × Env) (e: Exp): Except String Bool :=
+  checkExp kργ e Val.type
+
+partial def checkExp (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except String Bool := do
+  let (k, ρ, γ) := kργ
+  let v ← whnf? v
+  match e with
+    | Exp.abs x n =>
+      match v with
+        | Val.clos env (Exp.pi y a b) =>
+          let v := Val.gen k
+          checkExp (
+            k+1,
+            ρ.update x v,
+            γ.update x (Val.clos env a),
+          ) n (Val.clos (env.update y v) b)
+        | _ => Except.error "expected Pi"
+    | Exp.pi x a b =>
+      match v with
+        | Val.type =>
+
+
+          sorry
+        | _ => Except.error "expected Type"
+
+    | Exp.bnd x e1 e2 e3 =>
+      sorry
+    | _ => sorry
+
+end
 
 
 end EL2.Thierry
