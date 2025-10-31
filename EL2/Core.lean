@@ -2,6 +2,8 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...)
 
+-- TODO only Exp and typeCheck are public
+
 def traceOpt (err: String) (o: Option α): Option α :=
   match o with
     | some v => some v
