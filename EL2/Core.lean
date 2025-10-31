@@ -2,8 +2,6 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...)
 
-namespace EL2.Core.Internal
-
 def traceOpt (err: String) (o: Option α): Option α :=
   match o with
     | some v => some v
@@ -241,7 +239,6 @@ end
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
   checkExp? emptyCtx m (Val.clos emptyMap a)
 
-
 def test1 :=
   typeCheck
     (Exp.lam "B" (Exp.lam "y" (Exp.var "y")))
@@ -273,10 +270,3 @@ def test5 :=
 #eval test3
 #eval test4
 #eval test5
-
-namespace EL2.Core.Internal
-
-namespace EL2.Core
-def Exp := Internal.Exp
-def typeCheck := Internal.typeCheck
-namespace EL2.Core
