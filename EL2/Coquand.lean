@@ -131,41 +131,32 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
 -- type checking and type inference
 mutual
 
-
-
 partial def checkType? (kρΓ: Nat × Env × Env) (e: Exp): Option Bool :=
   checkExp? kρΓ e Val.type
 
 partial def checkExp? (kρΓ: Nat × Env × Env) (e: Exp) (v: Val): Option Bool := do
   let (k, ρ, Γ) := kρΓ
-  let v ← whnf? v
-  match e with
-    | Exp.abs x n =>
-      match v with
-        | Val.clos env (Exp.pi y a b) =>
-          let v := Val.gen k
-          checkExp? (
-            k+1,
-            ρ.update x v,
-            Γ.update x (Val.clos env a),
-          ) n (Val.clos (env.update y v) b)
-        | _ => none
-    | Exp.pi x a b =>
-      match v with
-        | Val.type =>
-          pure (
-            (← checkType? (k, ρ, Γ) a)
-              ∧
-            (← checkType? (
-                k + 1,
-                ρ.update x (Val.gen k),
-                Γ.update x (Val.clos ρ a),
-              ) b
-            )
-          )
-        | _ => none
+  match (e, ← whnf? v) with
+    | (Exp.abs x n, Val.clos env (Exp.pi y a b)) =>
+      let v := Val.gen k
+      checkExp? (
+        k + 1,
+        ρ.update x v,
+        Γ.update x (Val.clos env a),
+      ) n (Val.clos (env.update y v) b)
+    | (Exp.pi x a b, Val.type) =>
+      pure (
+        (← checkType? (k, ρ, Γ) a)
+          ∧
+        (← checkType? (
+            k + 1,
+            ρ.update x (Val.gen k),
+            Γ.update x (Val.clos ρ a),
+          ) b
+        )
+      )
 
-    | Exp.bnd x e1 e2 e3 =>
+    | (Exp.bnd x e1 e2 e3, _) =>
       pure (
         (← checkType? (k, ρ, Γ) e2)
           ∧
