@@ -184,9 +184,17 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
           let j ← getUnivLevel? (← inferExp? subCtx body)
           pure (Val.typ (max i j))
 
+      | Exp.bnd name value type body =>
+        let _ ← getUnivLevel? (← inferExp? ctx type)
+        if ¬ ((← checkExp? ctx value (Val.clos ctx.ρ type))) then
+          none
+        else
+          inferExp? (ctx.bind name
+            (← whnf? (Val.clos ctx.ρ value))
+            (← whnf? (Val.clos ctx.ρ type))
+          ) body
 
-
-      | _ => none
+      | Exp.lam _ _ => none -- cannot infer lam
 
   match val? with
     | some val => val
@@ -204,17 +212,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
             let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
             checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
           | _ => none
-
-      | Exp.bnd name value type body =>
-        let _ ← getUnivLevel? (← inferExp? ctx type)
-        pure (
-          (← checkExp? ctx value (Val.clos ctx.ρ type))
-            ∧
-          (← checkExp? (ctx.bind name
-            (← whnf? (Val.clos ctx.ρ value))
-            (← whnf? (Val.clos ctx.ρ type))
-          ) body val)
-        )
 
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
