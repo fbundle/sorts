@@ -205,12 +205,11 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
-  if ¬ (← checkType? emptyCtx a) then
-    pure false
-  else if ¬ (← checkExp? emptyCtx m (Val.clos emptyMap a)) then
-    pure false
-  else
-    pure true
+  pure (
+    (← checkType? emptyCtx a)
+      ∧
+    (← checkExp? emptyCtx m (Val.clos emptyMap a))
+  )
 
 private def test :=
   typeCheck

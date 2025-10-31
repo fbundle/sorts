@@ -3,8 +3,6 @@
 
 -- added type universe (type_0, type_1, ...)
 
-namespace EL2.CoquandExtended
-
 structure Map α where
   list: List (String × α)
 
@@ -27,11 +25,11 @@ def emptyMap: Map α := {list := []}
 
 
 inductive Exp where
-  -- star = type_0 which is type of small types: Nat, Pi, etc.
-  -- star is at level 2
+  -- typ0 is type of small types: Nat, Pi, etc.
+  -- typ0 is at level 2
   -- small types are at level 1
   -- terms are at level 0
-  | star: Exp
+  | typ0: Exp
   -- variable
   | var: (name: String) → Exp
   -- application
@@ -45,10 +43,8 @@ inductive Exp where
   deriving Repr
 
 inductive Val where
-  -- star = type_0
-  | star: Val
-  -- box = type_1
-  | box : Val
+  -- typ_n
+  | typ : (n: Nat) → Val
   -- generic value
   | gen: (i: Nat) → Val
   -- application
@@ -69,7 +65,7 @@ partial def app? (cmd: Val) (arg: Val): Option Val := do
 
 partial def eval? (env: Map Val) (exp: Exp): Option Val := do
   match exp with
-    | Exp.star => pure Val.star
+    | Exp.typ0 => pure (Val.typ 0)
 
     | Exp.var name =>
       env.lookup? name
@@ -98,14 +94,13 @@ partial def whnf? (val: Val): Option Val := do
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
   let b?: Option Bool := do
     match (← whnf? u1, ← whnf? u2) with
-      | (Val.star, Val.star) => pure true
-      | (Val.box, Val.box) => pure true
+      | (Val.typ n1, Val.typ n2) => pure (n1 = n2)
 
       | (Val.app cmd1 arg1, Val.app cmd2 arg2) =>
         pure ((← eqVal? k cmd1 cmd2) ∧ (← eqVal? k arg1 arg2))
 
       | (Val.gen k1, Val.gen k2) =>
-        pure (k1 == k2)
+        pure (k1 = k2)
 
       | (Val.clos env1 (Exp.abs name1 body1), Val.clos env2 (Exp.abs name2 body2)) =>
         let v := Val.gen k
@@ -152,11 +147,18 @@ def emptyCtx: Ctx := {k := 0, ρ := emptyMap, Γ := emptyMap}
 
 mutual
 
-partial def checkStar? (ctx: Ctx) (exp: Exp): Option Bool :=
-  let b?: Option Bool := checkExp? ctx exp Val.star
-  if b? = true then b? else
-    dbg_trace s!"[DBG_TRACE] checkStar? \n\texp = {repr exp}\n\tctx = {repr ctx}"
-    b?
+partial def inferTyp? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+  let rec loop (n: Nat): Option Nat := do
+    let b ← checkExp? ctx exp (Val.typ n)
+    if b = true then
+      pure n
+    else if n = maxN then
+      dbg_trace s!"[DBG_TRACE] checkTyp? \n\texp = {repr exp}\n\tctx = {repr ctx}\n\t n = {maxN}"
+      none
+    else
+      loop (n + 1)
+
+  loop 0
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if expr e is of type v
@@ -171,18 +173,19 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
 
       | Exp.pi name type body =>
         match ← whnf? val with
-          | Val.star =>
+          | Val.typ n =>
             let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-            pure (
-              (← checkStar? ctx type)
-                ∧
-              (← checkStar? subCtx body)
-            )
+            let typeN ← inferTyp? ctx type n
+            let bodyN ← inferTyp? subCtx body n
+            if n ≠ max typeN bodyN then
+              pure false
+            else
+              pure true
           | _ => none
 
       | Exp.bnd name value type body =>
         pure (
-          (← checkStar? ctx type)
+          (let _ := ← inferTyp? ctx type 10; true) -- type must be a valid Val.typ
             ∧
           (← checkExp? ctx value (Val.clos ctx.ρ type))
             ∧
@@ -213,7 +216,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
               none
 
           | _ => none
-      | Exp.star => Val.box
+      | Exp.typ0 => Val.typ 1
       | _ => none
 
   match val? with
@@ -225,18 +228,11 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
-  if ¬ (← checkStar? emptyCtx a) then
-    pure false
-  else if ¬ (← checkExp? emptyCtx m (Val.clos emptyMap a)) then
-    pure false
-  else
-    pure true
+  checkExp? emptyCtx m (Val.clos emptyMap a)
 
 private def test :=
   typeCheck
     (Exp.abs "A" (Exp.abs "x" (Exp.var "x")))
-    (Exp.pi "B" Exp.star (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
+    (Exp.pi "B" Exp.typ0 (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
 #eval test
-
-end EL2.CoquandExtended
