@@ -154,7 +154,7 @@ partial def checkExp? (kργ: Nat × Env × Env) (e: Exp) (v: Val): Except Strin
               ) b
             )
           )
-        | _ => Except.error "expected Type"
+        | _ => Except.error s!"checkExp?: expected Type {repr kργ} {repr e} {repr v}"
 
     | Exp.bnd x e1 e2 e3 =>
       pure (
@@ -178,9 +178,9 @@ partial def inferExp? (kργ: Nat × Env × Env) (e: Exp): Except String Val := 
           if ← checkExp? (k, ρ, γ) e2 (Val.clos env a) then
             pure (Val.clos (env.update x (Val.clos ρ e2)) b)
           else
-            Except.error "application error"
-        | _ => Except.error "application, expected Pi"
-    | _ => Except.error "cannot infer type"
+            Except.error s!"inferExp?: application error {repr kργ} {repr e}"
+        | _ => Except.error s!"inferExp?: application, expected Pi {repr kργ} {repr e}"
+    | _ => Except.error s!"inferExp?: cannot infer type {repr kργ} {repr e}"
 end
 
 def typeCheck (m: Exp) (a: Exp): Except String Bool := do
