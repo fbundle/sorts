@@ -27,7 +27,10 @@ def emptyMap: Map α := {list := []}
 
 
 inductive Exp where
-  -- star = type_0 which is type of Nat, Pi, etc.
+  -- star = type_0 which is type of small types: Nat, Pi, etc.
+  -- star is at level 2
+  -- small types are at level 1
+  -- terms are at level 0
   | star: Exp
   -- variable
   | var: (name: String) → Exp
@@ -66,7 +69,7 @@ partial def app? (cmd: Val) (arg: Val): Option Val := do
 
 partial def eval? (env: Map Val) (exp: Exp): Option Val := do
   match exp with
-    | Exp.typ => pure Val.typ
+    | Exp.star => pure Val.star
 
     | Exp.var name =>
       env.lookup? name
@@ -93,10 +96,10 @@ partial def whnf? (val: Val): Option Val := do
 -- definitional equality
 -- the conversion algorithm; the integer is used to represent the introduction of a fresh variable
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
-  let b: Option Bool := do
+  let b?: Option Bool := do
     match (← whnf? u1, ← whnf? u2) with
-      | (Val.typ, Val.typ) =>
-        pure true
+      | (Val.star, Val.star) => pure true
+      | (Val.box, Val.box) => pure true
 
       | (Val.app cmd1 arg1, Val.app cmd2 arg2) =>
         pure ((← eqVal? k cmd1 cmd2) ∧ (← eqVal? k arg1 arg2))
@@ -123,11 +126,9 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
         )
       | _ => pure false
 
-  if b = false then
-    dbg_trace s!"eqVal? failed: {repr u1} {repr u2}"
-    b
-  else
-    b
+  if b? = true then b? else
+    dbg_trace s!"[DBG_TRACE] eqVal? {k} {repr u1} {repr u2}"
+    b?
 
 -- type checking and type inference
 
@@ -135,6 +136,7 @@ structure Ctx where
   k: Nat
   ρ : Map Val -- name -> value
   Γ: Map Val -- name -> type
+  deriving Repr
 
 def Ctx.bind (ctx: Ctx) (name: String) (val: Val) (type: Val) : Ctx := {
   k := ctx.k,
@@ -151,65 +153,77 @@ def emptyCtx: Ctx := {k := 0, ρ := emptyMap, Γ := emptyMap}
 
 mutual
 
-partial def checkType? (ctx: Ctx) (e: Exp): Option Bool :=
-  checkExp? ctx e Val.typ
+partial def checkStar? (ctx: Ctx) (e: Exp): Option Bool :=
+  checkExp? ctx e Val.star
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if expr e is of type v
-  match exp with
-    | Exp.abs name1 body1 =>
-      match ← whnf? val with
-        | Val.clos env2 (Exp.pi name2 type2 body2) =>
-          let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
-          checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
-        | _ => none
+  let b?: Option Bool := do
+    match exp with
+      | Exp.abs name1 body1 =>
+        match ← whnf? val with
+          | Val.clos env2 (Exp.pi name2 type2 body2) =>
+            let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
+            checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
+          | _ => none
 
-    | Exp.pi name type body =>
-      match ← whnf? val with
-        | Val.typ =>
-          let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-          pure (
-            (← checkType? ctx type)
-              ∧
-            (← checkType? subCtx body)
+      | Exp.pi name type body =>
+        match ← whnf? val with
+          | Val.star =>
+            let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
+            pure (
+              (← checkStar? ctx type)
+                ∧
+              (← checkStar? subCtx body)
+            )
+          | _ => none
+
+      | Exp.bnd name value type body =>
+        pure (
+          (← checkStar? ctx type)
+            ∧
+          (← checkExp? ctx value (Val.clos ctx.ρ type))
+            ∧
+          (
+            ← checkExp? (ctx.bind name
+              (← whnf? (Val.clos ctx.ρ value))
+              (← whnf? (Val.clos ctx.ρ type))
+            ) body val
           )
-        | _ => none
-
-    | Exp.bnd name value type body =>
-      pure (
-        (← checkType? ctx type)
-          ∧
-        (← checkExp? ctx value (Val.clos ctx.ρ type))
-          ∧
-        (
-          ← checkExp? (ctx.bind name
-            (← whnf? (Val.clos ctx.ρ value))
-            (← whnf? (Val.clos ctx.ρ type))
-          ) body val
         )
-      )
 
-    | _ => eqVal? ctx.k (← inferExp? ctx exp) val
+      | _ => eqVal? ctx.k (← inferExp? ctx exp) val
+  if b? = true then b? else
+    dbg_trace s!"[DBG_TRACE] checkExp? {repr exp} {repr val} {repr ctx}"
+    b?
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer type of expr e
-  match exp with
-    | Exp.var name => ctx.Γ.lookup? name
-    | Exp.app cmd arg =>
-      match (← whnf? (← inferExp? ctx cmd)) with
-        | Val.clos env (Exp.pi name type body) =>
-          if ← checkExp? ctx arg (Val.clos env type) then
-            pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
-          else
-            none
+  let val?: Option Val := do
+    match exp with
+      | Exp.var name => ctx.Γ.lookup? name
+      | Exp.app cmd arg =>
+        match (← whnf? (← inferExp? ctx cmd)) with
+          | Val.clos env (Exp.pi name type body) =>
+            if ← checkExp? ctx arg (Val.clos env type) then
+              pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
+            else
+              none
 
-        | _ => none
-    | Exp.typ => Val.typ
-    | _ => none
+          | _ => none
+      | Exp.star => Val.box
+      | _ => none
+
+  match val? with
+    | some val => pure val
+    | none =>
+      dbg_trace s!"[DBG_TRACE] inferExp? {repr exp} {repr ctx}"
+      none
+
 end
 
 def typeCheck (m: Exp) (a: Exp): Option Bool := do
-  if ¬ (← checkType? emptyCtx a) then
+  if ¬ (← checkStar? emptyCtx a) then
     pure false
   else if ¬ (← checkExp? emptyCtx m (Val.clos emptyMap a)) then
     pure false
@@ -219,7 +233,7 @@ def typeCheck (m: Exp) (a: Exp): Option Bool := do
 private def test :=
   typeCheck
     (Exp.abs "A" (Exp.abs "x" (Exp.var "x")))
-    (Exp.pi "B" Exp.typ (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
+    (Exp.pi "B" Exp.star (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
 #eval test
 
