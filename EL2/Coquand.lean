@@ -2,6 +2,12 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...)
 
+def traceOpt (err: String) (o: Option α): Option α :=
+  match o with
+    | some v => some v
+    | none =>
+      dbg_trace err
+      none
 
 structure Map α where
   list: List (String × α)
@@ -89,10 +95,10 @@ partial def whnf? (val: Val): Option Val := do
 
     | _ => pure val
 
--- definitional equality
 -- the conversion algorithm; the integer is used to represent the introduction of a fresh variable
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
-  let b?: Option Bool := do
+  -- definitional equality
+  traceOpt s!"[DBG_TRACE] eqVal? {k} {repr u1} {repr u2}" do
     match (← whnf? u1, ← whnf? u2) with
       | (Val.typ n1, Val.typ n2) => pure (n1 = n2)
 
@@ -120,10 +126,6 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
           )
         )
       | _ => pure false
-
-  if b? = true then b? else
-    dbg_trace s!"[DBG_TRACE] eqVal? {k} {repr u1} {repr u2}"
-    b?
 
 -- type checking and type inference
 
@@ -163,7 +165,7 @@ mutual
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer the type of exp
-  let val?: Option Val := do
+  traceOpt s!"[DBG_TRACE] inferExp? {repr ctx}\n\texp = {repr exp}" do
     match exp with
       | Exp.typ n => pure (Val.typ (n + 1))
       | Exp.var name => ctx.Γ.lookup? name
@@ -196,15 +198,9 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
       | Exp.lam _ _ => none -- cannot infer lam
 
-  match val? with
-    | some val => val
-    | none =>
-      dbg_trace s!"[DBG_TRACE] inferExp? {repr ctx}\n\texp = {repr exp}"
-      none
-
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if type of exp is val
-  let b? : Option Bool := do
+  traceOpt s!"[DBG_TRACE] checkExp? {repr ctx}\n\texp = {repr exp}\n\tval = {repr val}" do
     match exp with
       | Exp.lam name1 body1 =>
         match ← whnf? val with
@@ -214,12 +210,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
           | _ => none
 
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
-
-  if b? = true then
-    b?
-  else
-    dbg_trace s!"[DBG_TRACE] checkExp? {repr ctx}\n\texp = {repr exp}\n\tval = {repr val}"
-    b?
 
 end
 
