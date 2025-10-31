@@ -2,8 +2,7 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...)
 
--- only Exp and typeCheck are public
-
+namespace EL2.Core.Internal
 
 def traceOpt (err: String) (o: Option α): Option α :=
   match o with
@@ -216,7 +215,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
           | _ => none
 
       | Exp.pi name type body =>
-        match val with
+        match ← whnf? val with
           | Val.typ n =>
             let i ← checkTypLevel? ctx type n
             let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
@@ -253,9 +252,9 @@ def test1 :=
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
 
 def test2 :=
-  checkExp? emptyCtx
+  typeCheck
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
-    (Val.typ 1)
+    (Exp.typ 1)
 
 
 def test3 :=
@@ -278,3 +277,10 @@ def test5 :=
 #eval test3
 #eval test4
 #eval test5
+
+namespace EL2.Core.Internal
+
+namespace EL2.Core
+def Exp := Internal.Exp
+
+namespace EL2.Core
