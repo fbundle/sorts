@@ -370,6 +370,7 @@ def test6 :=
       ]
       (appMany (.var "Vec") [.app (.var "succ") (.var "n"), .var "T"])
     )
+    $ .bnd "one" (.app (.var "succ") (.var "zero")) (.var "Nat")
     $ .typ 0
   )
   let t := Exp.typ 1
