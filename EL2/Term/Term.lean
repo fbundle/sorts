@@ -64,7 +64,7 @@ def scott
 
   let R := Term.var "R"
   let T := chainPi (
-    cons.map (λ (consName, consParams, _) =>
+    ("R", univ) :: cons.map (λ (consName, consParams, _) =>
       (consName, chainPi consParams R)
     )
   ) R
@@ -74,7 +74,8 @@ def scott
   let consNameList := cons.map (λ (consName, _, _) => consName)
 
   let consNameTermTypeList := cons.map (λ (consName, consParams, consBody) =>
-    let x := chainLam (params.map (Prod.fst)) (chainLam consNameList (Term.var consName))
+    -- x is of type Tfunc
+    let x := chainLam (params.map (Prod.fst)) (chainLam ("r" :: consNameList) (Term.var consName))
     -- consTerm1 := λ c11 λ c21 ... (T x11 x21 ...)
     let consTerm := chainLam (consParams.map (Prod.fst))
       -- need anotated type since our core doesn't support untyped app
