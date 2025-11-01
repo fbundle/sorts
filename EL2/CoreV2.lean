@@ -35,10 +35,8 @@ def emptyMap: Map α := {list := []}
 
 inductive Exp where
   -- typ 0 is type of small types: Nat, Pi, etc.
-  -- typ 0 is at level 2
   -- typ N is at level N + 2
-  -- small types are at level 1
-  -- terms are at level 0
+  -- typ 0 is at level 2, small types are at level 1, terms are at level 0
   | typ : (n: Nat) → Exp
   -- variable
   | var: (name: String) → Exp
@@ -51,11 +49,16 @@ inductive Exp where
   | lam: (name: String) → (body: Exp) → Exp
   -- Π type: Π (name: type) body - type of abs
   | pi:  (name: String) → (type: Exp) → (body: Exp) → Exp
-  -- TODO - add (pair sigma fst snd)
-  -- technically we can encode these
-  -- but adding them make it easier to do pattern matching later
-  -- TODO - add (Eq, refl) for equality for Vec N T = (l: List T) × (N: Nat) × (h: l.length = N)
-  -- and refl a term of {T: Type} → (Eq T T)
+  -- pair
+  | pair: (fst: Exp) → (snd: Exp) → Exp
+  -- Σ type: Σ (fstName: fstType) sndType
+  | sigma: (name: String) → (type: Exp) → (body: Exp) → Exp
+  -- fst snd
+  | fst: (exp: Exp) → Exp
+  | snd: (exp: Exp) → Exp
+  -- Eq(A) equality type, refl - proof for equality - typecheck by definitional equality
+  | eq: (type: Exp) → Exp
+  | refl: Exp
   deriving Repr
 
 inductive Val where
@@ -173,7 +176,7 @@ def emptyCtx: Ctx := {
 mutual
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
-  -- infer the type of exp
+  -- infer the type of exp - helper for checkExp?
   traceOpt s!"[DBG_TRACE] inferExp? {repr ctx}\n\texp = {repr exp}" do
     match exp with
       | Exp.typ n => pure (Val.typ (n + 1))
@@ -194,9 +197,10 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
       | _ => none -- ignore these
 
-partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+partial def inferTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
   -- return N
+  -- - helper for checkExp?
   let rec loop (n: Nat): Option Nat := do
     if n > maxN then
       none
@@ -222,14 +226,14 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
       | Exp.pi name type body =>
         match ← whnf? val with
           | Val.typ n =>
-            let i ← checkTypLevel? ctx type n
+            let i ← inferTypLevel? ctx type n
             let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-            let j ← checkTypLevel? subCtx body n
+            let j ← inferTypLevel? subCtx body n
             pure (n = (max i j))
           | _ => none
 
       | Exp.bnd name value type body =>
-        let _ ← checkTypLevel? ctx type ctx.maxN
+        let _ ← inferTypLevel? ctx type ctx.maxN
         if ¬ ((← checkExp? ctx value (Val.clos ctx.ρ type))) then
           none
         else
