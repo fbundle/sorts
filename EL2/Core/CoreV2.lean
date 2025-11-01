@@ -381,8 +381,6 @@ def test6 :=
     $ .typ 0
   )
   let t := Exp.typ 1
-  dbg_trace e
-  dbg_trace "--------------------------------------------------"
   typeCheck? e t
 
 
