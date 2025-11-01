@@ -68,7 +68,7 @@ def Exp.toString (e: Exp): String :=
     | Exp.ann term type => s!"({term.toString}: {type.toString})"
     | Exp.lam name body => s!"(λ{name} {body.toString})"
     | Exp.pi name type body => s!"(Π{name}: {type.toString}.{body.toString})"
-    | Exp.inh name type body => s!"(inh{name}: {type.toString}.{body.toString})"
+    | Exp.inh name type body => s!"(*{name}: {type.toString}.{body.toString})"
 
 instance: ToString Exp where
   toString := Exp.toString
@@ -269,7 +269,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   -- check if type of exp is val
   (λ (o? : Option Bool) =>
     if o? = true then
-      dbg_trace s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}"
       o?
     else
       dbg_trace s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}"
