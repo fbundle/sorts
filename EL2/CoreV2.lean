@@ -45,6 +45,7 @@ inductive Exp where
   -- application
   | app: (cmd: Exp) → (arg: Exp) → Exp
   -- let binding: let name: type := value
+  -- TODO remove - just use λ
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
   -- λ abstraction
   | lam: (name: String) → (body: Exp) → Exp
