@@ -1,12 +1,10 @@
 -- extended from (Thierry Coquand - An algorithm for type-checking dependent types)
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...)
--- added Pair, Sigma, Fst, Snd
--- added Eq, Refl
 
 -- TODO only Exp and typeCheck are public
 
-namespace EL2.CoreV2
+namespace EL2.CoreV1
 
 def traceOpt (err: String) (o: Option α): Option α :=
   match o with
@@ -37,30 +35,26 @@ def emptyMap: Map α := {list := []}
 
 inductive Exp where
   -- typ 0 is type of small types: Nat, Pi, etc.
+  -- typ 0 is at level 2
   -- typ N is at level N + 2
-  -- typ 0 is at level 2, small types are at level 1, terms are at level 0
+  -- small types are at level 1
+  -- terms are at level 0
   | typ : (n: Nat) → Exp
   -- variable
   | var: (name: String) → Exp
   -- application
   | app: (cmd: Exp) → (arg: Exp) → Exp
   -- let binding: let name: type := value
-  -- TODO remove - just use λ
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
   -- λ abstraction
   | lam: (name: String) → (body: Exp) → Exp
   -- Π type: Π (name: type) body - type of abs
   | pi:  (name: String) → (type: Exp) → (body: Exp) → Exp
-  -- pair
-  | pair: (fst: Exp) → (snd: Exp) → Exp
-  -- Σ type: Σ (fstName: fstType) sndType
-  | sigma: (fstName: String) → (fstType: Exp) → (sndType: Exp) → Exp
-  -- fst snd
-  | fst: (pair: Exp) → Exp
-  | snd: (pair: Exp) → Exp
-  -- Eq(a, b) equality type, refl - proof for equality - typecheck by definitional equality
-  | eq: (a: Exp) →  (b: Exp) → Exp
-  | refl: Exp
+  -- TODO - add (pair sigma fst snd)
+  -- technically we can encode these
+  -- but adding them make it easier to do pattern matching later
+  -- TODO - add (Eq, refl) for equality for Vec N T = (l: List T) × (N: Nat) × (h: l.length = N)
+  -- and refl a term of {T: Type} → (Eq T T)
   deriving Repr
 
 inductive Val where
@@ -177,23 +171,8 @@ def emptyCtx: Ctx := {
 
 mutual
 
-partial def inferTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
-  -- if exp is of type TypeN for 0 ≤ N ≤ maxN
-  -- return N
-  -- helper for checkExp?
-  let rec loop (n: Nat): Option Nat := do
-    if n > maxN then
-      none
-    else
-      let b ← checkExp? ctx exp (Val.typ n)
-      if b then
-        pure n
-      else
-        loop (n + 1)
-  loop 0
-
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
-  -- infer the type of exp - helper for checkExp?
+  -- infer the type of exp
   traceOpt s!"[DBG_TRACE] inferExp? {repr ctx}\n\texp = {repr exp}" do
     match exp with
       | Exp.typ n => pure (Val.typ (n + 1))
@@ -214,6 +193,19 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
       | _ => none -- ignore these
 
+partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+  -- if exp is of type TypeN for 0 ≤ N ≤ maxN
+  -- return N
+  let rec loop (n: Nat): Option Nat := do
+    if n > maxN then
+      none
+    else
+      let b ← checkExp? ctx exp (Val.typ n)
+      if b then
+        pure n
+      else
+        loop (n + 1)
+  loop 0
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if type of exp is val
@@ -229,15 +221,15 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
       | Exp.pi name type body =>
         match ← whnf? val with
           | Val.typ n =>
-            let i ← inferTypLevel? ctx type n
+            let i ← checkTypLevel? ctx type n
             let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-            let j ← inferTypLevel? subCtx body n
+            let j ← checkTypLevel? subCtx body n
             pure (n = (max i j))
           | _ => none
 
       | Exp.bnd name value type body =>
-        let _ ← inferTypLevel? ctx type ctx.maxN
-        if ¬ (← checkExp? ctx value (Val.clos ctx.ρ type)) then
+        let _ ← checkTypLevel? ctx type ctx.maxN
+        if ¬ ((← checkExp? ctx value (Val.clos ctx.ρ type))) then
           none
         else
           checkExp? (ctx.bind name
@@ -245,60 +237,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
             (← whnf? (Val.clos ctx.ρ type))
           ) body val
 
-      | Exp.pair fst snd =>
-        match ← whnf? val with
-          | Val.clos env2 (Exp.sigma fstName fstType sndType) =>
-            if ¬ (← checkExp? ctx fst (Val.clos env2 fstType)) then
-              none
-            else
-              let subCtx := ctx.bind fstName (← whnf? (Val.clos ctx.ρ fst)) (← whnf? (Val.clos env2 fstType))
-              checkExp? subCtx snd (Val.clos env2 sndType)
-          | _ => none
-
-      | Exp.sigma fstName fstType sndType =>
-        match ← whnf? val with
-          | Val.typ n =>
-            let i ← inferTypLevel? ctx fstType n
-            let (subCtx, _) := ctx.intro fstName (Val.clos ctx.ρ fstType)
-            let j ← inferTypLevel? subCtx sndType n
-            pure (n = (max i j))
-          | _ => none
-
-      | Exp.fst pair =>
-        let pairType ← inferExp? ctx pair
-        match ← whnf? pairType with
-          | Val.clos env (Exp.sigma _ fstType _) =>
-            eqVal? ctx.k (Val.clos env fstType) val
-          | _ => none
-
-      | Exp.snd pair =>
-        let pairType ← inferExp? ctx pair
-        match ← whnf? pairType with
-          | Val.clos env (Exp.sigma fstName fstType sndType) =>
-            let (subCtx, v) := ctx.intro fstName (Val.clos env fstType)
-            eqVal? subCtx.k (Val.clos (env.update fstName v) sndType) val
-          | _ => none
-
-      | Exp.eq a b =>
-        match ← whnf? val with
-          | Val.typ n =>
-            let sameType ← eqVal? ctx.k (← inferExp? ctx a) (← inferExp? ctx b)
-            if ¬ sameType then pure false else
-
-            let i ← inferTypLevel? ctx a n
-            let j ← inferTypLevel? ctx b n
-            pure (n = (max i j))
-          | _ => none
-
-      | Exp.refl =>
-        match ← whnf? val with
-          | Val.clos env2 (Exp.eq a b) =>
-            eqVal? ctx.k (Val.clos env2 a) (Val.clos env2 b)
-          | _ => none
-
-      | Exp.typ _ => eqVal? ctx.k (← inferExp? ctx exp) val
-      | Exp.var _ => eqVal? ctx.k (← inferExp? ctx exp) val
-      | Exp.app _ _ => eqVal? ctx.k (← inferExp? ctx exp) val
+      | _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
 
 end
@@ -331,26 +270,14 @@ def test4 :=
 
 
 def test5 :=
-  typeCheck
+  checkExp? emptyCtx
     (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
-    (Exp.typ 0)
-
-def test6 :=
-  typeCheck
-    (Exp.eq (Exp.typ 1) (Exp.typ 1))
-    (Exp.typ 2)
-
-def test7 :=
-  typeCheck
-    (Exp.eq (Exp.typ 0) (Exp.typ 1))
-    (Exp.typ 2)
+    (Val.typ 0)
 
 #eval test1
 #eval test2
 #eval test3
 #eval test4
 #eval test5
-#eval test6
-#eval test7
 
-end EL2.CoreV2
+end EL2.CoreV1
