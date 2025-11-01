@@ -51,7 +51,7 @@ def scott
     --    | ...
     --    | consM: (cM1: VM1) -> (cM2: VM2) ... -> (T x1M x2M ...)
     -- params = (p1: T1) (p2: T2) ... (pN: TN)
-    -- body :=
+    -- cons[1] := cons1 ((c11: V11) -> (c21: V21) ...) (x11 x21 ...)
 
 
     let R := Term.var name
