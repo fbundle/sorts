@@ -216,14 +216,11 @@ partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx
     if n > maxN then
       none
     else
-      dbg_trace s!"TRYING checkTypLevel? {ctx}\n\texp = {exp}\n\tn = {n}"
       let b ← checkExp? ctx.nodebug exp (Val.typ n)
       if b then
         pure n
       else
         loop (n + 1)
-
-  dbg_trace s!"STARTING checkTypLevel? {ctx}\n\texp = {exp}"
   loop 0
 
 mutual
