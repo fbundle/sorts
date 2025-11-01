@@ -280,6 +280,9 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
       | Exp.eq a b =>
         match ← whnf? val with
           | Val.typ n =>
+            let sameType ← eqVal? ctx.k (← inferExp? ctx a) (← inferExp? ctx b)
+            if ¬ sameType then pure false else
+
             let i ← inferTypLevel? ctx a n
             let j ← inferTypLevel? ctx b n
             pure (n = (max i j))
@@ -290,6 +293,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
           | Val.clos env2 (Exp.eq a b) =>
             eqVal? ctx.k (Val.clos env2 a) (Val.clos env2 b)
           | _ => none
+
       | Exp.typ _ => eqVal? ctx.k (← inferExp? ctx exp) val
       | Exp.var _ => eqVal? ctx.k (← inferExp? ctx exp) val
       | Exp.app _ _ => eqVal? ctx.k (← inferExp? ctx exp) val
