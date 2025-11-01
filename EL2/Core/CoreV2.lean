@@ -170,6 +170,8 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
 
 structure Ctx where
   maxN: Nat
+  debug: Bool
+
   k: Nat
   ρ : Map Val -- name -> value
   Γ: Map Val -- name -> type
@@ -196,11 +198,15 @@ def Ctx.intro (ctx: Ctx) (name: String) (type: Val) : Ctx × Val :=
     Γ := ctx.Γ.update name type,
   }, val)
 
+def Ctx.nodebug (ctx: Ctx) : Ctx :=
+  {ctx with debug := false}
+
 def emptyCtx: Ctx := {
   maxN := 5,
   k := 0,
   ρ := emptyMap,
-  Γ := emptyMap,
+  Γ := emptyMap
+  debug := true,
 }
 
 partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
@@ -218,7 +224,7 @@ partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx
     if n > maxN then
       none
     else
-      let b ← checkExp? ctx exp (Val.typ n)
+      let b ← checkExp? ctx.nodebug exp (Val.typ n)
       if b then
         pure n
       else
