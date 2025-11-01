@@ -166,6 +166,19 @@ def emptyCtx: Ctx := {
   Γ := emptyMap,
 }
 
+partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+  -- if exp is of type TypeN for 0 ≤ N ≤ maxN
+  -- return N
+  let rec loop (n: Nat): Option Nat := do
+    if n > maxN then
+      none
+    else
+      let b ← checkExp? ctx exp (Val.typ n)
+      if b then
+        pure n
+      else
+        loop (n + 1)
+  loop 0
 
 mutual
 
@@ -186,24 +199,9 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
               pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
             else
               none
-
           | _ => none
 
       | _ => none -- ignore these
-
-partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
-  -- if exp is of type TypeN for 0 ≤ N ≤ maxN
-  -- return N
-  let rec loop (n: Nat): Option Nat := do
-    if n > maxN then
-      none
-    else
-      let b ← checkExp? ctx exp (Val.typ n)
-      if b then
-        pure n
-      else
-        loop (n + 1)
-  loop 0
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if type of exp is val
@@ -219,14 +217,14 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
       | Exp.pi name type body =>
         match ← whnf? val with
           | Val.typ n =>
-            let i ← checkTypLevel? ctx type n
+            let i ← checkTypLevel? checkExp? ctx type n
             let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-            let j ← checkTypLevel? subCtx body n
+            let j ← checkTypLevel? checkExp? subCtx body n
             pure (n = (max i j))
           | _ => none
 
       | Exp.bnd name value type body =>
-        let _ ← checkTypLevel? ctx type ctx.maxN
+        let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
         if ¬ ((← checkExp? ctx value (Val.clos ctx.ρ type))) then
           none
         else
@@ -268,14 +266,14 @@ def test4 :=
 
 
 def test5 :=
-  checkExp? emptyCtx
+  -- this is expected to fail
+  typeCheck
     (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
-    (Val.typ 0)
+    (Exp.typ 0)
 
 #eval test1
 #eval test2
 #eval test3
 #eval test4
-#eval test5
 
 end EL2.CoreV1

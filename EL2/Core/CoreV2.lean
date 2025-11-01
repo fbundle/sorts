@@ -175,6 +175,20 @@ def emptyCtx: Ctx := {
 
 mutual
 
+partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+  -- if exp is of type TypeN for 0 ≤ N ≤ maxN
+  -- return N
+  let rec loop (n: Nat): Option Nat := do
+    if n > maxN then
+      none
+    else
+      let b ← checkExp? ctx exp (Val.typ n)
+      if b then
+        pure n
+      else
+        loop (n + 1)
+  loop 0
+
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer the type of exp
   traceOpt s!"[DBG_TRACE] inferExp? {repr ctx}\n\texp = {repr exp}" do
@@ -200,20 +214,6 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
           | _ => none
 
       | _ => none -- ignore these
-
-partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
-  -- if exp is of type TypeN for 0 ≤ N ≤ maxN
-  -- return N
-  let rec loop (n: Nat): Option Nat := do
-    if n > maxN then
-      none
-    else
-      let b ← checkExp? ctx exp (Val.typ n)
-      if b then
-        pure n
-      else
-        loop (n + 1)
-  loop 0
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if type of exp is val
