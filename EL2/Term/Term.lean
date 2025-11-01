@@ -25,13 +25,20 @@ partial def chainLam (init: List String) (tail: Term): Term :=
   match init with
     | [] => tail
     | name :: rest =>
-        Term.lam name (chainLam rest tail)
+      Term.lam name (chainLam rest tail)
 
 partial def chainPi (init: List (String × Term)) (tail: Term): Term :=
   match init with
     | [] => tail
     | (name, type) :: rest =>
-        Term.pi name type (chainPi rest tail)
+      Term.pi name type (chainPi rest tail)
+
+partial def chain (init: List (String × Term)) (tail: Term × Term): (Term × Term) :=
+  match init with
+    | [] => tail
+    | (name, type) :: rest =>
+      let (restValue, restType) := chain rest tail
+      (Term.lam name restValue, Term.pi name type restType)
 
 partial def curry (cmd: Term) (args: List Term): Term :=
   match args with
@@ -61,21 +68,22 @@ def scott
     -- params = (p1: T1) (p2: T2) ... (pN: TN)
     -- cons[1] := cons1 ((c11: V11) -> (c21: V21) ...) (x11 x21 ...)
 
+  let consNameList := cons.map (λ (consName, _, _) => consName)
+  let consParamList := cons.map (λ (_, consParams, _) => consParams)
 
   let R := Term.var "R"
   let T := chainPi (
-    ("R", univ) :: cons.map (λ (consName, consParams, _) =>
-      (consName, chainPi consParams R)
-    )
+    ("R", univ) :: List.zip consNameList (consParamList.map (chainPi · R))
   ) R
 
   let Tfunc := chainPi params T
 
-  let consNameList := cons.map (λ (consName, _, _) => consName)
+
 
   let consNameTermTypeList := cons.map (λ (consName, consParams, consBody) =>
     -- x is of type Tfunc
-    let x := chainLam (params.map (Prod.fst)) (chainLam ("r" :: consNameList) (Term.var consName))
+    let x := chainLam (params.map (Prod.fst))
+      (chainLam ("r" :: consNameList) (Term.var consName)) -- pick one, e.g. λ a₁ a₂ a₃ => a₁
     -- consTerm1 := λ c11 λ c21 ... (T x11 x21 ...)
     let consTerm := chainLam (consParams.map (Prod.fst))
       -- need anotated type since our core doesn't support untyped app
