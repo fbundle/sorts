@@ -3,29 +3,14 @@ import EL2.Core.CoreV2
 namespace EL2.Term
 open EL2.Core
 
-inductive T α where
-  | typ: (level: Nat) → T α
-  | var: (name: String) → T α
-  | app: (cmd: α) → (arg: α) → T α
-  | bnd: (name: String) → (value: α) → (type: α) → (body: α) → T α
-  | ann: (term: α) → (type: α) → T α
-  | lam: (name: String) → (body: α) → T α
-  | pi:  (name: String) → (type: α) → (body: α) → T α
-  deriving Nonempty
-
-def T.toExp (t: T α) (f: α → Exp) : Exp :=
-  match t with
-    | T.typ level => Exp.typ level
-    | T.var name => Exp.var name
-    | T.app cmd arg => Exp.app (f cmd) (f arg)
-    | T.bnd name value type body => Exp.bnd name (f value) (f type) (f body)
-    | T.ann term type => Exp.ann (f term) (f type)
-    | T.lam name body => Exp.lam name (f body)
-    | T.pi name type body => Exp.pi name (f type) (f body)
-
-
 inductive Term where
-  | t: (t: T Term) → Term
+  | typ: (level: Nat) → Term
+  | var: (name: String) → Term
+  | app: (cmd: Term) → (arg: Term) → Term
+  | bnd: (name: String) → (value: Term) → (type: Term) → (body: Term) → Term
+  | ann: (term: Term) → (type: Term) → Term
+  | lam: (name: String) → (body: Term) → Term
+  | pi:  (name: String) → (type: Term) → (body: Term) → Term
   | ind:
     (name: String) →
     (params: List (String × Term)) →                        -- type params
@@ -34,25 +19,33 @@ inductive Term where
     Term
   deriving Nonempty
 
+
+
+
 partial def chain (init: List (String × Term)) (tail: Term): Term :=
   match init with
     | [] => tail
     | (name, type) :: rest =>
-        Term.t $ T.pi name type (chain rest tail)
+        Term.pi name type (chain rest tail)
 
 partial def curry (cmd: Term) (args: List Term): Term :=
   match args with
     | [] => cmd
     | arg :: rest =>
-      curry (Term.t $ T.app cmd arg) rest
+      curry (Term.app cmd arg) rest
 
 partial def Term.toExp (term: Term): Exp :=
   match term with
-    | Term.t tt => tt.toExp Term.toExp
+    | Term.typ level => Exp.typ level
+    | Term.var name => Exp.var name
+    | Term.app cmd arg => Exp.app cmd.toExp arg.toExp
+    | Term.bnd name value type body => Exp.bnd name value.toExp type.toExp body.toExp
+    | Term.ann term type => Exp.ann term.toExp type.toExp
+    | Term.lam name body => Exp.lam name body.toExp
+    | Term.pi name type body => Exp.pi name type.toExp body.toExp
     | Term.ind name params cons body =>
       -- Scott encoding
       sorry
-
 
 def test1 := -- Nat and Vec
   id
@@ -81,6 +74,6 @@ def test1 := -- Nat and Vec
   $ Term.bnd "single_vec" (curry (Term.var "push") [Term.var "empty_vec"]) (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
   $ Term.ann (Term.var "single_vec") (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
 
-#eval (scott 0 test1)
+#eval test1
 
 end EL2.Term
