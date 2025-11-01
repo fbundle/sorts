@@ -173,9 +173,7 @@ def emptyCtx: Ctx := {
 }
 
 
-mutual
-
-partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
   -- return N
   let rec loop (n: Nat): Option Nat := do
@@ -189,6 +187,8 @@ partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
         loop (n + 1)
   loop 0
 
+mutual
+
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer the type of exp
   traceOpt s!"[DBG_TRACE] inferExp? {repr ctx}\n\texp = {repr exp}" do
@@ -196,7 +196,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
       | Exp.typ n => pure (Val.typ (n + 1))
       | Exp.var name => ctx.Γ.lookup? name
       | Exp.ann term type =>
-        let _ ← checkTypLevel? ctx type ctx.maxN
+        let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
         let b ← checkExp? ctx term (Val.clos ctx.ρ type)
         if b then
           pure (Val.clos ctx.ρ type)
@@ -229,14 +229,14 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
       | Exp.pi name type body =>
         match ← whnf? val with
           | Val.typ n =>
-            let i ← checkTypLevel? ctx type n
+            let i ← checkTypLevel? checkExp? ctx type n
             let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-            let j ← checkTypLevel? subCtx body n
+            let j ← checkTypLevel? checkExp? subCtx body n
             pure (n = (max i j))
           | _ => none
 
       | Exp.bnd name value type body =>
-        let _ ← checkTypLevel? ctx type ctx.maxN
+        let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
         if ¬ ((← checkExp? ctx value (Val.clos ctx.ρ type))) then
           none
         else
@@ -246,7 +246,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
           ) body val
 
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
-
 
 end
 
@@ -278,14 +277,14 @@ def test4 :=
 
 
 def test5 :=
-  checkExp? emptyCtx
+  -- this is expected to fail
+  typeCheck
     (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
-    (Val.typ 0)
+    (Exp.typ 0)
 
 #eval test1
 #eval test2
 #eval test3
 #eval test4
-#eval test5
 
 end EL2.CoreV2
