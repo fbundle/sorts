@@ -196,7 +196,9 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
         match (← whnf? (← inferExp? ctx cmd)) with
           | Val.clos env (Exp.pi name type body) =>
             if ← checkExp? ctx arg (Val.clos env type) then
-              pure (Val.clos (env.update name (Val.clos ctx.ρ arg)) body)
+              let argValue ← whnf? (Val.clos ctx.ρ arg)
+              let subEnv := env.update name argValue
+              pure (Val.clos subEnv body)
             else
               none
           | _ => none
