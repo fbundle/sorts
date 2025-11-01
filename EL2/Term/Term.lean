@@ -39,7 +39,7 @@ def scott
   (params: List (String × Term))
   (cons: List (String × List (String × Term) × Term))
   (body: Term): Term :=
-    -- Scott encoding
+    -- Scott encoding for inductive type
     -- ind works like bnd - it binds type name, and constructor name
     -- then give body
     sorry
