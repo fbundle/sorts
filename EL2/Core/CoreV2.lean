@@ -17,10 +17,12 @@ def traceOpt (err: String) (o: Option α): Option α :=
 structure Map α where
   list: List (String × α)
 
-instance [Repr α]: Repr (Map α) where
-  reprPrec (map: Map α) (_: Nat): Std.Format := repr map.list
+def Map.toString (m: Map α) (toString: α → String): String :=
+  "map(" ++ (String.join $ List.intersperse "," $ m.list.map (λ (key, val) =>
+    s!"{key} {toString val}"
+  )) ++ ")"
 
-partial def Map.lookup? [Repr α] (map: Map α) (name: String): Option α :=
+partial def Map.lookup? (map: Map α) (name: String): Option α :=
   match map.list with
     | [] => none
     | (key, val) :: list =>
@@ -56,7 +58,7 @@ inductive Exp where
   -- NOTE - we want to make the core as simple as possible, hence we skip
   -- sigma (Σ type), pair (term of Σ type), fst, and snd
   -- NOTE - we also skip Eq (equality) and refl (equality term by definitional equality)
-  deriving Repr, Nonempty
+  deriving Nonempty
 
 def Exp.toString (e: Exp): String :=
   match e with
@@ -68,6 +70,9 @@ def Exp.toString (e: Exp): String :=
     | Exp.lam name body => s!"(λ{name} {body.toString})"
     | Exp.pi name type body => s!"(Π({name} : {type.toString}) {body.toString})"
 
+instance: ToString Exp where
+  toString := Exp.toString
+
 inductive Val where
   -- typ_n
   | typ : (n: Nat) → Val
@@ -77,7 +82,21 @@ inductive Val where
   | app: (cmd: Val) → (arg: Val) → Val
   -- with closure - a future value - evaluated by eval?
   | clos: (map: Map Val) → (exp: Exp) → Val
-  deriving Repr
+
+partial def Val.toString (v: Val): String :=
+  match v with
+    | Val.typ level => s!"type_{level}"
+    | Val.gen i => s!"gen_{i}"
+    | Val.app cmd arg => s!"({cmd.toString} {arg.toString})"
+    | Val.clos map exp => s!"closure({map.toString Val.toString} {exp.toString})"
+
+instance: ToString Val where
+  toString := Val.toString
+
+instance : ToString (Map Val) where
+  toString (m: Map Val): String := m.toString Val.toString
+
+
 
 -- a short way of writing the whnf algorithm
 mutual
@@ -121,7 +140,7 @@ partial def whnf? (val: Val): Option Val := do
 -- the conversion algorithm; the integer is used to represent the introduction of a fresh variable
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
   -- definitional equality
-  traceOpt s!"[DBG_TRACE] eqVal? {k} {repr u1} {repr u2}" do
+  traceOpt s!"[DBG_TRACE] eqVal? {k} {u1} {u2}" do
     match (← whnf? u1, ← whnf? u2) with
       | (Val.typ n1, Val.typ n2) => pure (n1 = n2)
 
@@ -157,7 +176,12 @@ structure Ctx where
   k: Nat
   ρ : Map Val -- name -> value
   Γ: Map Val -- name -> type
-  deriving Repr
+
+def Ctx.toString (ctx: Ctx): String :=
+  s!"ctx(k={ctx.k}, ρ={ctx.ρ}, Γ={ctx.Γ})"
+
+instance: ToString Ctx where
+  toString := Ctx.toString
 
 def Ctx.bind (ctx: Ctx) (name: String) (val: Val) (type: Val) : Ctx :=
   {
@@ -200,7 +224,7 @@ mutual
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer the type of exp
-  traceOpt s!"[DBG_TRACE] inferExp? {repr ctx}\n\texp = {repr exp}" do
+  traceOpt s!"[DBG_TRACE] inferExp? {ctx}\n\texp = {exp}" do
     match exp with
       | Exp.typ n => pure (Val.typ (n + 1))
       | Exp.var name => ctx.Γ.lookup? name
@@ -226,7 +250,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if type of exp is val
-  traceOpt s!"[DBG_TRACE] checkExp? {repr ctx}\n\texp = {repr exp}\n\tval = {repr val}" do
+  traceOpt s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}" do
     match exp with
       | Exp.lam name1 body1 =>
         match ← whnf? val with
