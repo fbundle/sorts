@@ -7,12 +7,12 @@
 
 namespace EL2.Core
 
-def traceOpt (err: String) (o: Option α): Option α :=
-  match o with
-    | some v => some v
-    | none =>
-      dbg_trace err
-      none
+def traceOpt (f: Option α → Option String) (o: Option α): Option α :=
+  match f o with
+    | none => o
+    | some msg =>
+      dbg_trace msg
+      o
 
 structure Map α where
   list: List (String × α)
@@ -140,7 +140,11 @@ partial def whnf? (val: Val): Option Val := do
 -- the conversion algorithm; the integer is used to represent the introduction of a fresh variable
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
   -- definitional equality
-  traceOpt s!"[DBG_TRACE] eqVal? {k} {u1} {u2}" do
+  (λ (o?: Option Bool) => do
+    if o? = true then o? else
+    dbg_trace s!"[DBG_TRACE] eqVal? {k} {u1} {u2}"
+    o?
+  ) $ do
     match (← whnf? u1, ← whnf? u2) with
       | (Val.typ n1, Val.typ n2) => pure (n1 = n2)
 
@@ -224,7 +228,13 @@ mutual
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer the type of exp
-  traceOpt s!"[DBG_TRACE] inferExp? {ctx}\n\texp = {exp}" do
+  (λ (o?: Option Val) =>
+    match o? with
+      | some o => some o
+      | none =>
+        dbg_trace s!"[DBG_TRACE] inferExp? {ctx}\n\texp = {exp}"
+        none
+  ) $ do
     match exp with
       | Exp.typ n => pure (Val.typ (n + 1))
       | Exp.var name => ctx.Γ.lookup? name
@@ -250,7 +260,13 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if type of exp is val
-  traceOpt s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}" do
+  (λ (o? : Option Bool) =>
+    if o? = true then
+      o?
+    else
+      dbg_trace s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}"
+      o?
+  ) $ do
     match exp with
       | Exp.lam name1 body1 =>
         match ← whnf? val with
