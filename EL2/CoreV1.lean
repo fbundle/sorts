@@ -50,11 +50,9 @@ inductive Exp where
   | lam: (name: String) → (body: Exp) → Exp
   -- Π type: Π (name: type) body - type of abs
   | pi:  (name: String) → (type: Exp) → (body: Exp) → Exp
-  -- TODO - add (pair sigma fst snd)
-  -- technically we can encode these
-  -- but adding them make it easier to do pattern matching later
-  -- TODO - add (Eq, refl) for equality for Vec N T = (l: List T) × (N: Nat) × (h: l.length = N)
-  -- and refl a term of {T: Type} → (Eq T T)
+  -- NOTE - we want to make the core as simple as possible, hence we skip
+  -- sigma (Σ type), pair (term of Σ type), fst, and snd
+  -- NOTE - we also skip Eq (equality) and refl (equality term by definitional equality)
   deriving Repr
 
 inductive Val where
