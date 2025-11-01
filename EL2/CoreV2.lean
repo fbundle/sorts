@@ -52,12 +52,12 @@ inductive Exp where
   -- pair
   | pair: (fst: Exp) → (snd: Exp) → Exp
   -- Σ type: Σ (fstName: fstType) sndType
-  | sigma: (name: String) → (type: Exp) → (body: Exp) → Exp
+  | sigma: (fstName: String) → (fstType: Exp) → (sndType: Exp) → Exp
   -- fst snd
-  | fst: (exp: Exp) → Exp
-  | snd: (exp: Exp) → Exp
-  -- Eq(A) equality type, refl - proof for equality - typecheck by definitional equality
-  | eq: (type: Exp) → Exp
+  | fst: (pair: Exp) → Exp
+  | snd: (pair: Exp) → Exp
+  -- Eq(a, b) equality type, refl - proof for equality - typecheck by definitional equality
+  | eq: (a: Exp) →  (b: Exp) → Exp
   | refl: Exp
   deriving Repr
 
@@ -175,6 +175,21 @@ def emptyCtx: Ctx := {
 
 mutual
 
+partial def inferTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+  -- if exp is of type TypeN for 0 ≤ N ≤ maxN
+  -- return N
+  -- helper for checkExp?
+  let rec loop (n: Nat): Option Nat := do
+    if n > maxN then
+      none
+    else
+      let b ← checkExp? ctx exp (Val.typ n)
+      if b then
+        pure n
+      else
+        loop (n + 1)
+  loop 0
+
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
   -- infer the type of exp - helper for checkExp?
   traceOpt s!"[DBG_TRACE] inferExp? {repr ctx}\n\texp = {repr exp}" do
@@ -197,20 +212,6 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
       | _ => none -- ignore these
 
-partial def inferTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
-  -- if exp is of type TypeN for 0 ≤ N ≤ maxN
-  -- return N
-  -- - helper for checkExp?
-  let rec loop (n: Nat): Option Nat := do
-    if n > maxN then
-      none
-    else
-      let b ← checkExp? ctx exp (Val.typ n)
-      if b then
-        pure n
-      else
-        loop (n + 1)
-  loop 0
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
   -- check if type of exp is val
@@ -234,7 +235,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
 
       | Exp.bnd name value type body =>
         let _ ← inferTypLevel? ctx type ctx.maxN
-        if ¬ ((← checkExp? ctx value (Val.clos ctx.ρ type))) then
+        if ¬ (← checkExp? ctx value (Val.clos ctx.ρ type)) then
           none
         else
           checkExp? (ctx.bind name
@@ -242,7 +243,52 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
             (← whnf? (Val.clos ctx.ρ type))
           ) body val
 
-      | _ => eqVal? ctx.k (← inferExp? ctx exp) val
+      | Exp.pair fst snd =>
+        match ← whnf? val with
+          | Val.clos env2 (Exp.sigma fstName fstType sndType) =>
+            if ¬ (← checkExp? ctx fst (Val.clos env2 fstType)) then
+              none
+            else
+              let subCtx := ctx.bind fstName (Val.clos ctx.ρ fst) (Val.clos env2 fstType)
+              checkExp? subCtx snd (Val.clos env2 sndType)
+          | _ => none
+
+      | Exp.sigma fstName fstType sndType =>
+        match ← whnf? val with
+          | Val.typ n =>
+            let i ← inferTypLevel? ctx fstType n
+            let (subCtx, _) := ctx.intro fstName (Val.clos ctx.ρ fstType)
+            let j ← inferTypLevel? subCtx sndType n
+            pure (n = (max i j))
+          | _ => none
+
+      | Exp.fst pair =>
+        match pair with
+          | Exp.pair fst _ => checkExp? ctx fst val
+          | _ => none
+
+      | Exp.snd pair =>
+        match pair with
+          | Exp.pair _ snd =>
+            checkExp? ctx snd val
+          | _ => none
+
+      | Exp.eq a b =>
+        match ← whnf? val with
+          | Val.typ n =>
+            let i ← inferTypLevel? ctx a n
+            let j ← inferTypLevel? ctx b n
+            pure (n = 1 + (max i j))
+          | _ => none
+
+      | Exp.refl =>
+        match ← whnf? val with
+          | Val.clos env2 (Exp.eq a b) =>
+            eqVal? ctx.k (← inferExp? ctx a) (← inferExp? ctx b)
+          | _ => none
+      | Exp.typ _ => eqVal? ctx.k (← inferExp? ctx exp) val
+      | Exp.var _ => eqVal? ctx.k (← inferExp? ctx exp) val
+      | Exp.app _ _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
 
 end
