@@ -276,9 +276,9 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
       | Exp.pi name type body =>
         match ← whnf? val with
           | Val.typ n =>
-            let i ← checkTypLevel? checkExp? ctx type n
+            let i ← checkTypLevel? checkExp? ctx type ctx.maxN
             let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
-            let j ← checkTypLevel? checkExp? subCtx body n
+            let j ← checkTypLevel? checkExp? subCtx body ctx.maxN
             pure ((max i j) ≤ n)
           | _ => none
 
