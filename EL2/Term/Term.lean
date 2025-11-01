@@ -45,6 +45,8 @@ partial def Term.toExp (term: Term): Exp :=
     | Term.pi name type body => Exp.pi name type.toExp body.toExp
     | Term.ind name params cons body =>
       -- Scott encoding
+      -- ind works like bnd - it binds type name, and constructor name
+      -- then exec body
       sorry
 
 def test1 := -- Nat and Vec
@@ -74,6 +76,6 @@ def test1 := -- Nat and Vec
   $ Term.bnd "single_vec" (curry (Term.var "push") [Term.var "empty_vec"]) (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
   $ Term.ann (Term.var "single_vec") (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
 
-#eval test1
+#eval test1.toExp
 
 end EL2.Term
