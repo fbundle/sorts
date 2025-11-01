@@ -2,7 +2,7 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- Coquand is a genius
 
-namespace EL2.Coquand
+namespace EL2.Core.Coquand
 
 structure Map α where
   list: List (String × α)
@@ -219,5 +219,3 @@ private def test :=
     (Exp.pi "B" Exp.typ (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
 #eval test
-
-namespace EL2.Coquand
