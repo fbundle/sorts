@@ -46,6 +46,8 @@ inductive Exp where
   | app: (cmd: Exp) → (arg: Exp) → Exp
   -- let binding: let name: type := value
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
+  -- ann -- annotated term
+  | ann: (term: Exp) → (type: Exp) → Exp
   -- λ abstraction
   | lam: (name: String) → (body: Exp) → Exp
   -- Π type: Π (name: type) body - type of abs
@@ -87,6 +89,9 @@ partial def eval? (env: Map Val) (exp: Exp): Option Val := do
 
     | Exp.app cmd arg =>
       app? (← eval? env cmd) (← eval? env arg)
+
+    | Exp.ann term _ =>
+      eval? env term
 
     | Exp.bnd name val _ body =>
       eval? (env.update name (← eval? env val)) body
@@ -179,9 +184,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
       | Exp.var name => ctx.Γ.lookup? name
 
       | Exp.app cmd arg =>
-        -- for Exp.app, cmd should be typ, var, or app
-        -- TODO possibly annotated term ann (x: T)
-        -- so that we can do (λx.x : A → A)y instead of let z: A → A := λx.x in y
+        -- for Exp.app, cmd should be typ, var, app, or ann
         match (← whnf? (← inferExp? ctx cmd)) with
           | Val.clos env (Exp.pi name type body) =>
             if ← checkExp? ctx arg (Val.clos env type) then
@@ -190,6 +193,13 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
               none
 
           | _ => none
+
+      | Exp.ann term type =>
+        let typ ← inferExp? ctx type
+        if ← checkExp? ctx term typ then
+          pure typ
+        else
+          none
 
       | _ => none -- ignore these
 
