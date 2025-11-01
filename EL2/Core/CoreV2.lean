@@ -10,10 +10,7 @@ structure Map α where
   list: List (String × α)
 
 def Map.toString (m: Map α) (toString: α → String): String :=
-  let l := m.list
-
-
-  "map(" ++ (String.join $ List.intersperse " | " $ l.map (λ (key, val) =>
+  "map(" ++ (String.join $ List.intersperse " | " $ m.list.map (λ (key, val) =>
     s!"{key} → {toString val}"
   )) ++ ")"
 
