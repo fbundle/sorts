@@ -209,18 +209,21 @@ partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx
   (λ (o?: Option Nat) =>
     match (o?, ctx.debug) with
       | (none, true) =>
-        dbg_trace s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}"; none
+        dbg_trace s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}\n\tmaxLevel = {maxN}"; none
       | _ => o?
   ) $ do
   let rec loop (n: Nat): Option Nat := do
     if n > maxN then
       none
     else
+      dbg_trace s!"TRYING checkTypLevel? {ctx}\n\texp = {exp}\n\tn = {n}"
       let b ← checkExp? ctx.nodebug exp (Val.typ n)
       if b then
         pure n
       else
         loop (n + 1)
+
+  dbg_trace s!"STARTING checkTypLevel? {ctx}\n\texp = {exp}"
   loop 0
 
 mutual
@@ -279,7 +282,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
             let i ← checkTypLevel? checkExp? ctx type n
             let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
             let j ← checkTypLevel? checkExp? subCtx body n
-            pure (n = (max i j))
+            pure ((max i j) ≤ n)
           | _ => none
 
       | Exp.bnd name value type body =>
@@ -361,7 +364,15 @@ def test6 :=
     $ .inh "succ" (.pi "n" (.var "Nat") (.var "Nat"))
     $ .inh "Vec" (piMany [("n", .var "Nat"), ("T", .typ 0)] (.typ 0))
     $ .inh "nil" (piMany [("T", .typ 0)] (appMany (.var "Vec") [.var "zero", .var "T"]))
-
+    $ .inh "push" (
+      piMany [
+        ("n", .var "Nat"),
+        ("T", .typ 0),
+        ("v", (appMany (.var "Vec") [.var "n", .var "T"])),
+        ("x", .var "T"),
+      ]
+      (appMany (.var "Vec") [.app (.var "succ") (.var "n"), .var "T"])
+    )
     $ .typ 0
   )
   let t := Exp.typ 1
