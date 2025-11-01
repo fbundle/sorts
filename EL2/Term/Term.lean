@@ -96,8 +96,8 @@ def test1: Term := -- Nat and Vec
   $ Term.bnd "one" (curry (Term.var "succ") [Term.var "zero"]) (Term.var "Nat")
   $ Term.bnd "empty_vec" (curry (Term.var "nil") [Term.var "Nat"]) (curry (Term.var "Vec0") [Term.var "zero", Term.var "Nat"])
   $ Term.bnd "single_vec" (curry (Term.var "push") [Term.var "empty_vec"]) (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
-  $ Term.ann (Term.var "single_vec") (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
+  $ Term.typ 0
 
-#eval typeInfer? test1.toExp
+#eval typeCheck? test1.toExp (Term.typ 1).toExp
 
 end EL2.Term
