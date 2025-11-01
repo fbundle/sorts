@@ -46,8 +46,10 @@ partial def Term.toExp (term: Term): Exp :=
     | Term.ind name params cons body =>
       -- Scott encoding
       -- ind works like bnd - it binds type name, and constructor name
-      -- then exec body
+      -- then give body
       sorry
+
+
 
 def test1 := -- Nat and Vec
   id
