@@ -249,7 +249,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
             if ¬ (← checkExp? ctx fst (Val.clos env2 fstType)) then
               none
             else
-              let subCtx := ctx.bind fstName (Val.clos ctx.ρ fst) (Val.clos env2 fstType)
+              let subCtx := ctx.bind fstName (← whnf? (Val.clos ctx.ρ fst)) (← whnf? (Val.clos env2 fstType))
               checkExp? subCtx snd (Val.clos env2 sndType)
           | _ => none
 
@@ -263,14 +263,18 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
           | _ => none
 
       | Exp.fst pair =>
-        match pair with
-          | Exp.pair fst _ => checkExp? ctx fst val
+        let pairType ← inferExp? ctx pair
+        match ← whnf? pairType with
+          | Val.clos env (Exp.sigma fstName fstType sndType) =>
+            eqVal? ctx.k (Val.clos env fstType) val
           | _ => none
 
-      | Exp.snd pair =>
-        match pair with
-          | Exp.pair _ snd =>
-            checkExp? ctx snd val
+      | Exp.fst pair =>
+        let pairType ← inferExp? ctx pair
+        match ← whnf? pairType with
+          | Val.clos env (Exp.sigma fstName fstType sndType) =>
+            let (subCtx, v) := ctx.intro fstName (Val.clos env fstType)
+            eqVal? ctx.k (Val.clos (env.update fstName v) sndType) val
           | _ => none
 
       | Exp.eq a b =>
@@ -278,13 +282,13 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
           | Val.typ n =>
             let i ← inferTypLevel? ctx a n
             let j ← inferTypLevel? ctx b n
-            pure (n = 1 + (max i j))
+            pure (n = (max i j))
           | _ => none
 
       | Exp.refl =>
         match ← whnf? val with
           | Val.clos env2 (Exp.eq a b) =>
-            eqVal? ctx.k (← inferExp? ctx a) (← inferExp? ctx b)
+            eqVal? ctx.k (Val.clos env2 a) (Val.clos env2 b)
           | _ => none
       | Exp.typ _ => eqVal? ctx.k (← inferExp? ctx exp) val
       | Exp.var _ => eqVal? ctx.k (← inferExp? ctx exp) val
