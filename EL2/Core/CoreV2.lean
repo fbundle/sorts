@@ -132,12 +132,6 @@ partial def whnf? (val: Val): Option Val := do
 
 -- the conversion algorithm; the integer is used to represent the introduction of a fresh variable
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
-  -- definitional equality
-  (λ (o?: Option Bool) => do
-    if o? = true then o? else
-    dbg_trace s!"[DBG_TRACE] eqVal? {k} {u1} {u2}"
-    o?
-  ) $ do
     match (← whnf? u1, ← whnf? u2) with
       | (Val.typ n1, Val.typ n2) => pure (n1 = n2)
 
@@ -213,12 +207,10 @@ partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
   -- return N
   (λ (o?: Option Nat) =>
-    match o? with
-      | some v =>
-        some v
-      | none =>
-        dbg_trace s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}"
-        none
+    match (o?, ctx.debug) with
+      | (none, true) =>
+        dbg_trace s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}"; none
+      | _ => o?
   ) $ do
   let rec loop (n: Nat): Option Nat := do
     if n > maxN then
@@ -236,11 +228,10 @@ mutual
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
   -- infer the type of exp
   (λ (o?: Option Val) =>
-    match o? with
-      | some o => some o
-      | none =>
-        dbg_trace s!"[DBG_TRACE] inferExp? {ctx}\n\texp = {exp}"
-        none
+    match (o?, ctx.debug) with
+      | (none, true) =>
+        dbg_trace s!"[DBG_TRACE] inferExp? {ctx}\n\texp = {exp}"; none
+      | _ => o?
   ) $ do
     match exp with
       | Exp.typ n => pure (Val.typ (n + 1))
@@ -268,10 +259,10 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   -- check if type of exp is val
   (λ (o? : Option Bool) =>
-    if o? = true then
+    if (o? ≠ true) ∧ ctx.debug then
+      dbg_trace s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}"
       o?
     else
-      dbg_trace s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}"
       o?
   ) $ do
     match exp with
