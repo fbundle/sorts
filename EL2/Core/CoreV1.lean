@@ -4,7 +4,7 @@
 
 -- TODO only Exp and typeCheck are public
 
-namespace EL2.Core
+namespace EL2.CoreV1
 
 def traceOpt (err: String) (o: Option α): Option α :=
   match o with
@@ -277,3 +277,5 @@ def test5 :=
 #eval test3
 #eval test4
 #eval test5
+
+end EL2.CoreV1

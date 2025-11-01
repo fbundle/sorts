@@ -219,3 +219,5 @@ private def test :=
     (Exp.pi "B" Exp.typ (Exp.pi "y" (Exp.var "B") (Exp.var "B")))
 
 #eval test
+
+end EL2.Core.Coquand
