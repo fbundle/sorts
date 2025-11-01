@@ -172,7 +172,6 @@ def emptyCtx: Ctx := {
   Γ := emptyMap,
 }
 
-
 partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
   -- return N
