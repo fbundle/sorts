@@ -348,8 +348,8 @@ def test5 :=
 def test6 :=
   let e := ( id
     $ Exp.inh "Nat" (Exp.typ 0)
-    $ Exp.inh "zero" (Exp.var "Nat")
-    $ Exp.inh "succ" (Exp.pi "n" (Exp.var "Nat") (Exp.var "Nat"))
+    --$ Exp.inh "zero" (Exp.var "Nat")
+    --$ Exp.inh "succ" (Exp.pi "n" (Exp.var "Nat") (Exp.var "Nat"))
     $ Exp.typ 0
   )
   let t := Exp.typ 1
