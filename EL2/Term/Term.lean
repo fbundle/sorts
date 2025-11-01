@@ -12,7 +12,7 @@ inductive Term where
   | lam: (name: String) → (body: Term) → Term
   | pi:  (name: String) → (type: Term) → (body: Term) → Term
   | ind:
-    (univ: Term) →                                           -- universe
+    (level: Nat) →                                           -- universe
     (name: String) →                                         -- type name
     (params: List (String × Term)) →                        -- type params
     (cons: List (String × List (String × Term) × List Term)) →   -- constructors
@@ -53,7 +53,7 @@ partial def chainBind (init: List (String × Term × Term)) (tail: Term): Term :
       Term.bnd name type value (chainBind rest tail)
 
 def scott
-  (univ: Term)
+  (level: Nat)
   (name: String)
   (params: List (String × Term))
   (cons: List (String × List (String × Term) × List Term))
@@ -73,7 +73,7 @@ def scott
 
   let R := Term.var "R"
   let T := chainPi (
-    ("R", univ) :: List.zip consNameList (consParamList.map (chainPi · R))
+    ("R", Term.typ (level - 1)) :: List.zip consNameList (consParamList.map (chainPi · R))
   ) R
 
   let Tfunc := chainPi params T
@@ -95,7 +95,7 @@ def scott
   )
 
   let consBind := chainBind consNameTermTypeList body
-  let typeBind := Term.bnd name Tfunc univ consBind
+  let typeBind := Term.bnd name Tfunc (Term.typ level) consBind
 
   typeBind
 
@@ -110,15 +110,16 @@ partial def Term.toExp (term: Term): Exp :=
     | Term.ann term type => Exp.ann term.toExp type.toExp
     | Term.lam name body => Exp.lam name body.toExp
     | Term.pi name type body => Exp.pi name type.toExp body.toExp
-    | Term.ind univ name params cons body => (scott univ name params cons body).toExp
+    | Term.ind level name params cons body => (scott level name params cons body).toExp
 
 def typeCheck? (term: Term) (type: Term): Option Bool :=
   EL2.Core.typeCheck? term.toExp type.toExp
 
 def test0: Term :=
   -- output correct but our core couldn't process yet
+  -- like inductive type like this: let Nat: Type0 := Pair(Bool, Option Nat)
   id
-  $ Term.ind (Term.typ 0) "Nat" [] [
+  $ Term.ind 1 "Nat" [] [
     ("zero", [], []),
     ("succ", [("prev", Term.var "Nat")], []),
   ]
@@ -126,11 +127,11 @@ def test0: Term :=
 
 def test1: Term := -- Nat and Vec
   id
-  $ Term.ind (Term.typ 0) "Nat" [] [
+  $ Term.ind 1 "Nat" [] [
     ("zero", [], []),
     ("succ", [("prev", Term.var "Nat")], []),
   ]
-  $ Term.ind (Term.typ 0) "Vec0" [("n", Term.var "Nat"), ("T", Term.typ 0)] [
+  $ Term.ind 1 "Vec0" [("n", Term.var "Nat"), ("T", Term.typ 0)] [
     (
       "nil",
       [("T", Term.typ 0)],

@@ -275,6 +275,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
         else
           checkExp? (ctx.bind name
             (← whnf? (Val.clos ctx.ρ value))
+            --(Val.clos ctx.ρ value) -- lazy
             (← whnf? (Val.clos ctx.ρ type))
           ) body val
 
