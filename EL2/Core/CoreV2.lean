@@ -7,12 +7,7 @@
 
 namespace EL2.Core
 
-def traceOpt (f: Option α → Option String) (o: Option α): Option α :=
-  match f o with
-    | none => o
-    | some msg =>
-      dbg_trace msg
-      o
+def DEBUG: Bool := true
 
 structure Map α where
   list: List (String × α)
@@ -141,6 +136,13 @@ partial def whnf? (val: Val): Option Val := do
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
   -- definitional equality
   (λ (o?: Option Bool) => do
+    if DEBUG then
+      dbg_trace s!"[DBG_TRACE] eqVal? {k} {u1} {u2}"
+      o?
+    else
+
+
+
     if o? = true then o? else
     dbg_trace s!"[DBG_TRACE] eqVal? {k} {u1} {u2}"
     o?
@@ -214,8 +216,15 @@ partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
   -- return N
   (λ (o?: Option Nat) =>
+    if DEBUG then
+      dbg_trace s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}"
+      o?
+    else
+
+
     match o? with
-      | some v => some v
+      | some v =>
+        some v
       | none =>
         dbg_trace s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}"
         none
@@ -236,6 +245,12 @@ mutual
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
   -- infer the type of exp
   (λ (o?: Option Val) =>
+    if DEBUG then
+      dbg_trace s!"[DBG_TRACE] inferExp? {ctx}\n\texp = {exp}"
+      o?
+    else
+
+
     match o? with
       | some o => some o
       | none =>
@@ -268,6 +283,13 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   -- check if type of exp is val
   (λ (o? : Option Bool) =>
+    if DEBUG then
+      dbg_trace s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}"
+      o?
+    else
+
+
+
     if o? = true then
       o?
     else
