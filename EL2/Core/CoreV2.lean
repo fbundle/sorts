@@ -4,15 +4,17 @@
 -- added annotated term
 
 -- TODO only Exp, typeCheck? are public
-
 namespace EL2.Core
 
 structure Map α where
   list: List (String × α)
 
 def Map.toString (m: Map α) (toString: α → String): String :=
-  "map(" ++ (String.join $ List.intersperse "," $ m.list.map (λ (key, val) =>
-    s!"{key} {toString val}"
+  let l := m.list
+
+
+  "map(" ++ (String.join $ List.intersperse " | " $ l.map (λ (key, val) =>
+    s!"{key} → {toString val}"
   )) ++ ")"
 
 partial def Map.lookup? (map: Map α) (name: String): Option α :=
@@ -59,9 +61,9 @@ def Exp.toString (e: Exp): String :=
     | Exp.app cmd arg => s!"({cmd.toString} {arg.toString})"
     | Exp.bnd name value type body => s!"let {name}: {type.toString} := {value.toString}\n{body.toString}"
     | Exp.ann term type => s!"({term.toString}: {type.toString})"
-    | Exp.lam name body => s!"(λ{name} {body.toString})"
-    | Exp.pi name type body => s!"(Π{name}: {type.toString}.{body.toString})"
-    | Exp.inh name type body => s!"(*{name}: {type.toString}.{body.toString})"
+    | Exp.lam name body => s!"(λ {name}.{body.toString})"
+    | Exp.pi name type body => s!"(Π {name}: {type.toString}. {body.toString})"
+    | Exp.inh name type body => s!"* {name}: {type.toString}\n{body.toString})"
 
 instance: ToString Exp where
   toString := Exp.toString
@@ -355,7 +357,7 @@ def appMany (cmd: Exp) (args: List Exp): Exp :=
       appMany (Exp.app cmd arg) rest
 
 def test6 :=
-  let e := ( id
+  let e: Exp := ( id
     $ .inh "Nat" (.typ 0)
     $ .inh "zero" (.var "Nat")
     $ .inh "succ" (.pi "n" (.var "Nat") (.var "Nat"))
@@ -371,9 +373,17 @@ def test6 :=
       (appMany (.var "Vec") [.app (.var "succ") (.var "n"), .var "T"])
     )
     $ .bnd "one" (.app (.var "succ") (.var "zero")) (.var "Nat")
+    $ .bnd "singleton" (appMany (.var "push") [
+      .var "zero",
+      .var "Nat",
+      (.app (.var "nil") (.var "Nat")),
+      .var "one",
+    ]) (appMany (.var "Vec") [.var "one", .var "Nat"])
     $ .typ 0
   )
   let t := Exp.typ 1
+  dbg_trace e
+  dbg_trace "--------------------------------------------------"
   typeCheck? e t
 
 
