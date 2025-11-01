@@ -55,9 +55,8 @@ inductive Exp where
   | lam: (name: String) → (body: Exp) → Exp
   -- Π type: Π (name: type) body - type of abs
   | pi:  (name: String) → (type: Exp) → (body: Exp) → Exp
-  -- NOTE - we want to make the core as simple as possible, hence we skip
-  -- sigma (Σ type), pair (term of Σ type), fst, and snd
-  -- NOTE - we also skip Eq (equality) and refl (equality term by definitional equality)
+  -- inh
+  | inh: (name: String) → (type: Exp) → (body: Exp) → Exp
   deriving Nonempty
 
 def Exp.toString (e: Exp): String :=
@@ -69,6 +68,7 @@ def Exp.toString (e: Exp): String :=
     | Exp.ann term type => s!"({term.toString}: {type.toString})"
     | Exp.lam name body => s!"(λ{name} {body.toString})"
     | Exp.pi name type body => s!"(Π({name} : {type.toString}) {body.toString})"
+    | Exp.inh name type body => s!"(inh({name} : {type.toString}) {body.toString})"
 
 instance: ToString Exp where
   toString := Exp.toString
@@ -275,7 +275,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
         else
           checkExp? (ctx.bind name
             (← whnf? (Val.clos ctx.ρ value))
-            --(Val.clos ctx.ρ value) -- lazy
             (← whnf? (Val.clos ctx.ρ type))
           ) body val
 
@@ -285,6 +284,12 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
 
         let subCtx := ctx.bind name argValue argType
         checkExp? subCtx body val
+
+      | Exp.inh name type body =>
+        let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
+        let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
+        checkExp? subCtx body val
+
 
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
