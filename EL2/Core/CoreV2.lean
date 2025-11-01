@@ -56,7 +56,7 @@ inductive Exp where
   -- NOTE - we want to make the core as simple as possible, hence we skip
   -- sigma (Σ type), pair (term of Σ type), fst, and snd
   -- NOTE - we also skip Eq (equality) and refl (equality term by definitional equality)
-  deriving Repr
+  deriving Repr, Nonempty
 
 inductive Val where
   -- typ_n

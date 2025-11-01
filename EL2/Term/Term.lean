@@ -3,57 +3,56 @@ import EL2.Core.CoreV2
 namespace EL2.Term
 open EL2.Core
 
+inductive T α where
+  | typ: (level: Nat) → T α
+  | var: (name: String) → T α
+  | app: (cmd: α) → (arg: α) → T α
+  | bnd: (name: String) → (value: α) → (type: α) → (body: α) → T α
+  | ann: (term: α) → (type: α) → T α
+  | lam: (name: String) → (body: α) → T α
+  | pi:  (name: String) → (type: α) → (body: α) → T α
+  deriving Nonempty
+
+def T.toExp (t: T α) (f: α → Exp) : Exp :=
+  match t with
+    | T.typ level => Exp.typ level
+    | T.var name => Exp.var name
+    | T.app cmd arg => Exp.app (f cmd) (f arg)
+    | T.bnd name value type body => Exp.bnd name (f value) (f type) (f body)
+    | T.ann term type => Exp.ann (f term) (f type)
+    | T.lam name body => Exp.lam name (f body)
+    | T.pi name type body => Exp.pi name (f type) (f body)
+
+
 inductive Term where
-  | typ : (level: Nat) → Term
-  | var: (name: String) → Term
-  | app: (cmd: Term) → (arg: Term) → Term
-  | bnd: (name: String) → (value: Term) → (type: Term) → (body: Term) → Term
-  | ann: (term: Term) → (type: Term) → Term
-  | lam: (name: String) → (body: Term) → Term
-  | pi:  (name: String) → (type: Term) → (body: Term) → Term
+  | t: (t: T Term) → Term
   | ind:
     (name: String) →
     (params: List (String × Term)) →                        -- type params
     (cons: List (String × List (String × Term) × Term)) →   -- constructors
     (body: Term) →
     Term
-
+  deriving Nonempty
 
 partial def chain (init: List (String × Term)) (tail: Term): Term :=
   match init with
     | [] => tail
     | (name, type) :: rest =>
-        Term.pi name type (chain rest tail)
+        Term.t $ T.pi name type (chain rest tail)
 
 partial def curry (cmd: Term) (args: List Term): Term :=
   match args with
     | [] => cmd
     | arg :: rest =>
-      curry (Term.app cmd arg) rest
+      curry (Term.t $ T.app cmd arg) rest
 
-partial def scott (k: Nat) (term: Term): Term :=
-  -- Scott encoding - turn inductive type into pi
+partial def Term.toExp (term: Term): Exp :=
   match term with
-    | Term.ind indName params cons body =>
-      let R := Term.var s!"_{k}"  -- fresh result type variable
+    | Term.t tt => tt.toExp Term.toExp
+    | Term.ind name params cons body =>
+      -- Scott encoding
+      sorry
 
-      -- Scott-encode each constructor type
-      let encCons := cons.map (fun (cName, args, cRetType) =>
-        (cName, chain args cRetType)  -- constructor args -> constructor return type
-      )
-
-      -- Chain constructors into a single Pi to R (this is the Scott type body)
-      let scottType := chain params (chain encCons R)
-
-      -- Fold right: bind constructors first
-      let withConstructors := encCons.foldr (fun (cName, cType) acc =>
-        Term.bnd cName cType (Term.typ 0) acc
-      ) body
-
-      -- Finally bind the inductive type itself
-      Term.bnd indName scottType (Term.typ 0) withConstructors
-
-    | _ => term
 
 def test1 := -- Nat and Vec
   id
