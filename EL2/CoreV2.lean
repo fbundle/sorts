@@ -1,6 +1,8 @@
 -- extended from (Thierry Coquand - An algorithm for type-checking dependent types)
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...)
+-- added Pair, Sigma, Fst, Snd
+-- added Eq, Refl
 
 -- TODO only Exp and typeCheck are public
 
