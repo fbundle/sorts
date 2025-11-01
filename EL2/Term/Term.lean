@@ -141,7 +141,7 @@ def test1: Term := -- Nat and Vec
   $ Term.bnd "single_vec" (curry (Term.var "push") [Term.var "empty_vec"]) (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
   $ Term.typ 0
 
-#eval test1.toExp
+#eval test1.toExp.toString
 #eval typeCheck? test1.toExp (Term.typ 1).toExp
 
 

@@ -58,6 +58,16 @@ inductive Exp where
   -- NOTE - we also skip Eq (equality) and refl (equality term by definitional equality)
   deriving Repr, Nonempty
 
+def Exp.toString (e: Exp): String :=
+  match e with
+    | Exp.typ level => s!"type_{level}"
+    | Exp.var name => name
+    | Exp.app cmd arg => s!"{cmd.toString} {arg.toString}"
+    | Exp.bnd name value type body => s!"let {name}: {type.toString} := {value.toString}\n{body.toString}"
+    | Exp.ann term type => s!"{term.toString} : {type.toString}"
+    | Exp.lam name body => s!"λ {name} {body.toString}"
+    | Exp.pi name type body => s!"∀ ({name} : {type.toString}) {body.toString}"
+
 inductive Val where
   -- typ_n
   | typ : (n: Nat) → Val
