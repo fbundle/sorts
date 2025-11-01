@@ -67,8 +67,8 @@ def Exp.toString (e: Exp): String :=
     | Exp.bnd name value type body => s!"let {name}: {type.toString} := {value.toString}\n{body.toString}"
     | Exp.ann term type => s!"({term.toString}: {type.toString})"
     | Exp.lam name body => s!"(λ{name} {body.toString})"
-    | Exp.pi name type body => s!"(Π({name} : {type.toString}) {body.toString})"
-    | Exp.inh name type body => s!"(inh({name} : {type.toString}) {body.toString})"
+    | Exp.pi name type body => s!"(Π{name}: {type.toString}.{body.toString})"
+    | Exp.inh name type body => s!"(inh{name}: {type.toString}.{body.toString})"
 
 instance: ToString Exp where
   toString := Exp.toString
@@ -213,6 +213,13 @@ def emptyCtx: Ctx := {
 partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
   -- return N
+  (λ (o?: Option Nat) =>
+    match o? with
+      | some v => some v
+      | none =>
+        dbg_trace s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}"
+        none
+  ) $ do
   let rec loop (n: Nat): Option Nat := do
     if n > maxN then
       none
@@ -226,7 +233,7 @@ partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx
 
 mutual
 
-partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
+partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
   -- infer the type of exp
   (λ (o?: Option Val) =>
     match o? with
@@ -258,10 +265,11 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val := do
 
       | _ => none -- ignore these
 
-partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
+partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   -- check if type of exp is val
   (λ (o? : Option Bool) =>
     if o? = true then
+      dbg_trace s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}"
       o?
     else
       dbg_trace s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}"
