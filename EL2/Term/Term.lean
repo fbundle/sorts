@@ -112,7 +112,16 @@ partial def Term.toExp (term: Term): Exp :=
     | Term.pi name type body => Exp.pi name type.toExp body.toExp
     | Term.ind univ name params cons body => (scott univ name params cons body).toExp
 
+def typeCheck? (term: Term) (type: Term): Option Bool :=
+  EL2.Core.typeCheck? term.toExp type.toExp
 
+def test0: Term :=
+  id
+  $ Term.ind (Term.typ 0) "Nat" [] [
+    ("zero", [], []),
+    ("succ", [("prev", Term.var "Nat")], []),
+  ]
+  $ Term.typ 0
 
 def test1: Term := -- Nat and Vec
   id
@@ -140,9 +149,6 @@ def test1: Term := -- Nat and Vec
   $ Term.bnd "empty_vec" (curry (Term.var "nil") [Term.var "Nat"]) (curry (Term.var "Vec0") [Term.var "zero", Term.var "Nat"])
   $ Term.bnd "single_vec" (curry (Term.var "push") [Term.var "empty_vec"]) (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
   $ Term.typ 0
-
-#eval test1.toExp.toString
-#eval typeCheck? test1.toExp (Term.typ 1).toExp
 
 
 end EL2.Term
