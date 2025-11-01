@@ -14,19 +14,23 @@ inductive Term where
   | ind:
     (name: String) →
     (params: List (String × Term)) →                        -- type params
-    (cons: List (String × List (String × Term) × Term)) →   -- constructors
+    (cons: List (String × List (String × Term) × List Term)) →   -- constructors
     (body: Term) →
     Term
   deriving Nonempty
 
 
+partial def chainLam (init: List String) (tail: Term): Term :=
+  match init with
+    | [] => tail
+    | name :: rest =>
+        Term.lam name (chainLam rest tail)
 
-
-partial def chain (init: List (String × Term)) (tail: Term): Term :=
+partial def chainPi (init: List (String × Term)) (tail: Term): Term :=
   match init with
     | [] => tail
     | (name, type) :: rest =>
-        Term.pi name type (chain rest tail)
+        Term.pi name type (chainPi rest tail)
 
 partial def curry (cmd: Term) (args: List Term): Term :=
   match args with
@@ -37,12 +41,31 @@ partial def curry (cmd: Term) (args: List Term): Term :=
 def scott
   (name: String)
   (params: List (String × Term))
-  (cons: List (String × List (String × Term) × Term))
+  (cons: List (String × List (String × Term) × List Term))
   (body: Term): Term :=
     -- Scott encoding for inductive type
     -- ind works like bnd - it binds type name, and constructor name
     -- then give body
+    -- inductive T (p1: T1) (p2: T2) ... (pN: TN) where
+    --    | cons1: (c11: V11) -> (c21: V21) ... -> (T x11 x21 ...)
+    --    | ...
+    --    | consM: (cM1: VM1) -> (cM2: VM2) ... -> (T x1M x2M ...)
+    -- params = (p1: T1) (p2: T2) ... (pN: TN)
+    -- body :=
+
+
+    let R := Term.var name
+
+    -- subTypeList (V11 -> V21 -> ...) -> ... -> (VM1 -> VM2 -> ...)
+    let subTypeList: List (String × Term) := cons.map (λ (consName, consParams, consBody) =>
+      let subType := chainPi consParams R
+      (consName, subType)
+    )
+    -- params : (p1: T1) (p2: T2) ... (pN: TN)
+    let type := chainPi (params ++ subTypeList) R
+
     sorry
+
 
 partial def Term.toExp (term: Term): Exp :=
   match term with
@@ -60,14 +83,14 @@ partial def Term.toExp (term: Term): Exp :=
 def test1: Term := -- Nat and Vec
   id
   $ Term.ind "Nat" [] [
-    ("zero", [], Term.var "Nat"),
-    ("succ", [("prev", Term.var "Nat")], Term.var "Nat"),
+    ("zero", [], []),
+    ("succ", [("prev", Term.var "Nat")], []),
   ]
   $ Term.ind "Vec0" [("n", Term.var "Nat"), ("T", Term.typ 0)] [
     (
       "nil",
       [("T", Term.typ 0)],
-      curry (Term.var "Vec0") [Term.var "zero", Term.var "T"],
+      [Term.var "zero", Term.var "T"],
     ),
     (
       "push",
@@ -76,7 +99,7 @@ def test1: Term := -- Nat and Vec
         ("v", curry (Term.var "Vec0") [Term.var "n", Term.var "T"]),
         ("x", Term.var "T"),
       ],
-      curry (Term.var "Vec0") [curry (Term.var "succ") [Term.var "n"], Term.var "T"],
+      [curry (Term.var "succ") [Term.var "n"], Term.var "T"],
     ),
   ]
   $ Term.bnd "one" (curry (Term.var "succ") [Term.var "zero"]) (Term.var "Nat")
