@@ -328,9 +328,21 @@ def test5 :=
     (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
     (Exp.typ 0)
 
+def test6 :=
+  typeCheck?
+    (
+      id
+      $ Exp.inh "Nat" (Exp.typ 0)
+      $ Exp.inh "zero" (Exp.var "Nat")
+      $ Exp.inh "succ" (Exp.pi "n" (Exp.var "Nat") (Exp.var "Nat"))
+      $ Exp.typ 0
+    )
+    (Exp.typ 0)
+
 #eval test1
 #eval test2
 #eval test3
 #eval test4
+#eval test6
 
 end EL2.Core

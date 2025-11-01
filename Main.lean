@@ -1,7 +1,5 @@
 import EL2.Core.CoreV2
-import EL2.Term.Term
-
-open EL2.Term
+open EL2.Core
 
 def main  : IO Unit := do
   IO.println "--------------------------------------"
