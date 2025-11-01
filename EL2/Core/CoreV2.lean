@@ -353,7 +353,7 @@ def test6 :=
       $ Exp.inh "succ" (Exp.pi "n" (Exp.var "Nat") (Exp.var "Nat"))
       $ Exp.typ 0
     )
-    (Exp.typ 0)
+    (Exp.typ 1)
 
 #eval test1
 #eval test2
