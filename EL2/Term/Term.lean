@@ -118,6 +118,12 @@ def typeCheck? (term: Term) (type: Term): Option Bool :=
 def test0: Term :=
   -- output correct but our core couldn't process yet
   -- like inductive type like this: let Nat: Type0 := Pair(Bool, Option Nat)
+
+  -- chatgpt suggests that we can use fixpoint combinator
+  -- You could introduce an explicit μ operator (like in μ F. F(μ F))
+
+  -- or constant just like our inh earlier
+
   id
   $ Term.ind 1 "Nat" [] [
     ("zero", [], []),
