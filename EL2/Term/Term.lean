@@ -47,7 +47,27 @@ partial def Term.toExp (term: Term): Exp :=
       -- Scott encoding
       -- ind works like bnd - it binds type name, and constructor name
       -- then give body
-      sorry
+      let R := Term.var "_R"  -- fresh result placeholder
+
+      -- Encode each constructor: Π (args), retType
+      let encCons := cons.map (fun (cName, args, retType) =>
+        (cName, chain args retType)
+      )
+
+      -- The Scott-encoded type of the inductive
+      let scottType := chain params (chain encCons R)
+
+      -- First, bind all constructors (so they are visible to body)
+      let withConstructors :=
+        encCons.foldr (fun (cName, cType) acc =>
+          Term.bnd cName cType (Term.typ 0) acc
+        ) body
+
+      -- Finally, bind the inductive type itself
+      let full := Term.bnd name scottType (Term.typ 0) withConstructors
+
+      -- Recurse to Exp
+      full.toExp
 
 
 
@@ -78,6 +98,6 @@ def test1 := -- Nat and Vec
   $ Term.bnd "single_vec" (curry (Term.var "push") [Term.var "empty_vec"]) (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
   $ Term.ann (Term.var "single_vec") (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
 
-#eval test1.toExp
+#eval typeInfer? test1.toExp
 
 end EL2.Term
