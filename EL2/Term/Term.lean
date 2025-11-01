@@ -34,6 +34,16 @@ partial def curry (cmd: Term) (args: List Term): Term :=
     | arg :: rest =>
       curry (Term.app cmd arg) rest
 
+def scott
+  (name: String)
+  (params: List (String × Term))
+  (cons: List (String × List (String × Term) × Term))
+  (body: Term): Term :=
+    -- Scott encoding
+    -- ind works like bnd - it binds type name, and constructor name
+    -- then give body
+    sorry
+
 partial def Term.toExp (term: Term): Exp :=
   match term with
     | Term.typ level => Exp.typ level
@@ -43,31 +53,7 @@ partial def Term.toExp (term: Term): Exp :=
     | Term.ann term type => Exp.ann term.toExp type.toExp
     | Term.lam name body => Exp.lam name body.toExp
     | Term.pi name type body => Exp.pi name type.toExp body.toExp
-    | Term.ind name params cons body =>
-      -- Scott encoding
-      -- ind works like bnd - it binds type name, and constructor name
-      -- then give body
-      let R := Term.var "_R"  -- fresh result placeholder
-
-      -- Encode each constructor: Π (args), retType
-      let encCons := cons.map (fun (cName, args, retType) =>
-        (cName, chain args retType)
-      )
-
-      -- The Scott-encoded type of the inductive
-      let scottType := chain params (chain encCons R)
-
-      -- First, bind all constructors (so they are visible to body)
-      let withConstructors :=
-        encCons.foldr (fun (cName, cType) acc =>
-          Term.bnd cName cType (Term.typ 0) acc
-        ) body
-
-      -- Finally, bind the inductive type itself
-      let full := Term.bnd name scottType (Term.typ 0) withConstructors
-
-      -- Recurse to Exp
-      full.toExp
+    | Term.ind name params cons body => (scott name params cons body).toExp
 
 
 
