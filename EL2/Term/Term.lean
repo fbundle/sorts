@@ -34,8 +34,25 @@ partial def curry (cmd: Term) (args: List Term): Term :=
 partial def scott (k: Nat) (term: Term): Term :=
   -- Scott encoding - turn inductive type into pi
   match term with
-    | Term.ind name params cons body =>
-      sorry
+    | Term.ind indName params cons body =>
+      let R := Term.var s!"_{k}"  -- fresh result type variable
+
+      -- Scott-encode each constructor type
+      let encCons := cons.map (fun (cName, args, cRetType) =>
+        (cName, chain args cRetType)  -- constructor args -> constructor return type
+      )
+
+      -- Chain constructors into a single Pi to R (this is the Scott type body)
+      let scottType := chain params (chain encCons R)
+
+      -- Fold right: bind constructors first
+      let withConstructors := encCons.foldr (fun (cName, cType) acc =>
+        Term.bnd cName cType (Term.typ 0) acc
+      ) body
+
+      -- Finally bind the inductive type itself
+      Term.bnd indName scottType (Term.typ 0) withConstructors
+
     | _ => term
 
 def test1 := -- Nat and Vec
@@ -65,6 +82,6 @@ def test1 := -- Nat and Vec
   $ Term.bnd "single_vec" (curry (Term.var "push") [Term.var "empty_vec"]) (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
   $ Term.ann (Term.var "single_vec") (curry (Term.var "Vec0") [Term.var "one", Term.var "Nat"])
 
-#eval test1
+#eval (scott 0 test1)
 
 end EL2.Term
