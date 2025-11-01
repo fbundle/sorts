@@ -345,15 +345,16 @@ def test5 :=
     (Exp.typ 0)
 
 def test6 :=
-  typeCheck?
-    (
-      id
-      $ Exp.inh "Nat" (Exp.typ 0)
-      $ Exp.inh "zero" (Exp.var "Nat")
-      $ Exp.inh "succ" (Exp.pi "n" (Exp.var "Nat") (Exp.var "Nat"))
-      $ Exp.typ 0
-    )
-    (Exp.typ 1)
+  let e := ( id
+    $ Exp.inh "Nat" (Exp.typ 0)
+    $ Exp.inh "zero" (Exp.var "Nat")
+    $ Exp.inh "succ" (Exp.pi "n" (Exp.var "Nat") (Exp.var "Nat"))
+    $ Exp.typ 0
+  )
+  let t := Exp.typ 1
+  typeCheck? e t
+
+
 
 #eval test1
 #eval test2
