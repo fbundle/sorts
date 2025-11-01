@@ -329,14 +329,26 @@ def test4 :=
 
 
 def test5 :=
-  checkExp? emptyCtx
+  typeCheck
     (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
-    (Val.typ 0)
+    (Exp.typ 0)
+
+def test6 :=
+  typeCheck
+    (Exp.eq (Exp.typ 1) (Exp.typ 1))
+    (Exp.typ 2)
+
+def test7 :=
+  typeCheck
+    (Exp.eq (Exp.typ 0) (Exp.typ 1))
+    (Exp.typ 2)
 
 #eval test1
 #eval test2
 #eval test3
 #eval test4
 #eval test5
+#eval test6
+#eval test7
 
 end EL2.CoreV2
