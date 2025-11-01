@@ -116,6 +116,7 @@ def typeCheck? (term: Term) (type: Term): Option Bool :=
   EL2.Core.typeCheck? term.toExp type.toExp
 
 def test0: Term :=
+  -- output correct but our core couldn't process yet
   id
   $ Term.ind (Term.typ 0) "Nat" [] [
     ("zero", [], []),

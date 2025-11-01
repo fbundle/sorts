@@ -278,6 +278,13 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
             (← whnf? (Val.clos ctx.ρ type))
           ) body val
 
+      | Exp.app (Exp.lam name body) arg => -- process untyped lam (λx.y z)
+        let argType ← whnf? (← inferExp? ctx arg)
+        let argValue ← whnf? (Val.clos ctx.ρ arg)
+
+        let subCtx := ctx.bind name argValue argType
+        checkExp? subCtx body val
+
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
 end
