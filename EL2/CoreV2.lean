@@ -265,16 +265,16 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
       | Exp.fst pair =>
         let pairType ← inferExp? ctx pair
         match ← whnf? pairType with
-          | Val.clos env (Exp.sigma fstName fstType sndType) =>
+          | Val.clos env (Exp.sigma _ fstType _) =>
             eqVal? ctx.k (Val.clos env fstType) val
           | _ => none
 
-      | Exp.fst pair =>
+      | Exp.snd pair =>
         let pairType ← inferExp? ctx pair
         match ← whnf? pairType with
           | Val.clos env (Exp.sigma fstName fstType sndType) =>
             let (subCtx, v) := ctx.intro fstName (Val.clos env fstType)
-            eqVal? ctx.k (Val.clos (env.update fstName v) sndType) val
+            eqVal? subCtx.k (Val.clos (env.update fstName v) sndType) val
           | _ => none
 
       | Exp.eq a b =>
