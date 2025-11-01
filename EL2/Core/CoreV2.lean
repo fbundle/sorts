@@ -342,12 +342,27 @@ def test5 :=
     (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
     (Exp.typ 0)
 
+def piMany (params: List (String × Exp)) (body: Exp): Exp :=
+  match params with
+    | [] => body
+    | (name, type) :: rest =>
+      Exp.pi name type (piMany rest body)
+
+def appMany (cmd: Exp) (args: List Exp): Exp :=
+  match args with
+    | [] => cmd
+    | arg :: rest =>
+      appMany (Exp.app cmd arg) rest
+
 def test6 :=
   let e := ( id
-    $ Exp.inh "Nat" (Exp.typ 0)
-    --$ Exp.inh "zero" (Exp.var "Nat")
-    --$ Exp.inh "succ" (Exp.pi "n" (Exp.var "Nat") (Exp.var "Nat"))
-    $ Exp.typ 0
+    $ .inh "Nat" (.typ 0)
+    $ .inh "zero" (.var "Nat")
+    $ .inh "succ" (.pi "n" (.var "Nat") (.var "Nat"))
+    $ .inh "Vec" (piMany [("n", .var "Nat"), ("T", .typ 0)] (.typ 0))
+    $ .inh "nil" (piMany [("T", .typ 0)] (appMany (.var "Vec") [.var "zero", .var "T"]))
+
+    $ .typ 0
   )
   let t := Exp.typ 1
   typeCheck? e t
