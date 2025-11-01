@@ -3,9 +3,9 @@
 -- with type universe (type_0, type_1, ...)
 -- added annotated term
 
--- TODO only Exp and typeCheck are public
+-- TODO only Exp, typeCheck?, typeInfer? are public
 
-namespace EL2.CoreV2
+namespace EL2.Core
 
 def traceOpt (err: String) (o: Option α): Option α :=
   match o with
@@ -40,7 +40,7 @@ inductive Exp where
   -- typ N is at level N + 2
   -- small types are at level 1
   -- terms are at level 0
-  | typ : (n: Nat) → Exp
+  | typ : (level: Nat) → Exp
   -- variable
   | var: (name: String) → Exp
   -- application
@@ -248,36 +248,39 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool := do
 
 end
 
-def typeCheck (m: Exp) (a: Exp): Option Bool := do
-  -- typeCheck
+def typeCheck? (exp: Exp) (type: Exp): Option Bool :=
+  -- typeCheck?
   -- some false - type check error
   -- none - parse error
-  checkExp? emptyCtx m (Val.clos emptyMap a)
+  checkExp? emptyCtx exp (Val.clos emptyMap type)
+
+def typeInfer? (exp: Exp): Option Val :=
+  inferExp? emptyCtx exp
 
 def test1 :=
-  typeCheck
+  typeCheck?
     (Exp.lam "B" (Exp.lam "y" (Exp.var "y")))
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
 
 def test2 :=
-  typeCheck
+  typeCheck?
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
     (Exp.typ 1)
 
 
 def test3 :=
-  typeCheck (Exp.typ 0) (Exp.typ 1)
+  typeCheck? (Exp.typ 0) (Exp.typ 1)
 
 
 def test4 :=
-  typeCheck
+  typeCheck?
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
     (Exp.typ 1)
 
 
 def test5 :=
   -- this is expected to fail
-  typeCheck
+  typeCheck?
     (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
     (Exp.typ 0)
 
@@ -286,4 +289,4 @@ def test5 :=
 #eval test3
 #eval test4
 
-end EL2.CoreV2
+end EL2.Core
