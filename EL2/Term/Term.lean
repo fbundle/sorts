@@ -71,7 +71,7 @@ partial def Term.toExp (term: Term): Exp :=
 
 
 
-def test1 := -- Nat and Vec
+def test1: Term := -- Nat and Vec
   id
   $ Term.ind "Nat" [] [
     ("zero", [], Term.var "Nat"),

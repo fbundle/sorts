@@ -3,7 +3,7 @@
 -- with type universe (type_0, type_1, ...)
 -- added annotated term
 
--- TODO only Exp, typeCheck?, typeInfer? are public
+-- TODO only Exp, typeCheck? are public
 
 namespace EL2.Core
 
@@ -253,9 +253,6 @@ def typeCheck? (exp: Exp) (type: Exp): Option Bool :=
   -- some false - type check error
   -- none - parse error
   checkExp? emptyCtx exp (Val.clos emptyMap type)
-
-def typeInfer? (exp: Exp): Option Val :=
-  inferExp? emptyCtx exp
 
 def test1 :=
   typeCheck?

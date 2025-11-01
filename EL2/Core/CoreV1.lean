@@ -2,7 +2,7 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...)
 
--- TODO only Exp and typeCheck are public
+-- TODO only Exp, typeCheck? are public
 
 namespace EL2.Core
 
@@ -244,9 +244,6 @@ def typeCheck? (exp: Exp) (type: Exp): Option Bool :=
   -- some false - type check error
   -- none - parse error
   checkExp? emptyCtx exp (Val.clos emptyMap type)
-
-def typeInfer? (exp: Exp): Option Val :=
-  inferExp? emptyCtx exp
 
 def test1 :=
   typeCheck?
