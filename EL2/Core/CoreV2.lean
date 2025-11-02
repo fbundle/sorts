@@ -58,8 +58,8 @@ def Exp.toString (e: Exp): String :=
     | Exp.app cmd arg => s!"({cmd.toString} {arg.toString})"
     | Exp.bnd name value type body => s!"let {name}: {type.toString} := {value.toString}\n{body.toString}"
     | Exp.ann term type => s!"({term.toString}: {type.toString})"
-    | Exp.lam name body => s!"(λ {name}.{body.toString})"
-    | Exp.pi name type body => s!"(Π {name}: {type.toString}. {body.toString})"
+    | Exp.lam name body => s!"(λ {name} {body.toString})"
+    | Exp.pi name type body => s!"(Π ({name}: {type.toString}) {body.toString})"
     | Exp.inh name type body => s!"* {name}: {type.toString}\n{body.toString})"
 
 instance: ToString Exp where
@@ -381,7 +381,8 @@ def test6 :=
     $ .typ 0
   )
   let t := Exp.typ 1
-  typeCheck? e t
+  --typeCheck? e t
+  e
 
 
 
