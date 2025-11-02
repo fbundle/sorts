@@ -376,7 +376,7 @@ def test6 :=
       .var "zero",
       .var "Nat",
       (.app (.var "nil") (.var "Nat")),
-      .var "one",
+      .var "zero",
     ]) (appMany (.var "Vec") [.var "one", .var "Nat"])
     $ .typ 0
   )

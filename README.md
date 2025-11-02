@@ -34,6 +34,6 @@ if the type checker is smart enough, it would be able to resolve its type into a
 * nil: (Π T: type_0. ((Vec zero) T))
 * push: (Π n: Nat. (Π T: type_0. (Π v: ((Vec n) T). (Π x: T. ((Vec (succ n)) T)))))
 let one: Nat := (succ zero)
-let singleton: ((Vec one) Nat) := ((((push zero) Nat) (nil Nat)) one)
+let singleton: ((Vec one) Nat) := ((((push zero) Nat) (nil Nat)) zero)
 type_0))))))
 ```
