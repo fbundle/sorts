@@ -23,3 +23,7 @@ There are two main ways to typecheck inductive types: (1) using fixpoint combina
 Both of which are not a simple weekend project, hence I decided to stop here. Currently, we simulate inductive types using `*` operator (or `inhabit`) which basically assume some type inhabits. 
 
 The example above assumed `Nat` is a constant of type `type_0`, `zero` is a constant of type `Nat`, `succ` is a function `Nat -> Nat`, etc.
+
+The original Coquand's algorithm can be found in `exp/coquand/1-s2.0-0167642395000216-main.pdf`, the implementation in Haskell is at `exp/coquand/app/Main.hs`, the implementation in Lean4 is at `EL2/Core/Coquand.lean`
+
+I respectively added type universes, inhabit, annotated type, and desugaring for application of untyped lambda.
