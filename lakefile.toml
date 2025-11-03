@@ -3,6 +3,9 @@ version = "0.1.0"
 defaultTargets = ["Main.lean"]
 
 [[lean_lib]]
+name = "Parser"
+
+[[lean_lib]]
 name = "EL2"
 
 [[lean_lib]]

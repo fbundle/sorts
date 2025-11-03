@@ -1,4 +1,4 @@
-namespace ParserCombinator
+namespace Parser.Combinator
 
 def Parser χ α := List χ → Option (α × List χ)
 
@@ -27,7 +27,7 @@ partial def Parser.list (p: Parser χ α): Parser χ (List α) := λ xs =>
   let rec loop (as: Array α) (xs: List χ): Option (List α × List χ) :=
     match p xs with
       | none => some (as.toList, xs)
-      | some (a, xs) => loop (as.push a) xs
+      | some (a, rest) => loop (as.push a) rest
   loop #[] xs
 
 def parseEmpty: Parser χ Unit := λ xs => some ((), xs)
@@ -55,9 +55,9 @@ def parseExactList [BEq χ] (ys: List χ): Parser χ Unit := λ xs => do
 
 def parseNewLine : Parser Char Unit := parseExact '\n'
 
-partial def parseWhiteSpace : Parser Char String := λ xs =>
+def parseWhiteSpace : Parser Char String := λ xs =>
   -- parse any whitespace
-  -- no whitespace is ok
+  -- empty whitespace is ok
   let rec loop (ys: Array Char) (xs: List Char): Option (String × List Char) :=
     match xs with
       | [] => (String.mk ys.toList, xs)
@@ -71,10 +71,30 @@ partial def parseWhiteSpace : Parser Char String := λ xs =>
 
 def parseSomeWhiteSpace : Parser Char String :=
   -- parse some whitespace
-  -- no whitespace is not ok
+  -- empty whitespace is not ok
   parseWhiteSpace.mapOption (λ s => if s.length = 0 then none else s)
+
+def parseName: Parser Char String := λ xs =>
+  -- parse a non-whitespace string
+  -- empty name is ok
+  let rec loop (ys: Array Char) (xs: List Char): Option (String × List Char) :=
+    match xs with
+      | [] => (String.mk ys.toList, xs)
+      | x :: rest =>
+        if ¬ x.isWhitespace then
+          loop (ys.push x) rest
+        else
+          (String.mk ys.toList, xs)
+  loop #[] xs
+
+def parseSomeName: Parser Char String :=
+  -- parse a non-whitespace string
+  -- empty name is not ok
+  parseName.mapOption (λ s => if s.length = 0 then none else s)
+
 
 def parseExactString (ys: String): Parser Char Unit := parseExactList ys.toList
 
 
-end ParserCombinator
+
+end Parser.Combinator
