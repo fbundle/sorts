@@ -33,7 +33,7 @@ partial def Parser.list (p: Parser χ α): Parser χ (List α) := λ xs =>
 def parseEmpty: Parser χ Unit := λ xs => some ((), xs)
 def parseFail: Parser χ Unit := λ _ => none
 
-def parseSingle [BEq χ] (y: χ): Parser χ Unit := λ xs =>
+def parseExact [BEq χ] (y: χ): Parser χ Unit := λ xs =>
   match xs with
     | [] => none
     | x :: xs =>
@@ -42,14 +42,14 @@ def parseSingle [BEq χ] (y: χ): Parser χ Unit := λ xs =>
       else
         none
 
-def parseList [BEq χ] (ys: List χ): Parser χ Unit := λ xs => do
+def parseExactList [BEq χ] (ys: List χ): Parser χ Unit := λ xs => do
   match ys with
     | [] => parseEmpty xs
     | y :: ys =>
-      let (_, xs) ← parseSingle y xs
-      parseList ys xs
+      let (_, xs) ← parseExact y xs
+      parseExactList ys xs
 
-#eval parseList "hehe".toList "hehea123".toList
+#eval parseExactList "hehe".toList "hehea123".toList
 
 
 
