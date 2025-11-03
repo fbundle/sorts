@@ -66,20 +66,27 @@ def newTokenizer (splitTokens: List String): String → List String :=
 
 def Parser α := List String → Option ((List String) × α)
 
+def Parser.mapPartial  (p: Parser α) (f: α → Option β): Parser β := λ tokens => do
+  let (rest, a) ← p tokens
+  let b ← f a
+  pure (rest, b)
+
+def Parser.map (p: Parser α) (f: α → β): Parser β := p.mapPartial (λ a => some (f a))
+
 open EL2.Core
 
-def parseSingle (convert?: String → Option α): Parser α := λ tokens => do
+def parseHead: Parser String := λ tokens =>
   match tokens with
     | [] => none
     | head :: rest =>
-      let a ← convert? head
-      pure (rest, a)
+      (rest, head)
 
-def parseSingleString (pred: String → Bool): Parser String := parseSingle (λ head =>
-  if pred head then some head else none
-)
+def parseSingle (convert?: String → Option α): Parser α := parseHead.mapPartial convert?
 
-def parseExact (pattern: String): Parser String := parseSingleString (· = pattern)
+def predToOption (f: α → Bool): α → Option α := λ a =>
+  if f a then some a else none
+
+def parseExact (pattern: String): Parser String := parseSingle $ predToOption (· = pattern)
 
 def parseTyp: Parser Exp := parseSingle (λ head => do
   if ¬ "Type".isPrefixOf head then none else
@@ -87,6 +94,8 @@ def parseTyp: Parser Exp := parseSingle (λ head => do
   let level ← levelStr.toNat?
   pure (Exp.typ level)
 )
+
+def parseVar: Parser Exp :=
 
 
 
