@@ -221,8 +221,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
       | Exp.typ n => pure (Val.typ (n + 1))
       | Exp.var name => ctx.Γ.lookup? name
 
-      | Exp.app cmd arg =>
-        -- for Exp.app, cmd should be typ, var, or app
+      | Exp.app cmd arg => -- for Exp.app, cmd should be typ, var, or app
         match ← inferExp? ctx cmd with
           | Val.clos env (Exp.pi name typeA typeB) =>
             if ¬ (← checkExp? ctx arg (← eval? env typeA)) then
