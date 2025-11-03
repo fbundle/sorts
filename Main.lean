@@ -8,12 +8,12 @@ def s := "
 inh Nat : Type0 in
 inh zero : Nat in
 inh succ : Π Nat -> Nat in
-inh Vec : Π (n: Nat) (T: Type0) -> Type0 in
-inh nil : Π (T: Type0) -> Vec in
-inh push : Π (n: Nat) (T: Type0) (v: (Vec n T)) (x: T) -> (Vec n T) in
-let one: Nat := (succ zero) in
-let two: Nat := (succ one) in
-let singleton: (Vec one Nat) := (push zero Nat (nil Nat) two) in
+inh Vec : Π Nat Type0 -> Type0 in
+-- inh nil : Π (T: Type0) -> (Vec 0 T) in
+-- inh push : Π (n: Nat) (T: Type0) (v: (Vec n T)) (x: T) -> (Vec n T) in
+-- let one: Nat := (succ zero) in
+-- let two: Nat := (succ one) in
+-- let singleton: (Vec one Nat) := (push zero Nat (nil Nat) two) in
 Type0
 "
 

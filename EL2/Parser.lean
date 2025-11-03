@@ -158,23 +158,29 @@ partial def parsePi (parseExp: Parser Exp): Parser Exp :=
     parseExact "->" ++
     parseExp
   ).map (λ (_, annList, _, typeB) =>
-    let rec loop (annList: List (String × Exp)): Exp :=
+    let rec loop1 (annList: List (String × Exp)): Exp :=
       match annList with
         | [] => typeB
         | (name, typeA) :: rest =>
-          Exp.pi name typeA (loop rest)
+          Exp.pi name typeA (loop1 rest)
 
-    loop annList
+    loop1 annList
   )
-
   ||
-
   (
     (parseExact "Π" || parseExact "∀" || parseExact "forall") ++
-    parseExp ++
+    parseExp.many ++
     parseExact "->" ++
     parseExp
-  ).map (λ (_, typeA, _, typeB) => Exp.pi "_" typeA typeB)
+  ).map (λ (_, typeAList, _, typeB) =>
+    let rec loop2 (typeAList: List Exp): Exp :=
+      match typeAList with
+        | [] => typeB
+        | typeA :: rest =>
+          Exp.pi "_" typeA (loop2 rest)
+
+    loop2 typeAList
+  )
 
 partial def parseLam (parseExp: Parser Exp): Parser Exp :=
   (
