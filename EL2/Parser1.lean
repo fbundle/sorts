@@ -86,7 +86,7 @@ def parseLam: StringParser Exp :=
 
 def parseLineBreak :=
   -- <whitespace_without_newline> <newline> <writespace>
-  parseWhiteSpaceButNotNewLineWeak ++
+  parseWhiteSpaceWithoutNewLineWeak ++
   (parseExactString "\n" || parseExactString ";") ++
   parseWhiteSpaceWeak
 

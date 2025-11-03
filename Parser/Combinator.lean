@@ -72,7 +72,7 @@ def parseWhiteSpaceWeak : Parser Char String := λ xs =>
 
   loop #[] xs
 
-def parseWhiteSpaceButNotNewLineWeak : Parser Char String := λ xs =>
+def parseWhiteSpaceWithoutNewLineWeak : Parser Char String := λ xs =>
   -- parse any whitespace but not new line
   -- empty whitespace is ok
   let rec loop (ys: Array Char) (xs: List Char): Option (String × List Char) :=
