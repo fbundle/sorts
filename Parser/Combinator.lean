@@ -74,6 +74,21 @@ def parseWhiteSpaceWeak : Parser Char String := λ xs =>
 
   loop #[] xs
 
+def parseWhiteSpaceNotNewLineWeak : Parser Char String := λ xs =>
+  -- parse any whitespace but not new line
+  -- empty whitespace is ok
+  let rec loop (ys: Array Char) (xs: List Char): Option (String × List Char) :=
+    match xs with
+      | [] => (String.mk ys.toList, xs)
+      | x :: rest =>
+        if x.isWhitespace ∧ (¬ x = '\n') then
+          loop (ys.push x) rest
+        else
+          (String.mk ys.toList, xs)
+
+  loop #[] xs
+
+
 def parseWhiteSpace : Parser Char String :=
   -- parse some whitespace
   -- empty whitespace is not ok
