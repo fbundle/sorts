@@ -1,5 +1,5 @@
 namespace EL2.Parser.Internal
-
+-- TOKENIZER
 def sortSplitTokens (splitTokens : List String) : List String :=
   -- sort tokens so that if s2 is a prefix of s1, s1 should come first
   let lessEqual (s1: String) (s2: String): Bool :=
@@ -59,6 +59,10 @@ def tokenize (sortedSplitTokens: List String) (s: String) : List String :=
 
 def newTokenizer (splitTokens: List String): String → List String :=
   tokenize (sortSplitTokens splitTokens)
+
+-- PARSER COMBINATOR
+
+
 
 end EL2.Parser.Internal
 
