@@ -13,7 +13,10 @@ inh nil : Π (T: Type0) -> (Vec zero T) in
 inh push : Π (n: Nat) (T: Type0) (v: (Vec n T)) (x: T) -> (Vec (succ n) T) in
 let one: Nat := (succ zero) in
 let two: Nat := (succ one) in
-let singleton: (Vec one Nat) := (push zero Nat (nil Nat) two) in
+let pure: Π Nat -> (Vec one Nat) := λ x =>
+  (push zero Nat (nil Nat) x)
+in
+let pure_two: (Vec one Nat) := (pure two) in
 Type0
 "
 
