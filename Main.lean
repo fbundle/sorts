@@ -26,7 +26,7 @@ def main  : IO Unit := do
   match parse tokens with
     | none => IO.println "parse_error"
     | some (rest, e) =>
-      IO.println s!"{repr e}"
+      IO.println s!"{e}"
       match rest with
         | [] =>
           if true = typeCheck? e t then
