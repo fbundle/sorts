@@ -50,7 +50,7 @@ def parseExactList [BEq χ] (ys: List χ): Parser χ (List χ) := λ xs => do
 
 -- STRING
 
-def parseNewLine : Parser Char Unit := parseExact '\n'
+def parseNewLine : Parser Char Char := parseExact '\n'
 
 def parseWhiteSpaceWeak : Parser Char String := λ xs =>
   -- parse any whitespace
@@ -89,7 +89,8 @@ def parseName: Parser Char String :=
   -- empty name is not ok
   parseNameWeak.mapOption (λ s => if s.length = 0 then none else s)
 
-def parseExactString (ys: String): Parser Char Unit := parseExactList ys.toList
+def parseExactString (ys: String): Parser Char String :=
+  (parseExactList ys.toList).map (λ ys => String.mk ys)
 
 #eval parseName "abc123  ".toList
 #eval parseWhiteSpace "abc123  ".toList
