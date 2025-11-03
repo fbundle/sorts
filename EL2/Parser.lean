@@ -87,13 +87,11 @@ def Parser.either (p1: Parser α) (p2: Parser α): Parser α := λ tokens => do
 
 infixr: 50 " || " => Parser.either -- lower precedence than concat
 
-partial def Parser.many (p: Parser α) (stop: Parser β): Parser (List α) := λ tokens => do
+partial def Parser.many (p: Parser α): Parser (List α) := λ tokens =>
   let rec loop (acc: Array α) (tokens: List String): Option (List String × List α) :=
-    match stop tokens with
-      | some _ => some (tokens, acc.toList)
-      | none => do
-        let (tokens, a) ← p tokens
-        loop (acc.push a) tokens
+    match p tokens with
+      | none => some (tokens, acc.toList)
+      | some (rest, e) => loop (acc.push e) rest
   loop #[] tokens
 
 open EL2.Core
@@ -203,9 +201,11 @@ def parseInh (parseExp: Parser Exp): Parser Exp :=
     parseExp -- body
   ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
 
-def parseApp (stopTokens: List String) (parseExp: Parser Exp) (cmd: Exp): Parser Exp :=
-  let parseExpList := parseExp.many (parseExactMany stopTokens)
-  parseExpList.mapPartial (λ args =>
+def parseApp (parseExp: Parser Exp) : Parser Exp :=
+  parseExp.many.mapPartial (λ es =>
+    match es with
+      | [] => none
+      | cmd :: args =>
         some $ args.foldl (λ cmd arg =>
           Exp.app cmd arg
         ) cmd
@@ -217,29 +217,24 @@ def specialTokens: List String := [
 
 partial def parseExp: Parser Exp := λ tokens => do
   dbg_trace s!"[DBG_TRACE] parsing {tokens}"
-  match parseExact "(" tokens with
-    | some _ => -- parse until ")"
-      let (rest, cmd) ← (
-        parseTyp ||
-        parseVar specialTokens ||
-        parsePi parseExp ||
-        parseLam parseExp ||
-        parseBnd parseExp ||
-        parseInh parseExp
-      ) tokens
-      parseApp [")"] parseExp cmd rest
+  (
+    (
+      parseTyp ||
+      parseVar specialTokens ||
+      parsePi parseExp ||
+      parseLam parseExp ||
+      parseBnd parseExp ||
+      parseInh parseExp ||
+      parseApp parseExp
+    )
+    ||
+    (
+      (parseExact "(") *
+      parseExp *
+      parseExact ")"
+    ).map (λ (_, e, _) => e)
+  ) tokens
 
-    | none => -- parse until special token
-      let (rest, cmd) ← (
-        parseTyp ||
-        parseVar specialTokens ||
-        parsePi parseExp ||
-        parseLam parseExp ||
-        parseBnd parseExp ||
-        parseInh parseExp
-      ) tokens
-
-      parseApp specialTokens parseExp cmd rest
 
 
 #eval parseInh (parseVar []) ["inh", "name", ":", "type", "in", "hehe"]
