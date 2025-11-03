@@ -279,7 +279,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
         let subCtx := ctx.bind name argValue argType
         checkExp? subCtx body val
 
-
       | _ => eqVal? ctx.k (← inferExp? ctx exp) val
 
 end
