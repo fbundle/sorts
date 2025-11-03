@@ -25,7 +25,7 @@ end
 
 partial def parseVar: StringParser Exp := parseName.map (λ name => Exp.var name)
 
-partial def parseType: StringParser Exp :=
+partial def parseColonType: StringParser Exp :=
   -- : X (-> X)^n for some n ≥ 0
   let parseAnn: StringParser (String × Exp) :=
     (
@@ -83,6 +83,27 @@ def parseLam: StringParser Exp :=
     parseExactString "=>" ++
     parse
   ).map (λ (_, _, name, _, _, body) => Exp.lam name body)
+
+def parseBnd: StringParser Exp :=
+  (
+    parseExactString "let" ++
+    parseWhiteSpaceWeak ++
+    parseName ++
+    parseWhiteSpaceWeak ++
+    parseExactString ":" ++
+    parseWhiteSpaceWeak ++
+    parse ++
+    parseWhiteSpaceWeak ++
+    parseExactString ":=" ++
+    parseWhiteSpaceWeak ++
+    parse ++
+    parseWhiteSpaceButNotNewLineWeak ++
+    (parseExactString "\n" || parseExactString ";") ++
+    parse
+  ).map (λ (_, _, name, _, _, _, type, _, _, _, value, _, _, body) =>
+    Exp.bnd name value type body
+  )
+
 
 
 
