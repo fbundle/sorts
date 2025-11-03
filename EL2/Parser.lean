@@ -193,9 +193,9 @@ def parseInh (parseExp: Parser Exp): Parser Exp :=
 def parseApp (stopTokens: List String) (parseExp: Parser Exp) (cmd: Exp): Parser Exp :=
   let parseExpList := parseExp.many (parseExactMany stopTokens)
   parseExpList.mapPartial (λ args =>
-    some $ args.foldl (λ cmd arg =>
-      Exp.app cmd arg
-    ) cmd
+        some $ args.foldl (λ cmd arg =>
+          Exp.app cmd arg
+        ) cmd
   )
 
 def specialTokens: List String := [
@@ -205,7 +205,15 @@ def specialTokens: List String := [
 partial def parseExp: Parser Exp := λ tokens => do
   match parseExact "(" tokens with
     | some _ => -- parse until ")"
-      parseApp [")"] parseExp tokens
+      let (tokens, cmd) ← (
+        parseTyp ||
+        parseVar specialTokens ||
+        parsePi parseExp ||
+        parseLam parseExp ||
+        parseBnd parseExp ||
+        parseInh parseExp
+      ) tokens
+      parseApp [")"] parseExp cmd tokens
 
     | none => -- parse until special token
       let (tokens, cmd) ← (
@@ -223,9 +231,9 @@ partial def parseExp: Parser Exp := λ tokens => do
 private def s := "
 inh Nat : Type0
 inh zero : Nat
-
-
 "
+
+#eval (newTokenizer ("(" :: ")" :: specialTokens)) s
 
 
 
