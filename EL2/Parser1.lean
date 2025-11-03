@@ -26,7 +26,7 @@ end
 partial def parseVar: StringParser Exp := parseName.map (λ name => Exp.var name)
 
 partial def parseType: StringParser Exp :=
-  -- : X (-> X)^n
+  -- : X (-> X)^n for some n ≥ 0
   let parseAnn: StringParser (String × Exp) :=
     (
       parseExactString "(" ++
@@ -50,7 +50,7 @@ partial def parseType: StringParser Exp :=
       parseAnn
     ).map (λ (_, _, x) => x)
 
-  let aaa := (
+  (
     parseExactString ":" ++
     parseWhiteSpaceWeak ++
     parseAnn ++
@@ -72,13 +72,17 @@ partial def parseType: StringParser Exp :=
           loop (Exp.pi name type lastExp) rest
 
     loop last.snd init
-
   )
 
-
-
-
-  sorry
+def parseLam: StringParser Exp :=
+  (
+    (parseExactString "λ" || parseExactString "lam") ++
+    parseWhiteSpaceWeak ++
+    parseName ++
+    parseWhiteSpaceWeak ++
+    parseExactString "=>" ++
+    parse
+  ).map (λ (_, _, name, _, _, body) => Exp.lam name body)
 
 
 
