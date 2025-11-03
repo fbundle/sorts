@@ -51,6 +51,33 @@ def parseExactList [BEq χ] (ys: List χ): Parser χ Unit := λ xs => do
 
 #eval parseExactList "hehe".toList "hehea123".toList
 
+-- STRING
+
+def parseNewLine : Parser Char Unit := parseExact '\n'
+
+partial def parseWhiteSpace : Parser Char String := λ xs =>
+  -- parse any whitespace
+  -- no whitespace is ok
+  let rec loop (ys: Array Char) (xs: List Char): Option (String × List Char) :=
+    match xs with
+      | [] => (String.mk ys.toList, xs)
+      | x :: rest =>
+        if x.isWhitespace then
+          loop (ys.push x) rest
+        else
+          (String.mk ys.toList, xs)
+
+  loop #[] xs
+
+def parseSomeWhiteSpace : Parser Char String :=
+  -- parse some whitespace
+  -- no whitespace is not ok
+  parseWhiteSpace.mapOption (λ s => if s.length = 0 then none else s)
+
+
+
+
+def parseExactString (ys: String): Parser Char Unit := parseExactList ys.toList
 
 
 
