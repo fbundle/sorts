@@ -30,5 +30,30 @@ partial def Parser.list (p: Parser χ α): Parser χ (List α) := λ xs =>
       | some (a, xs) => loop (as.push a) xs
   loop #[] xs
 
+def parseEmpty: Parser χ Unit := λ xs => some ((), xs)
+def parseFail: Parser χ Unit := λ _ => none
+
+def parseSingle [BEq χ] (y: χ): Parser χ Unit := λ xs =>
+  match xs with
+    | [] => none
+    | x :: xs =>
+      if y == x then
+        some ((), xs)
+      else
+        none
+
+def parseList [BEq χ] (ys: List χ): Parser χ Unit := λ xs => do
+  match ys with
+    | [] => parseEmpty xs
+    | y :: ys =>
+      let (_, xs) ← parseSingle y xs
+      parseList ys xs
+
+
+
+
+
+
+
 
 end ParserCombinator
