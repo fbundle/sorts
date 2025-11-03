@@ -36,8 +36,6 @@ inductive Exp where
   | app: (cmd: Exp) → (arg: Exp) → Exp
   -- let binding: let name: type := value
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
-  -- annotated term
-  | ann: (term: Exp) → (type: Exp) → Exp
   -- λ abstraction
   | lam: (name: String) → (body: Exp) → Exp
   -- Π type: Π (name: type) body - type of abs
@@ -52,7 +50,6 @@ def Exp.toString (e: Exp): String :=
     | Exp.var name => name
     | Exp.app cmd arg => s!"({cmd.toString} {arg.toString})"
     | Exp.bnd name value type body => s!"let {name}: {type.toString} := {value.toString}\n{body.toString}"
-    | Exp.ann term type => s!"({term.toString}: {type.toString})"
     | Exp.lam name body => s!"(λ {name} {body.toString})"
     | Exp.pi name type body => s!"(Π ({name}: {type.toString}) {body.toString})"
     | Exp.inh name type body => s!"* {name}: {type.toString}\n{body.toString})"
@@ -114,9 +111,7 @@ partial def eval? (env: Map Val) (exp: Exp): Option Val := do
     | Exp.bnd name val _ body =>
       eval? (env.update name (← eval? env val)) body
 
-    | Exp.ann term _ =>
-      eval? env term
-
+    -- skip lam pi inh
     | _ => pure (Val.clos env exp)
 end
 
@@ -130,18 +125,16 @@ partial def whnf? (val: Val): Option Val := do
 
     | _ => pure val
 
-
-
 -- DEFINITIONAL EQUALITY
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
     match (← whnf? u1, ← whnf? u2) with
       | (Val.typ n1, Val.typ n2) => pure (n1 = n2)
 
-      | (Val.app cmd1 arg1, Val.app cmd2 arg2) =>
-        pure ((← eqVal? k cmd1 cmd2) ∧ (← eqVal? k arg1 arg2))
-
       | (Val.gen k1, Val.gen k2) =>
         pure (k1 = k2)
+
+      | (Val.app cmd1 arg1, Val.app cmd2 arg2) =>
+        pure ((← eqVal? k cmd1 cmd2) ∧ (← eqVal? k arg1 arg2))
 
       | (Val.clos env1 (Exp.lam name1 body1), Val.clos env2 (Exp.lam name2 body2)) =>
         let v := Val.gen k
@@ -237,13 +230,6 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
     match exp with
       | Exp.typ n => pure (Val.typ (n + 1))
       | Exp.var name => ctx.Γ.lookup? name
-      | Exp.ann term type =>
-        let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
-        let b ← checkExp? ctx term (Val.clos ctx.ρ type)
-        if b then
-          pure (Val.clos ctx.ρ type)
-        else
-          none
 
       | Exp.app cmd arg =>
         -- for Exp.app, cmd should be typ, var, or app
