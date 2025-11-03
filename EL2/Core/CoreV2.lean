@@ -89,10 +89,10 @@ instance : ToString (Map Val) where
   toString (m: Map Val): String := m.toString Val.toString
 
 
-
--- a short way of writing the whnf algorithm
+-- WHNF
 mutual
 partial def app? (cmd: Val) (arg: Val): Option Val := do
+  -- reduce (Val.app cmd arg)
   match cmd with
     | Val.clos env (Exp.lam name body) =>
       eval? (env.update name arg) body
@@ -101,6 +101,7 @@ partial def app? (cmd: Val) (arg: Val): Option Val := do
       pure (Val.app cmd arg)
 
 partial def eval? (env: Map Val) (exp: Exp): Option Val := do
+  -- reduce (Val.clos env exp)
   match exp with
     | Exp.typ n => pure (Val.typ n)
 
@@ -129,7 +130,9 @@ partial def whnf? (val: Val): Option Val := do
 
     | _ => pure val
 
--- the conversion algorithm; the integer is used to represent the introduction of a fresh variable
+
+
+-- DEFINITIONAL EQUALITY
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
     match (← whnf? u1, ← whnf? u2) with
       | (Val.typ n1, Val.typ n2) => pure (n1 = n2)
@@ -159,8 +162,7 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
         )
       | _ => pure false
 
--- type checking and type inference
-
+-- TYPE CHECKING
 structure Ctx where
   maxN: Nat
   debug: Bool
@@ -381,8 +383,7 @@ def test6 :=
     $ .typ 0
   )
   let t := Exp.typ 1
-  --typeCheck? e t
-  e
+  typeCheck? e t
 
 
 
