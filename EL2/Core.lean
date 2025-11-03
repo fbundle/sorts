@@ -2,8 +2,7 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...) and inhabit
 
-namespace EL2.Core.Internal
-
+namespace EL2.Core
 structure Map α where
   list: List (String × α)
 
@@ -82,6 +81,10 @@ instance: ToString Val where
 
 instance : ToString (Map Val) where
   toString (m: Map Val): String := m.toString Val.toString
+
+end EL2.Core
+
+namespace EL2.Core.Internal
 
 -- WHNF
 mutual
@@ -280,7 +283,11 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
       | _ => eqVal? ctx.k (← inferExpWeak? ctx exp) val
 end
 
--- OTHER
+end EL2.Core.Internal
+
+namespace EL2.Core
+
+open Internal
 
 def typeCheck? (exp: Exp) (type: Exp): Option Bool := do
   -- typeCheck?
@@ -361,9 +368,4 @@ def test6 :=
 #eval test4
 #eval test6
 
-end EL2.Core.Internal
-
-
-namespace EL2.Core
-export EL2.Core.Internal (Exp typeCheck?)
 end EL2.Core

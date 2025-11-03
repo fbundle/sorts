@@ -1,3 +1,5 @@
+import EL2.Core
+
 namespace EL2.Parser.Internal
 -- TOKENIZER
 def sortSplitTokens (splitTokens : List String) : List String :=
@@ -61,6 +63,34 @@ def newTokenizer (splitTokens: List String): String → List String :=
   tokenize (sortSplitTokens splitTokens)
 
 -- PARSER COMBINATOR
+
+def Parser α := List String → Option ((List String) × α)
+
+open EL2.Core
+
+def parseSingle (convert?: String → Option α): Parser α := λ tokens => do
+  match tokens with
+    | [] => none
+    | head :: rest =>
+      let a ← convert? head
+      pure (rest, a)
+
+def parseSingleString (pred: String → Bool): Parser String := parseSingle (λ head =>
+  if pred head then some head else none
+)
+
+def parseExact (pattern: String): Parser String := parseSingleString (· = pattern)
+
+def parseTyp: Parser Exp := parseSingle (λ head => do
+  if ¬ "Type".isPrefixOf head then none else
+  let levelStr := head.stripPrefix "Type"
+  let level ← levelStr.toNat?
+  pure (Exp.typ level)
+)
+
+
+
+
 
 
 
