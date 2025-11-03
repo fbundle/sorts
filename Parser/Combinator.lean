@@ -98,7 +98,4 @@ def parseExactString (ys: String): Parser Char String :=
 #eval parseWhiteSpace "   abc123".toList
 
 
-def parseDigit
-
-
 end Parser.Combinator
