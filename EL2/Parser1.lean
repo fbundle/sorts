@@ -85,6 +85,7 @@ def parseLam: StringParser Exp :=
   ).map (λ (_, _, name, _, _, body) => Exp.lam name body)
 
 def parseLineBreak :=
+  -- <whitespace_without_newline> <newline> <writespace>
   parseWhiteSpaceButNotNewLineWeak ++
   (parseExactString "\n" || parseExactString ";") ++
   parseWhiteSpaceWeak
