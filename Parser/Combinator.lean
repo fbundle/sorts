@@ -58,8 +58,6 @@ def parseExactList [BEq χ] (ys: List χ): Parser χ (List χ) := λ xs => do
 
 -- STRING
 
-def parseNewLine : Parser Char Char := parseExact '\n'
-
 def parseWhiteSpaceWeak : Parser Char String := λ xs =>
   -- parse any whitespace
   -- empty whitespace is ok
