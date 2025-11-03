@@ -273,7 +273,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
 
       -- desugar untyped lam (λx.y z)
       | Exp.app (Exp.lam name body) arg =>
-        let argType ← ← inferExp? ctx arg
+        let argType ← inferExp? ctx arg
         let argValue ← eval? ctx.ρ arg
 
         let subCtx := ctx.bind name argValue argType
