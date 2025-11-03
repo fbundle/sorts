@@ -16,12 +16,20 @@ def Parser.concat (p1: Parser χ α) (p2: Parser χ β): Parser χ (α × β) :=
 
 infixr: 60 " ++ " => Parser.concat
 
-def Parser.either (p1: Parser χ α) (p2: Parser χ α): Parser χ α := λ xs =>
+def Parser.sum (p1: Parser χ α) (p2: Parser χ β): Parser χ (α ⊕ β) := λ xs =>
   match p1 xs with
-    | some (a, xs) => some (a, xs)
-    | none => p2 xs
+    | some (a, xs) => some (Sum.inl a, xs)
+    | none => match p2 xs with
+      | some (b, xs) => some (Sum.inr b, xs)
+      | none => none
+
+def Parser.either (p1: Parser χ α) (p2: Parser χ α): Parser χ α :=
+  (p1.sum p2).map $ Sum.elim id id
 
 infixr: 50 " || " => Parser.either -- lower precedence than concat
+
+infixr: 50 " ||| " => Parser.sum -- lower precedence than either
+
 
 partial def Parser.list (p: Parser χ α): Parser χ (List α) := λ xs =>
   let rec loop (as: Array α) (xs: List χ): Option (List α × List χ) :=
