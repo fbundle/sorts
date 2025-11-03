@@ -32,12 +32,12 @@ inductive Exp where
   | var: (name: String) → Exp
   -- application
   | app: (cmd: Exp) → (arg: Exp) → Exp
-  -- let binding: let name: type := value
-  | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
+  -- Π type: Π (name: type) body - type of abs
+  | pi:  (name: String) → (typeA: Exp) → (typeB: Exp) → Exp
   -- λ abstraction
   | lam: (name: String) → (body: Exp) → Exp
-  -- Π type: Π (name: type) body - type of abs
-  | pi:  (name: String) → (type: Exp) → (body: Exp) → Exp
+  -- let binding: let name: type := value
+  | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
   -- inh
   | inh: (name: String) → (type: Exp) → (body: Exp) → Exp
   deriving Nonempty
@@ -47,9 +47,9 @@ def Exp.toString (e: Exp): String :=
     | Exp.typ level => s!"type_{level}"
     | Exp.var name => name
     | Exp.app cmd arg => s!"({cmd.toString} {arg.toString})"
-    | Exp.bnd name value type body => s!"let {name}: {type.toString} := {value.toString}\n{body.toString}"
+    | Exp.pi name typeA typeB => s!"(Π ({name}: {typeA.toString}) {typeB.toString})"
     | Exp.lam name body => s!"(λ {name} {body.toString})"
-    | Exp.pi name type body => s!"(Π ({name}: {type.toString}) {body.toString})"
+    | Exp.bnd name value type body => s!"let {name}: {type.toString} := {value.toString}\n{body.toString}"
     | Exp.inh name type body => s!"* {name}: {type.toString}\n{body.toString})"
 
 instance: ToString Exp where
@@ -128,15 +128,15 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
           (← eval? (env1.update name1 v) body1)
           (← eval? (env2.update name2 v) body2)
 
-      | (Val.clos env1 (Exp.pi name1 type1 body1), Val.clos env2 (Exp.pi name2 type2 body2)) =>
+      | (Val.clos env1 (Exp.pi name1 typeA1 typeB1), Val.clos env2 (Exp.pi name2 typeA2 typeB2)) =>
         let v := Val.gen k
         pure (
-          (← eqVal? k (← eval? env1 type1) (← eval? env2 type2))
+          (← eqVal? k (← eval? env1 typeA1) (← eval? env2 typeA2))
             ∧
           (
             ← eqVal? (k + 1)
-            (← eval? (env1.update name1 v) body1)
-            (← eval? (env2.update name2 v) body2)
+            (← eval? (env1.update name1 v) typeB1)
+            (← eval? (env2.update name2 v) typeB2)
           )
         )
 
@@ -224,13 +224,13 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
       | Exp.app cmd arg =>
         -- for Exp.app, cmd should be typ, var, or app
         match ← inferExp? ctx cmd with
-          | Val.clos env (Exp.pi name type body) =>
-            if ← checkExp? ctx arg (← eval? env type) then
+          | Val.clos env (Exp.pi name typeA typeB) =>
+            if ¬ (← checkExp? ctx arg (← eval? env typeA)) then
+              none
+            else
               let argValue ← eval? ctx.ρ arg
               let subEnv := env.update name argValue
-              pure (← eval? subEnv body)
-            else
-              none
+              pure (← eval? subEnv typeB)
           | _ => none
 
       | _ => none -- ignore these
@@ -239,6 +239,22 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   -- check if type of exp is val
   ctx.printIfFalse s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}" do
     match exp with
+      | Exp.pi name typeA typeB =>
+        match val with
+          | Val.typ n =>
+            let i ← checkTypLevel? checkExp? ctx typeA ctx.maxN
+            let (subCtx, _) := ctx.intro name (← eval? ctx.ρ typeA)
+            let j ← checkTypLevel? checkExp? subCtx typeB ctx.maxN
+            pure ((max i j) ≤ n)
+          | _ => none
+
+      | Exp.lam name1 body1 =>
+        match val with
+          | Val.clos env2 (Exp.pi name2 typeA2 typeB2) =>
+            let (subCtx, v) := ctx.intro name1 (← eval? env2 typeA2)
+            checkExp? subCtx body1 (← eval? (env2.update name2 v) typeB2)
+          | _ => none
+
       | Exp.bnd name value type body =>
         let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
         if ¬ (← checkExp? ctx value (← eval? ctx.ρ type)) then
@@ -249,22 +265,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
             (← eval? ctx.ρ type)
 
           checkExp? subCtx body val
-
-      | Exp.lam name1 body1 =>
-        match val with
-          | Val.clos env2 (Exp.pi name2 type2 body2) =>
-            let (subCtx, v) := ctx.intro name1 (← eval? env2 type2)
-            checkExp? subCtx body1 (← eval? (env2.update name2 v) body2)
-          | _ => none
-
-      | Exp.pi name type body =>
-        match val with
-          | Val.typ n =>
-            let i ← checkTypLevel? checkExp? ctx type ctx.maxN
-            let (subCtx, _) := ctx.intro name (← eval? ctx.ρ type)
-            let j ← checkTypLevel? checkExp? subCtx body ctx.maxN
-            pure ((max i j) ≤ n)
-          | _ => none
 
       | Exp.inh name type body =>
         let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
