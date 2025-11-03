@@ -92,9 +92,11 @@ def parseName: Parser Char String :=
   -- empty name is not ok
   parseNameWeak.mapOption (λ s => if s.length = 0 then none else s)
 
-
 def parseExactString (ys: String): Parser Char Unit := parseExactList ys.toList
 
-
+#eval parseName "abc123.  ".toList
+#eval parseWhiteSpace "abc123.  ".toList
+#eval parseName "   abc123".toList
+#eval parseWhiteSpace "   abc123".toList
 
 end Parser.Combinator
