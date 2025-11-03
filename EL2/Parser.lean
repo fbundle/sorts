@@ -104,12 +104,10 @@ def parseString: Parser String := λ tokens =>
     | head :: tokens =>
       (tokens, head)
 
-def parseSingle (convert?: String → Option α): Parser α := parseString.mapPartial convert?
-
 def predToOption (f: α → Bool): α → Option α := λ a =>
   if f a then some a else none
 
-def parseExact (pattern: String): Parser String := parseSingle $ predToOption (· = pattern)
+def parseExact (pattern: String): Parser String := parseString.mapPartial $ predToOption (· = pattern)
 
 def parseExactMany (patterns: List String): Parser String :=
   (patterns.map parseExact).foldl
@@ -117,10 +115,11 @@ def parseExactMany (patterns: List String): Parser String :=
 
 -- parse Exp
 
-def parseTyp: Parser Exp := parseSingle (λ head => do
+def parseTyp: Parser Exp := parseString.mapPartial (λ head => do
   if ¬ "Type".isPrefixOf head then none else
   let levelStr := head.stripPrefix "Type"
   let level ← levelStr.toNat?
+  dbg_trace s!"parsed type {level}"
   pure (Exp.typ level)
 )
 
@@ -142,7 +141,6 @@ def parseAnn (parseExp: Parser Exp): Parser (String × Exp) :=
 
 def parsePi (parseExp: Parser Exp): Parser Exp :=
   -- named Pi or unnamed Pi
-
   (
     parseAnn parseExp *
     parseExact "->" *
@@ -201,8 +199,16 @@ def parseInh (parseExp: Parser Exp): Parser Exp :=
     parseExp -- body
   ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
 
-def parseApp (parseExp: Parser Exp) : Parser Exp :=
-  parseExp.many.mapPartial (λ es =>
+def specialTokens: List String := [
+  ":", "->", "=>", "let", ":=", "in", "inh", "(", ")"
+]
+
+def parseApp (parseExp: Parser Exp): Parser Exp :=
+  (
+    parseExact "(" *
+    parseExp.many *
+    parseExact ")"
+  ).mapPartial (λ (_, es, _) =>
     match es with
       | [] => none
       | cmd :: args =>
@@ -211,31 +217,14 @@ def parseApp (parseExp: Parser Exp) : Parser Exp :=
         ) cmd
   )
 
-def specialTokens: List String := [
-  ":", "->", "=>", "let", ":=", "in", "inh", "(", ")"
-]
-
-partial def parseExp: Parser Exp := λ tokens => do
-  dbg_trace s!"[DBG_TRACE] parsing {tokens}"
-  (
-    -- either one of the basic type
-    (
-      parseTyp ||
-      parseVar specialTokens ||
-      parsePi parseExp ||
-      parseLam parseExp ||
-      parseBnd parseExp ||
-      parseInh parseExp ||
-      parseApp parseExp
-    )
-    ||
-    -- or enclosed with parentheses
-    (
-      parseExact "(" *
-      parseExp *
-      parseExact ")"
-    ).map (λ (_, e, _) => e)
-  ) tokens
+partial def parseExp: Parser Exp :=
+  parseTyp ||
+  parseVar specialTokens ||
+  parsePi parseExp ||
+  parseLam parseExp ||
+  parseBnd parseExp ||
+  parseInh parseExp ||
+  parseApp parseExp
 
 
 

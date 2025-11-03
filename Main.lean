@@ -4,8 +4,7 @@ open EL2.Parser
 
 private def s := "
 inh Nat : Type0
-inh zero : Nat
-Type0
+body
 "
 
 private def tokens := tokenize s
