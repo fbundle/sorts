@@ -182,12 +182,6 @@ def parseInh (parseExp: Parser Exp): Parser Exp :=
     parseExp -- body
   ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
 
-
-
-def specialTokens: List String := [
-  ":", "->", "=>", "let", ":=", "in", "inh",
-]
-
 def parseApp (stopTokens: List String) (parseExp: Parser Exp): Parser Exp :=
   (parseExp.many (
       (stopTokens.map parseExact).foldl
@@ -200,6 +194,10 @@ def parseApp (stopTokens: List String) (parseExp: Parser Exp): Parser Exp :=
           Exp.app cmd arg
         ) cmd
   )
+
+def specialTokens: List String := [
+  ":", "->", "=>", "let", ":=", "in", "inh",
+]
 
 partial def parseExp: Parser Exp := λ tokens =>
   match parseExact "(" tokens with
