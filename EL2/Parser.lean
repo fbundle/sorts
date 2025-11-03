@@ -35,7 +35,7 @@ partial def splitPart (sortedSplitTokens : List String) (part : String) : List S
           let after := part.drop (n + s.length)
           let beforeParts := if before.isEmpty then [] else splitPart sortedSplitTokens before
           let afterParts := if after.isEmpty then [] else splitPart sortedSplitTokens after
-          beforeParts ++ [s] ++ afterParts
+          beforeParts * [s] * afterParts
         | none => splitPart ss part
 
 def tokenize (sortedSplitTokens: List String) (s: String) : List String :=
@@ -67,27 +67,42 @@ def newTokenizer (splitTokens: List String): String → List String :=
 def Parser α := List String → Option ((List String) × α)
 
 def Parser.mapPartial  (p: Parser α) (f: α → Option β): Parser β := λ tokens => do
-  let (rest, a) ← p tokens
+  let (tokens, a) ← p tokens
   let b ← f a
-  pure (rest, b)
+  pure (tokens, b)
 
 def Parser.map (p: Parser α) (f: α → β): Parser β := p.mapPartial (λ a => some (f a))
 
+def Parser.concat (p1: Parser α) (p2: Parser β): Parser (α × β) := λ tokens => do
+  let (tokens, a) ← p1 tokens
+  let (tokens, b) ← p2 tokens
+  (tokens, (a, b))
+
+infixr: 60 " * " => Parser.concat
+
+def Parser.either (p1: Parser α) (p2: Parser α): Parser α := λ tokens => do
+  match p1 tokens with
+    | some (tokens, a) => some (tokens, a)
+    | none => p2 tokens
+
+infixr: 50 " + " => Parser.either -- lower precedence than concat
+
 open EL2.Core
 
-def parseHead: Parser String := λ tokens =>
+def parseString: Parser String := λ tokens =>
   match tokens with
     | [] => none
-    | head :: rest =>
-      (rest, head)
+    | head :: tokens =>
+      (tokens, head)
 
-def parseSingle (convert?: String → Option α): Parser α := parseHead.mapPartial convert?
+def parseSingle (convert?: String → Option α): Parser α := parseString.mapPartial convert?
 
 def predToOption (f: α → Bool): α → Option α := λ a =>
   if f a then some a else none
 
 def parseExact (pattern: String): Parser String := parseSingle $ predToOption (· = pattern)
 
+-- parse Exp
 def parseTyp: Parser Exp := parseSingle (λ head => do
   if ¬ "Type".isPrefixOf head then none else
   let levelStr := head.stripPrefix "Type"
@@ -95,7 +110,66 @@ def parseTyp: Parser Exp := parseSingle (λ head => do
   pure (Exp.typ level)
 )
 
-def parseVar: Parser Exp :=
+def parseVar: Parser Exp := parseString.map (Exp.var ·)
+
+-- def parseApp:
+
+def parseAnn (parseExp: Parser Exp): Parser (String × Exp) :=
+  (
+    parseString *
+    (parseExact ":") *
+    parseExp
+  ).map (λ (name, _, type) => (name, type))
+
+def parsePi (parseExp: Parser Exp): Parser Exp :=
+  (
+    parseAnn parseExp *
+    parseExact "->" *
+    parseExp
+  ).map (λ ((name, typeA), _, typeB) => Exp.pi name typeA typeB)
+
+  +
+
+  (
+    parseExp *
+    parseExact "->" *
+    parseExp
+  ).map (λ (typeA, _, typeB) => Exp.pi "_" typeA typeB)
+
+
+
+def parseLam (parseExp: Parser Exp): Parser Exp :=
+  (
+    parseString *
+    parseExact "=>" *
+    parseExp
+  ).map (λ (name, _, body) => Exp.lam name body)
+
+def parseBnd (parseExp: Parser Exp): Parser Exp :=
+  (
+    parseExact "let" *
+    parseString * -- name
+    parseExact ":" *
+    parseExp * -- type
+    parseExact ":=" *
+    parseExp * -- value
+    parseExact "in" *
+    parseExp -- body
+  ).map (λ (_, name, _, type, _, value, _, body) => Exp.bnd name value type body)
+
+def parseInh (parseExp: Parser Exp): Parser Exp :=
+  (
+    parseExact "inh" *
+    parseString * -- name
+    parseExact ":" *
+    parseExp * -- type
+    parseExact "in" *
+    parseExp -- body
+  ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
+
+def parseApp ()
+
+def parseExp: Parser Exp :=
 
 
 
