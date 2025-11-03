@@ -116,14 +116,6 @@ def parseFail: Parser α := λ _ => none
 
 -- parse Exp
 
-def specialTokens: List String := [
-  ":", "->", "=>", "let", ":=", "in", "inh", ")", "(",
-]
-
-def stopAppTokens: List String := [
-  ":", "->", "=>", "let", ":=", "in", "inh", ")"
-]
-
 def parseTyp: Parser Exp := parseSingle (λ head => do
   if ¬ "Type".isPrefixOf head then none else
   let levelStr := head.stripPrefix "Type"
@@ -190,9 +182,15 @@ def parseInh (parseExp: Parser Exp): Parser Exp :=
     parseExp -- body
   ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
 
-def parseApp (parseExp: Parser Exp): Parser Exp :=
+
+
+def specialTokens: List String := [
+  ":", "->", "=>", "let", ":=", "in", "inh",
+]
+
+def parseApp (stopTokens: List String) (parseExp: Parser Exp): Parser Exp :=
   (parseExp.many (
-      (stopAppTokens.map parseExact).foldl
+      (stopTokens.map parseExact).foldl
       Parser.either parseFail
   )).mapPartial (λ expList =>
     match expList with
@@ -203,9 +201,14 @@ def parseApp (parseExp: Parser Exp): Parser Exp :=
         ) cmd
   )
 
-def parseExp: Parser Exp :=
+partial def parseExp: Parser Exp := λ tokens =>
+  match parseExact "(" tokens with
+    | none => -- parse until special token
+      parseApp specialTokens parseExp tokens
+    | some _ => -- parse until ")"
+      parseApp [")"] parseExp tokens
 
-  sorry
+
 
 
 
