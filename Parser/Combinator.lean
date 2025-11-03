@@ -94,8 +94,8 @@ def parseName: Parser Char String :=
 
 def parseExactString (ys: String): Parser Char Unit := parseExactList ys.toList
 
-#eval parseName "abc123.  ".toList
-#eval parseWhiteSpace "abc123.  ".toList
+#eval parseName "abc123  ".toList
+#eval parseWhiteSpace "abc123  ".toList
 #eval parseName "   abc123".toList
 #eval parseWhiteSpace "   abc123".toList
 
