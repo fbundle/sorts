@@ -176,6 +176,18 @@ def Ctx.intro (ctx: Ctx) (name: String) (type: Val) : Ctx × Val :=
 def Ctx.nodebug (ctx: Ctx) : Ctx :=
   {ctx with debug := false}
 
+def Ctx.printIfNone (ctx: Ctx) (msg: String) (o?: Option α): Option α :=
+  match (o?, ctx.debug) with
+    | (none, true) => dbg_trace msg; none
+    | _ => o?
+
+def Ctx.printIfFalse (ctx: Ctx) (msg: String) (o?: Option Bool): Option Bool :=
+  if (o? ≠ true) ∧ (ctx.debug) then
+    dbg_trace msg; none
+  else
+    o?
+
+
 def emptyCtx: Ctx := {
   maxN := 5,
   debug := true,
@@ -188,12 +200,7 @@ def emptyCtx: Ctx := {
 partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
   -- return N
-  (λ (o?: Option Nat) =>
-    match (o?, ctx.debug) with
-      | (none, true) =>
-        dbg_trace s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}\n\tmaxLevel = {maxN}"; none
-      | _ => o?
-  ) $ do
+  ctx.printIfNone s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}\n\tmaxLevel = {maxN}" do
   let rec loop (n: Nat): Option Nat := do
     if n > maxN then
       none
@@ -209,12 +216,7 @@ mutual
 
 partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
   -- infer the type of exp
-  (λ (o?: Option Val) =>
-    match (o?, ctx.debug) with
-      | (none, true) =>
-        dbg_trace s!"[DBG_TRACE] inferExp? {ctx}\n\texp = {exp}"; none
-      | _ => o?
-  ) $ do
+  ctx.printIfNone s!"[DBG_TRACE] inferExp? {ctx}\n\texp = {exp}" do
     match exp with
       | Exp.typ n => pure (Val.typ (n + 1))
       | Exp.var name => ctx.Γ.lookup? name
@@ -235,13 +237,7 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   -- check if type of exp is val
-  (λ (o? : Option Bool) =>
-    if (o? ≠ true) ∧ ctx.debug then
-      dbg_trace s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}"
-      o?
-    else
-      o?
-  ) $ do
+  ctx.printIfFalse s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}" do
     match exp with
       | Exp.lam name1 body1 =>
         match val with
