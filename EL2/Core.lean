@@ -153,16 +153,17 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
             (Val.clos (env2.update name2 v) body2)
           )
         )
+
       | _ => pure false
 
 -- TYPE CHECKING
 structure Ctx where
-  maxN: Nat
-  debug: Bool
+  maxN: Nat     -- max universe level
+  debug: Bool   -- whether to dbg_trace
 
   k: Nat
-  ρ : Map Val -- name -> value
-  Γ: Map Val -- name -> type
+  ρ : Map Val   -- name -> value
+  Γ: Map Val    -- name -> type
 
 def Ctx.toString (ctx: Ctx): String :=
   s!"ctx(k={ctx.k}, ρ={ctx.ρ}, Γ={ctx.Γ})"
