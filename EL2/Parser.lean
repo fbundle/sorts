@@ -78,7 +78,7 @@ def Parser.concat (p1: Parser α) (p2: Parser β): Parser (α × β) := λ token
   let (tokens, b) ← p2 tokens
   (tokens, (a, b))
 
-infixr: 60 " * " => Parser.concat
+infixr: 60 " ++ " => Parser.concat
 
 def Parser.either (p1: Parser α) (p2: Parser α): Parser α := λ tokens => do
   match p1 tokens with
@@ -134,24 +134,24 @@ def parseVar (specialTokens: List String): Parser Exp :=  λ tokens => do
 
 def parseAnn (parseExp: Parser Exp): Parser (String × Exp) :=
   (
-    parseString *
-    (parseExact ":") *
+    parseString ++
+    (parseExact ":") ++
     parseExp
   ).map (λ (name, _, type) => (name, type))
 
 def parsePi (parseExp: Parser Exp): Parser Exp :=
   -- named Pi or unnamed Pi
   (
-    parseAnn parseExp *
-    parseExact "->" *
+    parseAnn parseExp ++
+    parseExact "->" ++
     parseExp
   ).map (λ ((name, typeA), _, typeB) => Exp.pi name typeA typeB)
 
   ||
 
   (
-    parseExp *
-    parseExact "->" *
+    parseExp ++
+    parseExact "->" ++
     parseExp
   ).map (λ (typeA, _, typeB) => Exp.pi "_" typeA typeB)
 
@@ -159,18 +159,18 @@ def parsePi (parseExp: Parser Exp): Parser Exp :=
 
 def parseLam (parseExp: Parser Exp): Parser Exp :=
   (
-    parseString *
-    parseExact "=>" *
+    parseString ++
+    parseExact "=>" ++
     parseExp
   ).map (λ (name, _, body) => Exp.lam name body)
 
 def parseBnd (parseExp: Parser Exp): Parser Exp :=
   (
-    parseExact "let" *
-    parseString * -- name
-    parseExact ":=" *
-    parseExp * -- value
-    parseExact "in" *
+    parseExact "let" ++
+    parseString ++ -- name
+    parseExact ":=" ++
+    parseExp ++ -- value
+    parseExact "in" ++
     parseExp -- body
   ).map (λ (_, name, _, value, _, body) =>
     Exp.app (Exp.lam name body) value
@@ -179,23 +179,23 @@ def parseBnd (parseExp: Parser Exp): Parser Exp :=
   ||
 
   (
-    parseExact "let" *
-    parseString * -- name
-    parseExact ":" *
-    parseExp * -- type
-    parseExact ":=" *
-    parseExp * -- value
-    parseExact "in" *
+    parseExact "let" ++
+    parseString ++ -- name
+    parseExact ":" ++
+    parseExp ++ -- type
+    parseExact ":=" ++
+    parseExp ++ -- value
+    parseExact "in" ++
     parseExp -- body
   ).map (λ (_, name, _, type, _, value, _, body) => Exp.bnd name value type body)
 
 def parseInh (parseExp: Parser Exp): Parser Exp :=
   (
-    parseExact "inh" *
-    parseString * -- name
-    parseExact ":" *
-    parseExp * -- type
-    parseExact "in" *
+    parseExact "inh" ++
+    parseString ++ -- name
+    parseExact ":"++
+    parseExp ++ -- type
+    parseExact "in" ++
     parseExp -- body
   ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
 
@@ -205,8 +205,8 @@ def specialTokens: List String := [
 
 def parseApp (parseExp: Parser Exp): Parser Exp :=
   (
-    parseExact "(" *
-    parseExp.many *
+    parseExact "(" ++
+    parseExp.many ++
     parseExact ")"
   ).mapPartial (λ (_, es, _) =>
     match es with
@@ -235,6 +235,7 @@ partial def parseExp: Parser Exp :=
 #eval parseLam parseExp ["name", "=>", "body"]
 #eval parseBnd parseExp ["let", "x", ":=", "3", "in", "x+y"]
 #eval parseBnd parseExp ["let", "x", ":", "type", ":=", "3", "in", "x+y"]
+
 
 end EL2.Parser.Internal
 
