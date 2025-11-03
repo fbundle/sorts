@@ -144,6 +144,8 @@ def parseVar: Parser Exp :=
 -- TODO - make parseType = : E + [-> E]^n where E = parseAnn | parseExp for n ≥ 0
 -- remove parsePi
 
+-- TODO - make parser parse string instead of list of tokens
+
 def parseAnn (parseExp: Parser Exp): Parser (String × Exp) :=
   (
     parseExact "(" ++
