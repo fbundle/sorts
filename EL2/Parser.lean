@@ -229,7 +229,7 @@ partial def parseExp: Parser Exp := λ tokens => do
     )
     ||
     (
-      (parseExact "(") *
+      parseExact "(" *
       parseExp *
       parseExact ")"
     ).map (λ (_, e, _) => e)
