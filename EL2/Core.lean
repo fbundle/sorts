@@ -197,7 +197,9 @@ def emptyCtx: Ctx := {
   Γ := emptyMap
 }
 
-partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
+mutual
+
+partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
   -- return N
   ctx.printIfNone s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}\n\tmaxLevel = {maxN}" do
@@ -211,8 +213,6 @@ partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx
       else
         loop (n + 1)
   loop 0
-
-mutual
 
 partial def inferExpWeak? (ctx: Ctx) (exp: Exp): Option Val :=
   -- infer the type of exp weakly
@@ -241,9 +241,9 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
       | Exp.pi name typeA typeB =>
         match val with
           | Val.typ n =>
-            let i ← checkTypLevel? checkExp? ctx typeA ctx.maxN
+            let i ← checkTypLevel? ctx typeA ctx.maxN
             let (subCtx, _) := ctx.intro name (← eval? ctx.ρ typeA)
-            let j ← checkTypLevel? checkExp? subCtx typeB ctx.maxN
+            let j ← checkTypLevel? subCtx typeB ctx.maxN
             pure ((max i j) ≤ n)
           | _ => none
 
@@ -255,7 +255,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
           | _ => none
 
       | Exp.bnd name value type body =>
-        let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
+        let _ ← checkTypLevel? ctx type ctx.maxN
         if ¬ (← checkExp? ctx value (← eval? ctx.ρ type)) then
           none
         else
@@ -266,7 +266,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
           checkExp? subCtx body val
 
       | Exp.inh name type body =>
-        let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
+        let _ ← checkTypLevel? ctx type ctx.maxN
         let (subCtx, _) := ctx.intro name (← eval? ctx.ρ type)
         checkExp? subCtx body val
 
