@@ -198,7 +198,6 @@ def emptyCtx: Ctx := {
 }
 
 mutual
-
 partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
   -- return N
@@ -279,8 +278,14 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
         checkExp? subCtx body val
 
       | _ => eqVal? ctx.k (← inferExpWeak? ctx exp) val
-
 end
+
+-- TYPE INFERENCE
+
+
+
+
+
 
 def typeCheck? (exp: Exp) (type: Exp): Option Bool := do
   -- typeCheck?
