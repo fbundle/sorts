@@ -2,7 +2,7 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...) and inhabit
 
-namespace EL2.Core
+namespace EL2.Core.Internal
 
 structure Map α where
   list: List (String × α)
@@ -286,6 +286,7 @@ end
 
 
 
+-- OTHER
 
 def typeCheck? (exp: Exp) (type: Exp): Option Bool := do
   -- typeCheck?
@@ -366,10 +367,9 @@ def test6 :=
 #eval test4
 #eval test6
 
+end EL2.Core.Internal
+
+
+namespace EL2.Core
+export EL2.Core.Internal (Exp typeCheck?)
 end EL2.Core
-
-
-
-
--- TODO only Exp, typeCheck? are public
-export EL2.Core (Exp typeCheck?)
