@@ -87,12 +87,12 @@ def Parser.either (p1: Parser α) (p2: Parser α): Parser α := λ tokens => do
 
 infixr: 50 " || " => Parser.either -- lower precedence than concat
 
-partial def Parser.many (p: Parser α): Parser (List α) := λ tokens =>
+partial def Parser.many (p: Parser α): Parser (List α) :=
   let rec loop (acc: Array α) (tokens: List String): Option (List String × List α) :=
     match p tokens with
       | none => some (tokens, acc.toList)
       | some (rest, e) => loop (acc.push e) rest
-  loop #[] tokens
+  loop #[]
 
 open EL2.Core
 
