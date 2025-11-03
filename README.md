@@ -5,15 +5,16 @@ The goal of this project is to implement minimal dependent type checker
 ## TYPE CHECKING WITH COQUAND'S ALGORITHM
 
 ```lean
-* Nat: type_0
-* zero: Nat
-* succ: Π(n: Nat) Nat
-* Vec: Π(n: Nat) Π(T: type_0) type_0
-* nil: Π(T: type_0) (Vec zero T)
-* push: Π(n: Nat) Π(T: type_0) Π(v: Vec n T) Π(x: T) (Vec (succ n) T)
-let one: Nat := succ zero
-let singleton: Vec one Nat := push zero Nat (nil Nat) zero
-type_0
+inh Nat : Type0 in
+inh zero : Nat in
+inh succ : Π Nat -> Nat in
+inh Vec : Π Nat Type0 -> Type0 in
+inh nil : Π (T: Type0) -> (Vec zero T) in
+inh push : Π (n: Nat) (T: Type0) (v: (Vec n T)) (x: T) -> (Vec (succ n) T) in
+let one: Nat := (succ zero) in
+let two: Nat := (succ one) in
+let singleton: (Vec one Nat) := (push zero Nat (nil Nat) two) in
+Type0
 ```
 
 It is a difficult topic checking of an inductive type is well-defined or at least positive recurrent.
