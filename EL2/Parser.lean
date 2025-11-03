@@ -117,9 +117,12 @@ def parseExactMany (patterns: List String): Parser String :=
 
 -- parse Exp
 
+def splitTokens: List String := [
+  ":", "->", "=>", ":=", "(", ")", "λ", "Π", "∀",
+]
 
-def specialTokens: List String := [
-  ":", "->", "=>", "let", ":=", "in", "inh", "(", ")", "λ", "lam", "Π", "∀", "forall",
+def specialTokens: List String := splitTokens ++ [
+  "let", "in", "inh", "lam", "forall",
 ]
 
 def parseName: Parser String := λ tokens =>
@@ -267,7 +270,7 @@ end EL2.Parser.Internal
 
 namespace EL2.Parser
 
-def tokenize := (Internal.newTokenizer ("(" :: ")" :: Internal.specialTokens))
+def tokenize := (Internal.newTokenizer ("(" :: ")" :: Internal.splitTokens))
 
 def parse := Internal.parseExp
 

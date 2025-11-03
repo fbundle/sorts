@@ -1,17 +1,36 @@
 import EL2.Parser
+import EL2.Core
 
 open EL2.Parser
+open EL2.Core
 
-private def s := "
+def s := "
 inh Nat : Type0 in
-body
+inh zero : Nat in
+inh succ : Π Nat -> Nat in
+inh Vec : Π (n: Nat) (T: Type0) -> Type0 in
+inh nil : Π (T: Type0) -> Vec in
+inh push : Π (n: Nat) (T: Type0) (v: (Vec n T)) (x: T) -> (Vec n T) in
+let one: Nat := (succ zero) in
+let two: Nat := (succ one) in
+let singleton: (Vec one Nat) := (push zero Nat (nil Nat) two) in
+Type0
 "
+
+def t := Exp.typ 1
 
 private def tokens := tokenize s
 
 def main  : IO Unit := do
   IO.println "--------------------------------------"
   match parse tokens with
-    | none => IO.println "parse error"
+    | none => IO.println "parse_error"
     | some (rest, e) =>
       IO.println s!"{repr e}"
+      match rest with
+        | [] =>
+          if true = typeCheck? e t then
+            IO.println "passed"
+          else
+            IO.println "type_error"
+        | _ => IO.println "parse_error"
