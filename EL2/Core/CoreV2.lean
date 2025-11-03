@@ -9,11 +9,6 @@ namespace EL2.Core
 structure Map α where
   list: List (String × α)
 
-def Map.toString (m: Map α) (toString: α → String): String :=
-  "map(" ++ (String.join $ List.intersperse " | " $ m.list.map (λ (key, val) =>
-    s!"{key} → {toString val}"
-  )) ++ ")"
-
 partial def Map.lookup? (map: Map α) (name: String): Option α :=
   match map.list with
     | [] => none
@@ -74,6 +69,11 @@ inductive Val where
   | app: (cmd: Val) → (arg: Val) → Val
   -- with closure - a future value - evaluated by eval?
   | clos: (map: Map Val) → (exp: Exp) → Val
+
+def Map.toString (m: Map α) (toString: α → String): String :=
+  "map(" ++ (String.join $ List.intersperse " | " $ m.list.map (λ (key, val) =>
+    s!"{key} → {toString val}"
+  )) ++ ")"
 
 partial def Val.toString (v: Val): String :=
   match v with
