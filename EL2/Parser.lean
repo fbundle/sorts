@@ -117,6 +117,16 @@ def parseExactMany (patterns: List String): Parser String :=
 
 -- parse Exp
 
+
+def specialTokens: List String := [
+  ":", "->", "=>", "let", ":=", "in", "inh", "(", ")", "λ", "lam", "Π", "∀", "forall",
+]
+
+def parseName: Parser String := λ tokens =>
+  match parseExactMany specialTokens tokens with
+    | some _ => none
+    | none => parseString tokens
+
 def parseTyp: Parser Exp := parseString.mapPartial (λ head => do
   if ¬ "Type".isPrefixOf head then none else
   let levelStr := head.stripPrefix "Type"
@@ -125,32 +135,35 @@ def parseTyp: Parser Exp := parseString.mapPartial (λ head => do
   pure (Exp.typ level)
 )
 
-def parseVar (specialTokens: List String): Parser Exp :=  λ tokens => do
-  match parseExactMany specialTokens tokens with
-    | some _ => none
-    | none =>
-      let (tokens, name) ← parseString tokens
-      some (tokens, Exp.var name)
+def parseVar: Parser Exp :=
+  parseName.map (λ name => Exp.var name)
 
--- def parseApp:
 
 def parseAnn (parseExp: Parser Exp): Parser (String × Exp) :=
   (
     parseExact "(" ++
-    parseString ++
+    parseName ++
     (parseExact ":") ++
     parseExp ++
     parseExact ")"
   ).map (λ (_, name, _, type, _) => (name, type))
 
-def parsePi (parseExp: Parser Exp): Parser Exp :=
+partial def parsePi (parseExp: Parser Exp): Parser Exp :=
   -- named Pi or unnamed Pi
   (
     (parseExact "Π" || parseExact "∀" || parseExact "forall") ++
-    parseAnn parseExp ++
+    (parseAnn parseExp).many ++
     parseExact "->" ++
     parseExp
-  ).map (λ (_, (name, typeA), _, typeB) => Exp.pi name typeA typeB)
+  ).map (λ (_, annList, _, typeB) =>
+    let rec loop (annList: List (String × Exp)): Exp :=
+      match annList with
+        | [] => typeB
+        | (name, typeA) :: rest =>
+          Exp.pi name typeA (loop rest)
+
+    loop annList
+  )
 
   ||
 
@@ -161,18 +174,26 @@ def parsePi (parseExp: Parser Exp): Parser Exp :=
     parseExp
   ).map (λ (_, typeA, _, typeB) => Exp.pi "_" typeA typeB)
 
-def parseLam (parseExp: Parser Exp): Parser Exp :=
+partial def parseLam (parseExp: Parser Exp): Parser Exp :=
   (
     (parseExact "λ" || parseExact "lam") ++
-    parseString ++
+    parseName.many ++
     parseExact "=>" ++
     parseExp
-  ).map (λ (_, name, _, body) => Exp.lam name body)
+  ).map (λ (_, nameList, _, body) =>
+    let rec loop (nameList: List String): Exp :=
+      match nameList with
+        | [] => body
+        | name :: rest =>
+          Exp.lam name (loop rest)
+
+    loop nameList
+  )
 
 def parseBnd (parseExp: Parser Exp): Parser Exp :=
   (
     parseExact "let" ++
-    parseString ++ -- name
+    parseName ++ -- name
     parseExact ":=" ++
     parseExp ++ -- value
     parseExact "in" ++
@@ -185,7 +206,7 @@ def parseBnd (parseExp: Parser Exp): Parser Exp :=
 
   (
     parseExact "let" ++
-    parseString ++ -- name
+    parseName ++ -- name
     parseExact ":" ++
     parseExp ++ -- type
     parseExact ":=" ++
@@ -197,16 +218,12 @@ def parseBnd (parseExp: Parser Exp): Parser Exp :=
 def parseInh (parseExp: Parser Exp): Parser Exp :=
   (
     parseExact "inh" ++
-    parseString ++ -- name
+    parseName ++ -- name
     parseExact ":"++
     parseExp ++ -- type
     parseExact "in" ++
     parseExp -- body
   ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
-
-def specialTokens: List String := [
-  ":", "->", "=>", "let", ":=", "in", "inh", "(", ")", "λ", "lam", "Π", "∀", "forall",
-]
 
 def parseApp (parseExp: Parser Exp): Parser Exp :=
   (
@@ -224,7 +241,7 @@ def parseApp (parseExp: Parser Exp): Parser Exp :=
 
 partial def parseExp: Parser Exp :=
   parseTyp ||
-  parseVar specialTokens ||
+  parseVar ||
   parsePi parseExp ||
   parseLam parseExp ||
   parseBnd parseExp ||
@@ -234,7 +251,9 @@ partial def parseExp: Parser Exp :=
 #eval parseExp ["inh", "name", ":", "type", "in", "hehe"]
 #eval parseExp ["forall", "type1", "->", "type2"]
 #eval parseExp ["forall", "(", "name1", ":", "type1", ")", "->", "type2"]
+#eval parseExp ["forall", "(", "name1", ":", "type1", ")", "(", "name2", ":", "type2", ")", "->", "type2"]
 #eval parseExp ["lam", "name", "=>", "body"]
+#eval parseExp ["lam", "name1", "name2", "=>", "body"]
 #eval parseExp ["let", "x", ":=", "3", "in", "x+y"]
 #eval parseExp ["let", "x", ":", "type", ":=", "3", "in", "x+y"]
 #eval parseExp ["(", "cmd", "arg1", "arg2", ")"]
