@@ -239,6 +239,17 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   -- check if type of exp is val
   ctx.printIfFalse s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}" do
     match exp with
+      | Exp.bnd name value type body =>
+        let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
+        if ¬ (← checkExp? ctx value (← eval? ctx.ρ type)) then
+          none
+        else
+          let subCtx := ctx.bind name
+            (← eval? ctx.ρ value)
+            (← eval? ctx.ρ type)
+
+          checkExp? subCtx body val
+
       | Exp.lam name1 body1 =>
         match val with
           | Val.clos env2 (Exp.pi name2 type2 body2) =>
@@ -255,27 +266,17 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
             pure ((max i j) ≤ n)
           | _ => none
 
-      | Exp.bnd name value type body =>
+      | Exp.inh name type body =>
         let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
-        if ¬ (← checkExp? ctx value (← eval? ctx.ρ type)) then
-          none
-        else
-          let subCtx := ctx.bind name
-            (← eval? ctx.ρ value)
-            (← eval? ctx.ρ type)
+        let (subCtx, _) := ctx.intro name (← eval? ctx.ρ type)
+        checkExp? subCtx body val
 
-          checkExp? subCtx body val
-
-      | Exp.app (Exp.lam name body) arg => -- desugar untyped lam (λx.y z)
+      -- desugar untyped lam (λx.y z)
+      | Exp.app (Exp.lam name body) arg =>
         let argType ← ← inferExp? ctx arg
         let argValue ← eval? ctx.ρ arg
 
         let subCtx := ctx.bind name argValue argType
-        checkExp? subCtx body val
-
-      | Exp.inh name type body =>
-        let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
-        let (subCtx, _) := ctx.intro name (← eval? ctx.ρ type)
         checkExp? subCtx body val
 
 
