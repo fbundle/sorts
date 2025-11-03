@@ -136,10 +136,12 @@ def parseVar (specialTokens: List String): Parser Exp :=  λ tokens => do
 
 def parseAnn (parseExp: Parser Exp): Parser (String × Exp) :=
   (
+    parseExact "(" ++
     parseString ++
     (parseExact ":") ++
-    parseExp
-  ).map (λ (name, _, type) => (name, type))
+    parseExp ++
+    parseExact ")"
+  ).map (λ (_, name, _, type, _) => (name, type))
 
 def parsePi (parseExp: Parser Exp): Parser Exp :=
   -- named Pi or unnamed Pi
@@ -158,8 +160,6 @@ def parsePi (parseExp: Parser Exp): Parser Exp :=
     parseExact "->" ++
     parseExp
   ).map (λ (_, typeA, _, typeB) => Exp.pi "_" typeA typeB)
-
-
 
 def parseLam (parseExp: Parser Exp): Parser Exp :=
   (
@@ -205,7 +205,7 @@ def parseInh (parseExp: Parser Exp): Parser Exp :=
   ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
 
 def specialTokens: List String := [
-  ":", "->", "=>", "let", ":=", "in", "inh", "(", ")"
+  ":", "->", "=>", "let", ":=", "in", "inh", "(", ")", "λ", "lam", "Π", "∀", "forall",
 ]
 
 def parseApp (parseExp: Parser Exp): Parser Exp :=
@@ -233,11 +233,12 @@ partial def parseExp: Parser Exp :=
 
 #eval parseExp ["inh", "name", ":", "type", "in", "hehe"]
 #eval parseExp ["forall", "type1", "->", "type2"]
-#eval parseExp ["forall", "name1", ":", "type1", "->", "type2"]
+#eval parseExp ["forall", "(", "name1", ":", "type1", ")", "->", "type2"]
 #eval parseExp ["lam", "name", "=>", "body"]
 #eval parseExp ["let", "x", ":=", "3", "in", "x+y"]
 #eval parseExp ["let", "x", ":", "type", ":=", "3", "in", "x+y"]
 #eval parseExp ["(", "cmd", "arg1", "arg2", ")"]
+#eval parseExp ["(", "cmd", ")"]
 
 
 end EL2.Parser.Internal
