@@ -227,24 +227,13 @@ partial def parseExp: Parser Exp := λ tokens => do
 
       parseApp specialTokens parseExp cmd tokens
 
-
-private def s := "
-inh Nat : Type0
-inh zero : Nat
-"
-
-#eval (newTokenizer ("(" :: ")" :: specialTokens)) s
-
-
-
-
-
-
 end EL2.Parser.Internal
 
 
 namespace EL2.Parser
 
-export EL2.Parser.Internal (newTokenizer)
+def tokenize := (Internal.newTokenizer ("(" :: ")" :: Internal.specialTokens))
+
+def parse := Internal.parseExp
 
 end EL2.Parser
