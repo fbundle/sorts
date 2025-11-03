@@ -257,13 +257,14 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
 
       | Exp.bnd name value type body =>
         let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
-        if ¬ ((← checkExp? ctx value (← eval? ctx.ρ type))) then
+        if ¬ (← checkExp? ctx value (← eval? ctx.ρ type)) then
           none
         else
-          checkExp? (ctx.bind name
+          let subCtx := ctx.bind name
             (← eval? ctx.ρ value)
             (← eval? ctx.ρ type)
-          ) body val
+
+          checkExp? subCtx body val
 
       | Exp.app (Exp.lam name body) arg => -- desugar untyped lam (λx.y z)
         let argType ← ← inferExp? ctx arg
