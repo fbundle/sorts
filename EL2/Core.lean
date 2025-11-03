@@ -1,7 +1,6 @@
 -- extended from (Thierry Coquand - An algorithm for type-checking dependent types)
 -- the algorithm is able to type check dependently-typed λ-calculus
--- with type universe (type_0, type_1, ...)
--- added annotated term
+-- with type universe (type_0, type_1, ...) and inhabit
 
 -- TODO only Exp, typeCheck? are public
 namespace EL2.Core
@@ -192,10 +191,11 @@ def Ctx.nodebug (ctx: Ctx) : Ctx :=
 
 def emptyCtx: Ctx := {
   maxN := 5,
+  debug := true,
+
   k := 0,
   ρ := emptyMap,
   Γ := emptyMap
-  debug := true,
 }
 
 partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
