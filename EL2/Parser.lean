@@ -87,6 +87,16 @@ def Parser.either (p1: Parser α) (p2: Parser α): Parser α := λ tokens => do
 
 infixr: 50 " || " => Parser.either -- lower precedence than concat
 
+partial def Parser.many (p: Parser α) (stop: Parser β): Parser (List α) := λ tokens => do
+  let rec loop (acc: Array α) (tokens: List String): Option (List String × List α) :=
+    match stop tokens with
+      | some _ => some (tokens, acc.toList)
+      | none => do
+        let (tokens, a) ← p tokens
+        loop (acc.push a) tokens
+  loop #[] tokens
+
+
 open EL2.Core
 
 def parseString: Parser String := λ tokens =>
@@ -102,7 +112,18 @@ def predToOption (f: α → Bool): α → Option α := λ a =>
 
 def parseExact (pattern: String): Parser String := parseSingle $ predToOption (· = pattern)
 
+def parseFail: Parser α := λ _ => none
+
 -- parse Exp
+
+def specialTokens: List String := [
+  ":", "->", "=>", "let", ":=", "in", "inh", ")", "(",
+]
+
+def stopAppTokens: List String := [
+  ":", "->", "=>", "let", ":=", "in", "inh", ")"
+]
+
 def parseTyp: Parser Exp := parseSingle (λ head => do
   if ¬ "Type".isPrefixOf head then none else
   let levelStr := head.stripPrefix "Type"
@@ -170,9 +191,20 @@ def parseInh (parseExp: Parser Exp): Parser Exp :=
   ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
 
 def parseApp (parseExp: Parser Exp): Parser Exp :=
-  sorry
+  (parseExp.many (
+      (stopAppTokens.map parseExact).foldl
+      Parser.either parseFail
+  )).mapPartial (λ expList =>
+    match expList with
+      | [] => none
+      | cmd :: args =>
+        some $ args.foldl (λ cmd arg =>
+          Exp.app cmd arg
+        ) cmd
+  )
 
 def parseExp: Parser Exp :=
+
   sorry
 
 
