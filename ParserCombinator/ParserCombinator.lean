@@ -1,59 +1,34 @@
 namespace ParserCombinator
 
-def Parser α := List Char → Option (List Char × α)
+def Parser χ α := List χ → Option (α × List χ)
 
-def Parser.mapOption  (p: Parser α) (f: α → Option β): Parser β := λ tokens => do
-  let (tokens, a) ← p tokens
+def Parser.mapOption (p: Parser χ α) (f: α → Option β): Parser χ β := λ xs => do
+  let (a, xs) ← p xs
   let b ← f a
-  pure (tokens, b)
+  (b, xs)
 
-def Parser.map (p: Parser α) (f: α → β): Parser β := p.mapOption (λ a => some (f a))
+def Parser.map (p: Parser χ α) (f: α → β): Parser χ β := p.mapOption (λ a => some (f a))
 
-def Parser.concat (p1: Parser α) (p2: Parser β): Parser (α × β) := λ tokens => do
-  let (tokens, a) ← p1 tokens
-  let (tokens, b) ← p2 tokens
-  (tokens, (a, b))
+def Parser.concat (p1: Parser χ α) (p2: Parser χ β): Parser χ (α × β) := λ xs => do
+  let (a, xs) ← p1 xs
+  let (b, xs) ← p2 xs
+  ((a, b), xs)
 
 infixr: 60 " ++ " => Parser.concat
 
-def Parser.either (p1: Parser α) (p2: Parser α): Parser α := λ tokens => do
-  match p1 tokens with
-    | some (rest, a) => some (rest, a)
-    | none => p2 tokens
+def Parser.either (p1: Parser χ α) (p2: Parser χ α): Parser χ α := λ xs =>
+  match p1 xs with
+    | some (a, xs) => some (a, xs)
+    | none => p2 xs
 
 infixr: 50 " || " => Parser.either -- lower precedence than concat
 
-partial def Parser.many (p: Parser α): Parser (List α) :=
-  let rec loop (acc: Array α) (tokens: List Char): Option (List Char × List α) :=
-    match p tokens with
-      | none => some (tokens, acc.toList)
-      | some (rest, e) => loop (acc.push e) rest
-  loop #[]
-
--- TOOLS
-
-def parseEmpty: Parser Unit := λ tokens => some (tokens, ())
-def parseFail: Parser α := λ _ => none
-
-def parseSingle: Parser Char := λ tokens =>
-  match tokens with
-    | [] => none
-    | head :: rest => some (rest, head)
-
-def parseExact (char: Char): Parser Unit :=
-  parseSingle.mapOption (λ head =>
-    if head = char then
-      some ()
-    else
-      none
-  )
-
-def parseExactString (s: String): Parser Unit :=
-  (s.toList.map parseExact).foldl (λ p1 p2 =>
-    (p1 ++ p2).map (λ _ => ())
-  ) parseEmpty
-
-#eval parseExactString "hehe" "heheh123".toList
+partial def Parser.list (p: Parser χ α): Parser χ (List α) := λ xs =>
+  let rec loop (as: Array α) (xs: List χ): Option (List α × List χ) :=
+    match p xs with
+      | none => some (as.toList, xs)
+      | some (a, xs) => loop (as.push a) xs
+  loop #[] xs
 
 
 end ParserCombinator
