@@ -228,13 +228,14 @@ partial def parseExp: Parser Exp :=
 
 
 
-#eval parseInh (parseVar []) ["inh", "name", ":", "type", "in", "hehe"]
-#eval parsePi (parseVar []) ["type1", "->", "type2"]
-#eval parsePi (parseVar []) ["name1", ":", "type1", "->", "type2"]
-#eval parseLam (parseVar []) ["name", "=>", "body"]
-#eval parseBnd (parseVar []) ["let", "x", ":=", "3", "in", "x+y"]
-#eval parseBnd (parseVar []) ["let", "x", ":", "type", ":=", "3", "in", "x+y"]
-#eval parseInh (parseVar []) ["inh", "Nat", ":", "Type0", "in", "hehe"]
+
+#eval parseInh parseExp ["inh", "name", ":", "type", "in", "hehe"]
+#eval parsePi parseExp ["type1", "->", "type2"]
+#eval parsePi parseExp ["name1", ":", "type1", "->", "type2"]
+#eval parseLam parseExp ["name", "=>", "body"]
+#eval parseBnd parseExp ["let", "x", ":=", "3", "in", "x+y"]
+#eval parseBnd parseExp ["let", "x", ":", "type", ":=", "3", "in", "x+y"]
+
 end EL2.Parser.Internal
 
 
