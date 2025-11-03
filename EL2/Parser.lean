@@ -131,7 +131,6 @@ def parseTyp: Parser Exp := parseString.mapPartial (λ head => do
   if ¬ "Type".isPrefixOf head then none else
   let levelStr := head.stripPrefix "Type"
   let level ← levelStr.toNat?
-  dbg_trace s!"parsed type {level}"
   pure (Exp.typ level)
 )
 

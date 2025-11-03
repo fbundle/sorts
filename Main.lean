@@ -10,9 +10,8 @@ body
 private def tokens := tokenize s
 
 def main  : IO Unit := do
-  IO.println tokens
   IO.println "--------------------------------------"
   match parse tokens with
-    | none => return
+    | none => IO.println "parse error"
     | some (rest, e) =>
       IO.println e
