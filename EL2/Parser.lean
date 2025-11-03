@@ -217,7 +217,8 @@ def parseApp (parseExp: Parser Exp): Parser Exp :=
         ) cmd
   )
 
-partial def parseExp: Parser Exp :=
+partial def parseExp: Parser Exp := λ tokens =>
+  dbg_trace s!"[DBG_TRACE] parsing {tokens}"
   parseTyp ||
   parseVar specialTokens ||
   parsePi parseExp ||
@@ -225,6 +226,7 @@ partial def parseExp: Parser Exp :=
   parseBnd parseExp ||
   parseInh parseExp ||
   parseApp parseExp
+  $ tokens
 
 
 
