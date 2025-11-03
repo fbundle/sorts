@@ -96,8 +96,9 @@ partial def Parser.many (p: Parser α) (stop: Parser β): Parser (List α) := λ
         loop (acc.push a) tokens
   loop #[] tokens
 
-
 open EL2.Core
+
+def parseFail: Parser α := λ _ => none
 
 def parseString: Parser String := λ tokens =>
   match tokens with
@@ -112,7 +113,9 @@ def predToOption (f: α → Bool): α → Option α := λ a =>
 
 def parseExact (pattern: String): Parser String := parseSingle $ predToOption (· = pattern)
 
-def parseFail: Parser α := λ _ => none
+def parseExactMany (patterns: List String): Parser String :=
+  (patterns.map parseExact).foldl
+  Parser.either parseFail
 
 -- parse Exp
 
@@ -123,7 +126,12 @@ def parseTyp: Parser Exp := parseSingle (λ head => do
   pure (Exp.typ level)
 )
 
-def parseVar: Parser Exp := parseString.map (Exp.var ·)
+def parseVar (specialTokens: List String): Parser Exp :=  λ tokens => do
+  match parseExactMany specialTokens tokens with
+    | some _ => none
+    | none =>
+      let (tokens, name) ← parseString tokens
+      some (tokens, Exp.var name)
 
 -- def parseApp:
 
@@ -182,32 +190,42 @@ def parseInh (parseExp: Parser Exp): Parser Exp :=
     parseExp -- body
   ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
 
-def parseApp (stopTokens: List String) (parseExp: Parser Exp): Parser Exp :=
-  (parseExp.many (
-      (stopTokens.map parseExact).foldl
-      Parser.either parseFail
-  )).mapPartial (λ expList =>
-    match expList with
-      | [] => none
-      | cmd :: args =>
-        some $ args.foldl (λ cmd arg =>
-          Exp.app cmd arg
-        ) cmd
+def parseApp (stopTokens: List String) (parseExp: Parser Exp) (cmd: Exp): Parser Exp :=
+  let parseExpList := parseExp.many (parseExactMany stopTokens)
+  parseExpList.mapPartial (λ args =>
+    some $ args.foldl (λ cmd arg =>
+      Exp.app cmd arg
+    ) cmd
   )
 
 def specialTokens: List String := [
   ":", "->", "=>", "let", ":=", "in", "inh",
 ]
 
-partial def parseExp: Parser Exp := λ tokens =>
+partial def parseExp: Parser Exp := λ tokens => do
   match parseExact "(" tokens with
-    | none => -- parse until special token
-      parseApp specialTokens parseExp tokens
     | some _ => -- parse until ")"
       parseApp [")"] parseExp tokens
 
+    | none => -- parse until special token
+      let (tokens, cmd) ← (
+        parseTyp ||
+        parseVar specialTokens ||
+        parsePi parseExp ||
+        parseLam parseExp ||
+        parseBnd parseExp ||
+        parseInh parseExp
+      ) tokens
+
+      parseApp specialTokens parseExp cmd tokens
 
 
+private def s := "
+inh Nat : Type0
+inh zero : Nat
+
+
+"
 
 
 
