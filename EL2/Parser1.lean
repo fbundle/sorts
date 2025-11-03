@@ -54,9 +54,9 @@ partial def parseColonType: StringParser Exp :=
     parseExactString ":" ++
     parseWhiteSpaceWeak ++
     parseAnn ++
-    (parseWhiteSpaceWeak ++ parseArrowAnn ++ parseWhiteSpaceWeak).list
+    (parseWhiteSpaceWeak ++ parseArrowAnn).list
   ).map (λ (_, _, ann1, ann2s) =>
-    let ann2s: List (String × Exp) := (ann2s.map (λ ((_, ann2s, _): String × (String × Exp) × String) =>
+    let ann2s: List (String × Exp) := (ann2s.map (λ ((_, ann2s): String × (String × Exp)) =>
       ann2s
     ))
     let anns := ann1 :: ann2s
@@ -84,6 +84,11 @@ def parseLam: StringParser Exp :=
     parse
   ).map (λ (_, _, name, _, _, body) => Exp.lam name body)
 
+def parseLineBreak :=
+  parseWhiteSpaceButNotNewLineWeak ++
+  (parseExactString "\n" || parseExactString ";") ++
+  parseWhiteSpaceWeak
+
 def parseBnd: StringParser Exp :=
   (
     parseExactString "let" ++
@@ -97,10 +102,9 @@ def parseBnd: StringParser Exp :=
     parseExactString ":=" ++
     parseWhiteSpaceWeak ++
     parse ++
-    parseWhiteSpaceButNotNewLineWeak ++
-    (parseExactString "\n" || parseExactString ";") ++
+    parseLineBreak ++
     parse
-  ).map (λ (_, _, name, _, _, _, type, _, _, _, value, _, _, body) =>
+  ).map (λ (_, _, name, _, _, _, type, _, _, _, value, _, body) =>
     Exp.bnd name value type body
   )
 
