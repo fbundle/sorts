@@ -212,12 +212,13 @@ def parseApp (parseExp: Parser Exp) : Parser Exp :=
   )
 
 def specialTokens: List String := [
-  ":", "->", "=>", "let", ":=", "in", "inh",
+  ":", "->", "=>", "let", ":=", "in", "inh", "(", ")"
 ]
 
 partial def parseExp: Parser Exp := λ tokens => do
   dbg_trace s!"[DBG_TRACE] parsing {tokens}"
   (
+    -- either one of the basic type
     (
       parseTyp ||
       parseVar specialTokens ||
@@ -228,6 +229,7 @@ partial def parseExp: Parser Exp := λ tokens => do
       parseApp parseExp
     )
     ||
+    -- or enclosed with parentheses
     (
       parseExact "(" *
       parseExp *
