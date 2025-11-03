@@ -130,7 +130,7 @@ def parseName: Parser String := λ tokens =>
     | some _ => none
     | none => parseString tokens
 
-def parseTyp: Parser Exp := parseString.mapPartial (λ head => do
+def parseUniv: Parser Exp := parseString.mapPartial (λ head => do
   if ¬ "Type".isPrefixOf head then none else
   let levelStr := head.stripPrefix "Type"
   let level ← levelStr.toNat?
@@ -140,6 +140,9 @@ def parseTyp: Parser Exp := parseString.mapPartial (λ head => do
 def parseVar: Parser Exp :=
   parseName.map (λ name => Exp.var name)
 
+
+-- TODO - make parseType = : E + [-> E]^n where E = parseAnn | parseExp for n ≥ 0
+-- remove parsePi
 
 def parseAnn (parseExp: Parser Exp): Parser (String × Exp) :=
   (
@@ -249,7 +252,7 @@ def parseApp (parseExp: Parser Exp): Parser Exp :=
 
 partial def parseExp: Parser Exp := λ tokens =>
   dbg_trace s!"[DBG_TRACE] parsing {tokens}"
-  parseTyp ||
+  parseUniv ||
   parseVar ||
   parsePi parseExp ||
   parseLam parseExp ||
