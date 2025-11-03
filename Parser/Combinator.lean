@@ -33,21 +33,18 @@ partial def Parser.list (p: Parser χ α): Parser χ (List α) := λ xs =>
 def parseEmpty: Parser χ Unit := λ xs => some ((), xs)
 def parseFail: Parser χ Unit := λ _ => none
 
-def parseExact [BEq χ] (y: χ): Parser χ Unit := λ xs =>
+def parseExact [BEq χ] (y: χ): Parser χ χ := λ xs =>
   match xs with
     | [] => none
     | x :: xs =>
       if y == x then
-        some ((), xs)
+        some (x, xs)
       else
         none
 
-def parseExactList [BEq χ] (ys: List χ): Parser χ Unit := λ xs => do
-  match ys with
-    | [] => parseEmpty xs
-    | y :: ys =>
-      let (_, xs) ← parseExact y xs
-      parseExactList ys xs
+def parseExactList [BEq χ] (ys: List χ): Parser χ (List χ) := λ xs => do
+  let rest ← ys.isPrefixOf? xs
+  pure (ys, rest)
 
 #eval parseExactList "hehe".toList "hehea123".toList
 
@@ -98,5 +95,9 @@ def parseExactString (ys: String): Parser Char Unit := parseExactList ys.toList
 #eval parseWhiteSpace "abc123  ".toList
 #eval parseName "   abc123".toList
 #eval parseWhiteSpace "   abc123".toList
+
+
+def parseDigit
+
 
 end Parser.Combinator
