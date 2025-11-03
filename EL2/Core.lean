@@ -39,7 +39,7 @@ inductive Exp where
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
   -- inh
   | inh: (name: String) → (type: Exp) → (body: Exp) → Exp
-  deriving Nonempty
+  deriving Nonempty, Repr
 
 def Exp.toString (e: Exp): String :=
   match e with

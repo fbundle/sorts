@@ -3,7 +3,7 @@ import EL2.Parser
 open EL2.Parser
 
 private def s := "
-inh Nat : Type0
+inh Nat : Type0 in
 body
 "
 
@@ -14,4 +14,4 @@ def main  : IO Unit := do
   match parse tokens with
     | none => IO.println "parse error"
     | some (rest, e) =>
-      IO.println e
+      IO.println s!"{repr e}"
