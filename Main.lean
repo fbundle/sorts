@@ -9,11 +9,10 @@ body
 
 private def tokens := tokenize s
 
-#eval tokens
-
 def main  : IO Unit := do
+  IO.println tokens
   IO.println "--------------------------------------"
   match parse tokens with
     | none => return
-    | some (tokens, e) =>
+    | some (rest, e) =>
       IO.println e

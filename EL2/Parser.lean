@@ -82,7 +82,7 @@ infixr: 60 " ++ " => Parser.concat
 
 def Parser.either (p1: Parser α) (p2: Parser α): Parser α := λ tokens => do
   match p1 tokens with
-    | some (tokens, a) => some (tokens, a)
+    | some (rest, a) => some (rest, a)
     | none => p2 tokens
 
 infixr: 50 " || " => Parser.either -- lower precedence than concat
