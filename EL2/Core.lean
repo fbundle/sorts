@@ -214,15 +214,15 @@ partial def checkTypLevel? (checkExp?: Ctx → Exp → Val → Option Bool) (ctx
 
 mutual
 
-partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
-  -- infer the type of exp
-  ctx.printIfNone s!"[DBG_TRACE] inferExp? {ctx}\n\texp = {exp}" do
+partial def inferExpWeak? (ctx: Ctx) (exp: Exp): Option Val :=
+  -- infer the type of exp weakly
+  ctx.printIfNone s!"[DBG_TRACE] inferExpWeak? {ctx}\n\texp = {exp}" do
     match exp with
       | Exp.typ n => pure (Val.typ (n + 1))
       | Exp.var name => ctx.Γ.lookup? name
 
       | Exp.app cmd arg => -- for Exp.app, cmd should be typ, var, or app
-        match ← inferExp? ctx cmd with
+        match ← inferExpWeak? ctx cmd with
           | Val.clos env (Exp.pi name typeA typeB) =>
             if ¬ (← checkExp? ctx arg (← eval? env typeA)) then
               none
@@ -272,13 +272,13 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
 
       -- desugar untyped lam (λx.y z)
       | Exp.app (Exp.lam name body) arg =>
-        let argType ← inferExp? ctx arg
+        let argType ← inferExpWeak? ctx arg
         let argValue ← eval? ctx.ρ arg
 
         let subCtx := ctx.bind name argValue argType
         checkExp? subCtx body val
 
-      | _ => eqVal? ctx.k (← inferExp? ctx exp) val
+      | _ => eqVal? ctx.k (← inferExpWeak? ctx exp) val
 
 end
 
