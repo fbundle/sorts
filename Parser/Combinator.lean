@@ -28,7 +28,7 @@ def Parser.either (p1: Parser χ α) (p2: Parser χ α): Parser χ α :=
 
 infixr: 50 " || " => Parser.either -- lower precedence than concat
 
-infixr: 50 " ||| " => Parser.sum -- lower precedence than either
+infixr: 40 " ||| " => Parser.sum -- lower precedence than either
 
 
 partial def Parser.list (p: Parser χ α): Parser χ (List α) := λ xs =>
