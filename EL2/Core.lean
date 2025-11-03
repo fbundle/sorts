@@ -280,12 +280,6 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
       | _ => eqVal? ctx.k (← inferExpWeak? ctx exp) val
 end
 
--- TYPE INFERENCE
-
-
-
-
-
 -- OTHER
 
 def typeCheck? (exp: Exp) (type: Exp): Option Bool := do
