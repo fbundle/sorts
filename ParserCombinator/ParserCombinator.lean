@@ -49,7 +49,7 @@ def parseList [BEq χ] (ys: List χ): Parser χ Unit := λ xs => do
       let (_, xs) ← parseSingle y xs
       parseList ys xs
 
-
+#eval parseList "hehe".toList "hehea123".toList
 
 
 
