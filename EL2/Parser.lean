@@ -35,7 +35,7 @@ partial def splitPart (sortedSplitTokens : List String) (part : String) : List S
           let after := part.drop (n + s.length)
           let beforeParts := if before.isEmpty then [] else splitPart sortedSplitTokens before
           let afterParts := if after.isEmpty then [] else splitPart sortedSplitTokens after
-          beforeParts * [s] * afterParts
+          beforeParts ++ [s] ++ afterParts
         | none => splitPart ss part
 
 def tokenize (sortedSplitTokens: List String) (s: String) : List String :=
@@ -85,7 +85,7 @@ def Parser.either (p1: Parser α) (p2: Parser α): Parser α := λ tokens => do
     | some (tokens, a) => some (tokens, a)
     | none => p2 tokens
 
-infixr: 50 " + " => Parser.either -- lower precedence than concat
+infixr: 50 " || " => Parser.either -- lower precedence than concat
 
 open EL2.Core
 
@@ -122,13 +122,15 @@ def parseAnn (parseExp: Parser Exp): Parser (String × Exp) :=
   ).map (λ (name, _, type) => (name, type))
 
 def parsePi (parseExp: Parser Exp): Parser Exp :=
+  -- named Pi or unnamed Pi
+
   (
     parseAnn parseExp *
     parseExact "->" *
     parseExp
   ).map (λ ((name, typeA), _, typeB) => Exp.pi name typeA typeB)
 
-  +
+  ||
 
   (
     parseExp *
@@ -167,9 +169,11 @@ def parseInh (parseExp: Parser Exp): Parser Exp :=
     parseExp -- body
   ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
 
-def parseApp ()
+def parseApp (parseExp: Parser Exp): Parser Exp :=
+  sorry
 
 def parseExp: Parser Exp :=
+  sorry
 
 
 
