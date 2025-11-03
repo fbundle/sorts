@@ -172,6 +172,19 @@ def parseBnd (parseExp: Parser Exp): Parser Exp :=
   (
     parseExact "let" *
     parseString * -- name
+    parseExact ":=" *
+    parseExp * -- value
+    parseExact "in" *
+    parseExp -- body
+  ).map (λ (_, name, _, value, _, body) =>
+    Exp.app (Exp.lam name body) value
+  )
+
+  ||
+
+  (
+    parseExact "let" *
+    parseString * -- name
     parseExact ":" *
     parseExp * -- type
     parseExact ":=" *
@@ -203,9 +216,10 @@ def specialTokens: List String := [
 ]
 
 partial def parseExp: Parser Exp := λ tokens => do
+  dbg_trace s!"[DBG_TRACE] parsing {tokens}"
   match parseExact "(" tokens with
     | some _ => -- parse until ")"
-      let (tokens, cmd) ← (
+      let (rest, cmd) ← (
         parseTyp ||
         parseVar specialTokens ||
         parsePi parseExp ||
@@ -213,10 +227,10 @@ partial def parseExp: Parser Exp := λ tokens => do
         parseBnd parseExp ||
         parseInh parseExp
       ) tokens
-      parseApp [")"] parseExp cmd tokens
+      parseApp [")"] parseExp cmd rest
 
     | none => -- parse until special token
-      let (tokens, cmd) ← (
+      let (rest, cmd) ← (
         parseTyp ||
         parseVar specialTokens ||
         parsePi parseExp ||
@@ -225,9 +239,19 @@ partial def parseExp: Parser Exp := λ tokens => do
         parseInh parseExp
       ) tokens
 
-      parseApp specialTokens parseExp cmd tokens
+      parseApp specialTokens parseExp cmd rest
 
+
+#eval parseInh (parseVar []) ["inh", "name", ":", "type", "in", "hehe"]
+#eval parsePi (parseVar []) ["type1", "->", "type2"]
+#eval parsePi (parseVar []) ["name1", ":", "type1", "->", "type2"]
+#eval parseLam (parseVar []) ["name", "=>", "body"]
+#eval parseBnd (parseVar []) ["let", "x", ":=", "3", "in", "x+y"]
+#eval parseBnd (parseVar []) ["let", "x", ":", "type", ":=", "3", "in", "x+y"]
+#eval parseInh (parseVar []) ["inh", "Nat", ":", "Type0", "in", "hehe"]
 end EL2.Parser.Internal
+
+
 
 
 namespace EL2.Parser
