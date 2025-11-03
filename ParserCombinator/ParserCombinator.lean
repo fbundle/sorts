@@ -74,13 +74,7 @@ def parseSomeWhiteSpace : Parser Char String :=
   -- no whitespace is not ok
   parseWhiteSpace.mapOption (λ s => if s.length = 0 then none else s)
 
-
-
-
 def parseExactString (ys: String): Parser Char Unit := parseExactList ys.toList
-
-
-
 
 
 end ParserCombinator
