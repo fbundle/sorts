@@ -83,16 +83,15 @@ instance: ToString Val where
 instance : ToString (Map Val) where
   toString (m: Map Val): String := m.toString Val.toString
 
-
 -- WHNF
 mutual
-partial def app? (cmd: Val) (arg: Val): Option Val := do
+partial def whnf? (cmd: Val) (arg: Val): Option Val := do
   -- reduce (Val.app cmd arg)
   match cmd with
     | Val.clos env (Exp.lam name body) =>
       eval? (env.update name arg) body
 
-    | _ =>
+    | _ => -- cannot reduce
       pure (Val.app cmd arg)
 
 partial def eval? (env: Map Val) (exp: Exp): Option Val := do
@@ -104,28 +103,17 @@ partial def eval? (env: Map Val) (exp: Exp): Option Val := do
       env.lookup? name
 
     | Exp.app cmd arg =>
-      app? (← eval? env cmd) (← eval? env arg)
+      whnf? (← eval? env cmd) (← eval? env arg)
 
     | Exp.bnd name val _ body =>
       eval? (env.update name (← eval? env val)) body
 
-    -- skip lam pi inh
-    | _ => pure (Val.clos env exp)
+    | _ => pure (Val.clos env exp) -- skip lam pi inh
 end
-
-partial def whnf? (val: Val): Option Val := do
-  match val with
-    | Val.app cmd arg =>
-      app? (← whnf? cmd) (← whnf? arg)
-
-    | Val.clos env exp =>
-      eval? env exp
-
-    | _ => pure val
 
 -- DEFINITIONAL EQUALITY
 partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
-    match (← whnf? u1, ← whnf? u2) with
+    match (u1, u2) with
       | (Val.typ n1, Val.typ n2) => pure (n1 = n2)
 
       | (Val.gen k1, Val.gen k2) =>
@@ -137,18 +125,18 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
       | (Val.clos env1 (Exp.lam name1 body1), Val.clos env2 (Exp.lam name2 body2)) =>
         let v := Val.gen k
         eqVal? (k + 1)
-          (Val.clos (env1.update name1 v) body1)
-          (Val.clos (env2.update name2 v) body2)
+          (← eval? (env1.update name1 v) body1)
+          (← eval? (env2.update name2 v) body2)
 
       | (Val.clos env1 (Exp.pi name1 type1 body1), Val.clos env2 (Exp.pi name2 type2 body2)) =>
         let v := Val.gen k
         pure (
-          (← eqVal? k (Val.clos env1 type1) (Val.clos env2 type2))
+          (← eqVal? k (← eval? env1 type1) (← eval? env2 type2))
             ∧
           (
             ← eqVal? (k + 1)
-            (Val.clos (env1.update name1 v) body1)
-            (Val.clos (env2.update name2 v) body2)
+            (← eval? (env1.update name1 v) body1)
+            (← eval? (env2.update name2 v) body2)
           )
         )
 
@@ -233,12 +221,12 @@ partial def inferExp? (ctx: Ctx) (exp: Exp): Option Val :=
 
       | Exp.app cmd arg =>
         -- for Exp.app, cmd should be typ, var, or app
-        match (← whnf? (← inferExp? ctx cmd)) with
+        match ← inferExp? ctx cmd with
           | Val.clos env (Exp.pi name type body) =>
-            if ← checkExp? ctx arg (Val.clos env type) then
-              let argValue ← whnf? (Val.clos ctx.ρ arg)
+            if ← checkExp? ctx arg (← eval? env type) then
+              let argValue ← eval? ctx.ρ arg
               let subEnv := env.update name argValue
-              pure (Val.clos subEnv body)
+              pure (← eval? subEnv body)
             else
               none
           | _ => none
@@ -256,41 +244,41 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   ) $ do
     match exp with
       | Exp.lam name1 body1 =>
-        match ← whnf? val with
+        match val with
           | Val.clos env2 (Exp.pi name2 type2 body2) =>
-            let (subCtx, v) := ctx.intro name1 (Val.clos env2 type2)
-            checkExp? subCtx body1 (Val.clos (env2.update name2 v) body2)
+            let (subCtx, v) := ctx.intro name1 (← eval? env2 type2)
+            checkExp? subCtx body1 (← eval? (env2.update name2 v) body2)
           | _ => none
 
       | Exp.pi name type body =>
-        match ← whnf? val with
+        match val with
           | Val.typ n =>
             let i ← checkTypLevel? checkExp? ctx type ctx.maxN
-            let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
+            let (subCtx, _) := ctx.intro name (← eval? ctx.ρ type)
             let j ← checkTypLevel? checkExp? subCtx body ctx.maxN
             pure ((max i j) ≤ n)
           | _ => none
 
       | Exp.bnd name value type body =>
         let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
-        if ¬ ((← checkExp? ctx value (Val.clos ctx.ρ type))) then
+        if ¬ ((← checkExp? ctx value (← eval? ctx.ρ type))) then
           none
         else
           checkExp? (ctx.bind name
-            (← whnf? (Val.clos ctx.ρ value))
-            (← whnf? (Val.clos ctx.ρ type))
+            (← eval? ctx.ρ value)
+            (← eval? ctx.ρ type)
           ) body val
 
       | Exp.app (Exp.lam name body) arg => -- process untyped lam (λx.y z)
-        let argType ← whnf? (← inferExp? ctx arg)
-        let argValue ← whnf? (Val.clos ctx.ρ arg)
+        let argType ← ← inferExp? ctx arg
+        let argValue ← eval? ctx.ρ arg
 
         let subCtx := ctx.bind name argValue argType
         checkExp? subCtx body val
 
       | Exp.inh name type body =>
         let _ ← checkTypLevel? checkExp? ctx type ctx.maxN
-        let (subCtx, _) := ctx.intro name (Val.clos ctx.ρ type)
+        let (subCtx, _) := ctx.intro name (← eval? ctx.ρ type)
         checkExp? subCtx body val
 
 
@@ -298,11 +286,11 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
 
 end
 
-def typeCheck? (exp: Exp) (type: Exp): Option Bool :=
+def typeCheck? (exp: Exp) (type: Exp): Option Bool := do
   -- typeCheck?
   -- some false - type check error
   -- none - parse error
-  checkExp? emptyCtx exp (Val.clos emptyMap type)
+  checkExp? emptyCtx exp (← eval? emptyMap type)
 
 def test1 :=
   typeCheck?
@@ -370,8 +358,6 @@ def test6 :=
   )
   let t := Exp.typ 1
   typeCheck? e t
-
-
 
 #eval test1
 #eval test2
