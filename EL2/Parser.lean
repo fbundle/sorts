@@ -222,8 +222,7 @@ def parseApp (parseExp: Parser Exp): Parser Exp :=
         ) cmd
   )
 
-partial def parseExp: Parser Exp := λ tokens =>
-  dbg_trace s!"[DBG_TRACE] parsing {tokens}"
+partial def parseExp: Parser Exp :=
   parseTyp ||
   parseVar specialTokens ||
   parsePi parseExp ||
@@ -231,17 +230,14 @@ partial def parseExp: Parser Exp := λ tokens =>
   parseBnd parseExp ||
   parseInh parseExp ||
   parseApp parseExp
-  $ tokens
 
-
-
-
-#eval parseInh parseExp ["inh", "name", ":", "type", "in", "hehe"]
-#eval parsePi parseExp ["forall", "type1", "->", "type2"]
-#eval parsePi parseExp ["forall", "name1", ":", "type1", "->", "type2"]
-#eval parseLam parseExp ["lam", "name", "=>", "body"]
-#eval parseBnd parseExp ["let", "x", ":=", "3", "in", "x+y"]
-#eval parseBnd parseExp ["let", "x", ":", "type", ":=", "3", "in", "x+y"]
+#eval parseExp ["inh", "name", ":", "type", "in", "hehe"]
+#eval parseExp ["forall", "type1", "->", "type2"]
+#eval parseExp ["forall", "name1", ":", "type1", "->", "type2"]
+#eval parseExp ["lam", "name", "=>", "body"]
+#eval parseExp ["let", "x", ":=", "3", "in", "x+y"]
+#eval parseExp ["let", "x", ":", "type", ":=", "3", "in", "x+y"]
+#eval parseExp ["(", "cmd", "arg1", "arg2", ")"]
 
 
 end EL2.Parser.Internal
