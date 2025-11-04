@@ -1,81 +1,160 @@
-# EL2 Language & Project Documentation
+# EL2 Language User Guide & Tutorial
+
+Welcome to EL2—a minimalist dependently-typed language, inspired by the Calculus of Constructions, designed for learning and experimentation. This guide walks you through EL2's syntax and features with step-by-step annotated examples.
 
 ## Table of Contents
-1. [Introduction](#introduction)
-2. [Language Overview](#language-overview)
-    - [Philosophy & Goals](#philosophy--goals)
-    - [Main Concepts](#main-concepts)
-    - [Syntax & Constructs](#syntax--constructs)
-3. [Complete Example](#complete-example)
-4. [Type System & Semantics](#type-system--semantics)
-5. [Implementation Internals](#implementation-internals)
-    - [Parser Architecture](#parser-architecture)
-    - [Type Checker Kernel](#type-checker-kernel)
-    - [File Structure](#file-structure)
-6. [VS Code Extension](#vs-code-extension)
-7. [Advanced Notes & Future Work](#advanced-notes--future-work)
-8. [References & Resources](#references--resources)
+1. [What is EL2?](#what-is-el2)
+2. [Getting Started](#getting-started)
+3. [Project Structure](#project-structure)
+4. [Language Essentials](#language-essentials)
+    - [Types and Universes](#types-and-universes)
+    - [Declaring Types & Values](#declaring-types--values)
+    - [Functions: Pi and Lambda](#functions-pi-and-lambda)
+    - [Let Bindings](#let-bindings)
+    - [Inductive Types (Simulated)](#inductive-types-simulated)
+    - [Recursion & Pattern Matching](#recursion--pattern-matching)
+    - [Comments](#comments)
+5. [Complete Example Walkthrough](#complete-example-walkthrough)
+6. [Tips & Best Practices](#tips--best-practices)
+7. [Common Errors & Troubleshooting](#common-errors--troubleshooting)
+8. [Further Resources](#further-resources)
 
 ---
 
-## Introduction
+## What is EL2?
 
-EL2 is a minimal dependently-typed functional language, implemented in Lean 4, that aims to:
-- Explore core mechanisms behind Calculus of Constructions (CoC) and move towards Calculus of Inductive Constructions (CIC).
-- Serve as a learning, teaching, and experimentation platform for type theorists and language designers.
-- Provide a simple, readable kernel focusing on type universes, lambda abstraction, and basic inductive types (simulated).
+EL2 is a tiny dependently-typed toy language where you can:
+- Define custom types and functions (with dependent types).
+- Experiment with minimal type theory, similar to Lean or Coq.
+- Learn and teach the foundations of dependently-typed functional programming.
 
-## Language Overview
+## Getting Started
 
-### Philosophy & Goals
-- Minimalism: The kernel focuses on the smallest adequate set of features supporting dependent types and universes.
-- Clarity: The implementation is pedagogically clear, with direct mapping from type theory texts.
-- Extensibility: The next step is to move beyond basic CoC into richer CIC territory.
+### Running EL2
+To typecheck an EL2 file (e.g., `example.el2`), run:
 
-### Main Concepts
-- **Sorts**: `Type0`, `Type1`, ...
-- **Type Universes**: Hierarchical structure analogous to Lean/Coq universes.
-- **Inhabitation (`inh`)**: Introduce constant types, constructors, and simulated inductives.
-- **Functions & Pi Types**: "hom" for dependent and non-dependent function types.
-- **Lambda**: "lam" for abstraction.
-- **Let Bindings**: Typed and untyped.
-- **Pattern Matching**: Not directly implemented; to be desugared to recursors.
+```bash
+lake exe Main.lean example.el2
+```
+(Passed/failed output is shown in the terminal.)
 
-### Syntax & Constructs
-- **Type Universes**: `Type0`, `Type1`, ...
-- **Inhabit**: `inh name : Type ...`, `inh name : hom ...`
-- **Functions**:\
-  Dependent Pi: `hom (x : T) -> U`,\
-  Non-dependent: `hom T U`
-- **Lambda Abstractions**: `lam x y => body`
-- **Let Bindings**:
-  - Typed: `let x: T := y`
-  - Untyped (syntactic sugar for application): `let x := y`
-- **Comments**: `--` for single line
+### (Optional) Syntax Highlighting
+Install the VS Code extension from `tools/vscode-extension` using VSIX for better editing experience.
 
-#### Example Snippets
+## Project Structure
+- `example.el2` — Example EL2 code (start here!)
+- `Main.lean` — Entry point for CLI typechecker
+- `EL2/` — Language internals (not needed for user/programmer)
+- `tools/vscode-extension/` — VS Code syntax highlighter
+
+## Language Essentials
+
+### Types and Universes
+EL2 uses universe levels:
+- `Type0` — The smallest universe (contains types like `Nat`, etc)
+- `Type1`, `Type2`, ... — Higher universes as needed
+
+```el2
+Type0    -- a sort (the type of basic types)
+Type1    -- the next universe
+```
+
+### Declaring Types & Values
+To state that a type or value exists, use `inh` (short for "inhabit").
+
+```el2
+inh Bool : Type0      -- Declare Bool as a type
+inh true : Bool       -- Declare the constant true
+inh false : Bool      -- Declare the constant false
+```
+
+### Functions: Pi and Lambda
+#### Dependent Functions (Pi types)
+Use `hom` to express function (possibly dependent) types:
+
+```el2
+inh succ : hom Nat -> Nat             -- succ: Nat -> Nat
+inh Vec : hom Nat Type0 -> Type0      -- Vec: (n : Nat) → Type0 → Type0
+```
+
+- `hom (x : T) -> U` = dependent function (`Π (x : T), U` in Lean/Coq)
+- `hom T -> U` = non-dependent (`T → U`)
+
+#### Lambda Abstraction
+Use `lam ... => ...` to define anonymous functions:
+
+```el2
+let id: hom Nat -> Nat := lam x => x
+
+let plus_one: hom Nat -> Nat := lam n => (succ n)
+```
+
+multi-paramters `lam` and `hom` will be automatically converted into single-parameter version
+
+### Let Bindings
+- **Simple Let** (no type annotation):
+  ```el2
+  let one := (succ zero)            -- like let one = succ zero
+  let two := (succ one)
+  ```
+  This is just syntactic sugar for immediately applying a lambda:
+    - `let x := y` means `((lam x => body) y)`.
+
+- **Typed Let**: type will be checked by the kernel
+  ```el2
+  let pure: hom Nat -> (Vec one Nat) := lam x => (push zero Nat (nil Nat) x)
+  let pure_two: (Vec one Nat) := (pure two)
+  ```
+
+
+
+### Inductive Types (Simulated)
+Inductive types (like `Nat`, `Vec`, etc.) are declared with multiple `inh` lines.
+
 ```el2
 inh Nat : Type0
 inh zero : Nat
 inh succ : hom Nat -> Nat
-
-inh Vec : hom Nat Type0 -> Type0
-inh nil : hom (T: Type0) -> (Vec zero T)
-let n := (succ zero)
-let singleton: Vec one Nat := (push zero Nat (nil Nat) zero)
 ```
 
-See [example.el2](./example.el2) for a complete annotated sample.
+No positivity/termination checks are enforced—it is up to you to write safe declarations. Think of `inh` as axioms, if you make the wrong assumption, you can derive/proof anything
 
-## Complete Example
+### Recursion & Pattern Matching
+EL2 does not have first-class pattern matching yet, but you can code recursion via induction principles (recursors) you define or trust as `inh`.
 
-Excerpt with explanations (see `example.el2` for full listing):
+#### Simulated Nat Recursor
+```el2
+inh Nat_rec : hom
+  (P : hom Nat -> Type0)  -- motive
+  (P zero)                -- base case
+  (hom (n : Nat) (P n) -> (P (succ n)))  -- step
+  (n : Nat)               -- input
+  -> (P n)                -- output
+```
+Then, use it as:
+```el2
+let is_zero : hom Nat -> Bool := lam n =>
+  (Nat_rec
+    (lam _ => Bool)
+    true
+    (lam n _ => false)
+    n)
+```
+This is equivalent to Lean/Coq-style pattern matching on `Nat`.
+
+### Comments
+Single-line: `-- this is a comment`
+
+---
+## Complete Example Walkthrough
+
+Let's look at the start of `example.el2`:
 ```el2
 inh Bool : Type0
 inh true : Bool
 inh false : Bool
 
--- Assume inductive type Nat & Vec exists for tutorial
+-- Inductive Nat & recursor
 inh Nat : Type0
 inh zero : Nat
 inh succ : hom Nat -> Nat
@@ -85,89 +164,55 @@ inh Nat_rec : hom
   (hom (n : Nat) (P n) -> (P (succ n)))
   (n : Nat) -> (P n)
 
-let one := (succ zero)
-let two := (succ one)
-let pure: hom Nat -> (Vec one Nat) := lam x => (push zero Nat (nil Nat) x)
-let pure_two: (Vec one Nat) := (pure two)
+-- Vectors
+inh Vec : hom Nat Type0 -> Type0
+inh nil : hom (T: Type0) -> (Vec zero T)
+inh push : hom (n: Nat) (T: Type0) (v: (Vec n T)) (x: T) -> (Vec (succ n) T)
 
+-- Working with let
+let one := (succ zero)
+let pure: hom Nat -> (Vec one Nat) := lam x => (push zero Nat (nil Nat) x)
+
+-- Using recursion/induction
 let is_zero : hom Nat -> Bool := lam n =>
   (Nat_rec
     (lam _ => Bool)
     true
     (lam n _ => false)
     n)
+
+Type0  -- final expression (sort)
 ```
+- Each `inh` declares a type or constant or function.
+- `let` binds a value while optionally giving a type.
+- The final term should be a `TypeN` (well-typed file/program).
 
-## Type System & Semantics
+---
 
-- **Universes**:
-  - `Type0` is the base universe (contains e.g. `Nat`, Pi types at level 0, etc.)
-  - `TypeN` is universe level N.
+## Tips & Best Practices
+- When defining recursors, check you provide the correct arity and types.
+- Add types to complex `let` bindings for better error messages.
+- Use VS Code syntax highlighting for easier development.
+- Keep inductives simple; EL2 does not enforce all type-theoretic safety checks.
 
-- **Terms/Expressions**:
-  - Variables, applications, lambda abstractions, dependent function types, let bindings, and inhabits.
+---
+## Common Errors & Troubleshooting
 
-- **Type Checking**:
-  - Based on [Coquand's algorithm](obsolete/coquand/1-s2.0-0167642395000216-main.pdf), specialized for this kernel in `EL2/Core.lean`.
-  - Inference, checking, and definitional equality operate mutually.
-  - Simulated inductives: no positivity checking, relies on trusted `inh`.
+| Error           | Cause & Solution                                  |
+|-----------------|--------------------------------------------------|
+| `type_error`    | Your top-level term is not well-typed. Check all types, especially in lets & recursors. |
+| `parse_error`   | Syntax issue—ensure all parentheses, `inh`, `hom`, and `lam` are spelled/cased right. |
+| Misapplied recursor | Check argument count & types for your recursor/inference principle. |
+| Unexpected variables | Make sure variables are properly introduced (in Pi/lambda etc). |
 
-- **Desugaring**:
-  - Pattern matching is desugared to recursor use (see README.md for detailed equivalence).
-  - Untyped `let` is sugar for immediate lambda/application.
+If in doubt, simplify: comment out parts of your file and rebuild incrementally.
 
-## Implementation Internals
-
-### Parser Architecture
-- See `Parser/Combinator.lean` for a monadic combinator library.
-- Grammar is implemented in `EL2/Parser.lean`:
-  - Parsers for names, applications, universes, abstraction, Pi types, binding, and inhabitation.
-  - Handles comments (removes all after `--`).
-  - "hom", "lam", "inh", "let" recognized as keywords.
-
-### Type Checker Kernel
-- Central logic is in `EL2/Core.lean`.
-- Core datatypes:
-  - `Exp`: expressions
-  - `Val`: evaluated values
-  - `Map`: environment for values/types
-  - `Ctx`: typing context (universes, envs)
-- Implements:
-  - Normalization (WHNF), evaluation, weak inference, universe level checks.
-  - Definitional equality by recursive, mutual calls
-  - Binding and environment manipulation
-
-### File Structure
-- `EL2/`: Core logic for expressions, evaluation, type-checking
-- `Parser/`: Combinators and parser logic
-- `example.el2`: Language and type system demonstration
-- `Main.lean`: Main CLI for parsing, typechecking, and printing results
-- `tools/vscode-extension/`: Syntax highlighting VSIX for EL2
-- `obsolete/`: Previous/prototype implementations (including Haskell and alt. Lean code)
-
-## VS Code Extension
-- Syntax highlighting and configuration under `tools/vscode-extension/`:
-  - Recognizes `.el2` files
-  - Highlights keywords (`lam`, `let`, `inh`, `hom`), numbers, brackets, and comments
-- Installation:
-  1. Run `npm install -g vsce && vsce package` in the extension directory
-  2. Open VS Code, run "Install from VSIX..."
-
-## Advanced Notes & Future Work
-
-- **Inductive Types**: No positivity check; relies on trusted environment. Next goal: full CIC-style inductives (automatic positivity check & recursors).
-- **Pattern Matching**: Planned as high-level sugar over inductive recursors (see README for desugaring example).
-- **Type Theoretic Foundations**:
-  - Currently closely matches CoC. Future plans involve inductive families, pattern matching, etc.
-- **Algorithmic Foundations**:
-  - See [Coquand's original paper][1] and code in `obsolete/`.
-- Further improvement: better error reporting, more advanced parsing, extend language user-friendliness.
-
-## References & Resources
-
-- [example.el2](./example.el2): Language feature demonstration
-- [Coquand's original paper][1]
-- [Lean 4 docs](https://leanprover.github.io/)
+## Further Resources
+- See `example.el2` for full-featured, annotated examples
+- Read about dependent type theory: "Calculus of Constructions", Lean/Coq docs
 - [Minimalist Type Theory explainer](https://www.andres-erbsen.de/posts/2022-05-17-minimalist-type-theory.html)
+- [Lean 4 docs](https://leanprover.github.io/)
+- (EL2 source code, unless you want to contribute, can be ignored for end users)
 
-[1]: obsolete/coquand/1-s2.0-0167642395000216-main.pdf
+---
+Happy experimenting with EL2! For improvements, suggestions, or showcasing cool EL2 code, open an issue or PR.
