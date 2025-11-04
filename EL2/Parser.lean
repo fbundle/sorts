@@ -6,6 +6,7 @@ open Parser.Combinator
 open EL2.Core
 
 
+
 def parseLineBreak :=
   -- <whitespace_without_newline> <newline> <writespace>
   String.whiteSpaceWithoutNewLineWeak ++

@@ -36,7 +36,7 @@ def t := Exp.typ 1
 def main  : IO Unit := do
   IO.println "--------------------------------------"
   match parse s.toList with
-    | Except.error err => IO.println s!"parse_error {String.mk err.xs}"
+    | Except.error err => IO.println s!"parse_error {repr err.xs}"
     | Except.ok (e, rest) =>
       IO.println s!"{e}"
       match rest with
