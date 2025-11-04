@@ -5,15 +5,13 @@ namespace EL2.Parser1
 open Parser.Combinator
 open EL2.Core
 
-abbrev StringParser := Parser Char
-
 mutual
 
-partial def parse: StringParser Exp :=
+partial def parse: Parser Char Exp :=
   sorry
 
-partial def parseUniv: StringParser Exp := λ xs => do
-  let (name, rest) ← parseName xs
+partial def parseUniv: Parser Char Exp := λ xs => do
+  let (name, rest) ← String.name xs
   if "Type".isPrefixOf name then
     let levelStr := name.stripPrefix "Type"
     let level ← levelStr.toNat?
@@ -23,38 +21,38 @@ partial def parseUniv: StringParser Exp := λ xs => do
 end
 #eval parseUniv "Type123".toList
 
-partial def parseVar: StringParser Exp := parseName.map (λ name => Exp.var name)
+partial def parseVar: Parser Char Exp := String.name.map (λ name => Exp.var name)
 
-partial def parseColonType: StringParser Exp :=
+partial def parseColonType: Parser Char Exp :=
   -- : X (-> X)^n for some n ≥ 0
-  let parseAnn: StringParser (String × Exp) :=
+  let parseAnn: Parser Char (String × Exp) :=
     (
-      parseExactString "(" ++
-      parseWhiteSpaceWeak ++
-      parseName ++
-      parseWhiteSpaceWeak ++
-      parseExactString ":" ++
-      parseWhiteSpaceWeak ++
+      String.exact "(" ++
+      String.whitespaceWeak ++
+      String.name ++
+      String.whitespaceWeak ++
+      String.exact ":" ++
+      String.whitespaceWeak ++
       parse ++
-      parseWhiteSpaceWeak ++
-      parseExactString ")"
+      String.whitespaceWeak ++
+      String.exact ")"
     ).map (λ (_, _, name, _, _, _, type, _, _) => (name, type))
 
     || parse.map (λ e => ("_", e))
 
-  let parseArrowAnn : StringParser (String × Exp) :=
+  let parseArrowAnn : Parser Char (String × Exp) :=
     -- -> X
     (
-      parseExactString "->" ++
-      parseWhiteSpaceWeak ++
+      String.exact "->" ++
+      String.whitespaceWeak ++
       parseAnn
     ).map (λ (_, _, x) => x)
 
   (
-    parseExactString ":" ++
-    parseWhiteSpaceWeak ++
+    String.exact ":" ++
+    String.whitespaceWeak ++
     parseAnn ++
-    (parseWhiteSpaceWeak ++ parseArrowAnn).list
+    (String.whitespaceWeak ++ parseArrowAnn).list
   ).map (λ (_, _, ann1, ann2s) =>
     let ann2s: List (String × Exp) := (ann2s.map (λ ((_, ann2s): String × (String × Exp)) =>
       ann2s
@@ -74,34 +72,34 @@ partial def parseColonType: StringParser Exp :=
     loop last.snd init
   )
 
-def parseLam: StringParser Exp :=
+def parseLam: Parser Char Exp :=
   (
-    (parseExactString "λ" || parseExactString "lam") ++
-    parseWhiteSpaceWeak ++
-    parseName ++
-    parseWhiteSpaceWeak ++
-    parseExactString "=>" ++
+    (String.exact "λ" || String.exact "lam") ++
+    String.whitespaceWeak ++
+    String.name ++
+    String.whitespaceWeak ++
+    String.exact "=>" ++
     parse
   ).map (λ (_, _, name, _, _, body) => Exp.lam name body)
 
 def parseLineBreak :=
   -- <whitespace_without_newline> <newline> <writespace>
-  parseWhiteSpaceWithoutNewLineWeak ++
-  (parseExactString "\n" || parseExactString ";") ++
-  parseWhiteSpaceWeak
+  String.whiteSpaceWithoutNewLineWeak ++
+  (String.exact "\n" || String.exact ";") ++
+  String.whitespaceWeak
 
-def parseBnd: StringParser Exp :=
+def parseBnd: Parser Char Exp :=
   (
-    parseExactString "let" ++
-    parseWhiteSpaceWeak ++
-    parseName ++
-    parseWhiteSpaceWeak ++
-    parseExactString ":" ++
-    parseWhiteSpaceWeak ++
+    String.exact "let" ++
+    String.whitespaceWeak ++
+    String.name ++
+    String.whitespaceWeak ++
+    String.exact ":" ++
+    String.whitespaceWeak ++
     parse ++
-    parseWhiteSpaceWeak ++
-    parseExactString ":=" ++
-    parseWhiteSpaceWeak ++
+    String.whitespaceWeak ++
+    String.exact ":=" ++
+    String.whitespaceWeak ++
     parse ++
     parseLineBreak ++
     parse
