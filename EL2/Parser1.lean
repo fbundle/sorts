@@ -34,6 +34,10 @@ mutual
 
 partial def parse: Parser Char Exp :=
   parseUniv ||
+  parseApp ||
+  parseLam ||
+  parseBnd ||
+  parseInh ||
   parseVar
 
 partial def parseApp: Parser Char Exp :=
