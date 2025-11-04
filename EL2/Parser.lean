@@ -193,12 +193,6 @@ def parse: Parser.Combinator.Parser Char EL2.Core.Exp :=
 
 
 #eval parse "
-inh Nat : Type0
-body
-".toList
-
-
-#eval parse "
   inh Nat_rec : hom
     (P : hom Nat -> Type0)
     (P zero)
