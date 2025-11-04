@@ -15,7 +15,8 @@ inh Nat_rec : hom
   (P : hom Nat -> Type0)
   (P zero)
   (hom (n : Nat) (P n) -> (P (succ n)))
-  (n : Nat) -> (P n)
+  (n : Nat)
+  -> (P n)
 
 -- assume (Vec n T) exists for all type (T: Type0)
 inh Vec : hom Nat Type0 -> Type0
@@ -36,7 +37,7 @@ let two := (succ one)
 -- `let x: typeX := y in z`
 -- let syntax with type annotation will be type-checked by the kernel
 let pure: hom Nat -> (Vec one Nat) := lam x =>
-(push zero Nat (nil Nat) x)
+  (push zero Nat (nil Nat) x)
 let pure_two: (Vec one Nat) := (pure two)
 
 -- pattern matching is just induction
@@ -49,3 +50,4 @@ let is_zero : hom Nat -> Bool := lam n =>
   )
 
 Type0
+
