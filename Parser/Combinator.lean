@@ -41,14 +41,16 @@ partial def Parser.list (p: Parser χ α): Parser χ (List α) := λ xs =>
 def empty: Parser χ Unit := λ xs => some ((), xs)
 def fail: Parser χ Unit := λ _ => none
 
-def exact [BEq χ] (y: χ): Parser χ χ := λ xs =>
+def pred (p: χ → Bool): Parser χ χ := λ xs =>
   match xs with
     | [] => none
     | x :: xs =>
-      if y == x then
+      if p x then
         some (x, xs)
       else
         none
+
+def exact [BEq χ] (y: χ): Parser χ χ := pred (· == y)
 
 def exactList [BEq χ] (ys: List χ): Parser χ (List χ) := λ xs => do
   let rest ← ys.isPrefixOf? xs
@@ -65,52 +67,32 @@ def nonEmpty (p: Parser χ (List α)): Parser χ (List α) := λ xs => do
 
 namespace String
 
-def whitespaceWeak : Parser Char String := λ xs =>
+def stringPred (p: Char → Bool): Parser Char String :=
+  (pred p).list.map (λ ys => String.mk ys)
+
+def whitespaceWeak : Parser Char String :=
   -- parse any whitespace
   -- empty whitespace is ok
-  let rec loop (ys: Array Char) (xs: List Char): Option (String × List Char) :=
-    match xs with
-      | [] => (String.mk ys.toList, xs)
-      | x :: rest =>
-        if x.isWhitespace then
-          loop (ys.push x) rest
-        else
-          (String.mk ys.toList, xs)
+  stringPred (·.isWhitespace)
 
-  loop #[] xs
-
-def whiteSpaceWithoutNewLineWeak : Parser Char String := λ xs =>
+def whiteSpaceWithoutNewLineWeak : Parser Char String :=
   -- parse any whitespace but not new line
   -- empty whitespace is ok
-  let rec loop (ys: Array Char) (xs: List Char): Option (String × List Char) :=
-    match xs with
-      | [] => (String.mk ys.toList, xs)
-      | x :: rest =>
-        if x.isWhitespace ∧ (¬ x = '\n') then
-          loop (ys.push x) rest
-        else
-          (String.mk ys.toList, xs)
-
-  loop #[] xs
+  stringPred (λ c => c.isWhitespace ∧ (¬ c = '\n'))
 
 
 def whitespace : Parser Char String :=
   -- parse some whitespace
   -- empty whitespace is not ok
-  whitespaceWeak.mapOption (λ s => if s.length = 0 then none else s)
+  whitespaceWeak.filterMap (λ s => if s.length = 0 then none else s)
 
-def parseNameWeak: Parser Char String := λ xs =>
+def parseNameWeak: Parser Char String :=
   -- parse a non-whitespace string
   -- empty name is ok
-  let rec loop (ys: Array Char) (xs: List Char): Option (String × List Char) :=
-    match xs with
-      | [] => (String.mk ys.toList, xs)
-      | x :: rest =>
-        if ¬ x.isWhitespace then
-          loop (ys.push x) rest
-        else
-          (String.mk ys.toList, xs)
-  loop #[] xs
+  stringPred (¬ ·.isWhitespace)
+
+
+
 
 def parseName: Parser Char String :=
   -- parse a non-whitespace string
