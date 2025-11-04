@@ -5,10 +5,50 @@ namespace EL2.Parser1
 open Parser.Combinator
 open EL2.Core
 
+
+def parseLineBreak :=
+  -- <whitespace_without_newline> <newline> <writespace>
+  String.whiteSpaceWithoutNewLineWeak ++
+  (String.exact "\n" || String.exact ";") ++
+  String.whitespaceWeak
+
+def chainCmd (cmd: Exp) (args: List Exp): Exp :=
+  match args with
+    | [] => cmd
+    | arg :: args =>
+      chainCmd (Exp.app cmd arg) args
+
+def chainPi (anns: List (String × Exp)) (last: Exp): Exp :=
+  match anns with
+    | [] => last
+    | (name, type) :: anns =>
+      Exp.pi name type (chainPi anns last)
+
+def chainLam (names: List String) (body: Exp): Exp :=
+  match names with
+    | [] => body
+    | name :: names =>
+      Exp.lam name (chainLam names body)
+
 mutual
 
 partial def parse: Parser Char Exp :=
-  sorry
+  parseUniv ||
+  parseVar
+
+partial def parseApp: Parser Char Exp :=
+  (
+    String.exact "(" ++
+    String.whitespaceWeak ++
+    parse.list ++
+    String.whitespaceWeak ++
+    String.exact ")"
+  ).filterMap (λ (_, _, es, _, _) =>
+    match es with
+      | [] => none
+      | cmd :: args => some (chainCmd cmd args)
+  )
+
 
 partial def parseUniv: Parser Char Exp := λ xs => do
   let (name, rest) ← String.name xs
@@ -18,12 +58,10 @@ partial def parseUniv: Parser Char Exp := λ xs => do
     some (Exp.typ level, rest)
   else
     none
-end
-#eval parseUniv "Type123".toList
 
 partial def parseVar: Parser Char Exp := String.name.map (λ name => Exp.var name)
 
-partial def parseColonType: Parser Char Exp :=
+partial def parseColonArrow: Parser Char Exp :=
   -- : X (-> X)^n for some n ≥ 0
   let parseAnn: Parser Char (String × Exp) :=
     (
@@ -64,38 +102,28 @@ partial def parseColonType: Parser Char Exp :=
     -- get last elem using construction of anns
     let last := anns.getLast (List.cons_ne_nil ann1 ann2s)
 
-    let rec loop (lastExp: Exp) (anns: List (String × Exp)): Exp :=
-      match anns with
-        | [] => lastExp
-        | (name, type) :: rest =>
-          loop (Exp.pi name type lastExp) rest
-
-    loop last.snd init
+    chainPi init last.snd
   )
 
-def parseLam: Parser Char Exp :=
+partial def parseLam: Parser Char Exp :=
   (
     (String.exact "λ" || String.exact "lam") ++
     String.whitespaceWeak ++
-    String.name ++
+    String.name.list ++
     String.whitespaceWeak ++
     String.exact "=>" ++
     parse
-  ).map (λ (_, _, name, _, _, body) => Exp.lam name body)
+  ).map (λ (_, _, names, _, _, body) => chainLam names body)
 
-def parseLineBreak :=
-  -- <whitespace_without_newline> <newline> <writespace>
-  String.whiteSpaceWithoutNewLineWeak ++
-  (String.exact "\n" || String.exact ";") ++
-  String.whitespaceWeak
 
-def parseBnd: Parser Char Exp :=
+
+partial def parseBnd: Parser Char Exp :=
   (
     String.exact "let" ++
     String.whitespaceWeak ++
     String.name ++
     String.whitespaceWeak ++
-    parseColonType ++
+    parseColonArrow ++
     String.whitespaceWeak ++
     String.exact ":=" ++
     String.whitespaceWeak ++
@@ -106,17 +134,20 @@ def parseBnd: Parser Char Exp :=
     Exp.bnd name value type body
   )
 
-def parseInh: Parser Char Exp :=
+partial def parseInh: Parser Char Exp :=
   (
     String.exact "inh" ++
     String.whitespaceWeak ++
     String.name ++
     String.whitespaceWeak ++
-    parseColonType ++
+    parseColonArrow ++
     parseLineBreak ++
     parse
   ).map (λ (_, _, name, _, type, _, body) =>
     Exp.inh name type body
   )
+end
+
+
 
 end EL2.Parser1
