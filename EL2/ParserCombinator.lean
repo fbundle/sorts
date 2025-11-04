@@ -1,115 +1,107 @@
 namespace EL2.ParserCombinator
 
-def Parser χ α := List χ → Option (α × List χ)
+def Parser χ α  := χ → Option (χ × α)
 
-def Parser.fail : Parser χ α := λ _ => none
+def fail : Parser χ α := λ _ => none
 
-def Parser.pure (a: α): Parser χ α := λ xs =>
-  some (a, xs)
+def pure (a: α): Parser χ α := λ xs =>
+  some (xs, a)
 
 def Parser.bind (p: Parser χ α) (f: α → Parser χ β): Parser χ β := λ xs => do
-  let (a, xs) ← p xs
+  let (xs, a) ← p xs
   f a xs
 
-instance: Monad (Parser χ) where
-  pure := Parser.pure
+instance: Monad (Parser α) where
+  pure := pure
   bind := Parser.bind
 
-
-def Parser.filterMap (p: Parser χ α) (f: α → Option β): Parser χ β := λ xs => do
-  let (a, xs) ← p xs
-  match f a with
-    | none => none
-    | some b => some (b, xs)
+def Parser.filter (p: Parser χ α) (f: α → Bool): Parser χ α :=
+  p.bind (λ a =>
+    if f a then
+      pure a
+    else
+      fail
+  )
 
 def Parser.map (p: Parser χ α) (f: α → β): Parser χ β :=
-  p.filterMap (λ a => some (f a))
-
+  p.bind (λ a => pure (f a))
 
 def Parser.concat (p1: Parser χ α) (p2: Parser χ β): Parser χ (α × β) := λ xs => do
-  let (a, xs) ← p1 xs
-  let (b, xs) ← p2 xs
-  some ((a, b), xs)
+  let (xs, a) ← p1 xs
+  let (xs, b) ← p2 xs
+  some (xs, (a, b))
 
 infixr: 60 " ++ " => Parser.concat
 
-def Parser.sum (p1: Parser χ α) (p2: Parser χ β): Parser χ (α ⊕ β) := λ xs =>
+def Parser.either (p1: Parser χ α) (p2: Parser χ α): Parser χ α := λ xs =>
   match p1 xs with
-    | some (a, xs) => some (Sum.inl a, xs)
-    | none => match p2 xs with
-      | some (b, xs) => some (Sum.inr b, xs)
-      | none => none
-
-def Parser.either (p1: Parser χ α) (p2: Parser χ α): Parser χ α :=
-  (p1.sum p2).map $ Sum.elim id id
+    | some (xs, a) => some (xs, a)
+    | none => p2 xs
 
 infixr: 50 " || " => Parser.either -- lower precedence than concat
 
-infixr: 40 " ||| " => Parser.sum -- lower precedence than either
-
-
 partial def Parser.many (p: Parser χ α): Parser χ (List α) := λ xs =>
-  let rec loop (as: Array α) (xs: List χ): Option (List α × List χ) :=
+  let rec loop (as: Array α) (xs: χ): Option (χ × List α) :=
     match p xs with
-      | none => some (as.toList, xs)
-      | some (a, rest) => loop (as.push a) rest
+      | none => some (xs, as.toList)
+      | some (rest, a) => loop (as.push a) rest
   loop #[] xs
 
 def Parser.many1 (p: Parser χ α): Parser χ (List α) := λ xs => do
-  let (as, xs) ← p.many xs
+  let (xs, as) ← p.many xs
   if as.length = 0 then
     none
   else
-    some (as, xs)
+    some (xs, as)
 
 def Parser.transpose (ps: List (Parser χ α)): Parser χ (List α) := λ xs =>
-  let rec loop (ys: Array α) (ps: List (Parser χ α)) (xs: List χ): Option (List α × List χ) :=
+  let rec loop (ys: Array α) (ps: List (Parser χ α)) (xs: χ): Option (χ × List α) :=
     match ps with
-      | [] => some (ys.toList, xs)
+      | [] => some (xs, ys.toList)
       | p :: ps =>
         match p xs with
           | none => none
-          | some (y, xs) =>
+          | some (xs, y) =>
             loop (ys.push y) ps xs
   loop #[] ps xs
 
 
-def pred (p: χ → Bool): Parser χ χ := λ xs =>
+def pred (p: χ → Bool): Parser (List χ) χ := λ xs =>
   match xs with
     | [] => none
     | x :: xs =>
       if p x then
-        some (x, xs)
+        some (xs, x)
       else
         none
 
-def exact [BEq χ] (y: χ): Parser χ χ := pred (· == y)
+def exact [BEq χ] (y: χ): Parser (List χ) χ := pred (· == y)
 
-def exactList [BEq χ] (ys: List χ): Parser χ (List χ) :=
+def exactList [BEq χ] (ys: List χ): Parser (List χ) (List χ) :=
   Parser.transpose (ys.map exact)
 
 namespace String
 
-def toStringParser (p: Parser Char (List Char)): Parser Char String :=
+def toStringParser (p: Parser (List Char) (List Char)): Parser (List Char) String :=
   p.map (String.mk ·)
 
-def whitespaceWeak : Parser Char String :=
+def whitespaceWeak : Parser (List Char) String :=
   -- parse any whitespace
   -- empty whitespace is ok
   toStringParser (pred (·.isWhitespace)).many
 
-def whiteSpaceWithoutNewLineWeak : Parser Char String :=
+def whiteSpaceWithoutNewLineWeak : Parser (List Char) String :=
   -- parse any whitespace but not new line
   -- empty whitespace is ok
   toStringParser (pred (λ c => c.isWhitespace ∧ (¬ c = '\n'))).many
 
 
-def whitespace : Parser Char String :=
+def whitespace : Parser (List Char) String :=
   -- parse some whitespace
   -- empty whitespace is not ok
   toStringParser (pred (·.isWhitespace)).many1
 
-def exact (ys: String): Parser Char String :=
+def exact (ys: String): Parser (List Char) String :=
   toStringParser (exactList ys.toList)
 
 end String

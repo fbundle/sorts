@@ -31,13 +31,13 @@ def chainLam (names: List String) (body: Exp): Exp :=
     | name :: names =>
       Exp.lam name (chainLam names body)
 
-def parseName: Parser Char String :=
+def parseName: Parser (List Char) String :=
   String.toStringParser $ (pred ("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.".contains ·)).many1
 
 
 mutual
 
-partial def parseApp: Parser Char Exp :=
+partial def parseApp: Parser (List Char) Exp :=
   -- parse any thing starts with (
   (
     String.exact "(" ++
@@ -46,12 +46,12 @@ partial def parseApp: Parser Char Exp :=
     (String.whitespace ++ parse).many ++
     String.whitespaceWeak ++
     String.exact ")"
-  ).filterMap (λ (_, _, cmd, args, _, _) =>
+  ).map (λ (_, _, cmd, args, _, _) =>
     chainCmd cmd (args.map Prod.snd)
   )
 
-partial def parseHom: Parser Char Exp :=
-  let parseAnn: Parser Char (String × Exp) :=
+partial def parseHom: Parser (List Char) Exp :=
+  let parseAnn: Parser (List Char) (String × Exp) :=
       (
         String.exact "(" ++
         String.whitespaceWeak ++
@@ -77,7 +77,7 @@ partial def parseHom: Parser Char Exp :=
     chainPi (params.map (λ (_, name, typeA) => (name, typeA))) typeB
   )
 
-partial def parseLam: Parser Char Exp :=
+partial def parseLam: Parser (List Char) Exp :=
   -- parse anything starts with lam
   -- lam name [ name]^n => body
   (
@@ -91,30 +91,28 @@ partial def parseLam: Parser Char Exp :=
     chainLam (names.map Prod.snd) body
   )
 
-partial def parseUniv: Parser Char Exp := λ xs => do
-  let (name, rest) ← parseName xs
+partial def parseUniv: Parser (List Char) Exp := λ xs => do
+  let (rest, name) ← parseName xs
   if "Type".isPrefixOf name then
     let levelStr := name.stripPrefix "Type"
     match levelStr.toNat? with
       | none => none
       | some level =>
-        some (Exp.typ level, rest)
+        some (rest, Exp.typ level)
   else
     none
 
-partial def parseVar: Parser Char Exp := parseName.filterMap (λ name =>
-  let specialNames := [
-    "lam", "let", "inh", "hom"
-  ]
-
-  if specialNames.contains name then
-    none
-  else
-    some (Exp.var name)
-)
+partial def parseVar: Parser (List Char) Exp := parseName
+  |> (·.filter (λ name =>
+    let specialNames := [
+      "lam", "let", "inh", "hom"
+    ]
+    ¬ specialNames.contains name
+  ))
+  |> (·.map (λ name => Exp.var name))
 
 
-partial def parseBnd: Parser Char Exp :=
+partial def parseBnd: Parser (List Char) Exp :=
   -- parse anything starts with let
   -- typed let
   (
@@ -151,7 +149,7 @@ partial def parseBnd: Parser Char Exp :=
     Exp.app (Exp.lam name body) value
   )
 
-partial def parseInh: Parser Char Exp :=
+partial def parseInh: Parser (List Char) Exp :=
   -- parse anything starts with inh
   (
     String.exact "inh" ++
@@ -167,7 +165,7 @@ partial def parseInh: Parser Char Exp :=
     Exp.inh name type body
   )
 
-partial def parse: Parser Char Exp := λ xs =>
+partial def parse: Parser (List Char) Exp := λ xs =>
   --dbg_trace s!"[DBG_TRACE] parsing {repr xs}"
   xs |>
   (
@@ -212,7 +210,7 @@ an mesage with line comment -- everythign after double dashes is ignore
 heheh
 ".toList)
 
-def parse: Parser Char EL2.Core.Exp := λ xs =>
+def parse: Parser (List Char) EL2.Core.Exp := λ xs =>
   xs |> removeComments |>
   (
     String.whitespaceWeak ++

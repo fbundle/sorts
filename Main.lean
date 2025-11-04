@@ -69,7 +69,7 @@ def main (args : List String): IO Unit := do
       let content ← IO.FS.readFile filename
       match parse content.toList with
         | none => IO.println s!"parse_error"
-        | some (e, rest) =>
+        | some (rest, e) =>
           match rest with
             | [] =>
               if true = typeCheck? e t then
