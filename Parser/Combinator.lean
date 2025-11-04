@@ -96,8 +96,6 @@ def exact [BEq χ] (y: χ): Parser χ χ := pred (· == y)
 def exactList [BEq χ] (ys: List χ): Parser χ (List χ) :=
   Parser.transpose (ys.map exact)
 
-#eval exactList "hehe".toList "hehea123".toList
-
 namespace String
 
 def toStringParser (p: Parser Char (List Char)): Parser Char String :=
@@ -122,6 +120,7 @@ def whitespace : Parser Char String :=
 def exact (ys: String): Parser Char String :=
   toStringParser (exactList ys.toList)
 
+#eval exactList "hehe".toList "hehea123".toList
 #eval whitespace "abc123  ".toList
 #eval whitespace "   abc123".toList
 #eval exact "let" "let123".toList
