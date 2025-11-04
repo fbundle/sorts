@@ -61,9 +61,10 @@ def s := "
 def t := Exp.typ 1
 
 
+
 def main (args : List String): IO Unit := do
   match args with
-    | [] => IO.println "args_empty"
+    | [] => IO.println "args_empty: use `el2 <filename>`"
     | filename :: _ =>
       let content ← IO.FS.readFile filename
       match parse content.toList with

@@ -168,7 +168,7 @@ partial def parseInh: Parser Char Exp :=
   )
 
 partial def parse: Parser Char Exp := λ xs =>
-  dbg_trace s!"[DBG_TRACE] parsing {repr xs}"
+  --dbg_trace s!"[DBG_TRACE] parsing {repr xs}"
   xs |>
   (
     parseUniv ||-- starts with Type
