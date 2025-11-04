@@ -5,18 +5,18 @@ open EL2.Parser
 open EL2.Core
 
 def s := "
-inh Nat : Type0
-inh zero : Nat
-inh succ: Nat -> Nat
-inh Vec : Nat -> Type0 -> Type0
-inh nil : (T: Type0) -> (Vec zero T)
-inh push : (n: Nat) -> (T: Type0) -> (v: (Vec n T)) -> (x: T) -> (Vec (succ n) T)
-let one := (succ zero)
-let two := (succ one)
-let pure: Nat -> (Vec one Nat) := lam x =>
-  (push zero Nat (nil Nat) x)
-let pure_two: (Vec one Nat) := (pure two)
-Type0
+  inh Nat : Type0
+  inh zero : Nat
+  inh succ: Nat -> Nat
+  inh Vec : Nat -> Type0 -> Type0
+  inh nil : (T: Type0) -> (Vec zero T)
+  inh push : (n: Nat) -> (T: Type0) -> (v: (Vec n T)) -> (x: T) -> (Vec (succ n) T)
+  let one := (succ zero)
+  let two := (succ one)
+  let pure: Nat -> (Vec one Nat) := lam x =>
+    (push zero Nat (nil Nat) x)
+  let pure_two: (Vec one Nat) := (pure two)
+  Type0
 "
 
 def t := Exp.typ 1
