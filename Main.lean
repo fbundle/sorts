@@ -1,4 +1,4 @@
-import EL2.Parser1
+import EL2.Parser
 import EL2.Core
 
 open EL2.Parser

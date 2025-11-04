@@ -1,288 +1,160 @@
+import Parser.Combinator
 import EL2.Core
 
-namespace EL2.Parser.Internal
--- TOKENIZER
-def sortSplitTokens (splitTokens : List String) : List String :=
-  -- sort tokens so that if s2 is a prefix of s1, s1 should come first
-  let lessEqual (s1: String) (s2: String): Bool :=
-    if (s2.length < s1.length) && (s2.isPrefixOf s1) then true else
-    if (s1.length < s2.length) && (s1.isPrefixOf s2) then false else
-    s1 < s2
-
-  splitTokens.mergeSort lessEqual
-
-partial def stringIndexOf? (s: String) (substring: String): Option Nat :=
-  -- return the starting position of substring in s if exists
-  if substring.isEmpty then
-    some 0
-  else
-    let rec helper (s: String) (substring: String) (startIdx: Nat) : Option Nat :=
-      if startIdx + substring.length > s.length then
-        none
-      else if s.extract {byteIdx := startIdx} {byteIdx := startIdx + substring.length} = substring then
-        some startIdx
-      else
-        helper s substring (startIdx + 1)
-    helper s substring 0
-
-partial def splitPart (sortedSplitTokens : List String) (part : String) : List String :=
-  match sortedSplitTokens with
-    | [] => [part]
-    | s :: ss =>
-      match stringIndexOf? part s with
-        | some n =>
-          let before := part.take n
-          let after := part.drop (n + s.length)
-          let beforeParts := if before.isEmpty then [] else splitPart sortedSplitTokens before
-          let afterParts := if after.isEmpty then [] else splitPart sortedSplitTokens after
-          beforeParts ++ [s] ++ afterParts
-        | none => splitPart ss part
-
-def tokenize (sortedSplitTokens: List String) (s: String) : List String :=
-   -- remove comments
-  let lines := s.split (· = '\n')
-  let lines := lines.map (λ line =>
-    match line.splitOn "--" with
-      | head :: _ => head -- take everything before --
-      | _ => line
-  )
-  let s := String.join (lines.intersperse "\n")
-
-  -- basic tokenize
-  let parts := s.split (·.isWhitespace)
-
-  -- further tokenize by splitTokens
-  let output := parts.flatMap (splitPart sortedSplitTokens)
-
-  -- drop empty tokens
-  let output := output.filter (·.length > 0)
-
-  output
-
-def newTokenizer (splitTokens: List String): String → List String :=
-  tokenize (sortSplitTokens splitTokens)
-
--- PARSER COMBINATOR
-
-def Parser α := List String → Option ((List String) × α)
-
-def Parser.mapPartial  (p: Parser α) (f: α → Option β): Parser β := λ tokens => do
-  let (tokens, a) ← p tokens
-  let b ← f a
-  pure (tokens, b)
-
-def Parser.map (p: Parser α) (f: α → β): Parser β := p.mapPartial (λ a => some (f a))
-
-def Parser.concat (p1: Parser α) (p2: Parser β): Parser (α × β) := λ tokens => do
-  let (tokens, a) ← p1 tokens
-  let (tokens, b) ← p2 tokens
-  (tokens, (a, b))
-
-infixr: 60 " ++ " => Parser.concat
-
-def Parser.either (p1: Parser α) (p2: Parser α): Parser α := λ tokens => do
-  match p1 tokens with
-    | some (rest, a) => some (rest, a)
-    | none => p2 tokens
-
-infixr: 50 " || " => Parser.either -- lower precedence than concat
-
-partial def Parser.many (p: Parser α): Parser (List α) :=
-  let rec loop (acc: Array α) (tokens: List String): Option (List String × List α) :=
-    match p tokens with
-      | none => some (tokens, acc.toList)
-      | some (rest, e) => loop (acc.push e) rest
-  loop #[]
-
+namespace EL2.Parser
+open Parser.Combinator
 open EL2.Core
 
-def parseFail: Parser α := λ _ => none
 
-def parseString: Parser String := λ tokens =>
-  match tokens with
-    | [] => none
-    | head :: tokens =>
-      (tokens, head)
+def parseLineBreak :=
+  -- <whitespace_without_newline> <newline> <writespace>
+  String.whiteSpaceWithoutNewLineWeak ++
+  (String.exact "\n" || String.exact ";") ++
+  String.whitespaceWeak
 
-def parseExact (pattern: String): Parser String := parseString.mapPartial $ (λ string =>
-  if pattern = string then
-    some pattern
-  else
-    none
-)
+def chainCmd (cmd: Exp) (args: List Exp): Exp :=
+  match args with
+    | [] => cmd
+    | arg :: args =>
+      chainCmd (Exp.app cmd arg) args
 
-def parseExactMany (patterns: List String): Parser String :=
-  (patterns.map parseExact).foldl
-  Parser.either parseFail
+def chainPi (anns: List (String × Exp)) (last: Exp): Exp :=
+  match anns with
+    | [] => last
+    | (name, type) :: anns =>
+      Exp.pi name type (chainPi anns last)
 
--- parse Exp
+def chainLam (names: List String) (body: Exp): Exp :=
+  match names with
+    | [] => body
+    | name :: names =>
+      Exp.lam name (chainLam names body)
 
-def splitTokens: List String := [
-  ":", "->", "=>", ":=", "(", ")", "λ", "Π", "∀",
-]
+mutual
 
-def specialTokens: List String := splitTokens ++ [
-  "let", "in", "inh", "lam", "forall",
-]
-
-def parseName: Parser String := λ tokens =>
-  match parseExactMany specialTokens tokens with
-    | some _ => none
-    | none => parseString tokens
-
-def parseUniv: Parser Exp := parseString.mapPartial (λ head => do
-  if ¬ "Type".isPrefixOf head then none else
-  let levelStr := head.stripPrefix "Type"
-  let level ← levelStr.toNat?
-  pure (Exp.typ level)
-)
-
-def parseVar: Parser Exp :=
-  parseName.map (λ name => Exp.var name)
-
-
--- TODO - make parseType = : E + [-> E]^n where E = parseAnn | parseExp for n ≥ 0
--- remove parsePi
-
--- TODO - make parser parse string instead of list of tokens
-
-def parseAnn (parseExp: Parser Exp): Parser (String × Exp) :=
+partial def parse: Parser Char Exp := λ xs =>
+  dbg_trace s!"parsing {String.mk xs}"
   (
-    parseExact "(" ++
-    parseName ++
-    (parseExact ":") ++
-    parseExp ++
-    parseExact ")"
-  ).map (λ (_, name, _, type, _) => (name, type))
+    parseUniv ||
+    parseApp ||
+    parseLam ||
+    parseBnd ||
+    parseInh ||
+    parseVar
+  ) xs
 
-partial def parsePi (parseExp: Parser Exp): Parser Exp :=
-  -- named Pi or unnamed Pi
+partial def parseApp: Parser Char Exp :=
   (
-    (parseExact "Π" || parseExact "∀" || parseExact "forall") ++
-    (parseAnn parseExp).many ++
-    parseExact "->" ++
-    parseExp
-  ).map (λ (_, annList, _, typeB) =>
-    let rec loop1 (annList: List (String × Exp)): Exp :=
-      match annList with
-        | [] => typeB
-        | (name, typeA) :: rest =>
-          Exp.pi name typeA (loop1 rest)
-
-    loop1 annList
-  )
-  ||
-  (
-    (parseExact "Π" || parseExact "∀" || parseExact "forall") ++
-    parseExp.many ++
-    parseExact "->" ++
-    parseExp
-  ).map (λ (_, typeAList, _, typeB) =>
-    let rec loop2 (typeAList: List Exp): Exp :=
-      match typeAList with
-        | [] => typeB
-        | typeA :: rest =>
-          Exp.pi "_" typeA (loop2 rest)
-
-    loop2 typeAList
-  )
-
-partial def parseLam (parseExp: Parser Exp): Parser Exp :=
-  (
-    (parseExact "λ" || parseExact "lam") ++
-    parseName.many ++
-    parseExact "=>" ++
-    parseExp
-  ).map (λ (_, nameList, _, body) =>
-    let rec loop (nameList: List String): Exp :=
-      match nameList with
-        | [] => body
-        | name :: rest =>
-          Exp.lam name (loop rest)
-
-    loop nameList
-  )
-
-def parseBnd (parseExp: Parser Exp): Parser Exp :=
-  (
-    parseExact "let" ++
-    parseName ++ -- name
-    parseExact ":=" ++
-    parseExp ++ -- value
-    parseExact "in" ++
-    parseExp -- body
-  ).map (λ (_, name, _, value, _, body) =>
-    Exp.app (Exp.lam name body) value
-  )
-
-  ||
-
-  (
-    parseExact "let" ++
-    parseName ++ -- name
-    parseExact ":" ++
-    parseExp ++ -- type
-    parseExact ":=" ++
-    parseExp ++ -- value
-    parseExact "in" ++
-    parseExp -- body
-  ).map (λ (_, name, _, type, _, value, _, body) => Exp.bnd name value type body)
-
-def parseInh (parseExp: Parser Exp): Parser Exp :=
-  (
-    parseExact "inh" ++
-    parseName ++ -- name
-    parseExact ":"++
-    parseExp ++ -- type
-    parseExact "in" ++
-    parseExp -- body
-  ).map (λ (_, name, _, type, _, body) => Exp.inh name type body)
-
-def parseApp (parseExp: Parser Exp): Parser Exp :=
-  (
-    parseExact "(" ++
-    parseExp.many ++
-    parseExact ")"
-  ).mapPartial (λ (_, es, _) =>
+    String.exact "(" ++
+    String.whitespaceWeak ++
+    parse.list ++
+    String.whitespaceWeak ++
+    String.exact ")"
+  ).filterMap (λ (_, _, es, _, _) =>
     match es with
       | [] => none
-      | cmd :: args =>
-        some $ args.foldl (λ cmd arg =>
-          Exp.app cmd arg
-        ) cmd
+      | cmd :: args => some (chainCmd cmd args)
   )
 
-partial def parseExp: Parser Exp := λ tokens =>
-  dbg_trace s!"[DBG_TRACE] parsing {tokens}"
-  parseUniv ||
-  parseVar ||
-  parsePi parseExp ||
-  parseLam parseExp ||
-  parseBnd parseExp ||
-  parseInh parseExp ||
-  parseApp parseExp $ tokens
 
-#eval parseExp ["Type0"]
-#eval parseExp ["inh", "name", ":", "type", "in", "hehe"]
-#eval parseExp ["forall", "type1", "->", "type2"]
-#eval parseExp ["forall", "(", "name1", ":", "type1", ")", "->", "type2"]
-#eval parseExp ["forall", "(", "name1", ":", "type1", ")", "(", "name2", ":", "type2", ")", "->", "type2"]
-#eval parseExp ["lam", "name", "=>", "body"]
-#eval parseExp ["lam", "name1", "name2", "=>", "body"]
-#eval parseExp ["let", "x", ":=", "3", "in", "x+y"]
-#eval parseExp ["let", "x", ":", "type", ":=", "3", "in", "x+y"]
-#eval parseExp ["(", "cmd", "arg1", "arg2", ")"]
-#eval parseExp ["(", "cmd", ")"]
+partial def parseUniv: Parser Char Exp := λ xs => do
+  let (name, rest) ← String.name xs
+  if "Type".isPrefixOf name then
+    let levelStr := name.stripPrefix "Type"
+    let level ← levelStr.toNat?
+    some (Exp.typ level, rest)
+  else
+    none
 
-end EL2.Parser.Internal
+partial def parseVar: Parser Char Exp := String.name.map (λ name => Exp.var name)
+
+partial def parseColonArrow: Parser Char Exp :=
+  -- : X (-> X)^n for some n ≥ 0
+  let parseAnn: Parser Char (String × Exp) :=
+    (
+      String.exact "(" ++
+      String.whitespaceWeak ++
+      String.name ++
+      String.whitespaceWeak ++
+      String.exact ":" ++
+      String.whitespaceWeak ++
+      parse ++
+      String.whitespaceWeak ++
+      String.exact ")"
+    ).map (λ (_, _, name, _, _, _, type, _, _) => (name, type))
+
+    || parse.map (λ e => ("_", e))
+
+  let parseArrowAnn : Parser Char (String × Exp) :=
+    -- -> X
+    (
+      String.exact "->" ++
+      String.whitespaceWeak ++
+      parseAnn
+    ).map (λ (_, _, x) => x)
+
+  -- colon then type
+  (
+    String.exact ":" ++
+    String.whitespaceWeak ++
+    parseAnn ++
+    (String.whitespaceWeak ++ parseArrowAnn).list
+  ).map (λ (_, _, ann1, ann2s) =>
+    let ann2s: List (String × Exp) := (ann2s.map (λ ((_, ann2s): String × (String × Exp)) =>
+      ann2s
+    ))
+    let anns := ann1 :: ann2s
+
+    let init := anns.extract 0 (anns.length - 1)
+    -- get last elem using construction of anns
+    let last := anns.getLast (List.cons_ne_nil ann1 ann2s)
+
+    chainPi init last.snd
+  )
+
+partial def parseLam: Parser Char Exp :=
+  (
+    (String.exact "λ" || String.exact "lam") ++
+    String.whitespaceWeak ++
+    String.name.list ++
+    String.whitespaceWeak ++
+    String.exact "=>" ++
+    parse
+  ).map (λ (_, _, names, _, _, body) => chainLam names body)
 
 
 
+partial def parseBnd: Parser Char Exp :=
+  (
+    String.exact "let" ++
+    String.whitespaceWeak ++
+    String.name ++
+    String.whitespaceWeak ++
+    parseColonArrow ++
+    String.whitespaceWeak ++
+    String.exact ":=" ++
+    String.whitespaceWeak ++
+    parse ++
+    parseLineBreak ++
+    parse
+  ).map (λ (_, _, name, _, type, _, _, _, value, _, body) =>
+    Exp.bnd name value type body
+  )
 
-namespace EL2.Parser
+partial def parseInh: Parser Char Exp :=
+  (
+    String.exact "inh" ++
+    String.whitespaceWeak ++
+    String.name ++
+    String.whitespaceWeak ++
+    parseColonArrow ++
+    parseLineBreak ++
+    parse
+  ).map (λ (_, _, name, _, type, _, body) =>
+    Exp.inh name type body
+  )
+end
 
-def tokenize := (Internal.newTokenizer ("(" :: ")" :: Internal.splitTokens))
 
-def parse := Internal.parseExp
 
 end EL2.Parser
