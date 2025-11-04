@@ -2,6 +2,10 @@
 
 The goal of this project is to implement minimal dependent type checker
 
+## TODO
+
+add pattern matching
+
 ## TYPE CHECKING WITH COQUAND'S ALGORITHM
 
 ```lean
