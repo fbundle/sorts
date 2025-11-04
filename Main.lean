@@ -70,7 +70,6 @@ def main (args : List String): IO Unit := do
       match parse content.toList with
         | none => IO.println s!"parse_error"
         | some (e, rest) =>
-          IO.println s!"{e}"
           match rest with
             | [] =>
               if true = typeCheck? e t then
