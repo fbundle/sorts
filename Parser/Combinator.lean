@@ -2,12 +2,12 @@ namespace Parser.Combinator
 
 def Parser χ α := List χ → Option (α × List χ)
 
-def Parser.mapOption (p: Parser χ α) (f: α → Option β): Parser χ β := λ xs => do
+def Parser.filterMap (p: Parser χ α) (f: α → Option β): Parser χ β := λ xs => do
   let (a, xs) ← p xs
   let b ← f a
   (b, xs)
 
-def Parser.map (p: Parser χ α) (f: α → β): Parser χ β := p.mapOption (λ a => some (f a))
+def Parser.map (p: Parser χ α) (f: α → β): Parser χ β := p.filterMap (λ a => some (f a))
 
 def Parser.concat (p1: Parser χ α) (p2: Parser χ β): Parser χ (α × β) := λ xs => do
   let (a, xs) ← p1 xs
@@ -38,10 +38,10 @@ partial def Parser.list (p: Parser χ α): Parser χ (List α) := λ xs =>
       | some (a, rest) => loop (as.push a) rest
   loop #[] xs
 
-def parseEmpty: Parser χ Unit := λ xs => some ((), xs)
-def parseFail: Parser χ Unit := λ _ => none
+def empty: Parser χ Unit := λ xs => some ((), xs)
+def fail: Parser χ Unit := λ _ => none
 
-def parseExact [BEq χ] (y: χ): Parser χ χ := λ xs =>
+def exact [BEq χ] (y: χ): Parser χ χ := λ xs =>
   match xs with
     | [] => none
     | x :: xs =>
@@ -50,15 +50,22 @@ def parseExact [BEq χ] (y: χ): Parser χ χ := λ xs =>
       else
         none
 
-def parseExactList [BEq χ] (ys: List χ): Parser χ (List χ) := λ xs => do
+def exactList [BEq χ] (ys: List χ): Parser χ (List χ) := λ xs => do
   let rest ← ys.isPrefixOf? xs
   pure (ys, rest)
 
-#eval parseExactList "hehe".toList "hehea123".toList
+def nonEmpty (p: Parser χ (List α)): Parser χ (List α) := λ xs => do
+  let (as, xs) ← p xs
+  if as.length = 0 then
+    none
+  else
+    pure (as, xs)
 
--- STRING
+#eval exactList "hehe".toList "hehea123".toList
 
-def parseWhiteSpaceWeak : Parser Char String := λ xs =>
+namespace String
+
+def whitespaceWeak : Parser Char String := λ xs =>
   -- parse any whitespace
   -- empty whitespace is ok
   let rec loop (ys: Array Char) (xs: List Char): Option (String × List Char) :=
@@ -72,7 +79,7 @@ def parseWhiteSpaceWeak : Parser Char String := λ xs =>
 
   loop #[] xs
 
-def parseWhiteSpaceWithoutNewLineWeak : Parser Char String := λ xs =>
+def whiteSpaceWithoutNewLineWeak : Parser Char String := λ xs =>
   -- parse any whitespace but not new line
   -- empty whitespace is ok
   let rec loop (ys: Array Char) (xs: List Char): Option (String × List Char) :=
@@ -87,10 +94,10 @@ def parseWhiteSpaceWithoutNewLineWeak : Parser Char String := λ xs =>
   loop #[] xs
 
 
-def parseWhiteSpace : Parser Char String :=
+def whitespace : Parser Char String :=
   -- parse some whitespace
   -- empty whitespace is not ok
-  parseWhiteSpaceWeak.mapOption (λ s => if s.length = 0 then none else s)
+  whitespaceWeak.mapOption (λ s => if s.length = 0 then none else s)
 
 def parseNameWeak: Parser Char String := λ xs =>
   -- parse a non-whitespace string
@@ -118,5 +125,7 @@ def parseExactString (ys: String): Parser Char String :=
 #eval parseName "   abc123".toList
 #eval parseWhiteSpace "   abc123".toList
 
+
+end String
 
 end Parser.Combinator
