@@ -9,7 +9,7 @@ def s := "
   inh zero : Nat
   inh succ: Nat -> Nat
 
-  
+
 
 
 
@@ -31,8 +31,8 @@ def t := Exp.typ 1
 def main  : IO Unit := do
   IO.println "--------------------------------------"
   match parse s.toList with
-    | none => IO.println "parse_error"
-    | some (e, rest) =>
+    | Except.error err => IO.println s!"parse_error {String.mk err.xs}"
+    | Except.ok (e, rest) =>
       IO.println s!"{e}"
       match rest with
         | [] =>

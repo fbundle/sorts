@@ -63,14 +63,12 @@ partial def Parser.many (p: Parser χ α): Parser χ (List α) := λ xs =>
       | Except.ok (a, rest) => loop (as.push a) rest
   loop #[] xs
 
-def nonEmpty (p: Parser χ (List α)): Parser χ (List α) := λ xs => do
-  let (as, xs) ← p xs
+def Parser.many1 (p: Parser χ α): Parser χ (List α) := λ xs => do
+  let (as, xs) ← p.many xs
   if as.length = 0 then
     err xs
   else
-    pure (as, xs)
-
-def Parser.many1 (p: Parser χ α): Parser χ (List α) := nonEmpty p.many
+    Except.ok (as, xs)
 
 def Parser.transpose (ps: List (Parser χ α)): Parser χ (List α) := λ xs =>
   let rec loop (ys: Array α) (ps: List (Parser χ α)) (xs: List χ): Except (Error χ) (List α × List χ) :=
