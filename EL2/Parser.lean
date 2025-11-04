@@ -157,6 +157,7 @@ end
 
 #eval parse "inh hehe : xx -> yy ; bnn".toList
 #eval parse "let hehe : xx -> yy := xyz ; bnn".toList
+#eval parse "inh Nat : Type0 ; inh zero : Nat; body".toList
 
 
 end EL2.Parser
