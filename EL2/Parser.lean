@@ -96,11 +96,11 @@ partial def parseUniv: Parser Char Exp := λ xs => do
   if "Type".isPrefixOf name then
     let levelStr := name.stripPrefix "Type"
     match levelStr.toNat? with
-      | none => err xs
+      | none => none
       | some level =>
-        Except.ok (Exp.typ level, rest)
+        some (Exp.typ level, rest)
   else
-    err xs
+    none
 
 partial def parseVar: Parser Char Exp := parseName.filterMap (λ name =>
   let specialNames := [
@@ -184,11 +184,14 @@ end
 end EL2.Parser.Internal
 
 namespace EL2.Parser
-def parse: Parser.Combinator.Parser Char EL2.Core.Exp :=
+open Parser.Combinator
+open EL2.Core
+
+def parse: Parser Char EL2.Core.Exp :=
   (
-    Parser.Combinator.String.whitespaceWeak ++
+    String.whitespaceWeak ++
     Internal.parse ++
-    Parser.Combinator.String.whitespaceWeak
+    String.whitespaceWeak
   ).map (λ (_, e, _) => e)
 
 
