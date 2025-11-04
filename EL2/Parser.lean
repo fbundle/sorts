@@ -37,7 +37,7 @@ def parseName: Parser Char String :=
 
 mutual
 
-partial def parseParens: Parser Char Exp :=
+partial def parseApp: Parser Char Exp :=
   -- parse any thing starts with (
   (
     String.exact "(" ++
@@ -50,6 +50,46 @@ partial def parseParens: Parser Char Exp :=
     chainCmd cmd (args.map Prod.snd)
   )
 
+partial def parseHom: Parser Char Exp :=
+  let parseAnn: Parser Char (String × Exp) :=
+      (
+        String.exact "(" ++
+        String.whitespaceWeak ++
+        parseName ++
+        String.whitespaceWeak ++
+        String.exact ":" ++
+        String.whitespaceWeak ++
+        parse ++
+        String.whitespaceWeak ++
+        String.exact ")"
+      ).map (λ (_, _, name, _, _, _, type, _, _) => (name, type))
+
+      || parse.map (λ e => ("_", e))
+
+  (
+    String.exact "hom" ++
+    (String.whitespaceWeak ++ parseAnn).many ++
+    String.whitespaceWeak ++
+    String.exact "->" ++
+    String.whitespaceWeak ++
+    parse
+  ).map (λ (_, params, _, _, _, typeB) =>
+    chainPi (params.map (λ (_, name, typeA) => (name, typeA))) typeB
+  )
+
+partial def parseLam: Parser Char Exp :=
+  -- parse anything starts with lam
+  -- lam name [ name]^n => body
+  (
+    String.exact "lam" ++
+    (String.whitespace ++ parseName).many ++
+    String.whitespace ++
+    String.exact "=>" ++
+    String.whitespace ++
+    parse
+  ).map (λ (_, names, _, _, _, body) =>
+    chainLam (names.map Prod.snd) body
+  )
 
 partial def parseUniv: Parser Char Exp := λ xs => do
   let (name, rest) ← parseName xs
@@ -64,7 +104,7 @@ partial def parseUniv: Parser Char Exp := λ xs => do
 
 partial def parseVar: Parser Char Exp := parseName.filterMap (λ name =>
   let specialNames := [
-    "lam", "let", "inh",
+    "lam", "let", "inh", "hom"
   ]
 
   if specialNames.contains name then
@@ -72,54 +112,6 @@ partial def parseVar: Parser Char Exp := parseName.filterMap (λ name =>
   else
     some (Exp.var name)
 )
-
-partial def parseAnn: Parser Char (String × Exp) :=
-    (
-      String.exact "(" ++
-      String.whitespaceWeak ++
-      parseName ++
-      String.whitespaceWeak ++
-      String.exact ":" ++
-      String.whitespaceWeak ++
-      parseBracket ++
-      String.whitespaceWeak ++
-      String.exact ")"
-    ).map (λ (_, _, name, _, _, _, type, _, _) => (name, type))
-
-    || parse.map (λ e => ("_", e))
-
-partial def parseBracket: Parser Char Exp :=
-  (
-    String.exact "[" ++
-    String.whitespaceWeak ++
-    (parseAnn ++ String.whitespaceWeak ++ String.exact "->").many ++
-    String.whitespaceWeak ++
-    parseAnn ++
-    String.whitespaceWeak ++
-    String.exact "]"
-  ).map (λ ((_, _, params, _, typeB, _, _): String × String × List ((String × Exp) × String × String) × String × (String × Exp) × String × String) =>
-    let rec loop (params: List ((String × Exp) × String × String)) (typeB: Exp): Exp :=
-      match params with
-        | [] => typeB
-        | ((name, typeA), _, _) :: rest =>
-          Exp.pi name typeA (loop rest typeB)
-    loop params typeB.snd
-  )
-
-  || parse
-
-partial def parseLam: Parser Char Exp :=
-  -- parse anything starts with lam
-  -- lam name [ name]^n => body
-  (
-    String.exact "lam" ++
-    (String.whitespace ++ parseName).many ++
-    String.whitespace ++
-    String.exact "=>" ++
-    String.whitespace ++
-    parse
-  ).map (λ (_, names, _, _, _, body) => chainLam (names.map Prod.snd) body)
-
 
 
 partial def parseBnd: Parser Char Exp :=
@@ -132,7 +124,7 @@ partial def parseBnd: Parser Char Exp :=
     String.whitespaceWeak ++
     String.exact ":" ++
     String.whitespaceWeak ++
-    parseBracket ++
+    parse ++
     String.whitespaceWeak ++
     String.exact ":=" ++
     String.whitespaceWeak ++
@@ -168,7 +160,7 @@ partial def parseInh: Parser Char Exp :=
     String.whitespaceWeak ++
     String.exact ":" ++
     String.whitespaceWeak ++
-    parseBracket ++
+    parse ++
     parseLineBreak ++
     parse
   ).map (λ (_, _, name, _, _, _, type, _, body) =>
@@ -177,12 +169,13 @@ partial def parseInh: Parser Char Exp :=
 
 partial def parse: Parser Char Exp :=
   (
-    parseUniv ||
-    parseParens ||
-    parseLam ||
-    parseBnd ||
-    parseInh ||
-    parseVar
+    parseUniv ||-- starts with Type
+    parseApp || -- starts with (
+    parseLam || -- starts with lam
+    parseHom || -- starts with hom
+    parseBnd || -- starts with let
+    parseInh || -- starts with inh
+    parseVar    -- everything else
   )
 
 end
