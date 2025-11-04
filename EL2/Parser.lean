@@ -37,7 +37,7 @@ def parseName: Parser Char String :=
 
 mutual
 
-partial def parseParensApp: Parser Char Exp :=
+partial def parseParens: Parser Char Exp :=
   -- parse any thing starts with (
   (
     String.exact "(" ++
@@ -79,51 +79,34 @@ partial def parseAnn: Parser Char (String × Exp) :=
       String.whitespaceWeak ++
       parseName ++
       String.whitespaceWeak ++
-      parseColonArrow ++
+      String.exact ":" ++
+      String.whitespaceWeak ++
+      parseBracket ++
       String.whitespaceWeak ++
       String.exact ")"
-    ).map (λ (_, _, name, _, type, _, _) => (name, type))
+    ).map (λ (_, _, name, _, _, _, type, _, _) => (name, type))
 
     || parse.map (λ e => ("_", e))
 
-partial def parseColonArrow: Parser Char Exp :=
-  -- TODO - think of this
-  -- this doesn't work yet
-  -- at  ((n : Nat) -> (P n) -> (P (succ n))) ->
-  let x := "
-  inh Nat_rec :
-    (P : Nat -> Type0) ->
-    (P zero) ->
-    ((n : Nat) -> (P n) -> (P (succ n))) ->
-    (n : Nat) -> (P n)
-  "
-
-
-  -- parse anything starts with :
-  -- : Ann (-> Ann)^n for some n ≥ 0
-  -- colon then type
+partial def parseBracket: Parser Char Exp :=
   (
-    String.exact ":" ++
+    String.exact "[" ++
+    String.whitespaceWeak ++
+    (parseAnn ++ String.whitespaceWeak ++ String.exact "->").many ++
     String.whitespaceWeak ++
     parseAnn ++
-    (
-      String.whitespaceWeak ++
-      String.exact "->" ++
-      String.whitespaceWeak ++
-      parseAnn
-    ).many
-  ).map (λ (_, _, ann1, ann2s) =>
-    let ann2s: List (String × Exp) := (ann2s.map (λ ((_, _, _, name, type): String × String × String × String × Exp) =>
-      (name, type)
-    ))
-    let anns := ann1 :: ann2s
-
-    let init := anns.extract 0 (anns.length - 1)
-    -- get last elem using construction of anns
-    let last := anns.getLast (List.cons_ne_nil ann1 ann2s)
-
-    chainPi init last.snd
+    String.whitespaceWeak ++
+    String.exact "]"
+  ).map (λ ((_, _, params, _, typeB, _, _): String × String × List ((String × Exp) × String × String) × String × (String × Exp) × String × String) =>
+    let rec loop (params: List ((String × Exp) × String × String)) (typeB: Exp): Exp :=
+      match params with
+        | [] => typeB
+        | ((name, typeA), _, _) :: rest =>
+          Exp.pi name typeA (loop rest typeB)
+    loop params typeB.snd
   )
+
+  || parse
 
 partial def parseLam: Parser Char Exp :=
   -- parse anything starts with lam
@@ -147,14 +130,16 @@ partial def parseBnd: Parser Char Exp :=
     String.whitespaceWeak ++
     parseName ++
     String.whitespaceWeak ++
-    parseColonArrow ++
+    String.exact ":" ++
+    String.whitespaceWeak ++
+    parseBracket ++
     String.whitespaceWeak ++
     String.exact ":=" ++
     String.whitespaceWeak ++
     parse ++
     parseLineBreak ++
     parse
-  ).map (λ (_, _, name, _, type, _, _, _, value, _, body) =>
+  ).map (λ (_, _, name, _, _, _, type, _, _, _, value, _, body) =>
     Exp.bnd name value type body
   )
   ||
@@ -181,17 +166,19 @@ partial def parseInh: Parser Char Exp :=
     String.whitespaceWeak ++
     parseName ++
     String.whitespaceWeak ++
-    parseColonArrow ++
+    String.exact ":" ++
+    String.whitespaceWeak ++
+    parseBracket ++
     parseLineBreak ++
     parse
-  ).map (λ (_, _, name, _, type, _, body) =>
+  ).map (λ (_, _, name, _, _, _, type, _, body) =>
     Exp.inh name type body
   )
 
 partial def parse: Parser Char Exp :=
   (
     parseUniv ||
-    parseParensApp ||
+    parseParens ||
     parseLam ||
     parseBnd ||
     parseInh ||
@@ -215,11 +202,11 @@ def parse: Parser.Combinator.Parser Char EL2.Core.Exp :=
 
 
 #eval parse "
-inh nat_rec :
-  (P : Nat -> Type0) ->
+inh Nat_rec : [
+  (P : [Nat -> Type0]) ->
   (P zero) ->
-  ((n : Nat) -> (P n) -> (P (succ n))) ->
-  (n : Nat) -> (P n)
+  [(n : Nat) -> (P n) -> (P (succ n))]
+]
 body
 ".toList
 
