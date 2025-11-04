@@ -193,25 +193,18 @@ private inductive state where
   | normal: Array Char → state
   | inComment: Array Char → state
 
-private def removeComment (xs: List Char): List Char :=
-  let final := (List.zip xs (xs ++ [' '])).foldl (λ state (char, nextChar) =>
-    match state with
-      | .normal xs =>
-        if char = '-' ∧ nextChar = '-' then
-          .inComment xs
-        else
-          .normal (xs.push char)
-      | .inComment xs =>
-        if char = '\n' then
-          .normal xs
-        else
-          state
-  ) (state.normal #[])
-  match final with
-    | .normal xs => xs.toList
-    | .inComment xs => xs.toList
+private def removeComments (xs: List Char): List Char :=
+  let s := String.mk xs
+  let lines := s.splitOn "\n"
+  let lines := lines.map (λ line =>
+    let parts := line.splitOn "--"
+    parts.head!
+  )
+  let linesWithNL := lines.map (· ++ "\n")
+  let s := String.join linesWithNL
+  s.toList
 
-#eval String.mk (removeComment "
+#eval String.mk (removeComments "
 hello this is --some comment
 an mesage with line comment -- everythign after double dashes is ignore
 
@@ -220,8 +213,7 @@ heheh
 ".toList)
 
 def parse: Parser Char EL2.Core.Exp := λ xs =>
-  -- remove comments
-  xs |> removeComment |>
+  xs |> removeComments |>
   (
     String.whitespaceWeak ++
     Internal.parse ++
