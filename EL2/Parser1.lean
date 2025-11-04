@@ -94,16 +94,14 @@ def parseBnd: Parser Char Exp :=
     String.whitespaceWeak ++
     String.name ++
     String.whitespaceWeak ++
-    String.exact ":" ++
-    String.whitespaceWeak ++
-    parse ++
+    parseColonType ++
     String.whitespaceWeak ++
     String.exact ":=" ++
     String.whitespaceWeak ++
     parse ++
     parseLineBreak ++
     parse
-  ).map (λ (_, _, name, _, _, _, type, _, _, _, value, _, body) =>
+  ).map (λ (_, _, name, _, type, _, _, _, value, _, body) =>
     Exp.bnd name value type body
   )
 
@@ -113,16 +111,11 @@ def parseInh: Parser Char Exp :=
     String.whitespaceWeak ++
     String.name ++
     String.whitespaceWeak ++
-    String.exact ":" ++
-    String.whitespaceWeak ++
-    parse ++
+    parseColonType ++
     parseLineBreak ++
     parse
-  ).map (λ (_, _, name, _, _, _, type, _, body) =>
+  ).map (λ (_, _, name, _, type, _, body) =>
     Exp.inh name type body
   )
-
-
-
 
 end EL2.Parser1
