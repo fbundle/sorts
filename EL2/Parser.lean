@@ -180,8 +180,7 @@ partial def parseInh: Parser Char Exp :=
     Exp.inh name type body
   )
 
-partial def parse: Parser Char Exp := λ xs =>
-  dbg_trace s!"parse -- {String.mk xs}"
+partial def parse: Parser Char Exp :=
   (
     parseUniv ||
     parseParensApp ||
@@ -189,7 +188,7 @@ partial def parse: Parser Char Exp := λ xs =>
     parseBnd ||
     parseInh ||
     parseVar
-  ) xs
+  )
 
 end
 

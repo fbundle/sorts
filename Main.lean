@@ -9,6 +9,11 @@ def s := "
   inh zero : Nat
   inh succ: Nat -> Nat
 
+  inh Nat_rec :
+    (P : Nat -> Type0) ->
+    (P zero) ->
+    ((n : Nat) -> (P n) -> (P (succ n))) ->
+    (n : Nat) -> (P n)
 
 
 
