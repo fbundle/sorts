@@ -107,7 +107,20 @@ def parseBnd: Parser Char Exp :=
     Exp.bnd name value type body
   )
 
-
+def parseInh: Parser Char Exp :=
+  (
+    String.exact "inh" ++
+    String.whitespaceWeak ++
+    String.name ++
+    String.whitespaceWeak ++
+    String.exact ":" ++
+    String.whitespaceWeak ++
+    parse ++
+    parseLineBreak ++
+    parse
+  ).map (λ (_, _, name, _, _, _, type, _, body) =>
+    Exp.inh name type body
+  )
 
 
 
