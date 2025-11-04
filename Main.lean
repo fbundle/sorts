@@ -60,18 +60,20 @@ def s := "
 
 def t := Exp.typ 1
 
--- private def tokens := tokenize s
 
-def main  : IO Unit := do
-  IO.println "--------------------------------------"
-  match parse s.toList with
-    | none => IO.println s!"parse_error"
-    | some (e, rest) =>
-      IO.println s!"{e}"
-      match rest with
-        | [] =>
-          if true = typeCheck? e t then
-            IO.println "passed"
-          else
-            IO.println "type_error"
-        | _ => IO.println "parse_error"
+def main (args : List String): IO Unit := do
+  match args with
+    | [] => IO.println "args_empty"
+    | filename :: _ =>
+      let content ← IO.FS.readFile filename
+      match parse content.toList with
+        | none => IO.println s!"parse_error"
+        | some (e, rest) =>
+          IO.println s!"{e}"
+          match rest with
+            | [] =>
+              if true = typeCheck? e t then
+                IO.println "passed"
+              else
+                IO.println "type_error"
+            | _ => IO.println "parse_error"
