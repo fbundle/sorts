@@ -120,12 +120,6 @@ def whitespace : Parser Char String :=
 def exact (ys: String): Parser Char String :=
   toStringParser (exactList ys.toList)
 
-#eval exactList "hehe".toList "hehea123".toList
-#eval whitespace "abc123  ".toList
-#eval whitespace "   abc123".toList
-#eval exact "let" "let123".toList
-
-
 end String
 
 end Parser.Combinator
