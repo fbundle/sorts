@@ -213,7 +213,10 @@ private def removeComment (xs: List Char): List Char :=
 
 #eval String.mk (removeComment "
 hello this is --some comment
-an mesage with comment
+an mesage with line comment -- everythign after double dashes is ignore
+
+
+heheh
 ".toList)
 
 def parse: Parser Char EL2.Core.Exp := λ xs =>
