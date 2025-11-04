@@ -189,7 +189,36 @@ namespace EL2.Parser
 open Parser.Combinator
 open EL2.Core
 
-def parse: Parser Char EL2.Core.Exp :=
+private inductive state where
+  | normal: Array Char → state
+  | inComment: Array Char → state
+
+private def removeComment (xs: List Char): List Char :=
+  let final := (List.zip xs (xs ++ [' '])).foldl (λ state (char, nextChar) =>
+    match state with
+      | .normal xs =>
+        if char = '-' ∧ nextChar = '-' then
+          .inComment xs
+        else
+          .normal (xs.push char)
+      | .inComment xs =>
+        if char = '\n' then
+          .normal xs
+        else
+          state
+  ) (state.normal #[])
+  match final with
+    | .normal xs => xs.toList
+    | .inComment xs => xs.toList
+
+#eval String.mk (removeComment "
+hello this is --some comment
+an mesage with comment
+".toList)
+
+def parse: Parser Char EL2.Core.Exp := λ xs =>
+  -- remove comments
+  xs |> removeComment |>
   (
     String.whitespaceWeak ++
     Internal.parse ++
