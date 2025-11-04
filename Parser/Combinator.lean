@@ -14,14 +14,14 @@ instance: Monad (Parser χ) where
   pure := Parser.pure
   bind := Parser.bind
 
-def Parser.map (p: Parser χ α) (f: α → β): Parser χ β :=
-  p.bind (λ a => Parser.pure (f a))
 
 def Parser.filterMap (p: Parser χ α) (f: α → Option β): Parser χ β := λ xs => do
   let (a, xs) ← p xs
   let b ← f a
   (b, xs)
 
+def Parser.map (p: Parser χ α) (f: α → β): Parser χ β :=
+  p.filterMap (λ a => some (f a))
 
 
 def Parser.concat (p1: Parser χ α) (p2: Parser χ β): Parser χ (α × β) := λ xs => do
