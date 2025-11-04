@@ -30,8 +30,8 @@ def chainLam (names: List String) (body: Exp): Exp :=
     | name :: names =>
       Exp.lam name (chainLam names body)
 
-def parseName: Parser Char String := λ xs =>
-  
+def parseName: Parser Char String :=
+  String.toStringParser (pred ("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.".contains ·)).list
 
 
 mutual
@@ -62,7 +62,7 @@ partial def parseApp: Parser Char Exp :=
 
 
 partial def parseUniv: Parser Char Exp := λ xs => do
-  let (name, rest) ← String.name xs
+  let (name, rest) ← parseName xs
   if "Type".isPrefixOf name then
     let levelStr := name.stripPrefix "Type"
     let level ← levelStr.toNat?
@@ -70,11 +70,7 @@ partial def parseUniv: Parser Char Exp := λ xs => do
   else
     none
 
-partial def parseVar: Parser Char Exp := String.name.filterMap (λ name =>
-  let specialSubstrings := [
-    "(", ")", ":", "->", "λ", "=>", ":="
-  ]
-
+partial def parseVar: Parser Char Exp := parseName.filterMap (λ name =>
   let specialNames := [
     "lam", "let", "inh",
   ]
@@ -91,7 +87,7 @@ partial def parseColonArrow: Parser Char Exp :=
     (
       String.exact "(" ++
       String.whitespaceWeak ++
-      String.name ++
+      parseName ++
       String.whitespaceWeak ++
       String.exact ":" ++
       String.whitespaceWeak ++
@@ -133,7 +129,7 @@ partial def parseLam: Parser Char Exp :=
   (
     (String.exact "λ" || String.exact "lam") ++
     String.whitespaceWeak ++
-    String.name.list ++
+    parseName.list ++
     String.whitespaceWeak ++
     String.exact "=>" ++
     parse
@@ -145,7 +141,7 @@ partial def parseBnd: Parser Char Exp :=
   (
     String.exact "let" ++
     String.whitespaceWeak ++
-    String.name ++
+    parseName ++
     String.whitespaceWeak ++
     parseColonArrow ++
     String.whitespaceWeak ++
@@ -162,7 +158,7 @@ partial def parseInh: Parser Char Exp :=
   (
     String.exact "inh" ++
     String.whitespaceWeak ++
-    String.name ++
+    parseName ++
     String.whitespaceWeak ++
     parseColonArrow ++
     parseLineBreak ++

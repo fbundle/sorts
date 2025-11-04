@@ -67,18 +67,18 @@ def nonEmpty (p: Parser χ (List α)): Parser χ (List α) := λ xs => do
 
 namespace String
 
-def toString (p: Parser Char (List Char)): Parser Char String :=
+def toStringParser (p: Parser Char (List Char)): Parser Char String :=
   p.map (String.mk ·)
 
 def whitespaceWeak : Parser Char String :=
   -- parse any whitespace
   -- empty whitespace is ok
-  toString (pred (·.isWhitespace)).list
+  toStringParser (pred (·.isWhitespace)).list
 
 def whiteSpaceWithoutNewLineWeak : Parser Char String :=
   -- parse any whitespace but not new line
   -- empty whitespace is ok
-  toString (pred (λ c => c.isWhitespace ∧ (¬ c = '\n'))).list
+  toStringParser (pred (λ c => c.isWhitespace ∧ (¬ c = '\n'))).list
 
 
 def whitespace : Parser Char String :=
@@ -87,7 +87,7 @@ def whitespace : Parser Char String :=
   whitespaceWeak.filterMap (λ s => if s.length = 0 then none else s)
 
 def exact (ys: String): Parser Char String :=
-  toString (exactList ys.toList)
+  toStringParser (exactList ys.toList)
 
 #eval whitespace "abc123  ".toList
 #eval whitespace "   abc123".toList
