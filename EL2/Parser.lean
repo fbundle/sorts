@@ -128,13 +128,12 @@ partial def parseLam: Parser Char Exp :=
   -- lam name [ name]^n => body
   (
     String.exact "lam" ++
-    String.whitespaceWeak ++
-    parseName ++
     (String.whitespace ++ parseName).list ++
-    String.whitespaceWeak ++
+    String.whitespace ++
     String.exact "=>" ++
+    String.whitespace ++
     parse
-  ).map (λ (_, _, name, names, _, _, body) => chainLam (name :: (names.map Prod.snd)) body)
+  ).map (λ (_, names, _, _, _, body) => chainLam (names.map Prod.snd) body)
 
 
 
@@ -169,6 +168,8 @@ partial def parseInh: Parser Char Exp :=
   )
 end
 
+#eval parseLam "lam x => x".toList
+
 end EL2.Parser.Internal
 
 namespace EL2.Parser
@@ -178,8 +179,6 @@ def parse: Parser.Combinator.Parser Char EL2.Core.Exp :=
     Internal.parse ++
     Parser.Combinator.String.whitespaceWeak
   ).map (λ (_, e, _) => e)
-
-#eval parse "lam x => x".toList
 
 #eval parse "
 
