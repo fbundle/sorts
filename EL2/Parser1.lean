@@ -48,6 +48,7 @@ partial def parseColonType: Parser Char Exp :=
       parseAnn
     ).map (λ (_, _, x) => x)
 
+  -- colon then type
   (
     String.exact ":" ++
     String.whitespaceWeak ++
