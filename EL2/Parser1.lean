@@ -1,7 +1,7 @@
 import Parser.Combinator
 import EL2.Core
 
-namespace EL2.Parser1
+namespace EL2.Parser
 open Parser.Combinator
 open EL2.Core
 
@@ -154,4 +154,4 @@ end
 
 
 
-end EL2.Parser1
+end EL2.Parser

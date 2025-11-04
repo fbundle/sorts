@@ -1,4 +1,4 @@
-import EL2.Parser
+import EL2.Parser1
 import EL2.Core
 
 open EL2.Parser
@@ -22,13 +22,13 @@ Type0
 
 def t := Exp.typ 1
 
-private def tokens := tokenize s
+-- private def tokens := tokenize s
 
 def main  : IO Unit := do
   IO.println "--------------------------------------"
-  match parse tokens with
+  match parse s.toList with
     | none => IO.println "parse_error"
-    | some (rest, e) =>
+    | some (e, rest) =>
       IO.println s!"{e}"
       match rest with
         | [] =>
