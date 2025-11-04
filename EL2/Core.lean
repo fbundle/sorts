@@ -37,7 +37,7 @@ inductive Exp where
   | lam: (name: String) → (body: Exp) → Exp
   -- let binding: let name: type := value
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
-  -- inh
+  -- inh - const
   | inh: (name: String) → (type: Exp) → (body: Exp) → Exp
   deriving Nonempty, Repr
 
