@@ -156,5 +156,4 @@ partial def parseInh: Parser Char Exp :=
 end
 
 
-
 end EL2.Parser
