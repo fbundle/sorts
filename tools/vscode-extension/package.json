@@ -1,0 +1,32 @@
+{
+  "name": "el2",
+  "displayName": "EL2 syntax",
+  "description": "Syntax highlighting for EL2",
+  "version": "0.0.1",
+  "publisher": "khanh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/khanh/el2"
+  },
+  "engines": {
+    "vscode": "^1.50.0"
+  },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "el2",
+        "aliases": ["EL2", "el2"],
+        "extensions": [".el2"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "el2",
+        "scopeName": "source.el2",
+        "path": "./syntaxes/el2.tmLanguage.json"
+      }
+    ]
+  }
+}

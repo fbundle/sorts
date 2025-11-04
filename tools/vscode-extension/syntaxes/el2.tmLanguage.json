@@ -1,0 +1,55 @@
+{
+  "scopeName": "source.el2",
+  "patterns": [
+    { "include": "#let-inh-names" },
+    { "include": "#comments" },
+    { "include": "#keywords" },
+    { "include": "#numbers" },
+    { "include": "#brackets" }
+  ],
+  "repository": {
+    "let-inh-names": {
+      "patterns": [
+        {
+          "name": "meta.let-inh.el2",
+          "match": "\\b(let|inh)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+          "captures": {
+            "2": { "name": "entity.name.definition.el2" }
+          }
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-dash.el2",
+          "match": "--.*$"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.el2",
+          "match": "\\b(lam|let|inh|hom)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.el2",
+          "match": "\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "brackets": {
+      "patterns": [
+        {
+          "name": "punctuation.section.brackets.el2",
+          "match": "[\\[\\]\\(\\)\\{\\}]"
+        }
+      ]
+    }
+  }
+}
