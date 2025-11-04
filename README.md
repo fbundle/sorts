@@ -5,18 +5,17 @@ The goal of this project is to implement minimal dependent type checker
 ## TYPE CHECKING WITH COQUAND'S ALGORITHM
 
 ```lean
-inh Nat : Type0 in
-inh zero : Nat in
-inh succ : Π Nat -> Nat in
-inh Vec : Π Nat Type0 -> Type0 in
-inh nil : Π (T: Type0) -> (Vec zero T) in
-inh push : Π (n: Nat) (T: Type0) (v: (Vec n T)) (x: T) -> (Vec (succ n) T) in
-let one: Nat := (succ zero) in
-let two: Nat := (succ one) in
-let pure: Π Nat -> (Vec one Nat) := λ x =>
+inh Nat : Type0
+inh zero : Nat
+inh succ: Nat -> Nat
+inh Vec : Nat -> Type0 -> Type0
+inh nil : (T: Type0) -> (Vec zero T)
+inh push : (n: Nat) -> (T: Type0) -> (v: (Vec n T)) -> (x: T) -> (Vec (succ n) T)
+let one := (succ zero)
+let two := (succ one)
+let pure: Nat -> (Vec one Nat) := lam x =>
   (push zero Nat (nil Nat) x)
-in
-let pure_two: (Vec one Nat) := (pure two) in
+let pure_two: (Vec one Nat) := (pure two)
 Type0
 ```
 
