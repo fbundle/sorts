@@ -33,7 +33,7 @@ def chainLam (names: List String) (body: Exp): Exp :=
 mutual
 
 partial def parse: Parser Char Exp := λ xs =>
-  dbg_trace s!"parsing {String.mk xs}"
+  dbg_trace s!"parse {String.mk xs}"
   (
     parseUniv ||
     parseApp ||
