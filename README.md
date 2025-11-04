@@ -1,6 +1,8 @@
 # SORTS
 
-The goal of this project is to implement minimal dependent type checker
+The goal of this project is to implement minimal dependent type checker. Currently, it should be able to handle Calculus of Constructions (CoC) with Type universes. Next goal, fully Calculus of Inductive Constructions (CIC) just like lean4 or rocq
+
+
 
 ## TODO
 
@@ -32,21 +34,6 @@ nat_rec (λ _. T) a (λ m rec. b m) n
 
 ## TYPE CHECKING WITH COQUAND'S ALGORITHM
 
-```lean
-inh Nat : Type0
-inh zero : Nat
-inh succ: Nat -> Nat
-inh Vec : Nat -> Type0 -> Type0
-inh nil : (T: Type0) -> (Vec zero T)
-inh push : (n: Nat) -> (T: Type0) -> (v: (Vec n T)) -> (x: T) -> (Vec (succ n) T)
-let one := (succ zero)
-let two := (succ one)
-let pure: Nat -> (Vec one Nat) := lam x =>
-  (push zero Nat (nil Nat) x)
-let pure_two: (Vec one Nat) := (pure two)
-Type0
-```
-
 It is a difficult topic checking of an inductive type is well-defined or at least positive recurrent.
 
 There are two main ways to typecheck inductive types: (1) using fixpoint combinator which is not decidable and (2) using the initial object $\mathbb{N}$ of the category $F$-algebras over the category of sets where $F(X) = 1 + X$ where $1$ is the singleton set and $1 + X$ is the disjoint union.
@@ -55,6 +42,6 @@ Both of which are not a simple weekend project, hence I decided to stop here. Cu
 
 The example above assumed `Nat` is a constant of type `type_0`, `zero` is a constant of type `Nat`, `succ` is a function `Nat -> Nat`, etc.
 
-The original Coquand's algorithm can be found in `exp/coquand/1-s2.0-0167642395000216-main.pdf`, the implementation in Haskell is at `exp/coquand/app/Main.hs`, the implementation in Lean4 is at `EL2/Core/Coquand.lean`
+The original Coquand's algorithm can be found in `obsolete/coquand/1-s2.0-0167642395000216-main.pdf`, the implementation in Haskell is at `obsolete/coquand/app/Main.hs`, the implementation in Lean4 is at `obsolete/Coquand.lean`
 
 I respectively added type universes, inhabit, annotated type, and desugaring for application of untyped lambda.
