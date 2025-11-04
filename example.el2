@@ -12,10 +12,10 @@ inh zero : Nat
 inh succ : hom Nat -> Nat
 
 inh Nat_rec : hom
-(P : hom Nat -> Type0)
-(P zero)
-(hom (n : Nat) (P n) -> (P (succ n)))
-(n : Nat) -> (P n)
+  (P : hom Nat -> Type0)
+  (P zero)
+  (hom (n : Nat) (P n) -> (P (succ n)))
+  (n : Nat) -> (P n)
 
 -- assume (Vec n T) exists for all type (T: Type0)
 inh Vec : hom Nat Type0 -> Type0
@@ -41,11 +41,11 @@ let pure_two: (Vec one Nat) := (pure two)
 
 -- pattern matching is just induction
 let is_zero : hom Nat -> Bool := lam n =>
-(Nat_rec
+  (Nat_rec
     (lam _ => Bool)      --  for every n, the return type is Bool
     true                --  case zero
     (lam n _ => false)  --  case succ
     n                   --  apply inductive statement on n
-)
+  )
 
 Type0
