@@ -1,7 +1,7 @@
 import Parser.Combinator
 import EL2.Core
 
-namespace EL2.Parser
+namespace EL2.Parser.Internal
 open Parser.Combinator
 open EL2.Core
 
@@ -31,7 +31,7 @@ def chainLam (names: List String) (body: Exp): Exp :=
       Exp.lam name (chainLam names body)
 
 def parseName: Parser Char String :=
-  String.toStringParser (pred ("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.".contains ·)).list
+  String.toStringParser $ nonEmpty (pred ("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.".contains ·)).list
 
 
 mutual
@@ -40,24 +40,23 @@ partial def parse: Parser Char Exp := λ xs =>
   --dbg_trace s!"parse {String.mk xs}"
   (
     parseUniv ||
-    parseApp ||
+    parseParensApp ||
     parseLam ||
     parseBnd ||
     parseInh ||
     parseVar
   ) xs
 
-partial def parseApp: Parser Char Exp :=
+partial def parseParensApp: Parser Char Exp :=
   (
     String.exact "(" ++
     String.whitespaceWeak ++
-    parse.list ++
+    parse ++
+    (String.whitespace ++ parse).list ++
     String.whitespaceWeak ++
     String.exact ")"
-  ).filterMap (λ (_, _, es, _, _) =>
-    match es with
-      | [] => none
-      | cmd :: args => some (chainCmd cmd args)
+  ).filterMap (λ (_, _, cmd, args, _, _) =>
+    chainCmd cmd (args.map Prod.snd)
   )
 
 
@@ -126,14 +125,16 @@ partial def parseColonArrow: Parser Char Exp :=
   )
 
 partial def parseLam: Parser Char Exp :=
+  -- lam name [ name]^n => body
   (
-    (String.exact "λ" || String.exact "lam") ++
+    String.exact "lam" ++
     String.whitespaceWeak ++
-    parseName.list ++
+    parseName ++
+    (String.whitespace ++ parseName).list ++
     String.whitespaceWeak ++
     String.exact "=>" ++
     parse
-  ).map (λ (_, _, names, _, _, body) => chainLam names body)
+  ).map (λ (_, _, name, names, _, _, body) => chainLam (name :: (names.map Prod.snd)) body)
 
 
 
@@ -168,9 +169,33 @@ partial def parseInh: Parser Char Exp :=
   )
 end
 
-#eval parse "inh hehe : xx -> yy ; bnn".toList
-#eval parse "let hehe : xx -> yy := xyz ; bnn".toList
-#eval parse "inh Nat : Type0 ; inh zero : Nat; body".toList
+end EL2.Parser.Internal
 
+namespace EL2.Parser
+def parse: Parser.Combinator.Parser Char EL2.Core.Exp :=
+  (
+    Parser.Combinator.String.whitespaceWeak ++
+    Internal.parse ++
+    Parser.Combinator.String.whitespaceWeak
+  ).map (λ (_, e, _) => e)
+
+#eval parse "lam x => x".toList
+
+#eval parse "
+
+inh Nat : Type0 -> Type1
+inh zero : Nat
+inh succ: Nat -> Nat
+inh Vec : Nat -> Type0 -> Type0
+inh nil : (T: Type0) -> (Vec zero T)
+inh push : (n: Nat) -> (T: Type0) -> (v: (Vec n T)) -> (x: T) -> (Vec (succ n) T)
+let one: Nat := (succ zero)
+let two: Nat := (succ one)
+let pure: Nat -> (Vec one Nat) := xxx
+
+Type0
+
+
+".toList
 
 end EL2.Parser
