@@ -2,12 +2,27 @@ namespace Parser.Combinator
 
 def Parser χ α := List χ → Option (α × List χ)
 
+def Parser.fail : Parser χ α := λ _ => none
+def Parser.pure (a: α): Parser χ α := λ xs => some (a, xs)
+
+def Parser.bind (p: Parser χ α) (f: α → Parser χ β): Parser χ β := λ xs =>
+  match p xs with
+    | none => none
+    | some (a, xs) => f a xs
+
+instance: Monad (Parser χ) where
+  pure := Parser.pure
+  bind := Parser.bind
+
+def Parser.map (p: Parser χ α) (f: α → β): Parser χ β :=
+  p.bind (λ a => Parser.pure (f a))
+
 def Parser.filterMap (p: Parser χ α) (f: α → Option β): Parser χ β := λ xs => do
   let (a, xs) ← p xs
   let b ← f a
   (b, xs)
 
-def Parser.map (p: Parser χ α) (f: α → β): Parser χ β := p.filterMap (λ a => some (f a))
+
 
 def Parser.concat (p1: Parser χ α) (p2: Parser χ β): Parser χ (α × β) := λ xs => do
   let (a, xs) ← p1 xs
@@ -38,8 +53,17 @@ partial def Parser.list (p: Parser χ α): Parser χ (List α) := λ xs =>
       | some (a, rest) => loop (as.push a) rest
   loop #[] xs
 
-def empty: Parser χ Unit := λ xs => some ((), xs)
-def fail: Parser χ Unit := λ _ => none
+def Parser.fromList (ps: List (Parser χ α)): Parser χ (List α) := λ xs =>
+  let rec loop (ys: Array α) (ps: List (Parser χ α)) (xs: List χ): Option (List α × List χ) :=
+    match ps with
+      | [] => some (ys.toList, xs)
+      | p :: ps =>
+        match p xs with
+          | none => none
+          | some (y, xs) =>
+            loop (ys.push y) ps xs
+
+  loop #[] ps xs
 
 def pred (p: χ → Bool): Parser χ χ := λ xs =>
   match xs with
@@ -52,9 +76,9 @@ def pred (p: χ → Bool): Parser χ χ := λ xs =>
 
 def exact [BEq χ] (y: χ): Parser χ χ := pred (· == y)
 
-def exactList [BEq χ] (ys: List χ): Parser χ (List χ) := λ xs => do
-  let rest ← ys.isPrefixOf? xs
-  pure (ys, rest)
+def exactList [BEq χ] (ys: List χ): Parser χ (List χ) :=
+  Parser.fromList (ys.map exact)
+
 
 def nonEmpty (p: Parser χ (List α)): Parser χ (List α) := λ xs => do
   let (as, xs) ← p xs
