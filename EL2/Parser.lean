@@ -79,9 +79,6 @@ partial def parseAnn: Parser Char (String × Exp) :=
       String.whitespaceWeak ++
       parseName ++
       String.whitespaceWeak ++
-      --String.exact ":" ++
-      --String.whitespaceWeak ++
-      --parse ++
       parseColonArrow ++
       String.whitespaceWeak ++
       String.exact ")"
@@ -90,6 +87,18 @@ partial def parseAnn: Parser Char (String × Exp) :=
     || parse.map (λ e => ("_", e))
 
 partial def parseColonArrow: Parser Char Exp :=
+  -- TODO - think of this
+  -- this doesn't work yet
+  -- at  ((n : Nat) -> (P n) -> (P (succ n))) ->
+  let x := "
+  inh Nat_rec :
+    (P : Nat -> Type0) ->
+    (P zero) ->
+    ((n : Nat) -> (P n) -> (P (succ n))) ->
+    (n : Nat) -> (P n)
+  "
+
+
   -- parse anything starts with :
   -- : Ann (-> Ann)^n for some n ≥ 0
   -- colon then type
