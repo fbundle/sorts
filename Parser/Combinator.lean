@@ -86,22 +86,10 @@ def whitespace : Parser Char String :=
   -- empty whitespace is not ok
   whitespaceWeak.filterMap (λ s => if s.length = 0 then none else s)
 
-def nameWeak: Parser Char String :=
-  -- parse a non-whitespace string
-  -- empty name is ok
-  toString (pred (¬ ·.isWhitespace)).list
-
-def name: Parser Char String :=
-  -- parse a non-whitespace string
-  -- empty name is not ok
-  nameWeak.filterMap (λ s => if s.length = 0 then none else s)
-
 def exact (ys: String): Parser Char String :=
   toString (exactList ys.toList)
 
-#eval name "abc123  ".toList
 #eval whitespace "abc123  ".toList
-#eval name "   abc123".toList
 #eval whitespace "   abc123".toList
 #eval exact "let" "let123".toList
 

@@ -30,6 +30,10 @@ def chainLam (names: List String) (body: Exp): Exp :=
     | name :: names =>
       Exp.lam name (chainLam names body)
 
+def parseName: Parser Char String := λ xs =>
+  
+
+
 mutual
 
 partial def parse: Parser Char Exp := λ xs =>
@@ -66,7 +70,20 @@ partial def parseUniv: Parser Char Exp := λ xs => do
   else
     none
 
-partial def parseVar: Parser Char Exp := String.name.map (λ name => Exp.var name)
+partial def parseVar: Parser Char Exp := String.name.filterMap (λ name =>
+  let specialSubstrings := [
+    "(", ")", ":", "->", "λ", "=>", ":="
+  ]
+
+  let specialNames := [
+    "lam", "let", "inh",
+  ]
+
+  if specialNames.contains name then
+    none
+  else
+    some (Exp.var name)
+)
 
 partial def parseColonArrow: Parser Char Exp :=
   -- : X (-> X)^n for some n ≥ 0
