@@ -179,22 +179,4 @@ def parse: Parser.Combinator.Parser Char EL2.Core.Exp :=
     Parser.Combinator.String.whitespaceWeak
   ).map (λ (_, e, _) => e)
 
-#eval parse "
-
-inh Nat : Type0 -> Type1
-inh zero : Nat
-inh succ: Nat -> Nat
-inh Vec : Nat -> Type0 -> Type0
-inh nil : (T: Type0) -> (Vec zero T)
-inh push : (n: Nat) -> (T: Type0) -> (v: (Vec n T)) -> (x: T) -> (Vec (succ n) T)
-let one: Nat := (succ zero)
-let two: Nat := (succ one)
-let pure: Nat -> (Vec one Nat) := lam x =>
-  (push zero Nat (nil Nat) x)
-let pure_two: (Vec one Nat) := (pure two)
-Type0
-
-
-".toList
-
 end EL2.Parser
