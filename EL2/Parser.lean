@@ -48,6 +48,7 @@ partial def parse: Parser Char Exp := λ xs =>
   ) xs
 
 partial def parseParensApp: Parser Char Exp :=
+  -- parse any thing starts with (
   (
     String.exact "(" ++
     String.whitespaceWeak ++
@@ -81,6 +82,7 @@ partial def parseVar: Parser Char Exp := parseName.filterMap (λ name =>
 )
 
 partial def parseColonArrow: Parser Char Exp :=
+  -- parse anything starts with :
   -- : X (-> X)^n for some n ≥ 0
   let parseAnn: Parser Char (String × Exp) :=
     (
@@ -125,6 +127,7 @@ partial def parseColonArrow: Parser Char Exp :=
   )
 
 partial def parseLam: Parser Char Exp :=
+  -- parse anything starts with lam
   -- lam name [ name]^n => body
   (
     String.exact "lam" ++
@@ -138,6 +141,7 @@ partial def parseLam: Parser Char Exp :=
 
 
 partial def parseBnd: Parser Char Exp :=
+  -- parse anything starts with let
   (
     String.exact "let" ++
     String.whitespaceWeak ++
@@ -155,6 +159,7 @@ partial def parseBnd: Parser Char Exp :=
   )
 
 partial def parseInh: Parser Char Exp :=
+  -- parse anything starts with inh
   (
     String.exact "inh" ++
     String.whitespaceWeak ++
