@@ -33,7 +33,7 @@ def chainLam (names: List String) (body: Exp): Exp :=
 mutual
 
 partial def parse: Parser Char Exp := λ xs =>
-  dbg_trace s!"parse {String.mk xs}"
+  --dbg_trace s!"parse {String.mk xs}"
   (
     parseUniv ||
     parseApp ||
@@ -154,6 +154,9 @@ partial def parseInh: Parser Char Exp :=
     Exp.inh name type body
   )
 end
+
+#eval parse "inh hehe : xx -> yy ; bnn".toList
+#eval parse "let hehe : xx -> yy := xyz ; bnn".toList
 
 
 end EL2.Parser

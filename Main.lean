@@ -7,13 +7,13 @@ open EL2.Core
 def s := "
 inh Nat : Type0
 inh zero : Nat
-inh succ : Π Nat -> Nat
-inh Vec : Π Nat Type0 -> Type0
-inh nil : Π (T: Type0) -> (Vec zero T)
-inh push : Π (n: Nat) (T: Type0) (v: (Vec n T)) (x: T) -> (Vec (succ n) T)
+inh succ : Nat -> Nat
+inh Vec : Nat -> Type0 -> Type0
+inh nil : (T: Type0) -> (Vec zero T)
+inh push : (n: Nat) -> (T: Type0) -> (v: (Vec n T)) -> (x: T) -> (Vec (succ n) T)
 let one: Nat := (succ zero)
 let two: Nat := (succ one)
-let pure: Π Nat -> (Vec one Nat) := λ x =>
+let pure: Nat -> (Vec one Nat) := λ x =>
   (push zero Nat (nil Nat) x)
 let pure_two: (Vec one Nat) := (pure two)
 Type0
