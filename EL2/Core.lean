@@ -322,11 +322,11 @@ def test5 :=
     (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
     (Exp.typ 0)
 
-def piMany (params: List (String × Exp)) (body: Exp): Exp :=
+def piMany (params: List (String × Exp)) (typeB: Exp): Exp :=
   match params with
-    | [] => body
+    | [] => typeB
     | (name, type) :: rest =>
-      Exp.pi name type (piMany rest body)
+      Exp.pi name type (piMany rest typeB)
 
 def appMany (cmd: Exp) (args: List Exp): Exp :=
   match args with
@@ -334,11 +334,28 @@ def appMany (cmd: Exp) (args: List Exp): Exp :=
     | arg :: rest =>
       appMany (Exp.app cmd arg) rest
 
+def lamMany (params: List String) (body: Exp): Exp :=
+  match params with
+    | [] => body
+    | name :: rest =>
+      Exp.lam name (lamMany rest body)
+
 def test6 :=
   let e: Exp := ( id
     $ .inh "Nat" (.typ 0)
     $ .inh "zero" (.var "Nat")
     $ .inh "succ" (.pi "n" (.var "Nat") (.var "Nat"))
+    $ .inh "Nat_rec" (piMany [
+        ("P", .pi "_" (.var "Nat") (.typ 0)), -- (P : Nat -> Type0) ->
+        ("_", .app (.var "P") (.var "zero")), -- (P zero) ->
+        (
+          "_", piMany [ -- ((n : Nat) -> (P n) -> (P (succ n))) ->
+            ("n", .var "Nat"), ("_", (.app (.var "P") (.var "n"))),
+          ]
+          (.app (.var "P") (.app (.var "succ") (.var "n")))
+        ),
+        ("n", .var "Nat"), -- (n : Nat)
+    ] (.app (.var "P") (.var "n"))) ---> (P n)
     $ .inh "Vec" (piMany [("n", .var "Nat"), ("T", .typ 0)] (.typ 0))
     $ .inh "nil" (piMany [("T", .typ 0)] (appMany (.var "Vec") [.var "zero", .var "T"]))
     $ .inh "push" (
@@ -351,6 +368,16 @@ def test6 :=
       (appMany (.var "Vec") [.app (.var "succ") (.var "n"), .var "T"])
     )
     $ .bnd "one" (.app (.var "succ") (.var "zero")) (.var "Nat")
+    $ .bnd "is_pos" (  -- let is_pos : Nat -> Nat := match n with | zero => zero | succ m => one
+      .lam "n" (
+        appMany (.var "Nat_rec") [
+          .lam "_" (.var "Nat"),
+          (.var "zero"),
+          (lamMany ["m", "rec"] (.var "one")),
+          (.var "n")
+        ]
+      )
+    ) (.pi "_" (.var "Nat") (.var "Nat"))
     $ .bnd "singleton" (appMany (.var "push") [
       .var "zero",
       .var "Nat",
