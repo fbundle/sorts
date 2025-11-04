@@ -4,7 +4,31 @@ The goal of this project is to implement minimal dependent type checker
 
 ## TODO
 
-add pattern matching
+pattern matching as syntactic sugar
+
+```lean
+inh Nat : Type0
+inh zero : Nat
+inh succ : Nat -> Nat
+
+inh nat_rec :
+  (P : Nat -> Type0) ->
+  (P zero) ->
+  ((n : Nat) -> (P n) -> (P (succ n))) ->
+  (n : Nat) -> (P n)
+```
+
+then 
+```lean
+match n with
+| zero => a
+| succ m => b m
+```
+
+is equivalent to
+```lean
+nat_rec (λ _. T) a (λ m rec. b m) n
+```
 
 ## TYPE CHECKING WITH COQUAND'S ALGORITHM
 
