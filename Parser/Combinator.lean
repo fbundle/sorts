@@ -96,15 +96,14 @@ def name: Parser Char String :=
   -- empty name is not ok
   nameWeak.filterMap (λ s => if s.length = 0 then none else s)
 
+def exactString (ys: String): Parser Char String :=
+  toString (exactList ys.toList)
 
-
-def parseExactString (ys: String): Parser Char String :=
-  (parseExactList ys.toList).map (λ ys => String.mk ys)
-
-#eval parseName "abc123  ".toList
-#eval parseWhiteSpace "abc123  ".toList
-#eval parseName "   abc123".toList
-#eval parseWhiteSpace "   abc123".toList
+#eval name "abc123  ".toList
+#eval whitespace "abc123  ".toList
+#eval name "   abc123".toList
+#eval whitespace "   abc123".toList
+#eval exactString "let" "let123".toList
 
 
 end String
