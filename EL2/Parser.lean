@@ -168,7 +168,6 @@ partial def parseInh: Parser Char Exp :=
   )
 end
 
-#eval parseLam "lam x => x".toList
 
 end EL2.Parser.Internal
 
@@ -190,8 +189,9 @@ inh nil : (T: Type0) -> (Vec zero T)
 inh push : (n: Nat) -> (T: Type0) -> (v: (Vec n T)) -> (x: T) -> (Vec (succ n) T)
 let one: Nat := (succ zero)
 let two: Nat := (succ one)
-let pure: Nat -> (Vec one Nat) := xxx
-
+let pure: Nat -> (Vec one Nat) := lam x =>
+  (push zero Nat (nil Nat) x)
+let pure_two: (Vec one Nat) := (pure two)
 Type0
 
 
