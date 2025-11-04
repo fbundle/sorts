@@ -142,6 +142,7 @@ partial def parseLam: Parser Char Exp :=
 
 partial def parseBnd: Parser Char Exp :=
   -- parse anything starts with let
+  -- typed let
   (
     String.exact "let" ++
     String.whitespaceWeak ++
@@ -156,6 +157,22 @@ partial def parseBnd: Parser Char Exp :=
     parse
   ).map (λ (_, _, name, _, type, _, _, _, value, _, body) =>
     Exp.bnd name value type body
+  )
+  ||
+
+  -- untyped let
+  (
+    String.exact "let" ++
+    String.whitespaceWeak ++
+    parseName ++
+    String.whitespaceWeak ++
+    String.exact ":=" ++
+    String.whitespaceWeak ++
+    parse ++
+    parseLineBreak ++
+    parse
+  ).map (λ (_, _, name, _, _, _, value, _, body) =>
+    Exp.app (Exp.lam name body) value
   )
 
 partial def parseInh: Parser Char Exp :=
