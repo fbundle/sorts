@@ -220,7 +220,7 @@ partial def inferExpWeak? (ctx: Ctx) (exp: Exp): Option Val :=
   -- infer the type of exp weakly
   ctx.printIfNone s!"[DBG_TRACE] inferExpWeak? {ctx}\n\texp = {exp}" do
     match exp with
-      | Exp.typ n => pure (Val.typ (n + 1))
+      -- | Exp.typ n => pure (Val.typ (n + 1))
       | Exp.var name => ctx.Γ.lookup? name
 
       | Exp.app cmd arg => -- for Exp.app, cmd should be typ, var, or app
@@ -240,6 +240,11 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   -- check if type of exp is val
   ctx.printIfFalse s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}" do
     match exp with
+      | Exp.typ n =>
+        match val with
+          | Val.typ m => pure (n < m)
+          | _ => pure false
+
       | Exp.pi name typeA typeB =>
         match val with
           | Val.typ n =>
