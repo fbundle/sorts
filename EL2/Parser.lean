@@ -192,13 +192,17 @@ def parse: Parser.Combinator.Parser Char EL2.Core.Exp :=
   ).map (λ (_, e, _) => e)
 
 
+#eval parse "
+inh Nat : Type0
+body
+".toList
 
 
 #eval parse "
-  inh Nat_rec :
-    (P : Nat -> Type0) ->
-    (P zero) ->
-    ((n : Nat) -> (P n) -> (P (succ n))) ->
+  inh Nat_rec : hom
+    (P : hom Nat -> Type0)
+    (P zero)
+    (hom (n : Nat) (P n) -> (P (succ n)))
     (n : Nat) -> (P n)
 body
 ".toList

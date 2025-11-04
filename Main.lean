@@ -7,23 +7,20 @@ open EL2.Core
 def s := "
   inh Nat : Type0
   inh zero : Nat
-  inh succ : Nat -> Nat
+  inh succ : hom Nat -> Nat
 
-  inh Nat_rec :
-    (P : Nat -> Type0) ->
-    (P zero) ->
-    ((n : Nat) -> (P n) -> (P (succ n))) ->
+  inh Nat_rec : hom
+    (P : hom Nat -> Type0)
+    (P zero)
+    (hom (n : Nat) (P n) -> (P (succ n)))
     (n : Nat) -> (P n)
 
-
-
-
-  inh Vec : Nat -> Type0 -> Type0
-  inh nil : (T: Type0) -> (Vec zero T)
-  inh push : (n: Nat) -> (T: Type0) -> (v: (Vec n T)) -> (x: T) -> (Vec (succ n) T)
+  inh Vec : hom Nat Type0 -> Type0
+  inh nil : hom (T: Type0) -> (Vec zero T)
+  inh push : hom (n: Nat) (T: Type0) (v: (Vec n T)) (x: T) -> (Vec (succ n) T)
   let one := (succ zero)
   let two := (succ one)
-  let pure: Nat -> (Vec one Nat) := lam x =>
+  let pure: hom Nat -> (Vec one Nat) := lam x =>
     (push zero Nat (nil Nat) x)
   let pure_two: (Vec one Nat) := (pure two)
   Type0
