@@ -73,41 +73,39 @@ partial def parseVar: Parser Char Exp := parseName.filterMap (λ name =>
     some (Exp.var name)
 )
 
-partial def parseColonArrow: Parser Char Exp :=
-  -- parse anything starts with :
-  -- : Ann (-> Ann)^n for some n ≥ 0
-  let parseAnn: Parser Char (String × Exp) :=
+partial def parseAnn: Parser Char (String × Exp) :=
     (
       String.exact "(" ++
       String.whitespaceWeak ++
       parseName ++
       String.whitespaceWeak ++
-      String.exact ":" ++
-      String.whitespaceWeak ++
-      parse ++
+      --String.exact ":" ++
+      --String.whitespaceWeak ++
+      --parse ++
+      parseColonArrow ++
       String.whitespaceWeak ++
       String.exact ")"
-    ).map (λ (_, _, name, _, _, _, type, _, _) => (name, type))
+    ).map (λ (_, _, name, _, type, _, _) => (name, type))
 
     || parse.map (λ e => ("_", e))
 
-  let parseArrowAnn : Parser Char (String × Exp) :=
-    -- -> Ann
-    (
-      String.exact "->" ++
-      String.whitespaceWeak ++
-      parseAnn
-    ).map (λ (_, _, x) => x)
-
+partial def parseColonArrow: Parser Char Exp :=
+  -- parse anything starts with :
+  -- : Ann (-> Ann)^n for some n ≥ 0
   -- colon then type
   (
     String.exact ":" ++
     String.whitespaceWeak ++
     parseAnn ++
-    (String.whitespaceWeak ++ parseArrowAnn).many
+    (
+      String.whitespaceWeak ++
+      String.exact "->" ++
+      String.whitespaceWeak ++
+      parseAnn
+    ).many
   ).map (λ (_, _, ann1, ann2s) =>
-    let ann2s: List (String × Exp) := (ann2s.map (λ ((_, ann2s): String × (String × Exp)) =>
-      ann2s
+    let ann2s: List (String × Exp) := (ann2s.map (λ ((_, _, _, name, type): String × String × String × String × Exp) =>
+      (name, type)
     ))
     let anns := ann1 :: ann2s
 

@@ -7,7 +7,7 @@ open EL2.Core
 def s := "
   inh Nat : Type0
   inh zero : Nat
-  inh succ: Nat -> Nat
+  inh succ : Nat -> Nat
 
   inh Nat_rec :
     (P : Nat -> Type0) ->
