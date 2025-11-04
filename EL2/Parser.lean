@@ -36,17 +36,6 @@ def parseName: Parser Char String :=
 
 mutual
 
-partial def parse: Parser Char Exp := λ xs =>
-  --dbg_trace s!"parse {String.mk xs}"
-  (
-    parseUniv ||
-    parseParensApp ||
-    parseLam ||
-    parseBnd ||
-    parseInh ||
-    parseVar
-  ) xs
-
 partial def parseParensApp: Parser Char Exp :=
   -- parse any thing starts with (
   (
@@ -83,7 +72,7 @@ partial def parseVar: Parser Char Exp := parseName.filterMap (λ name =>
 
 partial def parseColonArrow: Parser Char Exp :=
   -- parse anything starts with :
-  -- : X (-> X)^n for some n ≥ 0
+  -- : Ann (-> Ann)^n for some n ≥ 0
   let parseAnn: Parser Char (String × Exp) :=
     (
       String.exact "(" ++
@@ -100,7 +89,7 @@ partial def parseColonArrow: Parser Char Exp :=
     || parse.map (λ e => ("_", e))
 
   let parseArrowAnn : Parser Char (String × Exp) :=
-    -- -> X
+    -- -> Ann
     (
       String.exact "->" ++
       String.whitespaceWeak ++
@@ -188,6 +177,18 @@ partial def parseInh: Parser Char Exp :=
   ).map (λ (_, _, name, _, type, _, body) =>
     Exp.inh name type body
   )
+
+partial def parse: Parser Char Exp := λ xs =>
+  dbg_trace s!"parse -- {String.mk xs}"
+  (
+    parseUniv ||
+    parseParensApp ||
+    parseLam ||
+    parseBnd ||
+    parseInh ||
+    parseVar
+  ) xs
+
 end
 
 
@@ -200,5 +201,19 @@ def parse: Parser.Combinator.Parser Char EL2.Core.Exp :=
     Internal.parse ++
     Parser.Combinator.String.whitespaceWeak
   ).map (λ (_, e, _) => e)
+
+
+
+
+#eval parse "
+inh nat_rec :
+  (P : Nat -> Type0) ->
+  (P zero) ->
+  ((n : Nat) -> (P n) -> (P (succ n))) ->
+  (n : Nat) -> (P n)
+body
+".toList
+
+
 
 end EL2.Parser
