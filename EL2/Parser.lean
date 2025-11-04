@@ -1,8 +1,8 @@
-import Parser.Combinator
+import EL2.ParserCombinator
 import EL2.Core
 
 namespace EL2.Parser.Internal
-open Parser.Combinator
+open EL2.ParserCombinator
 open EL2.Core
 
 
@@ -186,7 +186,7 @@ end
 end EL2.Parser.Internal
 
 namespace EL2.Parser
-open Parser.Combinator
+open EL2.ParserCombinator
 open EL2.Core
 
 private inductive state where

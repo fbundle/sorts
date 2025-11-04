@@ -1,4 +1,4 @@
-namespace Parser.Combinator
+namespace EL2.ParserCombinator
 
 def Parser χ α := List χ → Option (α × List χ)
 
@@ -114,4 +114,4 @@ def exact (ys: String): Parser Char String :=
 
 end String
 
-end Parser.Combinator
+end EL2.ParserCombinator
