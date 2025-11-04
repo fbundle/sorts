@@ -2,7 +2,7 @@
 
 The goal of this project is to implement minimal dependent type checker. Currently, it should be able to handle Calculus of Constructions (CoC) with Type universes. Next goal, fully Calculus of Inductive Constructions (CIC) just like lean4 or rocq
 
-
+![example.el2](https://raw.githubusercontent.com/fbundle/el2/refs/heads/master/screenshots/screenshot2.png)
 
 ## TODO
 
