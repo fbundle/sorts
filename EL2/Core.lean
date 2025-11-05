@@ -74,7 +74,7 @@ partial def Val.toString (v: Val): String :=
     | Val.typ level => s!"type_{level}"
     | Val.gen i => s!"gen_{i}"
     | Val.app cmd arg => s!"({cmd.toString} {arg.toString})"
-    | Val.clos map exp => s!"closure({map.toString Val.toString} {exp.toString})"
+    | Val.clos map exp => s!"clos({map.toString Val.toString} {exp.toString})"
 
 instance: ToString Val where
   toString := Val.toString
@@ -314,7 +314,6 @@ def test4 :=
   typeCheck?
     (Exp.pi "A" (Exp.typ 0) (Exp.pi "x" (Exp.var "A") (Exp.var "A")))
     (Exp.typ 1)
-
 
 def test5 :=
   -- this is expected to fail
