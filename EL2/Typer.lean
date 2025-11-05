@@ -119,7 +119,7 @@ structure Ctx where
   debug: Bool   -- whether to dbg_trace
 
   k: Nat
-  ρ : List (String × Val)   -- name -> value
+  ρ: List (String × Val)   -- name -> value
   Γ: List (String × Val)    -- name -> type
   deriving Repr
 
