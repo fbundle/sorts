@@ -1,7 +1,6 @@
 import EL2.Typer
 
-namespace EL2.Reducer.Internal
-open EL2.Typer
+namespace EL2.Reducer
 
 -- Util
 partial def lookup? (env: List (String × α)) (query: String): Option α :=

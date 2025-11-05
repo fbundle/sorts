@@ -107,7 +107,6 @@ end EL2.Parser.Combinator
 
 namespace EL2.Parser
 open EL2.Parser.Combinator
-open EL2.Typer
 
 def parseLineBreak :=
   -- <whitespace_without_newline> <newline> <writespace>
@@ -287,7 +286,6 @@ end EL2.Parser
 
 namespace EL2
 open EL2.Parser.Combinator
-open EL2.Typer
 
 private inductive state where
   | normal: Array Char → state
