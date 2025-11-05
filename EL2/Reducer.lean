@@ -79,13 +79,11 @@ partial def reduce? (env: List (String × Val)) (e: Exp): Option Val :=
     | Exp.pi _ _ _ => Val.clos env e
     | Exp.lam _ _ => Val.clos env e
     | Exp.bnd name value _ body =>
-      let value ← reduce? env value
+      let value ←  printOption (λ a => s!"[REDUCE] {name} = {a}") $ reduce? env value
       reduce? (update env name value) body
     | Exp.inh name _ body =>
       let value := Val.const name
       reduce? (update env name value) body
-
-
 
 end EL2.Reducer
 
