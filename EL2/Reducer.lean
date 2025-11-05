@@ -29,7 +29,7 @@ def Val.toString (re: Val): String :=
     | Val.lam name body =>
       s!"λ {name} => {Val.toString body}"
     | Val.const name => name
-    | Val.clos _ _ => "closure"
+    | Val.clos env exp => "clos" -- s!"clos(env={repr env}, exp={repr exp}})"
 
 instance: ToString Val where
   toString := Val.toString
