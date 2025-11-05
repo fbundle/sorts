@@ -3,22 +3,6 @@
 -- with type universe (type_0, type_1, ...) and inhabit
 
 namespace EL2.Typer
-structure Map α where
-  list: List (String × α)
-
-partial def Map.lookup? (map: Map α) (name: String): Option α :=
-  match map.list with
-    | [] => none
-    | (key, val) :: list =>
-      if name = key then
-        some val
-      else
-        {list := list: Map α}.lookup? name
-
-partial def Map.update (map: Map α) (name: String) (val: α): Map α :=
-  {list := (name, val) :: map.list}
-
-def emptyMap: Map α := {list := []}
 
 inductive Exp where
   -- typ 0 is type of small types: Nat, Pi, etc.
@@ -41,19 +25,6 @@ inductive Exp where
   | inh: (name: String) → (type: Exp) → (body: Exp) → Exp
   deriving Nonempty, Repr
 
-def Exp.toString (e: Exp): String :=
-  match e with
-    | Exp.typ level => s!"type_{level}"
-    | Exp.var name => name
-    | Exp.app cmd arg => s!"({cmd.toString} {arg.toString})"
-    | Exp.pi name typeA typeB => s!"(Π ({name}: {typeA.toString}) {typeB.toString})"
-    | Exp.lam name body => s!"(λ {name} {body.toString})"
-    | Exp.bnd name value type body => s!"let {name}: {type.toString} := {value.toString}\n{body.toString}"
-    | Exp.inh name type body => s!"* {name}: {type.toString}\n{body.toString})"
-
-instance: ToString Exp where
-  toString := Exp.toString
-
 inductive Val where
   -- typ_n
   | typ : (n: Nat) → Val
@@ -62,29 +33,26 @@ inductive Val where
   -- application
   | app: (cmd: Val) → (arg: Val) → Val
   -- with closure - a future value - evaluated by eval?
-  | clos: (env: Map Val) → (exp: Exp) → Val
-
-def Map.toString (m: Map α) (toString: α → String): String :=
-  "map(" ++ (String.join $ List.intersperse " | " $ m.list.map (λ (key, val) =>
-    s!"{key} → {toString val}"
-  )) ++ ")"
-
-partial def Val.toString (v: Val): String :=
-  match v with
-    | Val.typ level => s!"type_{level}"
-    | Val.gen i => s!"gen_{i}"
-    | Val.app cmd arg => s!"({cmd.toString} {arg.toString})"
-    | Val.clos map exp => s!"clos({map.toString Val.toString} {exp.toString})"
-
-instance: ToString Val where
-  toString := Val.toString
-
-instance : ToString (Map Val) where
-  toString (m: Map Val): String := m.toString Val.toString
+  | clos: (env: List (String × Val)) → (exp: Exp) → Val
+  deriving Nonempty, Repr
 
 end EL2.Typer
 
 namespace EL2.Typer.Internal
+-- Util
+partial def lookup? (map: List (String × α)) (name: String): Option α :=
+  match map with
+    | [] => none
+    | (key, val) :: rest =>
+      if name = key then
+        some val
+      else
+        lookup? rest name
+
+partial def update (map: List (String × α)) (name: String) (val: α): List (String × α) :=
+  (name, val) :: map
+
+def emptyEnv: List (String × α) := []
 
 -- WHNF
 mutual
@@ -92,24 +60,24 @@ partial def whnf? (cmd: Val) (arg: Val): Option Val := do
   -- reduce (Val.app cmd arg)
   match cmd with
     | Val.clos env (Exp.lam name body) =>
-      eval? (env.update name arg) body
+      eval? (update env name arg) body
 
     | _ => -- cannot reduce
       pure (Val.app cmd arg)
 
-partial def eval? (env: Map Val) (exp: Exp): Option Val := do
+partial def eval? (env: List (String × Val)) (exp: Exp): Option Val := do
   -- reduce (Val.clos env exp)
   match exp with
     | Exp.typ n => pure (Val.typ n)
 
     | Exp.var name =>
-      env.lookup? name
+      lookup? env name
 
     | Exp.app cmd arg =>
       whnf? (← eval? env cmd) (← eval? env arg)
 
     | Exp.bnd name val _ body =>
-      eval? (env.update name (← eval? env val)) body
+      eval? (update env name (← eval? env val)) body
 
     | _ => pure (Val.clos env exp) -- skip lam pi inh
 end
@@ -128,8 +96,8 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
       | (Val.clos env1 (Exp.lam name1 body1), Val.clos env2 (Exp.lam name2 body2)) =>
         let v := Val.gen k
         eqVal? (k + 1)
-          (← eval? (env1.update name1 v) body1)
-          (← eval? (env2.update name2 v) body2)
+          (← eval? (update env1 name1 v) body1)
+          (← eval? (update env2 name2 v) body2)
 
       | (Val.clos env1 (Exp.pi name1 typeA1 typeB1), Val.clos env2 (Exp.pi name2 typeA2 typeB2)) =>
         let v := Val.gen k
@@ -138,8 +106,8 @@ partial def eqVal? (k: Nat) (u1: Val) (u2: Val): Option Bool := do
             ∧
           (
             ← eqVal? (k + 1)
-            (← eval? (env1.update name1 v) typeB1)
-            (← eval? (env2.update name2 v) typeB2)
+            (← eval? (update env1 name1 v) typeB1)
+            (← eval? (update env2 name2 v) typeB2)
           )
         )
 
@@ -151,20 +119,15 @@ structure Ctx where
   debug: Bool   -- whether to dbg_trace
 
   k: Nat
-  ρ : Map Val   -- name -> value
-  Γ: Map Val    -- name -> type
-
-def Ctx.toString (ctx: Ctx): String :=
-  s!"ctx(k={ctx.k}, ρ={ctx.ρ}, Γ={ctx.Γ})"
-
-instance: ToString Ctx where
-  toString := Ctx.toString
+  ρ : List (String × Val)   -- name -> value
+  Γ: List (String × Val)    -- name -> type
+  deriving Repr
 
 def Ctx.bind (ctx: Ctx) (name: String) (val: Val) (type: Val) : Ctx :=
   {
     ctx with
-    ρ := ctx.ρ.update name val,
-    Γ := ctx.Γ.update name type,
+    ρ := update ctx.ρ name val,
+    Γ := update ctx.Γ name type,
   }
 
 def Ctx.intro (ctx: Ctx) (name: String) (type: Val) : Ctx × Val :=
@@ -172,8 +135,8 @@ def Ctx.intro (ctx: Ctx) (name: String) (type: Val) : Ctx × Val :=
   ({
     ctx with
     k := ctx.k + 1,
-    ρ := ctx.ρ.update name val,
-    Γ := ctx.Γ.update name type,
+    ρ := update ctx.ρ name val,
+    Γ := update ctx.Γ name type,
   }, val)
 
 def Ctx.nodebug (ctx: Ctx) : Ctx :=
@@ -196,15 +159,15 @@ def emptyCtx: Ctx := {
   debug := true,
 
   k := 0,
-  ρ := emptyMap,
-  Γ := emptyMap
+  ρ := emptyEnv,
+  Γ := emptyEnv
 }
 
 mutual
 partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
   -- if exp is of type TypeN for 0 ≤ N ≤ maxN
   -- return N
-  ctx.printIfNone s!"[DBG_TRACE] checkTypLevel? {ctx}\n\texp = {exp}\n\tmaxLevel = {maxN}" do
+  ctx.printIfNone s!"[DBG_TRACE] checkTypLevel? {repr ctx}\n\texp = {repr exp}\n\tmaxLevel = {maxN}" do
   let rec loop (n: Nat): Option Nat := do
     if n > maxN then
       none
@@ -218,10 +181,10 @@ partial def checkTypLevel? (ctx: Ctx) (exp: Exp) (maxN: Nat): Option Nat :=
 
 partial def inferExpWeak? (ctx: Ctx) (exp: Exp): Option Val :=
   -- infer the type of exp weakly
-  ctx.printIfNone s!"[DBG_TRACE] inferExpWeak? {ctx}\n\texp = {exp}" do
+  ctx.printIfNone s!"[DBG_TRACE] inferExpWeak? {repr ctx}\n\texp = {repr exp}" do
     match exp with
       | Exp.typ n => pure (Val.typ (n + 1))
-      | Exp.var name => ctx.Γ.lookup? name
+      | Exp.var name => lookup? ctx.Γ name
 
       | Exp.app cmd arg => -- for Exp.app, cmd should be typ, var, or app
         match ← inferExpWeak? ctx cmd with
@@ -230,7 +193,7 @@ partial def inferExpWeak? (ctx: Ctx) (exp: Exp): Option Val :=
               none
             else
               let argValue ← eval? ctx.ρ arg
-              let subEnv := env.update name argValue
+              let subEnv := update env name argValue
               pure (← eval? subEnv typeB)
           | _ => none
 
@@ -238,7 +201,7 @@ partial def inferExpWeak? (ctx: Ctx) (exp: Exp): Option Val :=
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   -- check if type of exp is val
-  ctx.printIfFalse s!"[DBG_TRACE] checkExp? {ctx}\n\texp = {exp}\n\tval = {val}" do
+  ctx.printIfFalse s!"[DBG_TRACE] checkExp? {repr ctx}\n\texp = {repr exp}\n\tval = {repr val}" do
     match exp with
       | Exp.pi name typeA typeB =>
         match val with
@@ -253,7 +216,7 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
         match val with
           | Val.clos env2 (Exp.pi name2 typeA2 typeB2) =>
             let (subCtx, v) := ctx.intro name1 (← eval? env2 typeA2)
-            checkExp? subCtx body1 (← eval? (env2.update name2 v) typeB2)
+            checkExp? subCtx body1 (← eval? (update env2 name2 v) typeB2)
           | _ => none
 
       | Exp.bnd name value type body =>
@@ -293,7 +256,7 @@ def typeCheck? (exp: Exp) (type: Exp): Option Bool := do
   -- typeCheck?
   -- some false - type check error
   -- none - parse error
-  checkExp? emptyCtx exp (← eval? emptyMap type)
+  checkExp? emptyCtx exp (← eval? emptyEnv type)
 
 def test1 :=
   typeCheck?
