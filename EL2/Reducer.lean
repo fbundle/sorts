@@ -1,35 +1,38 @@
 import EL2.Typer
 
 namespace EL2
-inductive ReExp where
-  | const: (name: String) → ReExp
-  | exp: (exp: Exp) → ReExp
+inductive Val where
+  -- type
+  | typ : (level: Nat) → Val
+  -- application
+  | app: (cmd: Val) → (arg: Val) → Val
+  -- Π type: Π (name: type) body - type of abs
+  | pi:  (name: String) → (typeA: Val) → (typeB: Val) → Val
+  -- λ abstraction
+  | lam: (name: String) → (body: Val) → Val
+  -- inh - const
+  | const: (name: String) → Val
+  --
+  | clos: (env: List (String × Val)) → (exp: Exp) → Val
+  deriving Repr
 
 
-instance: Coe Exp ReExp where
-  coe (exp: Exp) := ReExp.exp exp
-
-def ReExp.toString? (re: ReExp): Option String :=
+def Val.toString (re: Val): String :=
   match re with
-    | ReExp.const name => some name
-    | ReExp.exp $ Exp.typ level => some s!"Type{level}"
-    | ReExp.exp $ Exp.var _ => none
-    | ReExp.exp $ Exp.app cmd arg =>
-      some s!"({ReExp.toString? cmd} {ReExp.toString? arg})"
-    | ReExp.exp $ Exp.pi name typeA typeB =>
+    | Val.typ level => s!"Type{level}"
+    | Val.app cmd arg =>
+      s!"({Val.toString cmd} {Val.toString arg})"
+    | Val.pi name typeA typeB =>
       match name with
-        | "_" => some s!"Π {ReExp.toString? typeA} → {ReExp.toString? typeB}"
-        | _   => some s!"Π ({name}: {ReExp.toString? typeA}) → {ReExp.toString? typeB}"
-    | ReExp.exp $ Exp.lam name body =>
-      s!"λ {name} => {ReExp.toString? body}"
-    | ReExp.exp $ Exp.bnd _ _ _ _ => none
-    | ReExp.exp $ Exp.inh _ _ _ => none
+        | "_" => s!"Π {Val.toString typeA} → {Val.toString typeB}"
+        | _   => s!"Π ({name}: {Val.toString typeA}) → {Val.toString typeB}"
+    | Val.lam name body =>
+      s!"λ {name} => {Val.toString body}"
+    | Val.const name => name
+    | Val.clos _ _ => "closure"
 
-instance: ToString ReExp where
-  toString (re: ReExp): String :=
-    match re.toString? with
-      | none => "none"
-      | some s => s
+instance: ToString Val where
+  toString := Val.toString
 
 end EL2
 
@@ -60,35 +63,34 @@ def printNone (msg: String) (o?: Option α): Option α :=
     | none => dbg_trace msg; none
     | some a => some a
 
-partial def reduce? (env: List (String × ReExp)) (re: ReExp): Option ReExp :=
-  printNone s!"[DBG_TRACE] \n\tenv={env}\n\tre={re}" do
-  match re with
-    | ReExp.const name => ReExp.const name
-    | ReExp.exp $ Exp.typ level => some (Exp.typ level)
-    | ReExp.exp $ Exp.var name =>
-      reduce? env (← lookup? env name)
-    | ReExp.exp $ Exp.app cmd arg =>
+partial def reduce? (env: List (String × Val)) (e: Exp): Option Val :=
+  printNone s!"[DBG_TRACE] \n\tenv={env}\n\tre={repr e}" do
+  match e with
+    | Exp.typ level => Val.typ level
+    | Exp.var name => lookup? env name
+    | Exp.app cmd arg =>
       let cmd ← reduce? env cmd
       let arg ← reduce? env arg
       match cmd with
-        | Exp.lam name body =>
-          reduce? (update env name arg) body
-        | _ => none
-    | ReExp.exp $ Exp.lam _ _ => re
-    | ReExp.exp $ Exp.pi _ _ _ => re
-    | ReExp.exp $ Exp.bnd name value _ body =>
+        | Val.clos env1 (Exp.lam name body) =>
+          reduce? (update env1 name arg) body
+        | _ =>
+          Val.app cmd arg
+    | Exp.pi _ _ _ => Val.clos env e
+    | Exp.lam _ _ => Val.clos env e
+    | Exp.bnd name value _ body =>
       let value ← reduce? env value
-
-      printOption (λ v => s!"[REDUCE] {name} = {v}") $
+      reduce? (update env name value) body
+    | Exp.inh name _ body =>
+      let value := Val.const name
       reduce? (update env name value) body
 
-    | ReExp.exp $ Exp.inh name _ body =>
-      reduce? (update env name (ReExp.const name)) body
+
 
 end EL2.Reducer
 
 namespace EL2
-def reduce? (e: Exp): Option ReExp :=
+def reduce? (e: Exp): Option Val :=
   Reducer.reduce? [] e
 
 end EL2
