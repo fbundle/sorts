@@ -1,24 +1,10 @@
 import EL2.Typer
 
-namespace EL2.Reducer
-open EL2
-
--- Util
-partial def lookup? (env: List (String × α)) (query: String): Option α :=
-  match env with
-    | [] => none
-    | (key, val) :: rest =>
-      if query = key then
-        some val
-      else
-        lookup? rest query
-
-partial def update (env: List (String × α)) (name: String) (val: α): List (String × α) :=
-  (name, val) :: env
-
+namespace EL2
 inductive ReExp where
   | const: (name: String) → ReExp
   | exp: (exp: Exp) → ReExp
+
 
 instance: Coe Exp ReExp where
   coe (exp: Exp) := ReExp.exp exp
@@ -45,12 +31,29 @@ instance: ToString ReExp where
       | none => "none"
       | some s => s
 
+end EL2
+
+namespace EL2.Reducer
+open EL2
+
+-- Util
+partial def lookup? (env: List (String × α)) (query: String): Option α :=
+  match env with
+    | [] => none
+    | (key, val) :: rest =>
+      if query = key then
+        some val
+      else
+        lookup? rest query
+
+partial def update (env: List (String × α)) (name: String) (val: α): List (String × α) :=
+  (name, val) :: env
+
 def printOption (msg: α → String) (o?: Option α): Option α :=
   match o? with
     | none => none
     | some a =>
         dbg_trace msg a ; some a
-
 
 partial def reduce? (env: List (String × ReExp)) (re: ReExp): Option ReExp := do
   match re with
@@ -78,3 +81,9 @@ partial def reduce? (env: List (String × ReExp)) (re: ReExp): Option ReExp := d
       reduce? (update env name (ReExp.const name)) body
 
 end EL2.Reducer
+
+namespace EL2
+def reduce? (e: Exp): Option ReExp :=
+  Reducer.reduce? [] e
+
+end EL2
