@@ -16,12 +16,7 @@ instance: Monad (Parser α) where
   bind := Parser.bind
 
 def Parser.filter (p: Parser χ α) (f: α → Bool): Parser χ α :=
-  p.bind (λ a =>
-    if f a then
-      pure a
-    else
-      fail
-  )
+  p.bind (λ a => if f a then pure a else fail)
 
 def Parser.map (p: Parser χ α) (f: α → β): Parser χ β :=
   p.bind (λ a => pure (f a))
