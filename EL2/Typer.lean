@@ -23,7 +23,7 @@ inductive Exp where
   | bnd: (name: String) → (value: Exp) → (type: Exp) → (body: Exp) → Exp
   -- inh - const
   | inh: (name: String) → (type: Exp) → (body: Exp) → Exp
-  deriving Nonempty, Repr
+  deriving Repr
 
 inductive Val where
   -- typ_n
