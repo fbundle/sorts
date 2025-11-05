@@ -48,5 +48,10 @@ let is_zero : hom Nat -> Bool := lam n =>
     n                   --  apply inductive statement on n
   )
 
+-- TODO adding these 4 lines breaks type checker
+let x : Nat := (is_zero zero)
+let y : Nat := (is_zero one)
+let z : Nat := (is_zero two)
+
 Type0
 
