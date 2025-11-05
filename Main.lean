@@ -63,6 +63,7 @@ def t := Exp.typ 1
 
 
 def main (args : List String): IO Unit := do
+  IO.println "-------------------------------------------------------------------"
   match args with
     | [] => IO.println "args_empty: use `el2 <filename>`"
     | filename :: _ =>
