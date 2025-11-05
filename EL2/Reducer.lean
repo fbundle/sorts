@@ -41,6 +41,7 @@ partial def reduce? (env: List (String × ReExp)) (exp: ReExp): Option ReExp := 
     | ReExp.exp $ Exp.bnd name value _ body =>
       let value ← reduce? env value
       reduce? (update env name value) body
+      -- TODO print here
 
     | ReExp.exp $ Exp.inh name _ body =>
       reduce? (update env name (ReExp.const name)) body
