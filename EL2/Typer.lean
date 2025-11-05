@@ -2,7 +2,7 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...) and inhabit
 
-namespace EL2.Typer
+namespace EL2
 
 inductive Exp where
   -- typ 0 is type of small types: Nat, Pi, etc.
@@ -25,6 +25,10 @@ inductive Exp where
   | inh: (name: String) → (type: Exp) → (body: Exp) → Exp
   deriving Repr
 
+end EL2
+
+namespace EL2.Typer
+
 inductive Val where
   -- typ_n
   | typ : (n: Nat) → Val
@@ -34,11 +38,8 @@ inductive Val where
   | app: (cmd: Val) → (arg: Val) → Val
   -- with closure - a future value - evaluated by eval?
   | clos: (env: List (String × Val)) → (exp: Exp) → Val
-  deriving Nonempty, Repr
+  deriving Repr
 
-end EL2.Typer
-
-namespace EL2.Typer.Internal
 -- Util
 partial def lookup? (env: List (String × α)) (query: String): Option α :=
   match env with
@@ -247,11 +248,11 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
       | _ => eqVal? ctx.k (← inferExpWeak? ctx exp) val
 end
 
-end EL2.Typer.Internal
+end EL2.Typer
 
-namespace EL2.Typer
+namespace EL2
 
-open Internal
+open Typer
 
 def typeCheck? (exp: Exp) (type: Exp): Option Bool := do
   -- typeCheck?
@@ -357,4 +358,4 @@ def test6 :=
 #eval test4
 #eval test6
 
-end EL2.Typer
+end EL2

@@ -1,8 +1,7 @@
 import EL2.Parser
 import EL2.Typer
 
-open EL2.Parser
-open EL2.Typer
+open EL2
 
 def s := "
   inh Bool : Type0
