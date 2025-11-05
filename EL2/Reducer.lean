@@ -55,7 +55,13 @@ def printOption (msg: α → String) (o?: Option α): Option α :=
     | some a =>
         dbg_trace msg a ; some a
 
-partial def reduce? (env: List (String × ReExp)) (re: ReExp): Option ReExp := do
+def printNone (msg: String) (o?: Option α): Option α :=
+  match o? with
+    | none => dbg_trace msg; none
+    | some a => some a
+
+partial def reduce? (env: List (String × ReExp)) (re: ReExp): Option ReExp :=
+  printNone s!"[DBG_TRACE] \n\tenv={env}\n\tre={re}" do
   match re with
     | ReExp.const name => ReExp.const name
     | ReExp.exp $ Exp.typ level => some (Exp.typ level)
@@ -75,7 +81,6 @@ partial def reduce? (env: List (String × ReExp)) (re: ReExp): Option ReExp := d
 
       printOption (λ v => s!"[REDUCE] {name} = {v}") $
       reduce? (update env name value) body
-      -- TODO print here
 
     | ReExp.exp $ Exp.inh name _ body =>
       reduce? (update env name (ReExp.const name)) body
