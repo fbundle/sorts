@@ -1,6 +1,7 @@
 import EL2.Typer
 
 namespace EL2.Reducer
+open EL2
 
 -- Util
 partial def lookup? (env: List (String × α)) (query: String): Option α :=
@@ -45,10 +46,4 @@ partial def reduce? (env: List (String × ReExp)) (exp: ReExp): Option ReExp := 
     | ReExp.exp $ Exp.inh name _ body =>
       reduce? (update env name (ReExp.const name)) body
 
-
-
-
-
-
-
-end EL2.Reducer.Internal
+end EL2.Reducer

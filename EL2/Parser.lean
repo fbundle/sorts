@@ -106,6 +106,7 @@ end String
 end EL2.Parser.Combinator
 
 namespace EL2.Parser
+open EL2
 open EL2.Parser.Combinator
 
 def parseLineBreak :=
@@ -285,6 +286,7 @@ end
 end EL2.Parser
 
 namespace EL2
+open EL2
 open EL2.Parser.Combinator
 
 private inductive state where
