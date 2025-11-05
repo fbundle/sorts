@@ -28,11 +28,14 @@ partial def reduce? (env: List (String × Exp)) (exp: Exp): Option Exp := do
         | Exp.lam name body =>
           reduce? (update env name arg) body
         | _ => none
+    | Exp.lam _ _ => exp
     | Exp.pi _ _ _ => none
     | Exp.bnd name value _ body =>
       let value ← reduce? env value
       reduce? (update env name value) body
-    | _ => none
+
+    | Exp.inh name _ body =>
+      reduce? (update env name exp) body
 
 
 
