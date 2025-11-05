@@ -23,8 +23,21 @@ inductive ReExp where
 instance: Coe Exp ReExp where
   coe (exp: Exp) := ReExp.exp exp
 
-partial def reduce? (env: List (String × ReExp)) (exp: ReExp): Option ReExp := do
-  match exp with
+def ReExp.toString (re: ReExp): String :=
+  match re
+
+instance: ToString ReExp where
+  toString := ReExp.toString
+
+def printOption (msg: α → String) (o?: Option α): Option α :=
+  match o? with
+    | none => none
+    | some a =>
+        dbg_trace msg a ; some a
+
+
+partial def reduce? (env: List (String × ReExp)) (re: ReExp): Option ReExp := do
+  match re with
     | ReExp.const name => ReExp.const name
     | ReExp.exp $ Exp.typ level => some (Exp.typ level)
     | ReExp.exp $ Exp.var name =>
@@ -36,10 +49,12 @@ partial def reduce? (env: List (String × ReExp)) (exp: ReExp): Option ReExp := 
         | Exp.lam name body =>
           reduce? (update env name arg) body
         | _ => none
-    | ReExp.exp $ Exp.lam _ _ => exp
-    | ReExp.exp $ Exp.pi _ _ _ => none
+    | ReExp.exp $ Exp.lam _ _ => re
+    | ReExp.exp $ Exp.pi _ _ _ => re
     | ReExp.exp $ Exp.bnd name value _ body =>
       let value ← reduce? env value
+
+      printOption (λ v => s!"[REDUCE] {name} = {v}") $
       reduce? (update env name value) body
       -- TODO print here
 
