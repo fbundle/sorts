@@ -316,10 +316,9 @@ def test4 :=
     (Exp.typ 1)
 
 def test5 :=
-  -- this is expected to fail
   typeCheck?
     (Exp.app (Exp.lam "x" (Exp.var "x")) (Exp.typ 0))
-    (Exp.typ 0)
+    (Exp.typ 1)
 
 def piMany (params: List (String × Exp)) (typeB: Exp): Exp :=
   match params with
