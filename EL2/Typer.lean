@@ -286,8 +286,8 @@ def test5 :=
 def piMany (params: List (String × Exp)) (typeB: Exp): Exp :=
   match params with
     | [] => typeB
-    | (name, type) :: rest =>
-      Exp.pi name type (piMany rest typeB)
+    | (name, typeA) :: rest =>
+      Exp.pi name typeA (piMany rest typeB)
 
 def appMany (cmd: Exp) (args: List Exp): Exp :=
   match args with
