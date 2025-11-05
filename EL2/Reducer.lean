@@ -23,11 +23,27 @@ inductive ReExp where
 instance: Coe Exp ReExp where
   coe (exp: Exp) := ReExp.exp exp
 
-def ReExp.toString (re: ReExp): String :=
-  match re
+def ReExp.toString? (re: ReExp): Option String :=
+  match re with
+    | ReExp.const name => some name
+    | ReExp.exp $ Exp.typ level => some s!"Type{level}"
+    | ReExp.exp $ Exp.var _ => none
+    | ReExp.exp $ Exp.app cmd arg =>
+      some s!"({ReExp.toString? cmd} {ReExp.toString? arg})"
+    | ReExp.exp $ Exp.pi name typeA typeB =>
+      match name with
+        | "_" => some s!"Π {ReExp.toString? typeA} → {ReExp.toString? typeB}"
+        | _   => some s!"Π ({name}: {ReExp.toString? typeA}) → {ReExp.toString? typeB}"
+    | ReExp.exp $ Exp.lam name body =>
+      s!"λ {name} => {ReExp.toString? body}"
+    | ReExp.exp $ Exp.bnd _ _ _ _ => none
+    | ReExp.exp $ Exp.inh _ _ _ => none
 
 instance: ToString ReExp where
-  toString := ReExp.toString
+  toString (re: ReExp): String :=
+    match re.toString? with
+      | none => "none"
+      | some s => s
 
 def printOption (msg: α → String) (o?: Option α): Option α :=
   match o? with
