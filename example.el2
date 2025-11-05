@@ -41,7 +41,8 @@ let pure_two: (Vec one Nat) := (pure two)
 
 -- pattern matching is just induction
 let is_zero : hom Nat -> Bool := lam n =>
-  (Nat_rec
+  (
+    Nat_rec
     (lam _ => Bool)     --  for every n, the return type is Bool
     true                --  case zero
     (lam m _ => false)  --  case succ
