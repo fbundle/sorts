@@ -16,26 +16,34 @@ partial def lookup? (env: List (String × α)) (query: String): Option α :=
 partial def update (env: List (String × α)) (name: String) (val: α): List (String × α) :=
   (name, val) :: env
 
-partial def reduce? (env: List (String × Exp)) (exp: Exp): Option Exp := do
+inductive ReExp where
+  | const: (name: String) → ReExp
+  | exp: (exp: Exp) → ReExp
+
+instance: Coe Exp ReExp where
+  coe (exp: Exp) := ReExp.exp exp
+
+partial def reduce? (env: List (String × ReExp)) (exp: ReExp): Option ReExp := do
   match exp with
-    | Exp.typ level => some (Exp.typ level)
-    | Exp.var name =>
+    | ReExp.const name => ReExp.const name
+    | ReExp.exp $ Exp.typ level => some (Exp.typ level)
+    | ReExp.exp $ Exp.var name =>
       reduce? env (← lookup? env name)
-    | Exp.app cmd arg =>
+    | ReExp.exp $ Exp.app cmd arg =>
       let cmd ← reduce? env cmd
       let arg ← reduce? env arg
       match cmd with
         | Exp.lam name body =>
           reduce? (update env name arg) body
         | _ => none
-    | Exp.lam _ _ => exp
-    | Exp.pi _ _ _ => none
-    | Exp.bnd name value _ body =>
+    | ReExp.exp $ Exp.lam _ _ => exp
+    | ReExp.exp $ Exp.pi _ _ _ => none
+    | ReExp.exp $ Exp.bnd name value _ body =>
       let value ← reduce? env value
       reduce? (update env name value) body
 
-    | Exp.inh name _ body =>
-      reduce? (update env name exp) body
+    | ReExp.exp $ Exp.inh name _ body =>
+      reduce? (update env name (ReExp.const name)) body
 
 
 
