@@ -216,7 +216,8 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
         match val with
           | Val.clos env2 (Exp.pi name2 typeA2 typeB2) =>
             let (subCtx, v) := ctx.intro name1 (← eval? env2 typeA2)
-            checkExp? subCtx body1 (← eval? (update env2 name2 v) typeB2)
+            let subEnv2 := update env2 name2 v
+            checkExp? subCtx body1 (← eval? subEnv2 typeB2)
           | _ => none
 
       | Exp.bnd name value type body =>
