@@ -40,8 +40,8 @@ end EL2.Typer
 
 namespace EL2.Typer.Internal
 -- Util
-partial def lookup? (map: List (String × α)) (query: String): Option α :=
-  match map with
+partial def lookup? (env: List (String × α)) (query: String): Option α :=
+  match env with
     | [] => none
     | (key, val) :: rest =>
       if query = key then
@@ -49,8 +49,8 @@ partial def lookup? (map: List (String × α)) (query: String): Option α :=
       else
         lookup? rest query
 
-partial def update (map: List (String × α)) (name: String) (val: α): List (String × α) :=
-  (name, val) :: map
+partial def update (env: List (String × α)) (name: String) (val: α): List (String × α) :=
+  (name, val) :: env
 
 def emptyEnv: List (String × α) := []
 
