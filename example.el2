@@ -15,8 +15,7 @@ inh Nat_rec : hom
   (P : hom Nat -> Type0)
   (base_case: (P zero))
   (ind_case: hom (n : Nat) (P_n: (P n)) -> (P (succ n)))
-  (n : Nat)
-  -> (P n)
+  -> (hom (m: Nat) -> (P m))
 
 -- assume (Vec n T) exists for all type (T: Type0)
 inh Vec : hom Nat Type0 -> Type0
