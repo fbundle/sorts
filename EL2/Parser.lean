@@ -1,9 +1,9 @@
 import EL2.ParserCombinator
-import EL2.Core
+import EL2.Typer
 
 namespace EL2.Parser.Internal
 open EL2.ParserCombinator
-open EL2.Core
+open EL2.Typer
 
 
 
@@ -185,7 +185,7 @@ end EL2.Parser.Internal
 
 namespace EL2.Parser
 open EL2.ParserCombinator
-open EL2.Core
+open EL2.Typer
 
 private inductive state where
   | normal: Array Char → state
@@ -210,7 +210,7 @@ an mesage with line comment -- everythign after double dashes is ignore
 heheh
 ".toList)
 
-def parse: Parser (List Char) EL2.Core.Exp := λ xs =>
+def parse: Parser (List Char) Exp := λ xs =>
   xs |> removeComments |>
   (
     String.whitespaceWeak ++

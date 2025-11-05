@@ -2,7 +2,7 @@
 -- the algorithm is able to type check dependently-typed λ-calculus
 -- with type universe (type_0, type_1, ...) and inhabit
 
-namespace EL2.Core
+namespace EL2.Typer
 structure Map α where
   list: List (String × α)
 
@@ -62,7 +62,7 @@ inductive Val where
   -- application
   | app: (cmd: Val) → (arg: Val) → Val
   -- with closure - a future value - evaluated by eval?
-  | clos: (map: Map Val) → (exp: Exp) → Val
+  | clos: (env: Map Val) → (exp: Exp) → Val
 
 def Map.toString (m: Map α) (toString: α → String): String :=
   "map(" ++ (String.join $ List.intersperse " | " $ m.list.map (λ (key, val) =>
@@ -82,9 +82,9 @@ instance: ToString Val where
 instance : ToString (Map Val) where
   toString (m: Map Val): String := m.toString Val.toString
 
-end EL2.Core
+end EL2.Typer
 
-namespace EL2.Core.Internal
+namespace EL2.Typer.Internal
 
 -- WHNF
 mutual
@@ -283,9 +283,9 @@ partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
       | _ => eqVal? ctx.k (← inferExpWeak? ctx exp) val
 end
 
-end EL2.Core.Internal
+end EL2.Typer.Internal
 
-namespace EL2.Core
+namespace EL2.Typer
 
 open Internal
 
@@ -393,4 +393,4 @@ def test6 :=
 #eval test4
 #eval test6
 
-end EL2.Core
+end EL2.Typer

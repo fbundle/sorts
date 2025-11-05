@@ -1,8 +1,8 @@
 import EL2.Parser
-import EL2.Core
+import EL2.Typer
 
 open EL2.Parser
-open EL2.Core
+open EL2.Typer
 
 def s := "
   inh Bool : Type0
