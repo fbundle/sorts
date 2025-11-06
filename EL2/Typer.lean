@@ -202,7 +202,8 @@ partial def inferExpWeak? (ctx: Ctx) (exp: Exp): Option Val :=
 
 partial def checkExp? (ctx: Ctx) (exp: Exp) (val: Val): Option Bool :=
   -- check if type of exp is val
-  ctx.printFalse s!"[DBG_TRACE] checkExp? {repr ctx}\n\texp = {repr exp}\n\tval = {repr val}" do
+  -- ctx.printFalse s!"[DBG_TRACE] checkExp? {repr ctx}\n\texp = {repr exp}\n\tval = {repr val}" do
+  ctx.printFalse s!"[DBG_TRACE] checkExp? \n\texp = {repr exp}\n\tval = {repr val}" do
     match exp with
       | Exp.pi name typeA typeB =>
         match val with
